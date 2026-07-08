@@ -301,6 +301,29 @@ describe("chapter leader command center", () => {
     expect(valuesMarkup).toContain("Values follow-through stays human-reviewed");
   });
 
+  it("keeps the visible leadership review loop connected across leaders, values, succession, and training", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "leaders",
+      memberId: "member-ivy",
+      pipeline: "follow_up",
+      search: "Ivy",
+    });
+    const markup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
+    );
+
+    expect(markup).toContain("Leadership review loop");
+    expect(markup).toContain("Keep chapter home, roster review, succession, values, and training in one route-backed lane.");
+    expect(markup).toContain("href=\"/leader?view=overview&amp;member=member-ivy&amp;pipeline=follow_up&amp;q=Ivy\"");
+    expect(markup).toContain("href=\"/leader?view=member_profile&amp;member=member-ivy&amp;pipeline=follow_up&amp;q=Ivy\"");
+    expect(markup).toContain("href=\"/leader?view=leaders&amp;member=member-ivy&amp;pipeline=follow_up&amp;q=Ivy\"");
+    expect(markup).toContain("href=\"/leader?view=succession&amp;member=member-ivy&amp;pipeline=follow_up&amp;q=Ivy\"");
+    expect(markup).toContain("href=\"/leader?view=values&amp;member=member-ivy&amp;pipeline=follow_up&amp;q=Ivy\"");
+    expect(markup).toContain("href=\"/leader?view=training&amp;member=member-ivy&amp;pipeline=follow_up&amp;q=Ivy\"");
+    expect(markup).toContain("Reviewing TEST Ivy Invite across the current leadership roster");
+  });
+
   it("keeps Review Members wired from the overview hero into the member-pipeline quick-action state", () => {
     const actor = getMockLocalActorContext("leader.a@mymedlife.test");
     const commandCenter = getChapterLeaderCommandCenter(actor, data);
@@ -2522,6 +2545,29 @@ describe("chapter leader command center", () => {
     expect(markup).toContain("Leadership Gaps");
     expect(markup).toContain("Candidate Pipeline");
     expect(markup).toContain("Succession Timeline");
+  });
+
+  it("keeps the training view tied to the selected leadership review context", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "training",
+      memberId: "member-ivy",
+      pipeline: "follow_up",
+      search: "Ivy",
+    });
+    const markup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
+    );
+
+    expect(markup).toContain("Leadership Training");
+    expect(markup).toContain("Training review in focus");
+    expect(markup).toContain("Reviewing TEST Ivy Invite for leadership development");
+    expect(markup).toContain("Open member profile");
+    expect(markup).toContain("Leadership review loop");
+    expect(markup).toContain("href=\"/leader?view=leaders&amp;member=member-ivy&amp;pipeline=follow_up&amp;q=Ivy\"");
+    expect(markup).toContain("href=\"/leader?view=succession&amp;member=member-ivy&amp;pipeline=follow_up&amp;q=Ivy\"");
+    expect(markup).toContain("href=\"/leader?view=values&amp;member=member-ivy&amp;pipeline=follow_up&amp;q=Ivy\"");
+    expect(markup).toContain("href=\"/leader?view=training&amp;member=member-ivy&amp;pipeline=follow_up&amp;q=Ivy\"");
   });
 
   it("opens promote emerging leader as a succession-owned quick-action state before nomination decisions", () => {
