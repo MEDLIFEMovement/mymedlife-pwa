@@ -17,11 +17,24 @@ import { redirect } from "next/navigation";
 export const metadata = getStaticRouteMetadata("profile");
 export const dynamic = "force-dynamic";
 
-export default async function ProfilePage() {
+type ProfilePageProps = {
+  searchParams?: Promise<{
+    source?: string;
+  }>;
+};
+
+function getProfileSource(source?: string): "home" | null {
+  return source === "home" ? "home" : null;
+}
+
+export default async function ProfilePage(props: ProfilePageProps = {}) {
   const [actor, data] = await Promise.all([
     getLocalActorContext(),
     getReadOnlyAppData(),
   ]);
+  const resolvedSearchParams: { source?: string } = await (
+    props.searchParams ?? Promise.resolve({})
+  );
   const workspace = getProfileWorkspace(actor, data);
   const isMemberProfile = canAccessMemberWorkspace(actor);
   const studentHome = isMemberProfile
@@ -54,6 +67,7 @@ export default async function ProfilePage() {
         <MemberProfilePanel
           chapterName={studentHome.chapterName}
           displayName={actor.user.displayName}
+          entrySource={getProfileSource(resolvedSearchParams.source)}
           workspace={workspace}
           studentHome={studentHome}
           recognition={recognition}
