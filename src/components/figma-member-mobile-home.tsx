@@ -3228,20 +3228,13 @@ function StoryModal({ story, liked, onToggleLike, closeHref }: { story: Story; l
   const previewHandle = getStoryPreviewHandle(story.chapter);
   const previewAvatarLabel = getStoryPreviewAvatarLabel(story.chapter);
   return (
-    /* ── Mobile: true full-screen story reader ── */
     <div className="fixed inset-0 z-50 flex flex-col bg-card sm:items-center sm:justify-center sm:p-6 sm:bg-foreground/40 sm:backdrop-blur-sm">
-      {/* Desktop backdrop tap-to-close */}
       <Link href={closeHref} aria-label="Close story reader" className="absolute inset-0 hidden sm:block" />
-      {/* Reader container */}
       <div className="relative w-full h-full sm:max-w-2xl sm:h-auto sm:max-h-[90vh] sm:rounded-2xl sm:shadow-2xl bg-card overflow-hidden flex flex-col z-10">
-        {/* ── Photo / video — fills ~45% on mobile ── */}
         {story.isVideo ? (
           <div className="flex-shrink-0 relative">
             <VideoPlayer story={story} />
-            <Link
-              href={closeHref}
-              className="absolute top-4 left-4 w-10 h-10 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center text-white z-10"
-            >
+            <Link href={closeHref} className="absolute top-4 left-4 w-10 h-10 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center text-white z-10">
               <ArrowLeft size={18} />
             </Link>
           </div>
@@ -3249,22 +3242,12 @@ function StoryModal({ story, liked, onToggleLike, closeHref }: { story: Story; l
           <div className="relative flex-shrink-0 bg-muted aspect-square sm:aspect-[16/9]">
             <img src={story.image} alt={story.title} className="w-full h-full object-cover" />
             <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
-
-            {/* Close */}
-            <Link
-              href={closeHref}
-              className="absolute top-4 left-4 w-10 h-10 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center text-white hover:bg-black/60 transition-colors"
-            >
+            <Link href={closeHref} className="absolute top-4 left-4 w-10 h-10 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center text-white hover:bg-black/60 transition-colors">
               <ArrowLeft size={18} />
             </Link>
-            <Link
-              href={closeHref}
-              className="absolute top-4 right-4 w-10 h-10 rounded-full bg-black/40 backdrop-blur-sm hidden sm:flex items-center justify-center text-white hover:bg-black/60 transition-colors"
-            >
+            <Link href={closeHref} className="absolute top-4 right-4 w-10 h-10 rounded-full bg-black/40 backdrop-blur-sm hidden sm:flex items-center justify-center text-white hover:bg-black/60 transition-colors">
               <X size={16} />
             </Link>
-
-            {/* Source + tag badges bottom-left of image */}
             <div className="absolute bottom-3 left-4 flex items-center gap-2 flex-wrap">
               <SourceBadge source={story.source} />
               {story.tag && <TagBadge tag={story.tag} />}
@@ -3273,24 +3256,16 @@ function StoryModal({ story, liked, onToggleLike, closeHref }: { story: Story; l
             {story.duration && <span className="absolute bottom-3 right-4 bg-black/70 text-white text-xs px-2 py-0.5 rounded" style={{ fontFamily: "'DM Mono', monospace" }}>{story.duration}</span>}
           </div>
         )}
-
-        {/* ── Scrollable story content ── */}
         <div className="flex-1 overflow-y-auto" style={{ scrollbarWidth: "none" }}>
           <div className="px-5 pt-5 pb-4 space-y-4">
             <div className="flex items-start justify-between gap-3">
               <div className="flex items-center gap-3">
-                <div
-                  className="flex h-11 w-11 items-center justify-center rounded-full text-sm font-bold text-white"
-                  style={{ background: cfg.bg.startsWith("linear") ? "#e6683c" : cfg.bg }}
-                >
+                <div className="flex h-11 w-11 items-center justify-center rounded-full text-sm font-bold text-white" style={{ background: cfg.bg.startsWith("linear") ? "#e6683c" : cfg.bg }}>
                   {previewAvatarLabel}
                 </div>
                 <div className="space-y-1 leading-tight">
                   <p className="text-sm font-semibold text-foreground">{previewHandle}</p>
-                  <div
-                    className="flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground"
-                    style={{ fontFamily: "'DM Mono', monospace" }}
-                  >
+                  <div className="flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground" style={{ fontFamily: "'DM Mono', monospace" }}>
                     <span>{cfg.label}</span>
                     <span className="opacity-30">·</span>
                     <span>{story.chapter}</span>
@@ -3301,40 +3276,24 @@ function StoryModal({ story, liked, onToggleLike, closeHref }: { story: Story; l
               </div>
               <Pill label="Preview reader" variant="gray" />
             </div>
-
-            <div
-              className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap"
-              style={{ fontFamily: "'DM Mono', monospace" }}
-            >
+            <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap" style={{ fontFamily: "'DM Mono', monospace" }}>
               <span>{story.type}</span>
               <span className="opacity-30">·</span>
               <MapPin size={10} />
               <span>{story.country}</span>
             </div>
-
-            <h2 className="text-[1.7rem] font-bold leading-snug text-foreground"
-              style={{ fontFamily: "'Playfair Display', serif" }}>
+            <h2 className="text-[1.7rem] font-bold leading-snug text-foreground" style={{ fontFamily: "'Playfair Display', serif" }}>
               {story.title}
             </h2>
-
-            <p className="text-[17px] text-foreground/80 leading-relaxed">
-              {story.caption}
-            </p>
-
+            <p className="text-[17px] text-foreground/80 leading-relaxed">{story.caption}</p>
             {story.quote && (
-              <blockquote className="border-l-4 border-primary pl-4 py-1 text-lg italic text-foreground/75 leading-relaxed"
-                style={{ fontFamily: "'Playfair Display', serif" }}>
+              <blockquote className="border-l-4 border-primary pl-4 py-1 text-lg italic text-foreground/75 leading-relaxed" style={{ fontFamily: "'Playfair Display', serif" }}>
                 {story.quote}
               </blockquote>
             )}
-
-            {story.body && (
-              <p className="text-base text-foreground/75 leading-[1.8]">{story.body}</p>
-            )}
+            {story.body && <p className="text-base text-foreground/75 leading-[1.8]">{story.body}</p>}
           </div>
         </div>
-
-        {/* ── Fixed bottom action bar ── */}
         <div className="flex-shrink-0 px-5 py-4 border-t border-border flex items-center justify-between gap-3 bg-card">
           <div className="flex items-center gap-3">
             <button
