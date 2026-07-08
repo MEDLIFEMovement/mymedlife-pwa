@@ -84,7 +84,7 @@ function getMemberEventHomeDetailHref(eventId: number) {
   return getMemberEventDetailHref(eventId).replace("source=events", "source=home");
 }
 
-type MemberLoopSource = "events" | "profile" | "points";
+type MemberLoopSource = "events" | "home" | "profile" | "points";
 
 // ─── Primitives ────────────────────────────────────────────────────────────
 
@@ -1906,21 +1906,20 @@ function PointsLeaderboard({ source }: { source: MemberLoopSource }) {
     { name: "TEST Evidence Pro", desc: "3 TEST approvals in a single week", earned: false },
     { name: "TEST Chapter MVP", desc: "Top 3 on the TEST leaderboard for 2 weeks", earned: false },
   ];
-  const previewReadback =
-    source === "events"
-      ? {
-          title: "Opened from the TEST event loop",
-          detail: "This route-backed readback keeps the RSVP, attendance, and points loop visible. Leaderboard movement, rewards, and ledger writes stay preview-only until those writes are approved.",
-        }
-      : source === "profile"
-        ? {
-            title: "Opened from your TEST profile",
-            detail: "This profile-to-points handoff stays route-backed and read-only. Recognition stays visible here while profile can hand you back into the next chapter event.",
-          }
-        : {
-            title: "Preview-only recognition readback",
-            detail: "This route shows TEST leaderboard and approved-action readback only. No live points awards, reward claims, or share sends run from this screen.",
-          };
+  const previewReadback: Record<MemberLoopSource, { title: string; detail: string }> = {
+    events: { title: "Opened from the TEST event loop", detail: "This route-backed readback keeps the RSVP, attendance, and points loop visible. Leaderboard movement, rewards, and ledger writes stay preview-only until those writes are approved." },
+    home: { title: "Opened from the TEST home walkthrough", detail: "This route-backed readback keeps the home-to-events-to-points student flow visible. Recognition stays preview-only and does not claim a live award, reward, or provider update." },
+    profile: { title: "Opened from your TEST profile", detail: "This profile-to-points handoff stays route-backed and read-only. Recognition stays visible here while profile can hand you back into the next chapter event." },
+    points: { title: "Preview-only recognition readback", detail: "This route shows TEST leaderboard and approved-action readback only. No live points awards, reward claims, or share sends run from this screen." },
+  };
+  const continuityMap: Record<MemberLoopSource, readonly [string, string, string]> = {
+    events: ["TEST points stay preview-only here, and this route keeps the event RSVP, check-in, and leaderboard handoff visible without claiming a live award sync.", "/app/events?source=points", "Back to the TEST event loop"],
+    home: ["TEST points stay preview-only here, but this route keeps the home-to-events walkthrough intact for the student shell.", "/app/events?source=home", "Continue from home into events"],
+    profile: ["TEST points stay preview-only here, and this route keeps the profile-to-recognition walkthrough read-only instead of pretending profile writes are live.", "/profile", "Back to your TEST profile"],
+    points: ["TEST points in this member shell are a read-only preview of the event, RSVP, attendance, and action loop. They do not write to a live leaderboard, rewards system, or provider integration.", "/app/events?source=points", "See how to earn more points"],
+  };
+  const preview = previewReadback[source];
+  const continuity = continuityMap[source];
 
   return (
     <div className="pb-24">
@@ -1951,9 +1950,9 @@ function PointsLeaderboard({ source }: { source: MemberLoopSource }) {
           <div className="flex items-start gap-3">
             <Shield size={18} className="text-primary flex-shrink-0 mt-0.5" />
             <div>
-              <p className="text-sm font-bold text-foreground">{previewReadback.title}</p>
+              <p className="text-sm font-bold text-foreground">{preview.title}</p>
               <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
-                {previewReadback.detail}
+                {preview.detail}
               </p>
             </div>
           </div>
@@ -2067,15 +2066,13 @@ function PointsLeaderboard({ source }: { source: MemberLoopSource }) {
             <div>
               <p className="text-sm font-bold text-foreground">How points work</p>
               <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
-                TEST points in this member shell are a read-only preview of the event, RSVP,
-                attendance, and action loop. They do not write to a live leaderboard, rewards
-                system, or provider integration.
+                {continuity[0]}
               </p>
               <Link
-                href={source === "profile" ? "/app/events?source=profile" : "/app/events?source=points"}
+                href={continuity[1]}
                 className="inline-flex text-primary text-xs font-bold mt-2"
               >
-                See how to earn more points →
+                {continuity[2]} →
               </Link>
             </div>
           </div>
@@ -2084,11 +2081,8 @@ function PointsLeaderboard({ source }: { source: MemberLoopSource }) {
     </div>
   );
 }
-
 // ─── SCREEN · Events ──────────────────────────────────────────────────────────
-
 // ─── SCREEN · Events Feed ────────────────────────────────────────────────────
-
 // ── Event + Campaign data ────────────────────────────────────────────────────
 
 type CampaignTag = "Rush Month" | "Spring Showcase" | "Safe Homes Fundraiser" | "Community Health Fair";

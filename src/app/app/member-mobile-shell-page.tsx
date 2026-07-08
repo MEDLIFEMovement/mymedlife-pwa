@@ -25,7 +25,7 @@ export async function renderMemberMobileShellPage({
   redirectPath: string;
   initialStoriesFilter?: string | null;
   initialStoryId?: string | null;
-  pointsSource?: "events" | "profile" | "points";
+  pointsSource?: "events" | "home" | "profile" | "points";
   eventsSource?: "events" | "profile" | "points";
 }) {
   const actor = await getLocalActorContext();
