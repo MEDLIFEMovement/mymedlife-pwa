@@ -50,7 +50,7 @@ export default async function AdminDesignQaPage() {
                 href="/admin/system-health"
                 className="w-fit rounded-full bg-lime-300 px-4 py-2 text-sm font-semibold text-[#13230b]"
               >
-                Open system health
+                Open system health review
               </Link>
             </div>
           </section>

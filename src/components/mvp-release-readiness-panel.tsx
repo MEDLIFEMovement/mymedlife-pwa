@@ -34,6 +34,13 @@ export function MvpReleaseReadinessPanel({
         </div>
       </div>
 
+      <div className="mt-4 flex flex-wrap gap-2">
+        <ReviewBadge label="Read-only preview" />
+        <ReviewBadge label="Blocked production writes" />
+        <ReviewBadge label="Blocked external sends" />
+        <ReviewBadge label="Source-backed review routes" />
+      </div>
+
       <div className="mt-5 grid gap-3 lg:grid-cols-2">
         <ReadinessList title="Ready for local review" items={summary.achievements} />
         <ReadinessList title="Blocked before live launch" items={summary.blockers} />
@@ -157,6 +164,14 @@ function StatusPill({ status }: { status: ReleaseReadinessStatus }) {
   return (
     <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${className}`}>
       {status.replaceAll("_", " ")}
+    </span>
+  );
+}
+
+function ReviewBadge({ label }: { label: string }) {
+  return (
+    <span className="rounded-full border border-white/10 bg-black/20 px-3 py-1 text-xs font-semibold text-rose-100/78">
+      {label}
     </span>
   );
 }
