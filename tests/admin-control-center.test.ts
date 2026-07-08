@@ -242,10 +242,14 @@ describe("admin control center", () => {
     expect(html).toContain("Read-only preview");
     expect(html).toContain("Blocked production writes");
     expect(html).toContain("Blocked external sends");
+    expect(html).toContain("Treat every route from this control center as a DS Admin review handoff.");
+    expect(html).toContain("no write, export, retry, or provider action runs from here.");
     expect(html).toContain("Open inventory review");
     expect(html).toContain("Open outbox review");
     expect(html).toContain("Open audit log review");
     expect(html).toContain("Open system health review");
+    expect(html).toContain("Inventory review remains read-only in this shell.");
+    expect(html).toContain("Review handoff only. This card keeps the route visible without implying a live admin mutation path from the overview shell.");
     expect(html).toContain(
       "Open the outbox review route for contract and zero-send checks",
     );
