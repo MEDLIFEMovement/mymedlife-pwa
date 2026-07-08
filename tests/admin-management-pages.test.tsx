@@ -54,15 +54,18 @@ describe("admin management pages", () => {
     expect(html).toContain("General Student App");
     expect(html).toContain("Promote / demote role");
     expect(html).toContain("Return to General Student App only");
-    expect(html).toContain("Deactivate user");
+    expect(html).toContain("Deactivate user blocked");
     expect(html).toContain("Delete user safeguard");
     expect(html).toContain("Audit record preview");
     expect(html).toContain("Server-backed access changes");
     expect(html).toContain("admin_change_user_access");
-    expect(html).toContain("Save chapter role");
-    expect(html).toContain("Assign staff role");
-    expect(html).toContain("Assign coach portfolio");
+    expect(html).toContain("Save chapter role blocked");
+    expect(html).toContain("Assign staff role blocked");
+    expect(html).toContain("Assign coach portfolio blocked");
     expect(html).toContain("Admin writes locked");
+    expect(html).toContain(
+      "This admin access change is blocked until audited local Supabase writes are approved.",
+    );
     expect(html).toContain("Historical event, attendance, and points records remain preserved.");
   });
 
@@ -116,17 +119,20 @@ describe("admin management pages", () => {
     expect(html).toContain("College / University Chapter");
     expect(html).toContain("Needs Review");
     expect(html).toContain("Edit chapter ownership and modules");
-    expect(html).toContain("Archive chapter");
+    expect(html).toContain("Archive chapter blocked");
     expect(html).toContain("Soft delete chapter");
     expect(html).toContain("Hard delete safeguard");
     expect(html).toContain("chapter_has_active_data");
     expect(html).toContain("Server-backed chapter changes");
     expect(html).toContain("admin_manage_chapter");
-    expect(html).toContain("Create chapter");
-    expect(html).toContain("Save chapter profile");
-    expect(html).toContain("Assign coach");
-    expect(html).toContain("Assign student leader");
+    expect(html).toContain("Create chapter blocked");
+    expect(html).toContain("Save chapter profile blocked");
+    expect(html).toContain("Assign coach blocked");
+    expect(html).toContain("Assign student leader blocked");
     expect(html).toContain("write_disabled");
+    expect(html).toContain(
+      "This chapter-management change is blocked until audited local Supabase writes are approved.",
+    );
     expect(html).toContain("Historical events, attendance, and points records must be preserved.");
   });
 

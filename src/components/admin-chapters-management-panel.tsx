@@ -674,6 +674,8 @@ function AdminChapterForm({
   returnTo?: string;
   title: string;
 }) {
+  const renderedButtonLabel = disabled ? `${buttonLabel} blocked` : buttonLabel;
+
   return (
     <form action={action} className="space-y-3 rounded border border-white/10 bg-[#161b22] p-3">
       <input name="operation" type="hidden" value={operation} />
@@ -691,8 +693,13 @@ function AdminChapterForm({
       <button
         className="w-full rounded bg-sky-500 px-3 py-2 text-sm font-semibold text-white hover:bg-sky-400 disabled:cursor-not-allowed disabled:bg-slate-700 disabled:text-slate-400"
         disabled={disabled}
+        title={
+          disabled
+            ? "This chapter-management change is blocked until audited local Supabase writes are approved."
+            : undefined
+        }
       >
-        {buttonLabel}
+        {renderedButtonLabel}
       </button>
     </form>
   );
