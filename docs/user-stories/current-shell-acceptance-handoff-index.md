@@ -15,6 +15,10 @@ based on current repo truth and the verified PR queue.
   another member shell slice should touch the same files.
 - `#521`, `#522`, `#528`, `#530`, and `#533` are clean.
 - `#524`, `#529`, and `#532` are behind-only.
+- `#523`, `#533`, `#535`, and `#536` are fully green and behind-only in the
+  latest Coordinator queue note.
+- `#534` is no longer a Codecov-red branch; treat it as behind-only/rerun-state
+  unless new checks fail.
 - Figma/exported source remains fidelity contract; repo truth remains
   implementation truth.
 
@@ -23,9 +27,11 @@ based on current repo truth and the verified PR queue.
 | Builder | Use this doc | Next action |
 | --- | --- | --- |
 | `#1` Member | `member-stories-feed-reader-delta-map.md` | After `#523`, restore Stories feed/reader source feel without fake-live social/proof behavior. |
+| `#1` Member | `member-profile-rhythm-acceptance-map.md` | Use for the next narrow profile rhythm pass: make `/profile` feel mobile/member-app native without adding profile writes. |
 | `#1` Member | `member-slt-prep-placement-map.md` | Use immediately for review of `#523`; keep `/app/slt-prep` as member-shell handoff and standalone `/slt-prep/*` as preview-safe workspace. |
-| `#2` Leader | `leader-shell-acceptance-packet.md` plus current #524/#529/#532/#533 PRs | No new broad #2 packet needed from this batch; finish/refresh active leader continuity PRs before another leader slice. |
+| `#2` Leader | `leader-shell-acceptance-packet.md` plus current leader continuity PRs | Leader guidance is now return-path and cross-route polish, not broad shell rebuild or leaderboard-first polish. |
 | `#3` Staff/Admin | `staff-admin-acceptance-contradictions-map.md` | After `#521/#522/#528/#530`, run final Staff/Admin walkthrough contradiction pass. |
+| `#3` Staff/Admin | `staff-topbar-shell-acceptance-map.md` | Use for the narrow topbar/header acceptance pass: prevent alert/account overlap while preserving source-backed staff nav. |
 | `#4` QA | all three maps plus `reviewer-decision-tree.md` | Verify shell fidelity, TEST labels, blocked controls, and no rollout-proof inflation. |
 
 ## What These Docs Change
@@ -36,6 +42,11 @@ based on current repo truth and the verified PR queue.
   either look production-live.
 - They name Staff/Admin contradictions where menu depth looks operational but
   writes/providers/launch gate remain blocked.
+- They make the member profile rhythm concern concrete without pretending there
+  is a full exported profile screen beyond the source-backed bottom-nav/profile
+  signal.
+- They make the staff topbar overlap fix concrete without turning screenshot
+  feedback into redesign permission.
 
 ## What They Do Not Change
 
