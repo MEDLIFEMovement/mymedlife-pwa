@@ -11,8 +11,8 @@ describe("leader create-event preview honesty", () => {
 
     expect(html).toContain("Create Event Preview");
     expect(html).toContain("This route stages TEST event previews only.");
-    expect(html).toContain("Preview Event Staging");
-    expect(html).toContain("Ready to preview?");
+    expect(html).toContain("Stage Event Preview");
+    expect(html).toContain("Ready to stage?");
     expect(html).toContain("Previewing on");
     expect(html).toContain("Prepare a TEST post or story preview template");
     expect(html).toContain("Preview RSVP Button");
