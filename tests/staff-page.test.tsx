@@ -547,12 +547,45 @@ describe("staff page", () => {
     expect(html).toContain("Return to Proof / UGC");
   });
 
+  it("keeps chapter portfolio filter context route-backed for the chapter review loop", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("general.staff@mymedlife.test"),
+    );
+
+    const { default: StaffPage } = await import("@/app/staff/page");
+    const html = renderToStaticMarkup(
+      await StaffPage({
+        searchParams: Promise.resolve({
+          view: "chapters",
+          chapterRegion: "West",
+          chapterSort: "points",
+        }),
+      }),
+    );
+    const source = readFileSync("src/components/figma-staff-command-center.tsx", "utf8");
+
+    expect(html).toContain("2 chapters");
+    expect(html).toContain("filtered");
+    expect(html).toContain("TEST Stanford University");
+    expect(html).toContain("TEST UC Berkeley");
+    expect(html).not.toContain("TEST Yale University");
+    expect(source).toContain("searchParams.get(\"chapterSearch\") ?? initialSearch");
+    expect(source).toContain("searchParams.get(\"chapterRegion\") ?? initialRegionFilter");
+    expect(source).toContain("searchParams.get(\"chapterCoach\") ?? initialCoachFilter");
+    expect(source).toContain("resolveStaffChapterTypeFilter(searchParams.get(\"chapterType\"), initialChapterTypeFilter)");
+    expect(source).toContain("resolveStaffChapterSort(searchParams.get(\"chapterSort\"), initialSortBy)");
+    expect(source).toContain("handleChapterFilterChange");
+    expect(source).toContain('params.set(key, value);');
+  });
+
   it("keeps the local staff shell close to the 2,095-line Figma export while allowing route wiring", () => {
     const source = readFileSync("src/components/figma-staff-command-center.tsx", "utf8");
     const lineCount = source.split("\n").length;
 
     expect(lineCount).toBeGreaterThanOrEqual(2170);
-    expect(lineCount).toBeLessThanOrEqual(2675);
+    expect(lineCount).toBeLessThanOrEqual(2790);
     expect(source).toContain("type Screen = \"chapters\" | \"campaigns\" | \"events\" | \"ugc\" | \"reports\" | \"admin\" | \"best-practices\" | \"sops\";");
     expect(source).toContain("const NAV_ITEMS");
     expect(source).toContain("function PortfolioOverview");

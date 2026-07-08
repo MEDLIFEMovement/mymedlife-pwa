@@ -62,6 +62,11 @@ export default async function StaffPage({ searchParams }: StaffPageProps) {
           chapterContext: resolvedSearchParams?.chapterContext,
           proofStatus: resolvedSearchParams?.proofStatus,
           proofPlatform: resolvedSearchParams?.proofPlatform,
+          chapterSearch: resolvedSearchParams?.chapterSearch,
+          chapterRegion: resolvedSearchParams?.chapterRegion,
+          chapterCoach: resolvedSearchParams?.chapterCoach,
+          chapterType: resolvedSearchParams?.chapterType,
+          chapterSort: resolvedSearchParams?.chapterSort,
         }}
       />
     </>

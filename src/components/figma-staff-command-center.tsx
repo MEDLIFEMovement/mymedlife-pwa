@@ -673,12 +673,29 @@ export function ChapterDetailDrawer({ chapter, onClose }: { chapter: Chapter; on
 /*  SCREEN 1 – PORTFOLIO OVERVIEW                              */
 /* ─────────────────────────────────────────────────────────── */
 
-function PortfolioOverview({ onSelectChapter }: { onSelectChapter: (c: Chapter) => void }) {
-  const [search, setSearch] = useState("");
-  const [regionFilter, setRegionFilter] = useState("all");
-  const [coachFilter, setCoachFilter] = useState("all");
-  const [chapterTypeFilter, setChapterTypeFilter] = useState<StaffLaunchChapterTypeFilter>("all");
-  const [sortBy, setSortBy] = useState<"name"|"nps"|"events"|"leads"|"leadPct"|"points">("name");
+function PortfolioOverview({
+  onSelectChapter,
+  initialSearch = "",
+  initialRegionFilter = "all",
+  initialCoachFilter = "all",
+  initialChapterTypeFilter = "all",
+  initialSortBy = "name",
+}: {
+  onSelectChapter: (c: Chapter) => void;
+  initialSearch?: string;
+  initialRegionFilter?: string;
+  initialCoachFilter?: string;
+  initialChapterTypeFilter?: StaffLaunchChapterTypeFilter;
+  initialSortBy?: "name"|"nps"|"events"|"leads"|"leadPct"|"points";
+}) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const search = searchParams.get("chapterSearch") ?? initialSearch;
+  const regionFilter = searchParams.get("chapterRegion") ?? initialRegionFilter;
+  const coachFilter = searchParams.get("chapterCoach") ?? initialCoachFilter;
+  const chapterTypeFilter = resolveStaffChapterTypeFilter(searchParams.get("chapterType"), initialChapterTypeFilter);
+  const sortBy = resolveStaffChapterSort(searchParams.get("chapterSort"), initialSortBy);
   const [showSurvey, setShowSurvey] = useState(false);
 
   const REGIONS = ["New England", "Mid Atlantic", "South", "Midwest", "West", "Puerto Rico", "UK", "Canada", "International"];
@@ -701,6 +718,28 @@ function PortfolioOverview({ onSelectChapter }: { onSelectChapter: (c: Chapter) 
   }, [search, regionFilter, coachFilter, chapterTypeFilter, sortBy]);
 
   const avgEventsPerMonth = (CHAPTERS.reduce((a,c) => a + c.eventsThisMonth, 0) / CHAPTERS.length).toFixed(1);
+  const handleChapterFilterChange = (updates: Partial<Record<"chapterSearch" | "chapterRegion" | "chapterCoach" | "chapterType" | "chapterSort", string>>) => {
+    const params = new URLSearchParams(searchParams.toString());
+
+    const applyValue = (key: "chapterSearch" | "chapterRegion" | "chapterCoach" | "chapterType" | "chapterSort", defaultValue: string) => {
+      const value = updates[key];
+      if (value === undefined) return;
+      if (!value || value === defaultValue) {
+        params.delete(key);
+      } else {
+        params.set(key, value);
+      }
+    };
+
+    applyValue("chapterSearch", "");
+    applyValue("chapterRegion", "all");
+    applyValue("chapterCoach", "all");
+    applyValue("chapterType", "all");
+    applyValue("chapterSort", "name");
+
+    const query = params.toString();
+    router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
+  };
 
   return (
     <div className="flex flex-col gap-5">
@@ -714,13 +753,13 @@ function PortfolioOverview({ onSelectChapter }: { onSelectChapter: (c: Chapter) 
       <div className="bg-white rounded-xl border border-border p-3 flex items-center gap-3 flex-wrap">
         <div className="flex items-center gap-2 flex-1 min-w-44 bg-muted/60 rounded-lg px-3 py-2">
           <Search className="w-3.5 h-3.5 text-muted-foreground" />
-          <input value={search} onChange={e => setSearch(e.target.value)}
+          <input value={search} onChange={e => handleChapterFilterChange({ chapterSearch: e.target.value })}
             placeholder="Search chapter or school…"
             className="bg-transparent text-sm flex-1 outline-none placeholder:text-muted-foreground" />
-          {search && <button onClick={() => setSearch("")}><X className="w-3 h-3 text-muted-foreground" /></button>}
+          {search && <button onClick={() => handleChapterFilterChange({ chapterSearch: "" })}><X className="w-3 h-3 text-muted-foreground" /></button>}
         </div>
         <div className="relative">
-          <select value={regionFilter} onChange={e => setRegionFilter(e.target.value)}
+          <select value={regionFilter} onChange={e => handleChapterFilterChange({ chapterRegion: e.target.value })}
             className="bg-muted/60 text-sm px-3 py-2 rounded-lg pr-7 appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/20 font-medium text-foreground">
             <option value="all">All Regions</option>
             {REGIONS.map(r => <option key={r} value={r}>{r}</option>)}
@@ -728,7 +767,7 @@ function PortfolioOverview({ onSelectChapter }: { onSelectChapter: (c: Chapter) 
           <ChevronDown className="w-3.5 h-3.5 absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
         </div>
         <div className="relative">
-          <select value={coachFilter} onChange={e => setCoachFilter(e.target.value)}
+          <select value={coachFilter} onChange={e => handleChapterFilterChange({ chapterCoach: e.target.value })}
             className="bg-muted/60 text-sm px-3 py-2 rounded-lg pr-7 appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/20 font-medium text-foreground">
             <option value="all">All Coaches</option>
             {coaches.filter(o => o !== "all").map(o => <option key={o} value={o}>{o}</option>)}
@@ -736,14 +775,14 @@ function PortfolioOverview({ onSelectChapter }: { onSelectChapter: (c: Chapter) 
           <ChevronDown className="w-3.5 h-3.5 absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
         </div>
         <div className="relative">
-          <select value={chapterTypeFilter} onChange={e => setChapterTypeFilter(e.target.value as StaffLaunchChapterTypeFilter)}
+          <select value={chapterTypeFilter} onChange={e => handleChapterFilterChange({ chapterType: e.target.value })}
             className="bg-muted/60 text-sm px-3 py-2 rounded-lg pr-7 appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/20 font-medium text-foreground">
             {staffChapterTypeFilterOptions.map(type => <option key={type} value={type}>{getStaffChapterTypeFilterLabel(type)}</option>)}
           </select>
           <ChevronDown className="w-3.5 h-3.5 absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
         </div>
         <div className="relative">
-          <select value={sortBy} onChange={e => setSortBy(e.target.value as typeof sortBy)}
+          <select value={sortBy} onChange={e => handleChapterFilterChange({ chapterSort: e.target.value })}
             className="bg-muted/60 text-sm px-3 py-2 rounded-lg pr-7 appearance-none cursor-pointer focus:outline-none font-medium text-foreground">
             <option value="name">Sort: Name</option>
             <option value="nps">Sort: NPS ↓</option>
@@ -2228,7 +2267,7 @@ type FigmaStaffCommandCenterProps = {
   initialCampaign?: string | null;
   initialRouteParams?: Partial<
     Record<
-      "view" | "campaign" | "chapter" | "ugcCard" | "returnView" | "chapterContext" | "proofStatus" | "proofPlatform",
+      "view" | "campaign" | "chapter" | "ugcCard" | "returnView" | "chapterContext" | "proofStatus" | "proofPlatform" | "chapterSearch" | "chapterRegion" | "chapterCoach" | "chapterType" | "chapterSort",
       string | null | undefined
     >
   >;
@@ -2244,7 +2283,7 @@ export function FigmaStaffCommandCenter({
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const getRouteParam = (
-    key: "view" | "campaign" | "chapter" | "ugcCard" | "returnView" | "chapterContext" | "proofStatus" | "proofPlatform",
+    key: "view" | "campaign" | "chapter" | "ugcCard" | "returnView" | "chapterContext" | "proofStatus" | "proofPlatform" | "chapterSearch" | "chapterRegion" | "chapterCoach" | "chapterType" | "chapterSort",
   ) =>
     searchParams.get(key) ?? initialRouteParams?.[key] ?? null;
   const activeScreen = resolveStaffShellScreen(getRouteParam("view") ?? initialView ?? null);
@@ -2261,6 +2300,11 @@ export function FigmaStaffCommandCenter({
   const adminBackLabel = getStaffAdminReturnLabel(adminReturnScreen, adminReturnChapterId);
   const initialProofStatusFilter = resolveProofQueueStatusFilter(getRouteParam("proofStatus"));
   const initialProofPlatformFilter = resolveProofQueuePlatformFilter(getRouteParam("proofPlatform"));
+  const initialChapterSearch = getRouteParam("chapterSearch") ?? "";
+  const initialChapterRegionFilter = getRouteParam("chapterRegion") ?? "all";
+  const initialChapterCoachFilter = getRouteParam("chapterCoach") ?? "all";
+  const initialChapterTypeFilter = resolveStaffChapterTypeFilter(getRouteParam("chapterType"));
+  const initialChapterSort = resolveStaffChapterSort(getRouteParam("chapterSort"));
 
   // SOP Builder sub-navigation
   const [sopView, setSopView] = useState<"library" | "builder">("library");
@@ -2394,7 +2438,16 @@ export function FigmaStaffCommandCenter({
         {/* All other non-admin, non-SOP screens */}
         {activeScreen !== "sops" && activeScreen !== "admin" && (
           <div className="px-6 py-5 max-w-[1600px] mx-auto w-full">
-            {activeScreen === "chapters" && <PortfolioOverview onSelectChapter={handleSelectChapter} />}
+            {activeScreen === "chapters" && (
+              <PortfolioOverview
+                onSelectChapter={handleSelectChapter}
+                initialSearch={initialChapterSearch}
+                initialRegionFilter={initialChapterRegionFilter}
+                initialCoachFilter={initialChapterCoachFilter}
+                initialChapterTypeFilter={initialChapterTypeFilter}
+                initialSortBy={initialChapterSort}
+              />
+            )}
             {activeScreen === "events" && <StaffLaunchEventsOperations chapters={CHAPTERS} />}
             {activeScreen === "reports" && <StaffLaunchOrganizationLeaderboard chapters={CHAPTERS} />}
             {activeScreen === "campaigns" && <CampaignOps initialCampaign={initialCampaign} />}
@@ -2462,6 +2515,24 @@ function resolveStaffShellScreen(view: string | null): Screen {
 
 function resolveStaffAdminReturnScreen(view: string | null): Extract<Screen, "chapters" | "ugc"> {
   return resolveStaffShellScreen(view) === "ugc" ? "ugc" : "chapters";
+}
+
+function resolveStaffChapterTypeFilter(
+  value: string | null | undefined,
+  fallback: StaffLaunchChapterTypeFilter = "all",
+): StaffLaunchChapterTypeFilter {
+  return staffChapterTypeFilterOptions.includes(value as StaffLaunchChapterTypeFilter)
+    ? (value as StaffLaunchChapterTypeFilter)
+    : fallback;
+}
+
+function resolveStaffChapterSort(
+  value: string | null | undefined,
+  fallback: "name" | "nps" | "events" | "leads" | "leadPct" | "points" = "name",
+) {
+  return value === "nps" || value === "events" || value === "leads" || value === "leadPct" || value === "points" || value === "name"
+    ? value
+    : fallback;
 }
 
 function resolveProofQueueStatusFilter(
