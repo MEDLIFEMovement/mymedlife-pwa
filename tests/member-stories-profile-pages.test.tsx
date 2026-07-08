@@ -39,6 +39,16 @@ function getSignedInActor(email: string) {
   );
 }
 
+function getSignedOutActor(email: string) {
+  return getMockLocalActorContext(
+    email,
+    "Using signed-out test actor.",
+    "local_actor_email",
+    "local_actor_email",
+    "signed_out",
+  );
+}
+
 describe("member stories and profile pages", () => {
   it("renders the route-backed stories surface with blocked publishing controls", async () => {
     const actorModule = await import("@/services/local-actor-context");
@@ -145,6 +155,55 @@ describe("member stories and profile pages", () => {
     expect(html).toContain('href="/app/points?source=profile"');
     expect(html).toContain('href="/profile"');
     expect(html).toContain('aria-current="page"');
+  });
+
+  it("redirects signed-out actors to login before rendering the member profile shell", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const dataModule = await import("@/services/read-only-app-data");
+    const navigationModule = await import("next/navigation");
+    const redirectError = new Error("redirect:/login");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedOutActor("member.a@mymedlife.test"),
+    );
+    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
+      getMockReadOnlyAppData("Testing member profile login redirect."),
+    );
+    vi.mocked(navigationModule.redirect).mockImplementation(() => {
+      throw redirectError;
+    });
+
+    const { default: ProfilePage } = await import("@/app/profile/page");
+    await expect(ProfilePage({})).rejects.toBe(redirectError);
+
+    expect(vi.mocked(navigationModule.redirect)).toHaveBeenCalledWith(
+      "/login?redirectTo=%2Fprofile",
+    );
+  });
+
+  it("redirects non-member actors away from the member profile shell", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const dataModule = await import("@/services/read-only-app-data");
+    const navigationModule = await import("next/navigation");
+    const visibilityModule = await import("@/services/role-visibility");
+    const redirectError = new Error("redirect:/staff");
+    const accessSpy = vi.spyOn(visibilityModule, "canAccessMemberWorkspace").mockReturnValue(false);
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("admin@mymedlife.test"),
+    );
+    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
+      getMockReadOnlyAppData("Testing member profile role redirect."),
+    );
+    vi.mocked(navigationModule.redirect).mockImplementation(() => {
+      throw redirectError;
+    });
+
+    const { default: ProfilePage } = await import("@/app/profile/page");
+    await expect(ProfilePage({})).rejects.toBe(redirectError);
+
+    expect(vi.mocked(navigationModule.redirect)).toHaveBeenCalledWith("/staff?view=chapters");
+    accessSpy.mockRestore();
   });
 
   it("keeps the home-to-profile walkthrough explicit when the member shell opens profile from home", async () => {
