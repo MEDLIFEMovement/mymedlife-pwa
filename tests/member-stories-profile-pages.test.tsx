@@ -43,7 +43,7 @@ function getSignedOutActor(email: string) {
   return getMockLocalActorContext(
     email,
     "Using signed-out test actor.",
-    "local_actor_email",
+    "mock_fallback",
     "local_actor_email",
     "signed_out",
   );
@@ -126,6 +126,10 @@ describe("member stories and profile pages", () => {
   it("keeps profile route-backed and explicitly read-only", async () => {
     const actorModule = await import("@/services/local-actor-context");
     const dataModule = await import("@/services/read-only-app-data");
+    const previewModule = await import("@/services/workspace-access");
+    const previewSpy = vi
+      .spyOn(previewModule, "isPreviewWorkspaceAccess")
+      .mockReturnValue(true);
 
     vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
       getSignedInActor("member.a@mymedlife.test"),
@@ -142,6 +146,7 @@ describe("member stories and profile pages", () => {
     expect(html).toContain("TEST UCLA MEDLIFE");
     expect(html).toContain("TEST Rush Month kickoff social");
     expect(html).toContain("Read-only profile");
+    expect(html).toContain("Preview Mode — read-only");
     expect(html).toContain("No profile save runs from this route.");
     expect(html).toContain("No join request, role approval, membership change, or coach assignment runs from this route.");
     expect(html).toContain("max-w-[430px]");
@@ -155,6 +160,8 @@ describe("member stories and profile pages", () => {
     expect(html).toContain('href="/app/points?source=profile"');
     expect(html).toContain('href="/profile"');
     expect(html).toContain('aria-current="page"');
+
+    previewSpy.mockRestore();
   });
 
   it("redirects signed-out actors to login before rendering the member profile shell", async () => {
@@ -204,6 +211,38 @@ describe("member stories and profile pages", () => {
 
     expect(vi.mocked(navigationModule.redirect)).toHaveBeenCalledWith("/staff?view=chapters");
     accessSpy.mockRestore();
+  });
+
+  it("keeps the member-mobile frame even when preview chrome and profile readbacks stay unavailable", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const dataModule = await import("@/services/read-only-app-data");
+    const homeModule = await import("@/services/mvp-event-tracking-workspace");
+    const previewModule = await import("@/services/workspace-access");
+
+    const homeSpy = vi
+      .spyOn(homeModule, "getMvpMemberHome")
+      .mockReturnValue(null as never);
+    const previewSpy = vi
+      .spyOn(previewModule, "isPreviewWorkspaceAccess")
+      .mockReturnValue(false);
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("member.a@mymedlife.test"),
+    );
+    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
+      getMockReadOnlyAppData("Testing member profile fallback shell."),
+    );
+
+    const { default: ProfilePage } = await import("@/app/profile/page");
+    const html = renderToStaticMarkup(await ProfilePage({}));
+
+    expect(html).toContain("max-w-[430px]");
+    expect(html).toContain('aria-label="Member bottom navigation"');
+    expect(html).not.toContain("Preview Mode — read-only");
+    expect(html).not.toContain("Read-only profile");
+
+    homeSpy.mockRestore();
+    previewSpy.mockRestore();
   });
 
   it("keeps the home-to-profile walkthrough explicit when the member shell opens profile from home", async () => {
