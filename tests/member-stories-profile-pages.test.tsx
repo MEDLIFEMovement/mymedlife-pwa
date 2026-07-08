@@ -141,10 +141,15 @@ describe("member stories and profile pages", () => {
     const { default: ProfilePage } = await import("@/app/profile/page");
     const html = renderToStaticMarkup(await ProfilePage({}));
 
-    expect(html).toContain("Hi, TEST Sofia");
     expect(html).toContain("TEST Sofia Alvarez");
     expect(html).toContain("TEST UCLA MEDLIFE");
     expect(html).toContain("TEST Rush Month kickoff social");
+    expect(html).toContain("TEST member ID");
+    expect(html).toContain("Profile Details");
+    expect(html).toContain("Achievements");
+    expect(html).toContain("Recent Activity");
+    expect(html).toContain("Your Designation");
+    expect(html).toContain("Settings");
     expect(html).toContain("Read-only profile");
     expect(html).toContain("Preview Mode — read-only");
     expect(html).toContain("No profile save runs from this route.");
@@ -153,8 +158,10 @@ describe("member stories and profile pages", () => {
     expect(html).toContain("bg-[#d6e0f0]");
     expect(html).toContain('href="/app"');
     expect(html).toContain('aria-label="Member bottom navigation"');
-    expect(html).toContain("Back to Home");
-    expect(html).toContain('href="/app/stories"');
+    expect(html).toContain("Open events");
+    expect(html).toContain("Open points");
+    expect(html).toContain("Sign out");
+    expect(html).toContain("Sign-out stays in the account menu for this preview shell.");
     expect(html).toContain('href="/app/stories"');
     expect(html).toContain('href="/app/events?source=profile"');
     expect(html).toContain('href="/app/points?source=profile"');
@@ -374,6 +381,8 @@ describe("member stories and profile pages", () => {
     expect(html).toContain("Back to Home");
     expect(html).toContain('href="/app"');
     expect(html).toContain("Open events");
+    expect(html).toContain("Sign out");
+    expect(html).toContain("TEST member ID");
     expect(html).toContain("member.a@mymedlife.test");
     expect(html).toContain("None");
   });
