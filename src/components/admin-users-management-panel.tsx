@@ -600,6 +600,8 @@ function AdminAccessFormShell({
   returnTo: string;
   selectedUser: ManagedUser;
 }) {
+  const renderedButtonLabel = disabled ? `${buttonLabel} blocked` : buttonLabel;
+
   return (
     <form action={submitAdminUserAccessAction} className="rounded border border-white/10 bg-[#0d1117] p-3">
       <input type="hidden" name="operation" value={operation} />
@@ -630,9 +632,14 @@ function AdminAccessFormShell({
         <button
           className="rounded bg-sky-500 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-400 disabled:cursor-not-allowed disabled:bg-white/10 disabled:text-slate-500"
           disabled={disabled}
+          title={
+            disabled
+              ? "This admin access change is blocked until audited local Supabase writes are approved."
+              : undefined
+          }
           type="submit"
         >
-          {buttonLabel}
+          {renderedButtonLabel}
         </button>
       </div>
     </form>
