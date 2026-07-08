@@ -169,7 +169,7 @@ describe("chapter leader command center", () => {
     expect(markup).not.toContain("Impact signals");
     expect(markup).not.toContain("Leadership pipeline");
     expect(markup).not.toContain("Bridge stories");
-    expect(markup.match(/>Create Event</g)?.length).toBe(2);
+    expect(markup.match(/>Create Event</g)?.length).toBe(3);
     expect(markup.match(/>Confirm Attendance</g)?.length).toBe(2);
     expect(markup.indexOf("Create Event")).toBeLessThan(markup.indexOf("Chapter Metrics"));
     expect(markup.indexOf("Confirm Attendance")).toBeLessThan(markup.indexOf("Chapter Metrics"));
@@ -345,22 +345,22 @@ describe("chapter leader command center", () => {
         "Member Profile",
         "Event Committees",
         "Event Performance",
-        "Create Event Preview",
+        "Create Event",
         "Impact",
         "Bridge Videos",
         "MEDLIFE Stories",
         "Current Leaders",
         "Succession",
-        "MEDLIFE Values",
+        "Values",
         "Leadership Training",
         "Feed Analytics",
       ]),
     );
     expect(markup).not.toContain("Preview Surfaces");
-    expect(markup).toContain("Create Event Preview");
+    expect(markup).toContain("Create Event");
     expect(markup).toContain("MEDLIFE Stories");
     expect(markup).toContain("Current Leaders");
-    expect(markup).toContain("MEDLIFE Values");
+    expect(markup).toContain("Values");
     expect(markup).toContain("Leadership Training");
   });
 

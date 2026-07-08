@@ -110,8 +110,8 @@ describe("leader page", () => {
     expect(html).toContain("Bridge Videos");
     expect(html).toContain("Current Leaders");
     expect(html).toContain("Event Operations");
-    expect(html).toContain("Create Event Preview");
-    expect(html).toContain("MEDLIFE Values");
+    expect(html).toContain("Create Event");
+    expect(html).toContain("Values");
     expect(html).toContain("Leadership Training");
     expect(html).not.toContain("Preview Surfaces");
     expect(html).not.toContain("Proof Review");
@@ -204,6 +204,28 @@ describe("leader page", () => {
     );
 
     expect(html).toContain(expectedCopy);
+  });
+
+  it("canonicalizes create-event aliases into the restored service-backed leader route family", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const dataModule = await import("@/services/read-only-app-data");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("leader.a@mymedlife.test"),
+    );
+    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
+      getMockReadOnlyAppData("Testing canonical leader route redirect."),
+    );
+
+    const { default: LeaderPage } = await import("@/app/leader/page");
+
+    await expect(
+      LeaderPage({
+        searchParams: Promise.resolve({
+          view: "create-event",
+        }),
+      }),
+    ).rejects.toThrow("NEXT_REDIRECT:/leader?view=create_event");
   });
 
   it.each([

@@ -83,11 +83,12 @@ export function getLeaderLaunchLaneCanonicalHref(
     return null;
   }
 
-  const normalizedView = requestedView.toLowerCase().replace(/[\s-]+/g, "_");
+  const trimmedRequestedView = requestedView.trim();
+  const normalizedView = trimmedRequestedView.toLowerCase().replace(/[\s-]+/g, "_");
   const resolvedScreen = resolveLeaderCommandCenterScreen(normalizedView);
   const canonicalView = getLeaderCommandCenterViewForScreen(resolvedScreen);
 
-  if (normalizedView === canonicalView) {
+  if (trimmedRequestedView === canonicalView) {
     return null;
   }
 
