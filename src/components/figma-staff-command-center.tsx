@@ -645,8 +645,13 @@ export function ChapterDetailDrawer({ chapter, onClose }: { chapter: Chapter; on
           >
             <Star className="w-3.5 h-3.5" /> Preview NPS Survey
           </button>
-          <a href="/staff?view=admin&adminView=chapters" title="Open the embedded Admin preview for DS directory and audit review" className="rounded-lg bg-muted px-3 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-muted/70">
-            Admin review
+          <a
+            href="/staff?view=admin&adminView=chapters"
+            title="Open the embedded Admin preview for DS directory and audit review"
+            className="flex items-center gap-1.5 rounded-lg bg-muted px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted/70"
+          >
+            <Shield className="w-3.5 h-3.5" />
+            <span>Admin review</span>
           </a>
         </div>
       </div>
@@ -1620,7 +1625,7 @@ function ProofUGCQueue() {
                   ))}
                 </div>
                 <p className="text-[10px] text-amber-700 mt-2 leading-relaxed">
-                  Share targets stay visible for moderation review. Next step: finish consent and coach context here, then open Admin review for audit and blocked-control posture before any publishing request.
+                  Share targets stay visible for moderation review. Next step: finish consent and coach context here, then open Admin preview for DS audit readback and blocked-control posture before any publishing request.
                 </p>
               </div>
 
@@ -1661,7 +1666,7 @@ function ProofUGCQueue() {
               <Eye className="w-5 h-5 text-muted-foreground" />
             </div>
             <div className="text-sm font-semibold text-foreground mb-1">Select a story to review</div>
-            <div className="text-xs text-muted-foreground leading-relaxed">Click any card to review consent and blocked actions, or use the Admin tab for DS preview.</div>
+            <div className="text-xs text-muted-foreground leading-relaxed">Click any card to review consent and blocked actions, or open the Admin preview for DS audit readback.</div>
           </div>
         )}
 
