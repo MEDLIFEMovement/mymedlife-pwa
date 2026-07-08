@@ -446,16 +446,30 @@ export function ChapterDetailDrawer({
   chapter,
   onClose,
   adminPreviewHref,
+  proofQueueContext,
+  proofQueueReturnHref,
 }: {
   chapter: Chapter;
   onClose: () => void;
   adminPreviewHref?: string;
+  proofQueueContext?: string | null;
+  proofQueueReturnHref?: string | null;
 }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [showSurvey, setShowSurvey] = useState(false);
   const chapterReturnLabel = `Return to ${chapter.name}`;
   const chapterReturnTitle = `Return to ${chapter.name} in the same chapters review loop after this preview readback`;
+  const resolvedProofQueueContext =
+    proofQueueContext ??
+    getEmbeddedProofQueueContext(
+      searchParams.get("proofStatus"),
+      searchParams.get("proofPlatform"),
+    );
+  const resolvedProofQueueReturnHref = proofQueueReturnHref ??
+    (resolvedProofQueueContext
+      ? buildStaffProofHref(pathname, searchParams.toString())
+      : null);
   const resolvedAdminPreviewHref =
     adminPreviewHref ??
     buildStaffChapterAdminHref(
@@ -652,6 +666,11 @@ export function ChapterDetailDrawer({
             <p className="mt-2 text-[10px] leading-relaxed text-amber-700">
               Chapter support notes stay visible for coach review. Next step: open the Admin preview for DS directory readback, audit, and blocked-control follow-through before requesting any write path. Return to this chapter in the same Command Center loop after the Admin readback closes.
             </p>
+            {resolvedProofQueueContext ? (
+              <p className="mt-1 text-[10px] leading-relaxed text-slate-600">
+                {`Oversight loop: return to Proof / UGC (${resolvedProofQueueContext}) after this chapter review to keep the same moderation queue in focus.`}
+              </p>
+            ) : null}
           </div>
         </div>
 
@@ -675,6 +694,16 @@ export function ChapterDetailDrawer({
             <Shield className="w-3.5 h-3.5" />
             <span>Open Admin preview</span>
           </a>
+          {resolvedProofQueueReturnHref ? (
+            <a
+              href={resolvedProofQueueReturnHref}
+              title={`Return to Proof / UGC (${resolvedProofQueueContext}) after this chapter review pass.`}
+              className="flex items-center gap-1.5 rounded-lg border border-border bg-slate-50 px-3 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-100"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              <span>Return to Proof / UGC</span>
+            </a>
+          ) : null}
           <button
             onClick={onClose}
             title={chapterReturnTitle}
@@ -2396,6 +2425,11 @@ export function FigmaStaffCommandCenter({
   const initialChapterTypeFilter = resolveStaffChapterTypeFilter(getRouteParam("chapterType"));
   const initialChapterSort = resolveStaffChapterSort(getRouteParam("chapterSort"));
   const initialRouteSearch = buildStaffShellQueryFromInitialRouteParams(initialRouteParams);
+  const currentRouteSearch = searchParams.toString() || initialRouteSearch;
+  const chapterDrawerProofQueueContext =
+    activeScreen === "chapters"
+      ? getEmbeddedProofQueueContext(getRouteParam("proofStatus"), getRouteParam("proofPlatform"))
+      : null;
 
   // SOP Builder sub-navigation
   const [sopView, setSopView] = useState<"library" | "builder">("library");
@@ -2406,7 +2440,7 @@ export function FigmaStaffCommandCenter({
   const isEmbeddedAdminOpen = activeScreen === "admin" && Boolean(adminRole) && canAccessAdminPanel;
 
   const handleSelectChapter = (ch: Chapter) => {
-    router.replace(buildStaffChapterHref(ch.id, pathname, searchParams.toString()), { scroll: false });
+    router.replace(buildStaffChapterHref(ch.id, pathname, currentRouteSearch), { scroll: false });
   };
 
   const handleNavChange = (key: Screen) => {
@@ -2592,8 +2626,14 @@ export function FigmaStaffCommandCenter({
                 selectedChapter.id,
                 selectedChapter.name,
                 pathname,
-                searchParams.toString() || initialRouteSearch,
+                currentRouteSearch,
               )}
+              proofQueueContext={chapterDrawerProofQueueContext}
+              proofQueueReturnHref={
+                chapterDrawerProofQueueContext
+                  ? buildStaffProofHref(pathname, currentRouteSearch)
+                  : null
+              }
             />
           </div>
         </>

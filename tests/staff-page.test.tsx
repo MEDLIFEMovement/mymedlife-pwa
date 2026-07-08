@@ -741,11 +741,38 @@ describe("staff page", () => {
     const source = readFileSync("src/components/figma-staff-command-center.tsx", "utf8");
 
     expect(html).toContain('href="/staff?view=admin&amp;chapter=ch13&amp;adminView=chapters&amp;returnView=chapters&amp;chapterContext=TEST+Stanford+University"');
-    expect(html).not.toContain("proofStatus=pending");
-    expect(html).not.toContain("proofPlatform=instagram");
     expect(source).toContain('params.delete("ugcCard");');
     expect(source).toContain('params.delete("proofStatus");');
     expect(source).toContain('params.delete("proofPlatform");');
+  });
+
+  it("keeps a proof queue return path visible when a chapter drawer opens from Proof / UGC context", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("general.staff@mymedlife.test"),
+    );
+
+    const { default: StaffPage } = await import("@/app/staff/page");
+    const html = renderToStaticMarkup(
+      await StaffPage({
+        searchParams: Promise.resolve({
+          view: "chapters",
+          chapter: "ch13",
+          proofStatus: "pending",
+          proofPlatform: "instagram",
+        }),
+      }),
+    );
+    const source = readFileSync("src/components/figma-staff-command-center.tsx", "utf8");
+
+    expect(html).toContain("Oversight loop: return to Proof / UGC (Pending · Instagram) after this chapter review to keep the same moderation queue in focus.");
+    expect(html).toContain('href="/staff?view=proof_ugc&amp;proofStatus=pending&amp;proofPlatform=instagram"');
+    expect(html).toContain("Return to Proof / UGC");
+    expect(source).toContain("const resolvedProofQueueContext =");
+    expect(source).toContain("const resolvedProofQueueReturnHref = proofQueueReturnHref ??");
+    expect(source).toContain("const currentRouteSearch = searchParams.toString() || initialRouteSearch;");
+    expect(source).toContain("proofQueueContext={chapterDrawerProofQueueContext}");
   });
 
   it("shares account-menu clearance with the staff header and truncates the alert pill before the profile chip", () => {
@@ -764,7 +791,7 @@ describe("staff page", () => {
     const lineCount = source.split("\n").length;
 
     expect(lineCount).toBeGreaterThanOrEqual(2170);
-    expect(lineCount).toBeLessThanOrEqual(3010);
+    expect(lineCount).toBeLessThanOrEqual(3040);
     expect(source).toContain("type Screen = \"chapters\" | \"campaigns\" | \"events\" | \"ugc\" | \"reports\" | \"admin\" | \"best-practices\" | \"sops\";");
     expect(source).toContain("const NAV_ITEMS");
     expect(source).toContain("function PortfolioOverview");
