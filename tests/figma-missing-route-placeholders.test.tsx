@@ -204,6 +204,10 @@ describe("Figma missing route placeholders", () => {
     expect(html).toContain("Embedded Chapter Review");
     expect(html).toContain("Chapter review");
     expect(html).toContain("Return with Command Center after this chapter review pass");
+    expect(html).toContain("Command Center continuity");
+    expect(html).toContain("Chapter review stays in the same command-center loop.");
+    expect(html).toContain("This Admin preview opened from the Staff chapter drawer.");
+    expect(html).toContain("Chapter writes, owner changes, provider syncs, and secrets actions remain blocked from this embedded Admin route.");
     expect(html).toContain("Overview");
     expect(html).toContain("Users");
     expect(html).toContain("Chapters");
@@ -234,6 +238,10 @@ describe("Figma missing route placeholders", () => {
     expect(html).toContain("Embedded Proof Review");
     expect(html).toContain("Proof review");
     expect(html).toContain("Return with Command Center after this Proof / UGC review pass");
+    expect(html).toContain("Command Center continuity");
+    expect(html).toContain("Proof / UGC review stays in the same command-center loop.");
+    expect(html).toContain("This Admin preview opened from the Staff Proof / UGC queue.");
+    expect(html).toContain("Publishing, moderation saves, provider syncs, and secrets actions remain blocked from this embedded Admin route.");
     expect(html).toContain("Audit Logs");
     expect(html).toContain("MCP Connections");
   });

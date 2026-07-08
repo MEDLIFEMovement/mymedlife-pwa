@@ -342,6 +342,16 @@ function Sidebar({
   );
 }
 
+type EmbeddedAdminReviewCopy = {
+  badge: string;
+  label: string;
+  footer: string;
+  tag: string;
+  title: string;
+  summary: string;
+  blockedNote: string;
+};
+
 function getEmbeddedAdminReviewCopy(backLabel: string) {
   const normalized = backLabel.trim().toLowerCase();
 
@@ -352,6 +362,11 @@ function getEmbeddedAdminReviewCopy(backLabel: string) {
       footer:
         "Return with Command Center after this Proof / UGC review pass, or use the top-right menu to switch workspaces or log out.",
       tag: "Proof review",
+      title: "Proof / UGC review stays in the same command-center loop.",
+      summary:
+        "This Admin preview opened from the Staff Proof / UGC queue. Review DS audit posture, seeded directory readback, and blocked controls here, then return to Proof / UGC without leaving the moderation walkthrough.",
+      blockedNote:
+        "Publishing, moderation saves, provider syncs, and secrets actions remain blocked from this embedded Admin route.",
     };
   }
 
@@ -362,6 +377,11 @@ function getEmbeddedAdminReviewCopy(backLabel: string) {
       footer:
         "Return with Command Center after this chapter review pass, or use the top-right menu to switch workspaces or log out.",
       tag: "Chapter review",
+      title: "Chapter review stays in the same command-center loop.",
+      summary:
+        "This Admin preview opened from the Staff chapter drawer. Review DS directory posture, audit readback, and blocked admin controls here, then return to the same chapter without losing the portfolio walkthrough.",
+      blockedNote:
+        "Chapter writes, owner changes, provider syncs, and secrets actions remain blocked from this embedded Admin route.",
     };
   }
 
@@ -371,7 +391,30 @@ function getEmbeddedAdminReviewCopy(backLabel: string) {
     footer:
       "Return with Command Center after this review pass, or use the top-right menu to switch workspaces or log out.",
     tag: "Staff review",
+    title: "This Admin preview stays tied to the staff review route.",
+    summary:
+      "Review DS posture, seeded readback, and blocked controls here, then return to the Staff Command Center without leaving the same walkthrough.",
+    blockedNote:
+      "Writes, provider syncs, and secrets actions remain blocked from this embedded Admin route.",
   };
+}
+
+function EmbeddedReviewBanner({ copy }: { copy: EmbeddedAdminReviewCopy }) {
+  return (
+    <div className="border-b border-sky-500/10 bg-sky-500/6 px-6 py-3">
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="inline-flex items-center rounded-full border border-sky-500/15 bg-sky-500/10 px-2 py-0.5 text-[9px] font-mono uppercase tracking-[0.14em] text-sky-300">
+          {copy.badge}
+        </span>
+        <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-sky-200">
+          Command Center continuity
+        </span>
+      </div>
+      <div className="mt-2 text-[13px] font-semibold text-white">{copy.title}</div>
+      <p className="mt-1 text-[12px] leading-relaxed text-slate-400">{copy.summary}</p>
+      <p className="mt-1 text-[11px] leading-relaxed text-amber-300/90">{copy.blockedNote}</p>
+    </div>
+  );
 }
 
 function Header({ title, subtitle, isEmbeddedPreview = false }: { title: string; subtitle?: string; isEmbeddedPreview?: boolean }) {
@@ -3854,6 +3897,7 @@ export function FigmaAdminPanel({
   const routeActive = routeActiveParam ? resolveAdminShellView(routeActiveParam) : null;
   const active = routeActive ?? resolveAdminShellView(initialActive);
   const page = PAGES[active] ?? PAGES.overview;
+  const embeddedReviewCopy = onBack ? getEmbeddedAdminReviewCopy(embeddedBackLabel) : null;
 
   const handleNav = (id: string) => {
     router.replace(buildAdminShellHref(id, pathname, searchParams.toString()), {
@@ -3884,6 +3928,7 @@ export function FigmaAdminPanel({
       <Sidebar active={active} onNav={handleNav} onBack={onBack} backLabel={embeddedBackLabel} />
       <div className="ml-[220px] flex-1 flex flex-col min-h-0 overflow-hidden">
         <Header title={page.title} subtitle={page.subtitle} isEmbeddedPreview={Boolean(onBack)} />
+        {embeddedReviewCopy ? <EmbeddedReviewBanner copy={embeddedReviewCopy} /> : null}
         <main className="flex-1 overflow-y-auto scrollbar-hide bg-[#0d1117]">
           {renderPage()}
         </main>
