@@ -2962,14 +2962,20 @@ function buildStaffChapterAdminHref(
   search: string,
 ): string {
   const params = new URLSearchParams(search);
+  const proofQueueContext = getEmbeddedProofQueueContext(
+    params.get("proofStatus"),
+    params.get("proofPlatform"),
+  );
   params.set("view", "admin");
   params.set("adminView", "chapters");
-  params.set("returnView", "chapters");
+  params.set("returnView", proofQueueContext ? "proof_ugc" : "chapters");
   params.set("chapter", chapterId);
   params.set("chapterContext", chapterContext);
-  params.delete("ugcCard");
-  params.delete("proofStatus");
-  params.delete("proofPlatform");
+  if (!proofQueueContext) {
+    params.delete("ugcCard");
+    params.delete("proofStatus");
+    params.delete("proofPlatform");
+  }
   const query = params.toString();
   return query ? `${pathname}?${query}` : pathname;
 }
