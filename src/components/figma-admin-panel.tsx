@@ -369,7 +369,9 @@ function getEmbeddedAdminReviewCopy(backLabel: string, chapterContext?: string |
       badge: "Chapter review handoff",
       label: "Embedded Chapter Review",
       footer:
-        "Return with Command Center after this chapter review pass, or use the top-right menu to switch workspaces or log out.",
+        chapterContext
+          ? `Return with Command Center after this chapter review pass for ${chapterContext}, or use the top-right menu to switch workspaces or log out.`
+          : "Return with Command Center after this chapter review pass, or use the top-right menu to switch workspaces or log out.",
       tag: "Chapter review",
     };
   }

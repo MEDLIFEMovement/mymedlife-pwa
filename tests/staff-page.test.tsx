@@ -436,7 +436,7 @@ describe("staff page", () => {
     expect(html).toContain("Coach notes stay preview-only in this chapter drawer");
     expect(html).toContain("Next step: open the Admin preview for DS directory readback, audit, and blocked-control follow-through before requesting any write path.");
     expect(html).toContain("Return to this chapter in the same Command Center loop after the Admin readback closes.");
-    expect(html).toContain('href="/staff?view=admin&amp;adminView=chapters&amp;returnView=chapters&amp;chapter=chapter-test"');
+    expect(html).toContain('href="/staff?view=admin&amp;adminView=chapters&amp;returnView=chapters&amp;chapter=chapter-test&amp;chapterContext=Boston%20College"');
     expect(html).toContain("Open Admin preview");
     expect(html).toContain("Return to chapters");
     expect(html).toContain("Return to the chapters overview after this preview readback");

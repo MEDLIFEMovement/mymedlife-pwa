@@ -646,7 +646,7 @@ export function ChapterDetailDrawer({ chapter, onClose }: { chapter: Chapter; on
             <Star className="w-3.5 h-3.5" /> Preview NPS Survey
           </button>
           <a
-            href={`/staff?view=admin&adminView=chapters&returnView=chapters&chapter=${chapter.id}`}
+            href={`/staff?view=admin&adminView=chapters&returnView=chapters&chapter=${chapter.id}&chapterContext=${encodeURIComponent(chapter.name)}`}
             title="Open the embedded Admin preview for DS directory readback and audit review"
             className="flex items-center gap-1.5 rounded-lg bg-muted px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted/70"
           >
