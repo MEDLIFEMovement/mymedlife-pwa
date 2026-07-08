@@ -62,4 +62,64 @@ describe("admin master data page", () => {
     expect(html).toContain("UCLA MEDLIFE");
     expect(html.match(/>TEST</g)?.length ?? 0).toBeGreaterThanOrEqual(4);
   });
+
+  it("hides the workspace for member-facing actors", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const dataModule = await import("@/services/read-only-app-data");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getMockLocalActorContext(
+        "member.a@mymedlife.test",
+        "Using member test actor.",
+        "mock_fallback",
+        "local_auth_session",
+        "signed_in",
+      ),
+    );
+    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
+      getMockReadOnlyAppData("Testing hidden admin master data route."),
+    );
+
+    const { default: AdminMasterDataPage } = await import(
+      "@/app/admin/master-data/page"
+    );
+    const html = renderToStaticMarkup(await AdminMasterDataPage());
+
+    expect(html).toContain("Master data hidden for this role");
+    expect(html).toContain("Back to Rush Month");
+    expect(html).not.toContain("Fake users");
+  });
+
+  it("drops the chapter TEST badge when the chapter inventory is read-only live-shaped data", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const dataModule = await import("@/services/read-only-app-data");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getMockLocalActorContext(
+        "super.admin@mymedlife.test",
+        "Using Super Admin test actor.",
+        "local_supabase",
+        "local_auth_session",
+        "signed_in",
+      ),
+    );
+    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue({
+      ...getMockReadOnlyAppData("Testing read-only chapter inventory."),
+      source: {
+        mode: "supabase",
+        message: "Local Supabase read-only data.",
+      },
+    });
+
+    const { default: AdminMasterDataPage } = await import(
+      "@/app/admin/master-data/page"
+    );
+    const html = renderToStaticMarkup(await AdminMasterDataPage());
+
+    expect(html).toContain("Full master data inventory");
+    expect(html).toContain("UCLA MEDLIFE");
+    expect(html).toContain("Rush Month");
+    expect(html).toContain("Sofia Alvarez");
+    expect(html).toContain(">ready readonly<");
+  });
 });
