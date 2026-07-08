@@ -345,7 +345,6 @@ describe("chapter leader command center", () => {
       "href=\"/leader?view=events&amp;source=overview&amp;member=member-ivy&amp;eventCommittee=events\"",
     );
   });
-
   it("falls back to zeroed progress bars and chapter-posture copy when overview labels are not sample-formatted", () => {
     const actor = getMockLocalActorContext("leader.a@mymedlife.test");
     const commandCenter = getChapterLeaderCommandCenter(actor, data);
