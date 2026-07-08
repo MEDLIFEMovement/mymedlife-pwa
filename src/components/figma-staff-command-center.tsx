@@ -1,7 +1,7 @@
 "use client";
 /* eslint-disable @next/next/no-img-element, @typescript-eslint/no-unused-vars */
 
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   LayoutDashboard, Megaphone, Calendar, Rss, Film,
@@ -2177,12 +2177,15 @@ export function FigmaStaffCommandCenter({
   const searchParams = useSearchParams();
   const activeScreen = resolveStaffShellScreen(searchParams.get("view") ?? initialView ?? null);
   const selectedChapterId = searchParams.get("chapter");
+  const selectedChapter =
+    activeScreen === "chapters" && selectedChapterId
+      ? CHAPTERS.find((chapter) => chapter.id === selectedChapterId) ?? null
+      : null;
   const adminReturnScreen =
     activeScreen === "admin" ? resolveStaffAdminReturnScreen(searchParams.get("returnView")) : "chapters";
   const adminReturnChapterId =
     activeScreen === "admin" && adminReturnScreen === "chapters" ? searchParams.get("chapter") : null;
   const adminBackLabel = getStaffAdminReturnLabel(adminReturnScreen, adminReturnChapterId);
-  const [selectedChapter, setSelectedChapter] = useState<Chapter | null>(null);
 
   // SOP Builder sub-navigation
   const [sopView, setSopView] = useState<"library" | "builder">("library");
@@ -2191,29 +2194,17 @@ export function FigmaStaffCommandCenter({
   // Admin panel — DS Admin / Super Admin gate
   const [adminRole, setAdminRole] = useState<AdminRole | null>(null);
 
-  useEffect(() => {
-    if (activeScreen !== "chapters") return;
-    if (!selectedChapterId) {
-      setSelectedChapter(null);
-      return;
-    }
-    setSelectedChapter(CHAPTERS.find((chapter) => chapter.id === selectedChapterId) ?? null);
-  }, [activeScreen, selectedChapterId]);
-
   const handleSelectChapter = (ch: Chapter) => {
-    setSelectedChapter(ch);
     router.replace(buildStaffChapterHref(ch.id, pathname, searchParams.toString()), { scroll: false });
   };
 
   const handleNavChange = (key: Screen) => {
-    if (key !== "chapters") setSelectedChapter(null);
     if (key !== "sops") { setSopView("library"); setSopCampaign(null); }
     if (key !== "admin") setAdminRole(null);
     router.replace(buildStaffShellHref(key, pathname, searchParams.toString()), { scroll: false });
   };
 
   const handleCloseChapterDrawer = () => {
-    setSelectedChapter(null);
     router.replace(buildStaffShellHref("chapters", pathname, searchParams.toString()), { scroll: false });
   };
 
