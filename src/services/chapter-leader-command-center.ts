@@ -1669,7 +1669,7 @@ export function getChapterLeaderCommandCenter(
     viewOptions: getViewOptions({
       source: selectedSource,
       memberId: navigationMemberId,
-      defaultProfileMemberId: requestedMemberId,
+      defaultProfileMemberId: navigationMemberId ?? requestedMemberId,
       committeeId: requestedCommitteeId,
       eventCommitteeFilter: selectedEventCommitteeFilter,
       eventId: selectedEventId,
@@ -2706,6 +2706,16 @@ function getNavigationMemberId(input: {
   selectedView: ChapterLeaderCommandCenterView;
 }) {
   if (input.requestedMemberId && input.selectedMemberId) {
+    return input.selectedMemberId;
+  }
+
+  if (
+    input.selectedMemberId &&
+    (input.selectedView === "member_profile" ||
+      input.selectedView === "leaders" ||
+      input.selectedView === "values" ||
+      input.selectedView === "training")
+  ) {
     return input.selectedMemberId;
   }
 
