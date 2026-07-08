@@ -2359,6 +2359,7 @@ export function FigmaStaffCommandCenter({
 
   // Admin panel — DS Admin / Super Admin gate
   const [adminRole, setAdminRole] = useState<AdminRole | null>(null);
+  const isEmbeddedAdminOpen = activeScreen === "admin" && Boolean(adminRole) && canAccessAdminPanel;
 
   const handleSelectChapter = (ch: Chapter) => {
     router.replace(buildStaffChapterHref(ch.id, pathname, searchParams.toString()), { scroll: false });
@@ -2437,23 +2438,25 @@ export function FigmaStaffCommandCenter({
       </header>
 
       {/* Page Header */}
-      <div className={`flex flex-shrink-0 items-center justify-between border-b border-border bg-white px-6 py-3 ${STAFF_HEADER_ACCOUNT_CLEARANCE}`}>
-        <div className="min-w-0">
-          <h1 className="text-base font-bold text-foreground">{adminPreviewTitle ?? SCREEN_TITLES[activeScreen]}</h1>
-          <div className="mt-0.5 text-xs text-muted-foreground">
-            {activeScreen === "chapters" && `${CHAPTERS.length} chapters · Rush Month active · Last updated 2 min ago`}
-            {activeScreen === "campaigns" && "7 campaigns active across all regions"}
-            {activeScreen === "ugc" && `${UGC_CARDS.filter(c=>c.visibility==="pending").length} items pending review`}
-            {activeScreen === "best-practices" && `${BEST_PRACTICES.length} verified best practices ready to share`}
-            {activeScreen === "admin" &&
-              (adminRole
-                ? `Previewing as ${adminRole === "super-admin" ? "Super Admin" : "DS Admin"} · blocked controls stay preview-only unless explicitly approved${adminHeaderSubtitle ? ` · ${adminHeaderSubtitle}` : ""}`
-                : `Restricted to DS Admin and Super Admin only${adminHeaderSubtitle ? ` · ${adminHeaderSubtitle}` : ""}`)}
-            {activeScreen === "sops" && (sopView === "builder" && sopCampaign ? `${sopCampaign.name} · ${sopCampaign.version}` : "Build, version, and publish campaign workflows — steps, roles, points, and comms")}
+      {!isEmbeddedAdminOpen && (
+        <div className={`flex flex-shrink-0 items-center justify-between border-b border-border bg-white px-6 py-3 ${STAFF_HEADER_ACCOUNT_CLEARANCE}`}>
+          <div className="min-w-0">
+            <h1 className="text-base font-bold text-foreground">{adminPreviewTitle ?? SCREEN_TITLES[activeScreen]}</h1>
+            <div className="mt-0.5 text-xs text-muted-foreground">
+              {activeScreen === "chapters" && `${CHAPTERS.length} chapters · Rush Month active · Last updated 2 min ago`}
+              {activeScreen === "campaigns" && "7 campaigns active across all regions"}
+              {activeScreen === "ugc" && `${UGC_CARDS.filter(c=>c.visibility==="pending").length} items pending review`}
+              {activeScreen === "best-practices" && `${BEST_PRACTICES.length} verified best practices ready to share`}
+              {activeScreen === "admin" &&
+                (adminRole
+                  ? `Previewing as ${adminRole === "super-admin" ? "Super Admin" : "DS Admin"} · blocked controls stay preview-only unless explicitly approved${adminHeaderSubtitle ? ` · ${adminHeaderSubtitle}` : ""}`
+                  : `Restricted to DS Admin and Super Admin only${adminHeaderSubtitle ? ` · ${adminHeaderSubtitle}` : ""}`)}
+              {activeScreen === "sops" && (sopView === "builder" && sopCampaign ? `${sopCampaign.name} · ${sopCampaign.version}` : "Build, version, and publish campaign workflows — steps, roles, points, and comms")}
+            </div>
           </div>
+          <div className="ml-4 hidden flex-shrink-0 text-xs font-mono text-muted-foreground xl:block">Jun 17, 2026 · 14:41 UTC</div>
         </div>
-        <div className="ml-4 hidden flex-shrink-0 text-xs font-mono text-muted-foreground xl:block">Jun 17, 2026 · 14:41 UTC</div>
-      </div>
+      )}
 
       {/* Content */}
       <main className={`flex-1 flex flex-col ${activeScreen === "sops" ? "overflow-hidden" : "overflow-auto"}`}>

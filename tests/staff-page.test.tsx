@@ -618,6 +618,8 @@ describe("staff page", () => {
     expect(source).toContain("const adminHeaderSubtitle =");
     expect(source).toContain("const adminPreviewTitle =");
     expect(source).toContain("getStaffAdminPreviewTitle(getRouteParam(\"adminView\"))");
+    expect(source).toContain('const isEmbeddedAdminOpen = activeScreen === "admin" && Boolean(adminRole) && canAccessAdminPanel;');
+    expect(source).toContain("{!isEmbeddedAdminOpen && (");
     expect(source).toContain("getStaffAdminHeaderSubtitle(adminBackLabel, adminChapterContext, adminProofQueueContext)");
     expect(source).toContain("getStaffAdminReturnLoopLabel(backLabel, chapterContext, proofQueueContext)");
   });
