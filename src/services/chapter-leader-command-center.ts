@@ -5484,8 +5484,8 @@ function getSuccessionCandidates(
     feedPostId: string | null;
     pipelineFilter: ChapterLeaderPipelineFilter;
     searchQuery: string;
-    leaderboardMetric: ChapterLeaderboardMetric;
-    leaderboardRegion: ChapterLeaderboardRegion;
+    leaderboardMetric: ChapterLeaderLeaderboardMetricKey;
+    leaderboardRegion: ChapterLeaderLeaderboardRegionKey;
     bestPracticeChapterId: string | null;
   },
 ): ChapterLeaderCommandCenterSuccessionCandidate[] {
