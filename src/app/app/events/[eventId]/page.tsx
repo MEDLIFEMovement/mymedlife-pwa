@@ -79,7 +79,7 @@ export default async function AppEventDetailPage({
   const step = getEventDetailStep(resolvedSearchParams.step);
   const backHref =
     step === "detail"
-      ? getEventReturnHref(resolvedSearchParams.source)
+      ? getEventReturnHref(eventId, resolvedSearchParams.source)
       : step === "rsvp"
         ? buildEventStepHref(eventId, "detail", resolvedSearchParams.source)
         : step === "checkin"
@@ -147,9 +147,9 @@ function EventDetailView({
   const rsvpHref = buildEventStepHref(event.id, "rsvp", source);
   const checkInHref = buildEventStepHref(event.id, "checkin", source);
   const pointsHref = buildEventStepHref(event.id, "points", source);
-  const returnHref = getEventReturnHref(source);
+  const returnHref = getEventReturnHref(event.id, source);
   const returnLabel = getEventReturnLabel(source);
-  const sourceContext = getEventSourceContext(source);
+  const sourceContext = getEventSourceContext(event.id, source);
   const visibleEventTitle = ensureVisibleTestLabel(event.title);
   const visibleChapterName = ensureVisibleTestLabel(snapshot.chapterName);
   const visibleLocationLabel = ensureVisibleTestLabel(snapshot.memberLocationLabel);
@@ -371,7 +371,7 @@ function EventRsvpConfirmView({
   source?: string;
 }) {
   const visibleLocationLabel = ensureVisibleTestLabel(snapshot.memberLocationLabel);
-  const returnHref = getEventReturnHref(source);
+  const returnHref = getEventReturnHref(event.id, source);
   const returnLabel = getEventReturnLabel(source);
   return (
     <StepShell backHref={backHref} title="">
@@ -496,7 +496,7 @@ function EventPointsImpactView({
   source?: string;
 }) {
   const visibleChapterName = ensureVisibleTestLabel(snapshot.chapterName);
-  const returnHref = getEventReturnHref(source);
+  const returnHref = getEventReturnHref(event.id, source);
   const returnLabel = getEventReturnLabel(source);
   const chapterRows = [
     { rank: "🥇", name: "TEST Aisha N.", points: 220 },
@@ -760,13 +760,13 @@ function buildEventStepHref(
   return `${url.pathname}${url.search}`;
 }
 
-function getEventReturnHref(source?: string) {
+function getEventReturnHref(eventId: string, source?: string) {
   return source === "home"
     ? "/app"
     : source === "profile"
       ? "/profile"
       : source === "points"
-        ? "/app/points?source=events"
+        ? getLaunchLaneEventPointsHref(eventId, source)
         : "/app/events";
 }
 
@@ -784,7 +784,7 @@ function getEventPointsSource(source?: string) {
   return source === "home" || source === "profile" ? source : "events";
 }
 
-function getEventSourceContext(source?: string) {
+function getEventSourceContext(eventId: string, source?: string) {
   if (source === "home") {
     return {
       eyebrow: "Opened from the TEST home walkthrough",
@@ -813,7 +813,7 @@ function getEventSourceContext(source?: string) {
       title: "Move from TEST points readback into the next event.",
       body:
         "The member loop should not stop at the leaderboard. Use this route-backed return path to preview RSVP or attendance here, then come back to points when the chapter moment is done.",
-      href: "/app/points?source=events",
+      href: getLaunchLaneEventPointsHref(eventId, source),
       cta: "Back to Points",
     };
   }
@@ -826,7 +826,12 @@ function getLaunchLaneEventPointsHref(eventId: string, source?: string) {
     `https://mymedlife.local${getLaunchLaneMemberPointsHref(getEventPointsSource(source))}`,
   );
 
-  if (source === "events" || source === "home" || source === "profile") {
+  if (
+    source === "events" ||
+    source === "home" ||
+    source === "profile" ||
+    source === "points"
+  ) {
     url.searchParams.set("event", eventId);
   }
 
