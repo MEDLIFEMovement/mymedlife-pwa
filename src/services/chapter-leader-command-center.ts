@@ -31,9 +31,14 @@ export type ChapterLeaderCommandCenterView =
   | "member_profile"
   | "committees"
   | "events"
+  | "create_event"
   | "impact"
   | "bridge_videos"
+  | "stories"
+  | "leaders"
   | "succession"
+  | "values"
+  | "training"
   | "feed"
   | "feed_analytics";
 
@@ -661,9 +666,14 @@ const commandCenterViewLabels: Record<ChapterLeaderCommandCenterView, string> = 
   member_profile: "Member Profile",
   committees: "Event Committees",
   events: "Event Performance",
+  create_event: "Create Event Preview",
   impact: "Impact",
   bridge_videos: "Bridge Videos",
+  stories: "MEDLIFE Stories",
+  leaders: "Current Leaders",
   succession: "Succession",
+  values: "MEDLIFE Values",
+  training: "Leadership Training",
   feed: "Feed Analytics",
   feed_analytics: "Feed Analytics",
 };
@@ -928,15 +938,15 @@ const commandCenterNavGroups: ChapterLeaderCommandCenterNavGroup[] = [
   },
   {
     label: "Event Operations",
-    viewKeys: ["committees", "events"],
+    viewKeys: ["committees", "events", "create_event"],
   },
   {
     label: "Impact & Culture",
-    viewKeys: ["impact", "bridge_videos"],
+    viewKeys: ["impact", "bridge_videos", "stories"],
   },
   {
     label: "Leadership",
-    viewKeys: ["succession", "feed_analytics"],
+    viewKeys: ["leaders", "succession", "values", "training", "feed_analytics"],
   },
 ];
 
@@ -2165,11 +2175,16 @@ export function buildChapterLeaderCommandCenterHref(
   const searchParams = new URLSearchParams();
   const shouldPreserveLeaderboardContext =
     view === "leaderboard" ||
+    view === "stories" ||
+    view === "leaders" ||
+    view === "values" ||
+    view === "training" ||
     options.source === "leaderboard" ||
     Boolean(options.bestPracticeChapterId);
   const shouldPreserveFeedPostContext =
     view === "feed_analytics" ||
     view === "bridge_videos" ||
+    view === "stories" ||
     view === "members" ||
     view === "member_profile" ||
     options.source === "feed_analytics" ||
@@ -2190,14 +2205,14 @@ export function buildChapterLeaderCommandCenterHref(
   }
 
   if (
-    view === "events" &&
+    (view === "events" || view === "create_event") &&
     options.eventCommitteeFilter &&
     options.eventCommitteeFilter !== "all"
   ) {
     searchParams.set("eventCommittee", options.eventCommitteeFilter);
   }
 
-  if (view === "events" && options.eventId) {
+  if ((view === "events" || view === "create_event") && options.eventId) {
     searchParams.set("event", options.eventId);
   }
 
@@ -2238,14 +2253,14 @@ export function buildChapterLeaderCommandCenterHref(
   }
 
   if (
-    (view === "bridge_videos" || view === "feed_analytics") &&
+    (view === "bridge_videos" || view === "feed_analytics" || view === "stories") &&
     options.bridgeVideoFilter &&
     options.bridgeVideoFilter !== "all"
   ) {
     searchParams.set("bridge", options.bridgeVideoFilter);
   }
 
-  if (view === "bridge_videos" && options.bridgeVideoId) {
+  if ((view === "bridge_videos" || view === "stories") && options.bridgeVideoId) {
     searchParams.set("bridgeVideo", options.bridgeVideoId);
   }
 
@@ -2362,9 +2377,14 @@ export function parseChapterLeaderCommandCenterView(
     case "member_profile":
     case "committees":
     case "events":
+    case "create_event":
     case "impact":
     case "bridge_videos":
+    case "stories":
+    case "leaders":
     case "succession":
+    case "values":
+    case "training":
     case "feed_analytics":
       return value;
     case "feed":

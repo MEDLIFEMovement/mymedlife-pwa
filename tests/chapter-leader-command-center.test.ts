@@ -169,7 +169,7 @@ describe("chapter leader command center", () => {
     expect(markup).not.toContain("Impact signals");
     expect(markup).not.toContain("Leadership pipeline");
     expect(markup).not.toContain("Bridge stories");
-    expect(markup.match(/>Create Event</g)?.length).toBe(3);
+    expect(markup.match(/>Create Event</g)?.length).toBe(2);
     expect(markup.match(/>Confirm Attendance</g)?.length).toBe(2);
     expect(markup.indexOf("Create Event")).toBeLessThan(markup.indexOf("Chapter Metrics"));
     expect(markup.indexOf("Confirm Attendance")).toBeLessThan(markup.indexOf("Chapter Metrics"));
@@ -321,6 +321,94 @@ describe("chapter leader command center", () => {
     expect(commandCenter.viewOptions.find((item) => item.key === "member_profile")?.href).toBe(
       "/leader?view=member_profile",
     );
+  });
+
+  it("restores the broader leader route family inside the service-backed nav", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data);
+    const markup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
+    );
+
+    expect(commandCenter.navGroups.map((group) => group.label)).toEqual([
+      "Chapter",
+      "Members",
+      "Event Operations",
+      "Impact & Culture",
+      "Leadership",
+    ]);
+    expect(commandCenter.viewOptions.map((item) => item.label)).toEqual(
+      expect.arrayContaining([
+        "Chapter Home",
+        "Chapter Leaderboard",
+        "Member Leaderboard",
+        "Member Profile",
+        "Event Committees",
+        "Event Performance",
+        "Create Event Preview",
+        "Impact",
+        "Bridge Videos",
+        "MEDLIFE Stories",
+        "Current Leaders",
+        "Succession",
+        "MEDLIFE Values",
+        "Leadership Training",
+        "Feed Analytics",
+      ]),
+    );
+    expect(markup).not.toContain("Preview Surfaces");
+    expect(markup).toContain("Create Event Preview");
+    expect(markup).toContain("MEDLIFE Stories");
+    expect(markup).toContain("Current Leaders");
+    expect(markup).toContain("MEDLIFE Values");
+    expect(markup).toContain("Leadership Training");
+  });
+
+  it("renders the restored leader preview routes as honest service-backed handoffs", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+
+    const expectations = [
+      {
+        view: "create_event",
+        title: "Create Event Preview",
+        href: "/leader?view=create_event",
+      },
+      {
+        view: "stories",
+        title: "MEDLIFE Stories",
+        href: "/leader?view=stories",
+      },
+      {
+        view: "leaders",
+        title: "Current Leaders",
+        href: "/leader?view=leaders",
+      },
+      {
+        view: "values",
+        title: "MEDLIFE Values",
+        href: "/leader?view=values",
+      },
+      {
+        view: "training",
+        title: "Leadership Training",
+        href: "/leader?view=training",
+      },
+    ] as const;
+
+    for (const expectation of expectations) {
+      const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+        view: expectation.view,
+      });
+      const markup = renderToStaticMarkup(
+        createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
+      );
+
+      expect(commandCenter.selectedView).toBe(expectation.view);
+      expect(markup).toContain(expectation.title);
+      expect(markup).toContain("Preview-only leader route");
+      expect(markup).toContain("Open full leader shell");
+      expect(markup).toContain(expectation.href);
+    }
   });
 
   it("keeps E-Board focused on owner movement and lets the selected member carry across views", () => {

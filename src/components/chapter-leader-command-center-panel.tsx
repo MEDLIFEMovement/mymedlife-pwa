@@ -113,28 +113,6 @@ export function ChapterLeaderCommandCenterPanel({
       tone: "secondary",
     },
   ];
-  const previewRouteLinks = [
-    {
-      label: "Create Event",
-      href: buildLeaderCommandCenterHrefForScreen("create-event"),
-    },
-    {
-      label: "MEDLIFE Stories",
-      href: buildLeaderCommandCenterHrefForScreen("stories"),
-    },
-    {
-      label: "Current Leaders",
-      href: buildLeaderCommandCenterHrefForScreen("leaders"),
-    },
-    {
-      label: "Values",
-      href: buildLeaderCommandCenterHrefForScreen("values"),
-    },
-    {
-      label: "Leadership Training",
-      href: buildLeaderCommandCenterHrefForScreen("training"),
-    },
-  ];
   const dashboardHeading = getDashboardHeading(commandCenter.eventsOverview.monthLabel);
   const healthRankingLabel = getHealthRankingLabel(commandCenter);
   const showMemberHomeHandoff = commandCenter.selectedSource === "member_home";
@@ -279,23 +257,6 @@ export function ChapterLeaderCommandCenterPanel({
                   </div>
                 </div>
               ))}
-              <div>
-                <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-white/60">
-                  Preview Surfaces
-                </p>
-                <div className="mt-2 grid gap-2">
-                  {previewRouteLinks.map((route) => (
-                    <div key={route.label} className="relative">
-                      <Link
-                        href={route.href}
-                        className="block rounded-[1rem] border border-[#254064] bg-[#13294c] px-3 py-2.5 text-sm font-semibold text-[#dbeafe] transition hover:border-[#7fb5ff] hover:bg-[#19345f] hover:text-white"
-                      >
-                        {route.label}
-                      </Link>
-                    </div>
-                  ))}
-                </div>
-              </div>
             </nav>
           </div>
           <div className="mt-4 border-t border-white/10 pt-4">
@@ -1527,6 +1488,29 @@ function renderView(
           </section>
         </section>
       );
+    case "create_event":
+      return (
+        <LeaderPreviewRouteSurface
+          eyebrow="Create Event Preview"
+          title="Create Event Preview"
+          summary="Keep TEST event setup attached to chapter health, committee ownership, and follow-through before the full event shell turns into a broader preview flow."
+          primaryAction={{
+            label: "Open full leader shell",
+            href: buildLeaderCommandCenterHrefForScreen("create-event"),
+          }}
+          secondaryAction={{
+            label: "Back to event performance",
+            href: buildChapterLeaderCommandCenterHref("events", {
+              source: commandCenter.selectedSource,
+              memberId: commandCenter.navigationMemberId,
+              eventCommitteeFilter: commandCenter.selectedEventCommitteeFilter,
+              pipelineFilter: commandCenter.selectedPipelineFilter,
+              searchQuery: commandCenter.pipelineSearchQuery,
+            }),
+          }}
+          contextLabel={`Current chapter view: ${commandCenter.chapterName} · ${commandCenter.eventsOverview.monthLabel}`}
+        />
+      );
     case "impact":
       const visibleImpactHighlights = commandCenter.selectedImpactHighlight
         ? commandCenter.impactHighlights.filter(
@@ -2112,6 +2096,30 @@ function renderView(
           </section>
         </section>
       );
+    case "stories":
+      return (
+        <LeaderPreviewRouteSurface
+          eyebrow="MEDLIFE Stories"
+          title="MEDLIFE Stories"
+          summary="Keep bridge videos, feed readback, and impact storytelling in one visible chapter lane before any share, publish, or provider-looking story step feels live."
+          primaryAction={{
+            label: "Open full leader shell",
+            href: buildLeaderCommandCenterHrefForScreen("stories"),
+          }}
+          secondaryAction={{
+            label: "Back to bridge videos",
+            href: buildChapterLeaderCommandCenterHref("bridge_videos", {
+              source: commandCenter.selectedSource,
+              memberId: commandCenter.navigationMemberId,
+              pipelineFilter: commandCenter.selectedPipelineFilter,
+              searchQuery: commandCenter.pipelineSearchQuery,
+              bridgeVideoFilter: commandCenter.selectedBridgeVideoFilter,
+              feedPostId: commandCenter.selectedFeedPostId,
+            }),
+          }}
+          contextLabel="Story review stays anchored to TEST chapter content and member follow-through."
+        />
+      );
     case "succession":
       return (
         <section className="grid gap-4">
@@ -2250,6 +2258,74 @@ function renderView(
             </div>
           </SectionCard>
         </section>
+      );
+    case "leaders":
+      return (
+        <LeaderPreviewRouteSurface
+          eyebrow="Current Leaders"
+          title="Current Leaders"
+          summary="Keep chapter ownership, committee chairs, and current role coverage visible here before any promote, nominate, or transfer language reads like a live write path."
+          primaryAction={{
+            label: "Open full leader shell",
+            href: buildLeaderCommandCenterHrefForScreen("leaders"),
+          }}
+          secondaryAction={{
+            label: "Back to succession review",
+            href: buildChapterLeaderCommandCenterHref("succession", {
+              source: commandCenter.selectedSource,
+              memberId: commandCenter.selectedMemberId,
+              pipelineFilter: commandCenter.selectedPipelineFilter,
+              searchQuery: commandCenter.pipelineSearchQuery,
+            }),
+          }}
+          contextLabel={`Current leader context: ${toVisibleTestLabel(commandCenter.sidebarLeaderLabel)} · ${commandCenter.successionOverview.eboardRolesFilledLabel} roles filled`}
+        />
+      );
+    case "values":
+      return (
+        <LeaderPreviewRouteSurface
+          eyebrow="MEDLIFE Values"
+          title="MEDLIFE Values"
+          summary="Keep values alignment visible as a chapter review surface before interviews, approvals, or promotion language starts sounding like a live people-decision workflow."
+          primaryAction={{
+            label: "Open full leader shell",
+            href: buildLeaderCommandCenterHrefForScreen("values"),
+          }}
+          secondaryAction={{
+            label: "Open member review",
+            href:
+              commandCenter.selectedMember?.profileHref ??
+              buildChapterLeaderCommandCenterHref("member_profile", {
+                source: commandCenter.selectedSource,
+                memberId: commandCenter.selectedMemberId,
+                pipelineFilter: commandCenter.selectedPipelineFilter,
+                searchQuery: commandCenter.pipelineSearchQuery,
+              }),
+          }}
+          contextLabel={`Values review stays tied to ${toVisibleTestLabel(commandCenter.selectedMember?.displayName ?? commandCenter.sidebarLeaderLabel)} and the visible chapter pipeline.`}
+        />
+      );
+    case "training":
+      return (
+        <LeaderPreviewRouteSurface
+          eyebrow="Leadership Training"
+          title="Leadership Training"
+          summary="Keep coaching, development, and next-step training visible as chapter support context before assignments, approvals, or completion language feels operationally live."
+          primaryAction={{
+            label: "Open full leader shell",
+            href: buildLeaderCommandCenterHrefForScreen("training"),
+          }}
+          secondaryAction={{
+            label: "Back to succession review",
+            href: buildChapterLeaderCommandCenterHref("succession", {
+              source: commandCenter.selectedSource,
+              memberId: commandCenter.selectedMemberId,
+              pipelineFilter: commandCenter.selectedPipelineFilter,
+              searchQuery: commandCenter.pipelineSearchQuery,
+            }),
+          }}
+          contextLabel="Training handoff stays connected to TEST member readiness and chapter bench coverage."
+        />
       );
     case "feed_analytics":
       return (
@@ -2540,6 +2616,7 @@ function ChapterNavIcon({ view }: { view: ChapterLeaderCommandCenterView }) {
         </svg>
       );
     case "events":
+    case "create_event":
       return (
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={iconClassName}>
           <rect x="4" y="6" width="16" height="14" rx="2" />
@@ -2555,18 +2632,35 @@ function ChapterNavIcon({ view }: { view: ChapterLeaderCommandCenterView }) {
         </svg>
       );
     case "bridge_videos":
+    case "stories":
       return (
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={iconClassName}>
           <rect x="4" y="6" width="11" height="12" rx="2" />
           <path d="m15 10 5-3v10l-5-3" />
         </svg>
       );
+    case "leaders":
     case "succession":
       return (
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={iconClassName}>
           <path d="M7 17 17 7" />
           <path d="M11 7h6v6" />
           <path d="M7 7v10h10" />
+        </svg>
+      );
+    case "values":
+      return (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={iconClassName}>
+          <path d="m12 20 6-3.5V7.5L12 4 6 7.5v9Z" />
+          <path d="m9.5 12 1.7 1.7 3.3-3.4" />
+        </svg>
+      );
+    case "training":
+      return (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={iconClassName}>
+          <path d="M4 6.5 12 4l8 2.5-8 2.5Z" />
+          <path d="M4 11.5 12 14l8-2.5" />
+          <path d="M4 16.5 12 19l8-2.5" />
         </svg>
       );
     case "feed_analytics":
@@ -2579,6 +2673,65 @@ function ChapterNavIcon({ view }: { view: ChapterLeaderCommandCenterView }) {
         </svg>
       );
   }
+}
+
+function LeaderPreviewRouteSurface({
+  eyebrow,
+  title,
+  summary,
+  primaryAction,
+  secondaryAction,
+  contextLabel,
+}: {
+  eyebrow: string;
+  title: string;
+  summary: string;
+  primaryAction: { label: string; href: string };
+  secondaryAction: { label: string; href: string };
+  contextLabel: string;
+}) {
+  return (
+    <section className="grid gap-4">
+      <section className="grid gap-4 rounded-[1.75rem] border border-slate-200 bg-white p-4 shadow-[0_14px_38px_rgba(15,23,42,0.06)] sm:p-5">
+        <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+          <div>
+            <p className="text-[0.72rem] font-semibold uppercase tracking-[0.2em] text-slate-400">
+              {eyebrow}
+            </p>
+            <h1 className="mt-2 text-[1.75rem] font-semibold leading-tight text-slate-950 sm:text-[1.9rem]">
+              {title}
+            </h1>
+            <p className="mt-4 text-sm leading-6 text-slate-600">{summary}</p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Link
+              href={secondaryAction.href}
+              className="inline-flex rounded-full border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700"
+            >
+              {secondaryAction.label}
+            </Link>
+            <Link
+              href={primaryAction.href}
+              className="inline-flex rounded-full bg-[#2563eb] px-4 py-2.5 text-sm font-semibold text-white"
+            >
+              {primaryAction.label}
+            </Link>
+          </div>
+        </div>
+
+        <div className="rounded-[1.2rem] border border-[#bfdbfe] bg-[#eef5ff] p-4">
+          <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-[#1d4ed8]">
+            Preview-only leader route
+          </p>
+          <p className="mt-2 text-sm leading-6 text-slate-600">
+            This service-backed leader surface keeps the route visible and the chapter context honest
+            before the full Figma shell takes over for deeper preview work.
+          </p>
+          <p className="mt-3 text-sm font-semibold text-slate-950">{contextLabel}</p>
+        </div>
+      </section>
+    </section>
+  );
 }
 
 function QuickActionLink({
