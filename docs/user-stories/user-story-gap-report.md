@@ -1,6 +1,6 @@
 # myMEDLIFE User Story Gap Report
 
-Date: 2026-07-07
+Date: 2026-07-08
 Owner lane: myMEDLIFE #5, planning/docs only
 Linear planning reference: MED-512
 Purpose: convert the story inventory into practical backlog and launch-truth
@@ -11,9 +11,22 @@ the master inventory into PR-sized UI, data/safety, QA, rollout-evidence, and
 planning slices.
 
 Repo-truth checkpoint: latest source refresh compared this package against
-this repo checkout on `origin/main` commit `bc091ee` (`Add shell acceptance
-planning packets (#501)`), including the recent member, leader, staff/admin,
-and shell acceptance planning wave visible on current main.
+this repo checkout on `origin/main` commit `86d378c` (`Add next shell slice
+briefs (#517)`), including the merged repo-truth story package, builder
+delivery map, member home/profile continuity, member Stories feed parity,
+member event/points return continuity, embedded Admin review posture, admin
+command center return cues, and next-shell slice brief planning.
+
+Live PR queue context at refresh time:
+
+- `#503` remained the one real staff/admin blocker, with core checks green but
+  review/queue state still blocking merge.
+- `#512` and `#515` were healthy rerun/behind-watch lanes.
+- `#516` was healthy and still draft.
+- `#518` was the live member repair branch.
+- `#519` was a healthy admin launch-gate review-label follow-on.
+
+Open PRs are not counted as implementation truth until they merge.
 
 ## Compact Backlog Table
 
@@ -43,16 +56,18 @@ and shell acceptance planning wave visible on current main.
 ### Current Shell Ownership Truth
 
 - `#1` should continue with General Member App continuity, especially
-  `/app/events`, event detail, RSVP/check-in posture, `/app/points`, and later
-  home-to-profile continuity.
+  cross-route member shell continuity after the merged home/profile, Stories,
+  and event/points work. The live member repair branch `#518` should clear
+  before assigning another overlapping member route slice.
 - `#2` should continue with broader `/leader?view=*` continuity and
   service-backed menu/view restoration. Leaderboard/comparison polish is a
   follow-up, not the primary next recommendation.
 - `#3` should continue with Staff / DS Admin shell continuity: staff
   chapter-drawer, embedded Admin, Chapters loop coherence, Proof / UGC
-  follow-through, and broader staff-admin walkthrough continuity. `#3` should
-  not be assigned rollout packet, owner CSV, invite-gate, or production proof
-  ownership from this story package.
+  follow-through, and broader staff-admin walkthrough continuity. `#503`
+  remains the blocker before starting another chapter-drawer-adjacent slice.
+  `#3` should not be assigned rollout packet, owner CSV, invite-gate, or
+  production proof ownership from this story package.
 - `#4` should continue PR-board watch, focused test/check interpretation,
   visual QA, and no-write smoke classification.
 - `#5` should keep the repo-truth story/backlog layer current after shell PR
@@ -63,9 +78,13 @@ and shell acceptance planning wave visible on current main.
 - Shared `/login` entry.
 - Member `/app`, `/app/events`, `/app/stories`, `/app/points`, `/profile`.
 - Member event detail route with RSVP, check-in, and points preview steps.
+- Member home/profile, Stories feed, and event/points return continuity have
+  received recent main-branch tightening.
 - Leader `/leader` shell and menu family.
 - Staff `/staff` shell and secondary nav.
 - Admin `/admin` dark shell/menu family and route-level review pages.
+- Embedded Admin review posture and admin command center return cues have
+  received recent main-branch tightening.
 - Smoke coverage for major launch routes.
 - Readiness services that keep production launch gates explicit.
 
@@ -154,28 +173,36 @@ ready:
 ## UI Coverage Without Enough Operating Or Data Proof
 
 - Member event loop looks complete enough to demo, but real RSVP/check-in/points
-  proof is missing.
+  proof is missing. Recent member continuity merges reduce shell drift; they do
+  not create RSVP, attendance, points-ledger, or pilot proof.
 - Leader create-event and event operations are visible, but live event writes
   and Luma actions are blocked.
 - Staff portfolio and campaign surfaces look operational, but real intervention,
-  export, provider, and production chapter data are missing.
+  export, provider, and production chapter data are missing. `#503` still blocks
+  the cleanest chapter-drawer continuity handoff.
 - Admin shell looks demo-ready, but API/MCP/provider/module/user/chapter writes
-  are blocked.
+  are blocked. Recent admin return-cue and review-label work improves demo
+  clarity but does not change provider/write readiness.
 - Stories/proof/UGC surfaces look rich, but real consent/storage/moderation is
   not complete.
 
 ## Prioritized Narrow-Launch Gap Report
 
-1. Validate owner-returned CSVs when they arrive.
-2. Build or refresh production rollout packet from approved real data only.
-3. Capture production live data counts from Supabase/myMEDLIFE.
-4. Capture production signed-in route proof for member, leader, staff/support,
+1. Clear active shell blockers without overclaiming proof: `#503` for
+   staff/admin and `#518` for member repair are the current practical blockers
+   before assigning overlapping shell slices.
+2. Validate owner-returned CSVs when they arrive.
+3. Build or refresh production rollout packet from approved real data only.
+4. Capture production live data counts from Supabase/myMEDLIFE.
+5. Capture production signed-in route proof for member, leader, staff/support,
    and DS/admin.
-5. Capture Luma read-only mapping proof for pilot event loop.
-6. Run controlled pilot proof for RSVP, attendance, points, audit, and outbox
+6. Capture Luma read-only mapping proof for pilot event loop.
+7. Run controlled pilot proof for RSVP, attendance, points, audit, and outbox
    zero-send.
-7. Complete mobile/device QA for the member app event loop.
-8. Run final invite gate only after all evidence is present.
+8. Complete mobile/device QA for the member app event loop.
+9. Replace or hide TEST-labeled fake content before production-visible launch
+   views.
+10. Run final invite gate only after all evidence is present.
 
 ## Recommended Next-Step Sequence For Delivery Backlog
 
