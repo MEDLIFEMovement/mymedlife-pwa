@@ -1,4 +1,7 @@
+import React from "react";
+import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
+import { AdminSystemHealthReviewPanel } from "@/components/admin-system-health-review-panel";
 import { getAdminSystemHealthReview } from "@/services/admin-system-health-review";
 import { getMockLocalActorContext } from "@/services/local-actor-context";
 import { getMockReadOnlyAppData } from "@/services/read-only-app-data";
@@ -123,6 +126,29 @@ describe("admin system health review", () => {
     expect(getAdminSystemHealthReview(member, data).canReadReview).toBe(false);
     expect(getAdminSystemHealthReview(leader, data).canReadReview).toBe(false);
     expect(getAdminSystemHealthReview(coach, data).canReadReview).toBe(false);
+  });
+
+  it("renders the read-only review copy in the system health panel", () => {
+    const actor = getMockLocalActorContext("admin@mymedlife.test");
+    const review = getAdminSystemHealthReview(
+      actor,
+      getMockReadOnlyAppData("Panel render test."),
+      {
+        MYMEDLIFE_DATA_SOURCE: "mock",
+        MYMEDLIFE_ALLOW_LOCAL_SUPABASE_READS: "false",
+        MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES: "false",
+      },
+    );
+
+    const html = renderToStaticMarkup(
+      React.createElement(AdminSystemHealthReviewPanel, { review }),
+    );
+
+    expect(html).toContain("This route stays read-only.");
+    expect(html).toContain(
+      "move into the linked follow-through routes only for approved runbook and evidence checks.",
+    );
+    expect(html).toContain("Next: Approve retry, idempotency, dead-letter, and manual recovery rules before any real external send.");
   });
 });
 

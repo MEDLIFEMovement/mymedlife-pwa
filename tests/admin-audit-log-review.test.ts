@@ -1,4 +1,7 @@
+import React from "react";
+import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
+import { AdminAuditLogReviewPanel } from "@/components/admin-audit-log-review-panel";
 import { getAdminAuditLogReview } from "@/services/admin-audit-log-review";
 import { getMockLocalActorContext } from "@/services/local-actor-context";
 import { getMockReadOnlyAppData } from "@/services/read-only-app-data";
@@ -169,6 +172,40 @@ describe("admin audit log review", () => {
 
     expect(coachReview.canReadReview).toBe(false);
     expect(coachReview.auditPreflight.items).toEqual([]);
+  });
+
+  it("renders blocked preview controls in the audit log panel", () => {
+    const actor = getMockLocalActorContext("admin@mymedlife.test");
+    const review = getAdminAuditLogReview(
+      actor,
+      dataWithAuditLogs([
+        {
+          id: "audit-1",
+          actor_user_id: "member-1",
+          chapter_id: "chapter-1",
+          action: "action_started",
+          target_table: "assignments",
+          target_id: "assignment-1",
+          before_value: { status: "not_started" },
+          after_value: { status: "in_progress" },
+          reason: "Local action start test.",
+          created_at: "2026-06-15T00:00:00Z",
+        },
+      ]),
+    );
+
+    const html = renderToStaticMarkup(
+      React.createElement(AdminAuditLogReviewPanel, { review }),
+    );
+
+    expect(html).toContain(
+      "This review route shows audit posture and readback evidence only.",
+    );
+    expect(html).toContain("Blocked edit audit rows in browser");
+    expect(html).toContain("Blocked export audit rows from preview");
+    expect(html).toContain(
+      "Audit edits, exports, retention changes, secret reveals, and production write approvals remain blocked from the browser.",
+    );
   });
 });
 
