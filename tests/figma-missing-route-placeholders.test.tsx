@@ -199,10 +199,10 @@ describe("Figma missing route placeholders", () => {
     );
 
     expect(html).toContain("Command Center");
-    expect(html).toContain("Return to chapters");
+    expect(html).toContain("Return to TEST Boston College");
     expect(html).toContain("Chapter review handoff");
     expect(html).toContain("Embedded Chapter Review");
-    expect(html).toContain("Return: chapters");
+    expect(html).toContain("Return: TEST Boston College");
     expect(html).toContain("Chapter review");
     expect(html).toContain("Chapter context: TEST Boston College");
     expect(html).toContain("Context: TEST Boston College");
@@ -233,10 +233,10 @@ describe("Figma missing route placeholders", () => {
     );
 
     expect(html).toContain("Command Center");
-    expect(html).toContain("Return to Proof / UGC");
+    expect(html).toContain("Return to TEST Stanford University in Proof / UGC");
     expect(html).toContain("Proof review handoff");
     expect(html).toContain("Embedded Proof Review");
-    expect(html).toContain("Return: Proof / UGC");
+    expect(html).toContain("Return: TEST Stanford University in Proof / UGC");
     expect(html).toContain("Context: TEST Stanford University");
     expect(html).toContain("Queue: Pending · Instagram");
     expect(html).toContain("Proof review");

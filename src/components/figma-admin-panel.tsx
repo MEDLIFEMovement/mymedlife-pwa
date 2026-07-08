@@ -245,6 +245,7 @@ function Sidebar({
 }) {
   const isEmbeddedPreview = Boolean(onBack);
   const embeddedReviewCopy = getEmbeddedAdminReviewCopy(backLabel, chapterContext, proofQueueContext);
+  const displayBackLabel = getEmbeddedAdminDisplayBackLabel(backLabel, chapterContext, proofQueueContext);
 
   return (
     <aside className="fixed left-0 top-0 h-screen w-[220px] bg-[#090d12] border-r border-white/[0.05] flex flex-col z-40">
@@ -260,7 +261,7 @@ function Sidebar({
               Command Center
             </div>
             <div className="mt-0.5 text-[10px] leading-tight text-slate-500 group-hover:text-slate-300">
-              {`Return to ${backLabel}`}
+              {`Return to ${displayBackLabel}`}
             </div>
             <div className="mt-1 inline-flex items-center rounded-full border border-sky-500/15 bg-sky-500/10 px-1.5 py-0.5 text-[9px] font-mono uppercase tracking-[0.14em] text-sky-300">
               {embeddedReviewCopy.badge}
@@ -400,6 +401,26 @@ function getEmbeddedAdminReviewCopy(
   };
 }
 
+function getEmbeddedAdminDisplayBackLabel(
+  backLabel: string,
+  chapterContext?: string | null,
+  proofQueueContext?: string | null,
+) {
+  const normalized = backLabel.trim().toLowerCase();
+
+  if (normalized === "proof / ugc") {
+    if (chapterContext) return `${chapterContext} in Proof / UGC`;
+    if (proofQueueContext) return `Proof / UGC (${proofQueueContext})`;
+    return "Proof / UGC";
+  }
+
+  if (normalized === "this chapter" || normalized === "chapters") {
+    return chapterContext ?? backLabel;
+  }
+
+  return backLabel;
+}
+
 function Header({
   title,
   subtitle,
@@ -416,6 +437,11 @@ function Header({
   proofQueueContext?: string | null;
 }) {
   const embeddedReviewCopy = getEmbeddedAdminReviewCopy(embeddedBackLabel, chapterContext, proofQueueContext);
+  const displayBackLabel = getEmbeddedAdminDisplayBackLabel(
+    embeddedBackLabel,
+    chapterContext,
+    proofQueueContext,
+  );
   return (
     <div className="h-[52px] flex items-center justify-between px-6 border-b border-white/[0.06] bg-[#0d1117]/90 backdrop-blur-sm sticky top-0 z-30 flex-shrink-0">
       <div className="flex items-center gap-3">
@@ -427,7 +453,7 @@ function Header({
               {embeddedReviewCopy.label}
             </span>
             <span className="inline-flex items-center rounded-full border border-white/[0.08] bg-white/[0.03] px-2 py-0.5 text-[9px] font-mono uppercase tracking-[0.14em] text-slate-400">
-              {`Return: ${embeddedBackLabel}`}
+              {`Return: ${displayBackLabel}`}
             </span>
             {chapterContext ? (
               <span className="text-[10px] text-slate-500">
