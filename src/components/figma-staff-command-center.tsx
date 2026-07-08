@@ -2298,7 +2298,10 @@ export function FigmaStaffCommandCenter({
       {/* Admin Panel full-screen overlay — DS Admin / Super Admin only */}
       {activeScreen === "admin" && adminRole && canAccessAdminPanel && (
         <div className="fixed inset-0 z-[60] flex flex-col">
-          <AdminPanel onBack={() => { setAdminRole(null); handleNavChange("chapters"); }} />
+          <AdminPanel
+            onBack={() => { setAdminRole(null); handleNavChange("chapters"); }}
+            embeddedBackLabel="chapters"
+          />
         </div>
       )}
 

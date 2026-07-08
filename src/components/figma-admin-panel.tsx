@@ -228,7 +228,17 @@ const NAV_DISABLED = [
   { id: "mcp", label: "MCP Analytics", icon: Cpu },
 ];
 
-function Sidebar({ active, onNav, onBack }: { active: string; onNav: (id: string) => void; onBack?: () => void }) {
+function Sidebar({
+  active,
+  onNav,
+  onBack,
+  backLabel = "staff preview",
+}: {
+  active: string;
+  onNav: (id: string) => void;
+  onBack?: () => void;
+  backLabel?: string;
+}) {
   const isEmbeddedPreview = Boolean(onBack);
 
   return (
@@ -245,7 +255,7 @@ function Sidebar({ active, onNav, onBack }: { active: string; onNav: (id: string
               Command Center
             </div>
             <div className="mt-0.5 text-[10px] leading-tight text-slate-500 group-hover:text-slate-300">
-              Return to staff preview
+              {`Return to ${backLabel}`}
             </div>
             <div className="mt-1 inline-flex items-center rounded-full border border-sky-500/15 bg-sky-500/10 px-1.5 py-0.5 text-[9px] font-mono uppercase tracking-[0.14em] text-sky-300">
               Staff review handoff
@@ -3796,9 +3806,11 @@ const PAGES: Record<string, { title: string; subtitle: string }> = {
 export function FigmaAdminPanel({
   initialActive = "overview",
   onBack,
+  embeddedBackLabel = "staff preview",
 }: {
   initialActive?: string;
   onBack?: () => void;
+  embeddedBackLabel?: string;
 }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -3836,7 +3848,7 @@ export function FigmaAdminPanel({
 
   return (
     <div className="flex min-h-screen bg-[#0d1117] overflow-hidden" style={{ fontFamily: "'Manrope', system-ui, sans-serif" }}>
-      <Sidebar active={active} onNav={handleNav} onBack={onBack} />
+      <Sidebar active={active} onNav={handleNav} onBack={onBack} backLabel={embeddedBackLabel} />
       <div className="ml-[220px] flex-1 flex flex-col min-h-0 overflow-hidden">
         <Header title={page.title} subtitle={page.subtitle} isEmbeddedPreview={Boolean(onBack)} />
         <main className="flex-1 overflow-y-auto scrollbar-hide bg-[#0d1117]">
