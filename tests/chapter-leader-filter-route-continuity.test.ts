@@ -1,4 +1,4 @@
-import type { ChangeEvent, ReactElement } from "react";
+import type { ChangeEvent, ReactElement, ReactNode } from "react";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
@@ -11,6 +11,10 @@ import {
 } from "@/components/chapter-leader-filter-routing";
 import { ChapterLeaderLeaderboardRegionFilterSelect } from "@/components/chapter-leader-leaderboard-region-filter-select";
 import { ChapterLeaderPipelineFilterSelect } from "@/components/chapter-leader-pipeline-filter-select";
+import type {
+  ChapterLeaderCommandCenterEventCommitteeFilter,
+  ChapterLeaderCommandCenterLeaderboardRegionOption,
+} from "@/services/chapter-leader-command-center";
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({
@@ -22,13 +26,27 @@ function readProjectFile(path: string) {
   return readFileSync(join(process.cwd(), path), "utf8");
 }
 
-function getSelectChangeHandler(markup: ReactElement) {
+function getSelectChangeHandler(markup: ReactElement<{ children?: ReactNode }>) {
   const children = Array.isArray(markup.props.children)
     ? markup.props.children
     : [markup.props.children];
-  const select = children.find((child) => child?.type === "select");
+  const select = children.find(
+    (child: ReactNode) =>
+      typeof child === "object" &&
+      child !== null &&
+      "type" in child &&
+      child.type === "select",
+  );
 
-  if (!select?.props?.onChange) {
+  if (
+    !select ||
+    typeof select !== "object" ||
+    !("props" in select) ||
+    typeof select.props !== "object" ||
+    select.props === null ||
+    !("onChange" in select.props) ||
+    typeof select.props.onChange !== "function"
+  ) {
     throw new Error("Expected leader filter select to expose an onChange handler.");
   }
 
@@ -104,13 +122,19 @@ describe("chapter leader filter route continuity", () => {
       render: () =>
         ChapterLeaderEventCommitteeFilterSelect({
           options: [
-            { key: "all", label: "All Committees", href: "/leader?view=events" },
+            {
+              key: "all",
+              label: "All Committees",
+              isActive: true,
+              href: "/leader?view=events",
+            },
             {
               key: "recruitment",
               label: "Recruitment",
+              isActive: false,
               href: "/leader?view=events&eventCommittee=recruitment",
             },
-          ],
+          ] satisfies ChapterLeaderCommandCenterEventCommitteeFilter[],
           selectedKey: "all",
         }),
       nextValue: "recruitment",
@@ -120,16 +144,22 @@ describe("chapter leader filter route continuity", () => {
       render: () =>
         ChapterLeaderLeaderboardRegionFilterSelect({
           options: [
-            { key: "all", label: "All Regions", href: "/leader?view=leaderboard" },
             {
-              key: "new_england",
-              label: "New England",
-              href: "/leader?view=leaderboard&leaderboardRegion=new_england",
+              key: "all",
+              label: "All Regions",
+              isActive: true,
+              href: "/leader?view=leaderboard",
             },
-          ],
+            {
+              key: "united_states",
+              label: "United States",
+              isActive: false,
+              href: "/leader?view=leaderboard&leaderboardRegion=united_states",
+            },
+          ] satisfies ChapterLeaderCommandCenterLeaderboardRegionOption[],
           selectedKey: "all",
         }),
-      nextValue: "new_england",
+      nextValue: "united_states",
     },
   ])("keeps the %s filter change handler inside the leader shell", ({ render, nextValue }) => {
     const change = getSelectChangeHandler(render());
