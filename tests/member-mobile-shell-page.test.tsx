@@ -104,7 +104,7 @@ describe("member mobile shell routes", () => {
     );
 
     const { default: PointsPage } = await import("@/app/app/points/page");
-    const html = renderToStaticMarkup(await PointsPage());
+    const html = renderToStaticMarkup(await PointsPage({}));
 
     expect(html).toContain("Points &amp; Recognition");
     expect(html).toContain("TEST UCLA MEDLIFE");

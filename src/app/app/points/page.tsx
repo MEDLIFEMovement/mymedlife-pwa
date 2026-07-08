@@ -18,8 +18,8 @@ function getPointsSource(source?: string): "events" | "profile" | "points" {
   return "points";
 }
 
-export default async function AppPointsPage({ searchParams }: AppPointsPageProps = {}) {
-  const resolvedSearchParams: { source?: string } = await (searchParams ?? Promise.resolve({}));
+export default async function AppPointsPage(props: AppPointsPageProps) {
+  const resolvedSearchParams: { source?: string } = await (props.searchParams ?? Promise.resolve({}));
 
   return renderMemberMobileShellPage({
     initialScreen: "points",
