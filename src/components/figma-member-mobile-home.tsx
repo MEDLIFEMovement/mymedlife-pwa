@@ -3218,21 +3218,16 @@ function StoryCard({ story, liked, onToggleLike, onClick, featured }: {
   );
 }
 
-function StoryModal({ story, liked, onToggleLike, closeHref }: {
-  story: Story; liked: boolean; onToggleLike: (id: number) => void; closeHref: string;
-}) {
+function StoryModal({ story, liked, onToggleLike, closeHref }: { story: Story; liked: boolean; onToggleLike: (id: number) => void; closeHref: string }) {
   const cfg = sourceConfig[story.source];
   const previewSourceLabel = `${cfg.label} preview`;
   return (
     /* ── Mobile: true full-screen story reader ── */
     <div className="fixed inset-0 z-50 flex flex-col bg-card sm:items-center sm:justify-center sm:p-6 sm:bg-foreground/40 sm:backdrop-blur-sm">
-
       {/* Desktop backdrop tap-to-close */}
       <Link href={closeHref} aria-label="Close story reader" className="absolute inset-0 hidden sm:block" />
-
       {/* Reader container */}
       <div className="relative w-full h-full sm:max-w-2xl sm:h-auto sm:max-h-[90vh] sm:rounded-2xl sm:shadow-2xl bg-card overflow-hidden flex flex-col z-10">
-
         {/* ── Photo / video — fills ~45% on mobile ── */}
         {story.isVideo ? (
           <div className="flex-shrink-0 relative">
@@ -3319,12 +3314,17 @@ function StoryModal({ story, liked, onToggleLike, closeHref }: {
         {/* ── Fixed bottom action bar ── */}
         <div className="flex-shrink-0 px-5 py-4 border-t border-border flex items-center justify-between gap-3 bg-card">
           <div className="flex items-center gap-3">
-            <HeartBtn
-              count={story.likes}
-              storyId={story.id}
-              liked={liked}
-              onToggle={onToggleLike}
-            />
+            <button
+              type="button"
+              disabled
+              title="Preview-only reaction. Likes are not saved, synced, or counted as production proof."
+              className="inline-flex cursor-not-allowed items-center gap-2 opacity-75"
+            >
+              <Heart size={20} className="text-black" />
+              <span className="text-sm font-semibold text-foreground">
+                {story.likes.toLocaleString()} preview likes
+              </span>
+            </button>
             <span className="text-xs text-muted-foreground" style={{ fontFamily: "'DM Mono', monospace" }}>{story.views.toLocaleString()} preview views</span>
           </div>
           <div className="flex items-center gap-2">
@@ -3570,14 +3570,11 @@ export function FigmaMemberMobileHome({
 }) {
   const [screen, setScreen] = useState<Screen>(initialScreen);
   const [role, setRole] = useState<Role>("student");
-
   function navigate(s: Screen) {
     setScreen(s);
     window.scrollTo({ top: 0 });
   }
-
   const isStudentScreen = STUDENT_SCREENS.includes(screen);
-
   const content = () => {
     switch (screen) {
       case "home": return <StudentHome navigate={navigate} setRole={setRole} sltPrepEntry={sltPrepEntry} />;
