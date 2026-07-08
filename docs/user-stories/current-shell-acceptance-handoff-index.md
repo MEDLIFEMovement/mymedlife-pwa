@@ -28,6 +28,9 @@ based on current repo truth and the verified PR queue.
 - `#3` confirmed the staff topbar overlap is not the next missing slice on
   current main; the next staff/admin pressure is embedded Admin return-loop
   coherence.
+- `#546` is merged; use `active-builder-lane-truth-refresh.md` as the short
+  coordinator steering layer for the next member, leader, staff/admin, and QA
+  moves.
 - Figma/exported source remains fidelity contract; repo truth remains
   implementation truth.
 
@@ -46,6 +49,7 @@ based on current repo truth and the verified PR queue.
 | `#3` Staff/Admin | `staff-topbar-shell-acceptance-map.md` | Use for the narrow topbar/header acceptance pass: prevent alert/account overlap while preserving source-backed staff nav. |
 | `#3` Staff/Admin | `staff-embedded-admin-return-loop-acceptance-map.md` | Use for the next return-loop pass: chapter drawer -> embedded Admin -> Chapters and Proof / UGC -> embedded Admin -> review context. |
 | `#4` QA | all three maps plus `reviewer-decision-tree.md` | Verify shell fidelity, TEST labels, blocked controls, and no rollout-proof inflation. |
+| Coordinator / `#5` | `active-builder-lane-truth-refresh.md` | Use after `#546` to steer the next active shell wave and retire stale leaderboard-first, topbar-only, or rollout-assignment drift. |
 
 ## What These Docs Change
 
@@ -68,6 +72,8 @@ based on current repo truth and the verified PR queue.
 - They make the staff/admin next slice concrete: embedded Admin return loops,
   not another topbar-only pass unless a new screenshot or smoke failure proves
   otherwise.
+- They add a compact active-builder truth refresh so Coordinator can steer
+  `#1`, `#2`, `#3`, and `#4` without re-reading every story/backlog artifact.
 
 ## What They Do Not Change
 
