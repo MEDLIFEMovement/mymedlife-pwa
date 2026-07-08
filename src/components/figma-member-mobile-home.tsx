@@ -4,6 +4,7 @@
 
 import Link from "next/link";
 import React, { useState } from "react";
+import { MemberBottomNav, type MemberBottomNavTab } from "@/components/member-bottom-nav";
 import {
   Home, BarChart2, CalendarDays, Trophy, User, Users,
   ChevronRight, ChevronLeft, CheckCircle2, Clock, Circle,
@@ -278,70 +279,6 @@ function AlertBanner({
       {cfg.icon}
       <span>{message}</span>
     </div>
-  );
-}
-
-// ─── Bottom Nav ─────────────────────────────────────────────────────────────
-
-function BottomNav({ active, navigate }: { active: Screen; navigate: (s: Screen) => void }) {
-  const items: { id: Screen | "profile"; label: string; Icon: typeof Home }[] = [
-    { id: "home",    label: "Home",    Icon: Home },
-    { id: "stories", label: "Stories", Icon: Heart },
-    { id: "events",  label: "Events",  Icon: CalendarDays },
-    { id: "points",  label: "Points",  Icon: Trophy },
-    { id: "profile", label: "Profile", Icon: User },
-  ];
-  const EVENT_SCREENS: Screen[] = ["events", "event-detail", "rsvp-confirm", "checkin"];
-  const STORY_SCREENS: Screen[] = ["stories"];
-  return (
-    <nav
-      aria-label="Member bottom navigation"
-      className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] bg-card border-t border-border z-50 flex pb-safe"
-    >
-      {items.map(({ id, label, Icon }, idx) => {
-        const isActive = label === "Events"
-          ? EVENT_SCREENS.includes(active)
-          : label === "Stories"
-          ? STORY_SCREENS.includes(active)
-          : active === id && label !== "Profile";
-        const strokeWidth = isActive ? 2.5 : 1.8;
-        const routeHref = id === "events"
-          ? "/app/events"
-          : id === "stories"
-          ? "/app/stories"
-          : id === "points"
-          ? "/app/points"
-          : id === "profile"
-          ? "/profile"
-          : id === "home"
-          ? "/app"
-          : null;
-        const className = cn(
-          "flex-1 flex flex-col items-center gap-0.5 py-2.5 text-[10px] font-semibold transition-colors",
-          isActive ? "text-primary" : "text-muted-foreground"
-        );
-
-        if (routeHref) {
-          return (
-            <Link key={idx} href={routeHref} className={className} aria-current={isActive ? "page" : undefined}>
-              <Icon size={20} strokeWidth={strokeWidth} />
-              <span>{label}</span>
-            </Link>
-          );
-        }
-
-        return (
-          <button
-            key={idx}
-            onClick={() => navigate(id as Screen)}
-            className={className}
-          >
-            <Icon size={20} strokeWidth={isActive ? 2.5 : 1.8} />
-            {label}
-          </button>
-        );
-      })}
-    </nav>
   );
 }
 
@@ -3559,6 +3496,15 @@ export function FigmaMemberMobileHome({
     window.scrollTo({ top: 0 });
   }
   const isStudentScreen = STUDENT_SCREENS.includes(screen);
+  const activeBottomTab: MemberBottomNavTab =
+    screen === "stories"
+      ? "stories"
+      : screen === "points"
+        ? "points"
+        : ["events", "event-detail", "rsvp-confirm", "checkin"].includes(screen)
+          ? "events"
+          : "home";
+  const profileHref = screen === "home" ? "/profile?source=home" : "/profile";
   const content = () => {
     switch (screen) {
       case "home": return <StudentHome navigate={navigate} setRole={setRole} sltPrepEntry={sltPrepEntry} />;
@@ -3599,7 +3545,7 @@ export function FigmaMemberMobileHome({
             {content()}
           </div>
           {!["confirm", "event-detail", "rsvp-confirm", "checkin"].includes(screen) && (
-            <BottomNav active={screen} navigate={navigate} />
+            <MemberBottomNav activeTab={activeBottomTab} profileHref={profileHref} />
           )}
         </div>
       ) : (

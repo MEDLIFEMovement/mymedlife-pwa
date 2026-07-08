@@ -131,6 +131,10 @@ describe("home page", () => {
       join(process.cwd(), "src/components/figma-member-mobile-home.tsx"),
       "utf8",
     );
+    const navSource = readFileSync(
+      join(process.cwd(), "src/components/member-bottom-nav.tsx"),
+      "utf8",
+    );
     const lineCount = source.split("\n").length;
 
     expect(lineCount).toBeGreaterThanOrEqual(3450);
@@ -142,11 +146,13 @@ describe("home page", () => {
     expect(source).toContain(
       'case "points": return <PointsLeaderboard source={pointsSource} returnEventId={pointsReturnEventId} />;',
     );
-    expect(source).toContain('"/app/stories"');
-    expect(source).toContain('"/app/events"');
-    expect(source).toContain('"/app/points"');
-    expect(source).toContain('"/profile"');
-    expect(source).toContain("<BottomNav active={screen} navigate={navigate} />");
+    expect(source).toContain('import { MemberBottomNav, type MemberBottomNavTab } from "@/components/member-bottom-nav";');
+    expect(source).toContain("<MemberBottomNav activeTab={activeBottomTab} profileHref={profileHref} />");
+    expect(navSource).toContain('"/app/stories"');
+    expect(navSource).toContain('"/app/events"');
+    expect(navSource).toContain('"/app/points"');
+    expect(navSource).toContain('"/profile"');
+    expect(navSource).toContain('aria-label="Member bottom navigation"');
     expect(source).toContain("disabled={!onClick}");
     expect(source).toContain("Secure admin route required");
     expect(source).toContain("External source links are blocked in this preview");

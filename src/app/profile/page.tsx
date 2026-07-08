@@ -1,3 +1,4 @@
+import { MemberBottomNav } from "@/components/member-bottom-nav";
 import { StudentAppShell } from "@/components/student-app-shell";
 import { MemberProfilePanel } from "@/components/member-profile-panel";
 import { WorkspaceAccountMenu } from "@/components/workspace-account-menu";
@@ -59,20 +60,23 @@ export default async function ProfilePage(props: ProfilePageProps) {
       showMobileQuickItemHelpers={false}
       showDebugTools={false}
     >
-      <WorkspaceAccountMenu actor={actor} currentWorkspace="student_app" />
-      {isPreviewWorkspaceAccess(actor, "student_app") ? (
-        <WorkspacePreviewBanner workspaceLabel="the General Student App" />
-      ) : null}
-      {studentHome && recognition ? (
-        <MemberProfilePanel
-          chapterName={studentHome.chapterName}
-          displayName={actor.user.displayName}
-          entrySource={getProfileSource(resolvedSearchParams.source)}
-          workspace={workspace}
-          studentHome={studentHome}
-          recognition={recognition}
-        />
-      ) : null}
+      <div className="pb-24">
+        <WorkspaceAccountMenu actor={actor} currentWorkspace="student_app" />
+        {isPreviewWorkspaceAccess(actor, "student_app") ? (
+          <WorkspacePreviewBanner workspaceLabel="the General Student App" />
+        ) : null}
+        {studentHome && recognition ? (
+          <MemberProfilePanel
+            chapterName={studentHome.chapterName}
+            displayName={actor.user.displayName}
+            entrySource={getProfileSource(resolvedSearchParams.source)}
+            workspace={workspace}
+            studentHome={studentHome}
+            recognition={recognition}
+          />
+        ) : null}
+      </div>
+      <MemberBottomNav activeTab="profile" />
     </StudentAppShell>
   );
 }
