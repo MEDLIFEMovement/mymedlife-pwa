@@ -238,6 +238,52 @@ describe("admin audit log review", () => {
       }),
     );
   });
+
+  it("summarizes null, array, empty object, and scalar audit values readably", () => {
+    const actor = getMockLocalActorContext("admin@mymedlife.test");
+    const review = getAdminAuditLogReview(
+      actor,
+      dataWithAuditLogs([
+        {
+          id: "audit-null-array",
+          actor_user_id: "member-1",
+          chapter_id: "chapter-1",
+          action: "proof_reviewed",
+          target_table: "proof_items",
+          target_id: "proof-1",
+          before_value: null,
+          after_value: ["queued"],
+          reason: "Array summary coverage.",
+          created_at: "2026-06-15T00:00:00Z",
+        },
+        {
+          id: "audit-object-scalar",
+          actor_user_id: "member-2",
+          chapter_id: "chapter-2",
+          action: "proof_reviewed",
+          target_table: "proof_items",
+          target_id: "proof-2",
+          before_value: {},
+          after_value: "ready",
+          reason: "Scalar summary coverage.",
+          created_at: "2026-06-15T00:05:00Z",
+        },
+      ]),
+    );
+
+    expect(review.rows[0]).toEqual(
+      expect.objectContaining({
+        beforeSummary: "none",
+        afterSummary: "1 item",
+      }),
+    );
+    expect(review.rows[1]).toEqual(
+      expect.objectContaining({
+        beforeSummary: "empty object",
+        afterSummary: "ready",
+      }),
+    );
+  });
 });
 
 function dataWithAuditLogs(auditLogs: AuditLogRow[]) {
