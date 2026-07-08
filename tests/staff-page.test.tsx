@@ -478,6 +478,41 @@ describe("staff page", () => {
     expect(adminSource).toContain("href={backHref ?? \"#\"}");
   });
 
+  it("keeps a route-backed proof queue return visible inside the embedded admin review surface", async () => {
+    mockPathname = "/staff";
+    mockSearchParams = new URLSearchParams({
+      view: "admin",
+      adminView: "audit",
+      returnView: "proof_ugc",
+      ugcCard: "ugc4",
+      chapterContext: "TEST Stanford University",
+      proofStatus: "pending",
+      proofPlatform: "instagram",
+    });
+
+    const { FigmaAdminPanel } = await import("@/components/figma-admin-panel");
+    const html = renderToStaticMarkup(
+      <FigmaAdminPanel
+        initialActive="audit"
+        onBack={vi.fn()}
+        embeddedBackLabel="Proof / UGC"
+        embeddedBackHref="/staff?view=proof_ugc&ugcCard=ugc4&chapterContext=TEST+Stanford+University&proofStatus=pending&proofPlatform=instagram"
+      />,
+    );
+    const staffSource = readFileSync("src/components/figma-staff-command-center.tsx", "utf8");
+
+    expect(html).toContain("Command Center");
+    expect(html).toContain("Return to TEST Stanford University in Proof / UGC");
+    expect(html).toContain("Embedded Proof Review");
+    expect(html).toContain("Return: TEST Stanford University in Proof / UGC");
+    expect(html).toContain("Context: TEST Stanford University");
+    expect(html).toContain("Queue: Pending · Instagram");
+    expect(html).toContain("Queue context: Pending · Instagram");
+    expect(html).toContain('href="/staff?view=proof_ugc&amp;ugcCard=ugc4&amp;chapterContext=TEST+Stanford+University&amp;proofStatus=pending&amp;proofPlatform=instagram"');
+    expect(staffSource).toContain('adminReturnScreen === "ugc"');
+    expect(staffSource).toContain('buildStaffProofHref(pathname, currentRouteSearch, getRouteParam("ugcCard"))');
+  });
+
   it("keeps the proof review admin handoff wired to a Proof / UGC return target in source", () => {
     const source = readFileSync("src/components/figma-staff-command-center.tsx", "utf8");
 
