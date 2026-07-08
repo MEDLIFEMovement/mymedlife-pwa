@@ -36,8 +36,10 @@ describe("copied Figma leader support screens", () => {
     const html = renderToStaticMarkup(<TrainingScreen />);
 
     expect(html).toContain("Leadership &amp; Resources Hub");
-    expect(html).toContain("Videos, presentations, and external resources");
+    expect(html).toContain("TEST videos, presentations, and external resources for leadership development, succession review, and values coaching.");
     expect(html).toContain("TEST training preview.");
+    expect(html).toContain("Leadership handoff posture");
+    expect(html).toContain("Use this TEST library to prepare values interviews, succession coaching, committee follow-through, and leader onboarding.");
     expect(html).toContain("Preview Resource Intake");
     expect(html).toContain("All (16)");
     expect(html).toContain("Videos (6)");
@@ -83,6 +85,7 @@ describe("copied Figma leader support screens", () => {
     expect(trainingSource).toContain("Leadership resource sharing is blocked in this preview until feed approval is complete.");
     expect(trainingSource).toContain("Committee sends are blocked in this preview until messaging approval is complete.");
     expect(trainingSource).toContain("Leadership reading-list saves are blocked in this preview until write approval is complete.");
+    expect(trainingSource).toContain("Completion tracking, certificates, assignments, and chapter-wide sends stay blocked in this preview.");
     expect(trainingSource).toContain("Preview Chapter Feed Share");
     expect(trainingSource).toContain("Preview Committee Send");
     expect(trainingSource).toContain("Preview Reading List Add");
