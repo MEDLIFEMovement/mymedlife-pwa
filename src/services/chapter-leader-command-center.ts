@@ -540,6 +540,7 @@ export type ChapterLeaderCommandCenterSourceContext = {
 };
 
 export type ChapterLeaderCommandCenterSource =
+  | "overview"
   | "member_home"
   | "events"
   | "bridge_videos"
@@ -1954,6 +1955,51 @@ function getChapterLeaderSourceContext(
           },
         ],
       };
+    case "overview":
+      return {
+        eyebrow: "Chapter Home handoff",
+        title:
+          context.selectedView === "committees"
+            ? "Opened from Chapter Home into committee follow-through"
+            : context.selectedView === "leaderboard"
+              ? "Opened from Chapter Home into leaderboard follow-through"
+              : "Opened from Chapter Home into event follow-through",
+        summary:
+          context.selectedView === "committees"
+            ? "This route was opened from Chapter Home so committee ownership, next-event readiness, and event follow-through stay anchored to the same leader shell instead of splitting into disconnected review lanes."
+            : context.selectedView === "leaderboard"
+              ? "This leaderboard route was opened from Chapter Home so attendance-backed points can be reviewed without losing the event-operations posture that surfaced the question."
+              : "This route was opened from Chapter Home so create-event staging, attendance review, and leaderboard follow-through stay inside one visible leader workflow.",
+        actions: [
+          {
+            label: "Back to Chapter Home",
+            href: buildChapterLeaderCommandCenterHref("overview", {
+              source: "overview",
+              memberId: context.memberId,
+              pipelineFilter: context.pipelineFilter,
+              searchQuery: context.searchQuery,
+            }),
+          },
+          {
+            label: "Open Event Performance",
+            href: buildChapterLeaderCommandCenterHref("events", {
+              source: "overview",
+              memberId: context.memberId,
+              eventCommitteeFilter: context.eventCommitteeFilter,
+              eventId: context.eventId,
+            }),
+          },
+          {
+            label: "Open leaderboard",
+            href: buildChapterLeaderCommandCenterHref("leaderboard", {
+              source: "overview",
+              memberId: context.memberId,
+              eventCommitteeFilter: context.eventCommitteeFilter,
+              leaderboardMetric: "attendance",
+            }),
+          },
+        ],
+      };
     case "events":
       return {
         eyebrow: "Event review handoff",
@@ -2177,6 +2223,7 @@ function getChapterLeaderSourceContext(
 
 function parseChapterLeaderSource(value?: string): ChapterLeaderCommandCenterSource | null {
   switch (value) {
+    case "overview":
     case "member_home":
     case "events":
     case "bridge_videos":
@@ -2215,7 +2262,7 @@ export function buildChapterLeaderCommandCenterHref(
     options.source === "leaderboard" ||
     Boolean(options.bestPracticeChapterId);
   const shouldPreserveEventContext =
-    view === "events" || options.source === "events";
+    view === "events" || options.source === "events" || options.source === "overview";
   const shouldPreserveFeedPostContext =
     view === "feed_analytics" ||
     view === "bridge_videos" ||
@@ -3180,11 +3227,13 @@ function getQuickActions(
     feedPostId?: string | null;
   } = {},
 ): ChapterLeaderCommandCenterQuickAction[] {
+  const commandCenterSource = context.source ?? "overview";
+
   return [
     {
       label: "Create Event",
       href: buildChapterLeaderCommandCenterHref("events", {
-        source: context.source,
+        source: commandCenterSource,
         memberId: selectedMemberId,
         eventCommitteeFilter: context.eventCommitteeFilter,
         quickAction: "create_event",
@@ -3195,7 +3244,7 @@ function getQuickActions(
     {
       label: "Confirm Attendance",
       href: buildChapterLeaderCommandCenterHref("events", {
-        source: context.source,
+        source: commandCenterSource,
         memberId: selectedMemberId,
         eventCommitteeFilter: context.eventCommitteeFilter,
         quickAction: "assign_action",
@@ -3218,7 +3267,7 @@ function getQuickActions(
     {
       label: "Review Leaderboard",
       href: buildChapterLeaderCommandCenterHref("leaderboard", {
-        source: context.source,
+        source: commandCenterSource,
         memberId: selectedMemberId,
         leaderboardMetric: "attendance",
       }),
@@ -3332,6 +3381,7 @@ function getRiskAlerts(input: {
       summary:
         "Pick the leader who owns the next Luma event, RSVP check, and day-of attendance plan before the chapter push loses follow-through.",
       href: buildChapterLeaderCommandCenterHref("events", {
+        source: "overview",
         eventCommitteeFilter: "recruitment",
       }),
       hrefLabel: "Open events",
@@ -3345,6 +3395,7 @@ function getRiskAlerts(input: {
       summary:
         "A group of interested students has not turned into attendance yet. Review the RSVP list and decide who needs a reminder before event day.",
       href: buildChapterLeaderCommandCenterHref("events", {
+        source: "overview",
         eventCommitteeFilter: "recruitment",
       }),
       hrefLabel: "Open RSVPs",
@@ -3358,6 +3409,7 @@ function getRiskAlerts(input: {
       summary:
         "Some event activity has not become confirmed check-ins yet. Close attendance so the leaderboard reflects the chapter's real work.",
       href: buildChapterLeaderCommandCenterHref("events", {
+        source: "overview",
         eventCommitteeFilter: "all",
       }),
       hrefLabel: "Confirm attendance",
@@ -3371,6 +3423,7 @@ function getRiskAlerts(input: {
       summary:
         "The recruitment event still needs visible follow-up, so open the event review and make sure attendance-backed points are reflected.",
       href: buildChapterLeaderCommandCenterHref("events", {
+        source: "overview",
         eventCommitteeFilter: "recruitment",
         eventId: "bc-event-quad-tabling",
       }),
