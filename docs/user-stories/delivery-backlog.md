@@ -2,8 +2,8 @@
 
 Date: 2026-07-08
 Owner lane: myMEDLIFE #5, planning/docs only
-Planning base: `origin/main` commit `8a2a7f4` (`Add active builder lane truth
-refresh (#548)`)
+Planning base: `origin/main` commit `875116c` (`Add narrow launch event loop
+truth packet (#552)`)
 
 Purpose: compact, execution-ready backlog for the next narrow-launch build wave.
 This document translates the repo-truth story package into PR-sized slices while
@@ -15,15 +15,25 @@ Event-loop companion packet:
 - `docs/user-stories/narrow-launch-event-loop-truth.md`
 - `docs/user-stories/narrow-launch-event-loop-gap-sequence.md`
 
+Luma companion packet:
+
+- `docs/user-stories/luma-functionality-truth.md`
+- `docs/user-stories/luma-foundation-gap-sequence.md`
+
 ## Current PR Context
 
 Coordinator's fresh live truth for this refresh:
 
-- `#548` is merged; this backlog starts from the active builder truth refresh.
-- Member queue: `#523` is rerunning, with `#536` rerunning behind it.
+- `#552` is merged; this backlog now has a better event-loop truth packet.
+- Member queue: `#551` is the current narrow shell-lane blocker. Browser smoke
+  is ambiguous between the new Stories filter-chip `Events` link and the
+  bottom-nav `Events` link.
 - Leader queue: `#545` is clean behind-only, and `#547` is Codecov-only red.
-- Staff/Admin queue: `#522` is clean, with `#521`, `#534`, and `#538` fully
-  green and behind-only, plus the broader continuity PR `#550`.
+- Staff/Admin queue: `#550` remains an actively broadened rerun/watch branch on
+  head `756acf2fa814b87e06555cc4d30a4c078f83d7ea`.
+- User interest is rising around Luma functionality, but no Luma access request
+  is justified yet; use the Luma companion packet to keep static-export,
+  read-only, provider-write, and rollout-proof boundaries separate.
 
 Those PRs are active coordination context, not implementation truth until they
 land on `main`.
@@ -57,26 +67,26 @@ land on `main`.
 
 | ID | Owner | Suggested model | Module | Status now | Next slice | Can move | Must not move / boundaries |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| DB-001 | `#1` | `gpt-5.4` medium/high | Member events -> points | preview-only / partial | After `#523/#536` settle, return to `/app/events` -> detail -> RSVP/check-in posture -> `/app/points` continuity if the member lane is free. | `Scope/UI`, `QA/Ops` if tested/smoked | No real RSVP, check-in, attendance, points ledger, Luma write, or rollout proof. |
-| DB-002 | `#1` | `gpt-5.4` medium | Member SLT / profile continuity | active queue | Let `#523` clear before another overlapping member-shell slice; keep SLT/profile shell continuity source-backed and preview-safe. | `Scope/UI`, `QA/Ops` | No profile/contact/emergency/traveler writes, SLT trip registration, payment/provider writes, or signed-in proof claims. |
-| DB-003 | `#1` | `gpt-5.4` medium | Member Stories | active queue / preview-only | Let `#536` clear, then use `member-stories-ig-feed-acceptance-map.md` only for remaining IG-style feed/detail fidelity gaps. | `Scope/UI`, `QA/Ops` | No publishing, consent approval, comments, shares, provider sync, or production proof. |
+| DB-001 | `#1` | `gpt-5.4` medium/high | Member events -> points | preview-only / partial | After `#551` clears, return to `/app/events` -> detail -> RSVP/check-in posture -> `/app/points` continuity if the member lane is free. | `Scope/UI`, `QA/Ops` if tested/smoked | No real RSVP, check-in, attendance, points ledger, Luma write, or rollout proof. |
+| DB-002 | `#1` | `gpt-5.4` medium | Member SLT / profile continuity | merged shell / monitor | Do not reopen SLT/profile unless new repo evidence shows drift after the member queue clears. | `Scope/UI`, `QA/Ops` | No profile/contact/emergency/traveler writes, SLT trip registration, payment/provider writes, or signed-in proof claims. |
+| DB-003 | `#1` | `gpt-5.4` medium | Member Stories | active queue / preview-only | Let `#551` clear; the current issue is route-smoke ambiguity around the Stories `Events` filter versus bottom-nav `Events`, not live story functionality. | `Scope/UI`, `QA/Ops` | No publishing, consent approval, comments, shares, provider sync, or production proof. |
 | DB-004 | `#1` | `gpt-5.4` medium | Member mobile QA | needs QA evidence | Mobile browser review for member events/detail/points/home/profile continuity. | `QA/Ops` | Screenshots do not prove Data/Auth, Writes/Integrations, or Rollout Gate. |
 | DB-005 | `#2` | `gpt-5.4` high | Leader shell/menu | active queue | Keep `/leader?view=*` route/menu continuity as the base; `#545` and `#547` should finish training/event review continuity before new overlapping leader slices. | `Scope/UI`, `QA/Ops` | No member/staff/admin files, role changes, event writes, attendance imports, or production proof. |
 | DB-006 | `#2` | `gpt-5.4` medium/high | Leader succession/support | partial / preview-only | After `#545/#547`, verify succession, values, leadership training, member/profile handoffs, and event review remain route-backed and preview-safe. | `Scope/UI`, `QA/Ops` | No succession writes, promotion, assignment, contact sends, or proof claims. |
 | DB-007 | `#2` | `gpt-5.4` medium | Leader events/attendance | partial / preview-only | Event-adjacent follow-through: attendance, committee ownership, and follow-up controls read as preview/read-only. Prioritize only after the current leader review branches settle. | `Scope/UI`, `QA/Ops` | No Luma sync, event creation writes, attendance imports, notifications, or points awards. |
 | DB-008 | `#2` | `gpt-5.4-mini` medium | Leader visual QA support | needs review | Produce reviewer notes for `/leader?view=*` continuity after the `#545/#547` wave settles. | `QA/Ops` | QA notes do not move rollout proof. |
-| DB-009 | `#3` | `gpt-5.4` high | Staff chapter drawer / embedded Admin | partial / preview-only | Use `#521` and the embedded-admin return-loop map for chapter drawer -> embedded Admin -> Chapters loop coherence. | `Scope/UI`, `QA/Ops` | No rollout packet ownership, owner CSV apply, invites, provider writes, or admin mutations. |
-| DB-010 | `#3` | `gpt-5.4` medium/high | Staff Proof / UGC | active queue / preview-only | Let `#522` land first; then review queue next-step clarity and Proof/UGC handoff copy can continue if source drift remains. | `Scope/UI`, `QA/Ops` | No proof ingestion, consent approval, publish, social/provider sync, or production evidence claims. |
+| DB-009 | `#3` | `gpt-5.4` high | Staff chapter drawer / embedded Admin | partial / preview-only | Let `#550` settle, then use the embedded-admin return-loop map for chapter drawer -> embedded Admin -> Chapters loop coherence. | `Scope/UI`, `QA/Ops` | No rollout packet ownership, owner CSV apply, invites, provider writes, or admin mutations. |
+| DB-010 | `#3` | `gpt-5.4` medium/high | Staff Proof / UGC | preview-only | After `#550` settles, review queue next-step clarity and Proof/UGC handoff copy can continue only if source drift remains. | `Scope/UI`, `QA/Ops` | No proof ingestion, consent approval, publish, social/provider sync, or production evidence claims. |
 | DB-011 | `#3` | `gpt-5.4` medium | Staff/Admin walkthrough | partial | Renato-facing staff/admin walkthrough continuity: staff top nav, embedded dark Admin, back affordance, admin menu family. | `Scope/UI`, `QA/Ops` | No live admin/provider writes, secrets, user/role/chapter mutations, or launch gate advancement. |
 | DB-012 | `#3` | `gpt-5.4` medium | Admin integrations/API/MCP | preview-only | Keep provider/API/MCP verbs masked, blocked, or preview-only with TEST sample content. | `Scope/UI`, `QA/Ops` | No API key reveal/copy/rotate/revoke, MCP connect, provider test/send, or production readiness claims. |
-| DB-013 | `#4` | `gpt-5.3-codex-spark` or `gpt-5.4-mini` | PR board watch | ongoing | Watch `#523/#536`, `#545/#547`, and `#522/#521/#534/#538/#550`; call out behind-only vs failing vs blocked without treating draft branches as merged truth. | `QA/Ops` only when tied to checks | No implementation, matrix edits, rollout proof claims, or provider access. |
+| DB-013 | `#4` | `gpt-5.3-codex-spark` or `gpt-5.4-mini` | PR board watch | ongoing | Watch `#551`, `#545/#547`, and `#550`; call out behind-only vs failing vs blocked without treating draft branches as merged truth. | `QA/Ops` only when tied to checks | No implementation, matrix edits, rollout proof claims, or provider access. |
 | DB-014 | `#4` | `gpt-5.4-mini` | Three-shell visual QA | needs current pass | Verify TEST labels, no silent controls, and shell-specific source fidelity after each shell PR. | `QA/Ops` | QA screenshots alone do not prove production readiness. |
 | DB-015 | `#5` | `gpt-5.5` medium | Story/backlog truth | this lane | Refresh story package, delivery backlog, and stale-steering notes after each merge wave. | none from docs alone | No product code, no matrix edits, no rollout proof capture. |
 | DB-016 | Data/Safety | `gpt-5.5` medium | Production signed-in proof readiness | partial / staged | Confirm tooling separates real production accounts from preview cookies/TEST actors. | `Data/Auth`, `QA/Ops` if tested | No production account creation or proof rows without approval. |
-| DB-017 | Data/Safety | `gpt-5.5` medium | RSVP/check-in/attendance/points authority | preview-only | Fail-closed contract for RSVP, QR/check-in, attendance, points prerequisites, audit, and duplicate protection. | `Data/Auth`, maybe `Writes/Integrations` only if contract-backed | No browser-facing live writes or pilot proof movement. |
+| DB-017 | Data/Safety | `gpt-5.5` medium | RSVP/check-in/attendance/points authority | preview-only | Fail-closed contract for RSVP, QR/check-in, attendance, points prerequisites, audit, duplicate protection, and Luma writeback/import boundaries. | `Data/Auth`, maybe `Writes/Integrations` only if contract-backed | No browser-facing live writes, Luma provider writes, or pilot proof movement. |
 | DB-018 | Data/Safety | `gpt-5.5` medium | Proof/UGC consent/storage | preview-only | Consent, storage, moderation, identity, and publish boundaries. | `Data/Auth` | No proof upload, consent approval, story publish, provider sync, or rollout evidence. |
 | DB-019 | Rollout Evidence | human/Coordinator-led | Owner data | blocked | Owner CSV return monitor and validation. | `Rollout Gate` only when real data arrives | TEST/Figma/sandbox rows cannot populate packet, counts, invite gate, or proof. |
-| DB-020 | Rollout Evidence | human/Coordinator-led | Production proof | blocked | Live counts, signed-in proof by role, pilot proof, audit/outbox zero-send, final approval. | `Rollout Gate` | No planning doc, smoke pass, screenshot, or UI merge opens launch gate. |
+| DB-020 | Rollout Evidence | human/Coordinator-led | Production proof | blocked | Live counts, signed-in proof by role, Luma/event pilot proof, audit/outbox zero-send, final approval. | `Rollout Gate` | No planning doc, smoke pass, screenshot, Luma preview route, or UI merge opens launch gate. |
 
 ## Access Boundary
 
@@ -94,19 +104,19 @@ Work that eventually needs real access or returned data:
 - Production Supabase/myMEDLIFE live counts.
 - Production signed-in proof using real approved accounts and roles.
 - Pilot event proof tying RSVP, attendance, points, audit, and zero-send.
-- HubSpot/Luma/static export comparison only if Coordinator/Nick approves the
-  access request and it is used as read-only context.
+- Luma static export/read-only lookup only if the approved chapter slate and
+  pilot-event gap report prove exact missing Luma mapping or event fields.
 
 ## Immediate Use
 
 If the current queue settles cleanly, the next strongest shell queue is:
 
 1. `#1 DB-001`: member event/detail/RSVP-check-in/points continuity after
-   `#523/#536` clear.
+   `#551` clears.
 2. `#2 DB-006`: leader succession/support/member-profile/event review
    continuity after `#545/#547` clear.
-3. `#3 DB-010`: staff Proof/UGC review-queue next-step clarity after `#522`
-   clears, with embedded Admin return loops from `#521` preserved.
+3. `#3 DB-009`: staff/Admin chapter drawer -> embedded Admin continuity after
+   `#550` settles, with Luma status and launch-gate handoffs staying read-only.
 4. `#4 DB-013`: PR-board watch and evidence classification for the active wave.
 
 If only one builder can move first, prioritize `#1 DB-001`; it is the clearest
