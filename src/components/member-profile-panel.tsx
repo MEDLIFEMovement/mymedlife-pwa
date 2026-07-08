@@ -1,6 +1,7 @@
 import {
   Award,
   Bell,
+  ChevronLeft,
   ChevronRight,
   QrCode,
   Settings,
@@ -26,6 +27,7 @@ type MemberProfilePanelProps = {
 export function MemberProfilePanel({
   chapterName,
   displayName,
+  entrySource = null,
   isPreviewMode = false,
   workspace,
   studentHome,
@@ -113,6 +115,25 @@ export function MemberProfilePanel({
         </div>
 
         <div className="space-y-5 px-4 pb-4 pt-5">
+          {entrySource === "home" ? (
+            <SurfacePanel className="rounded-[1.6rem] border border-[#bfdbfe] bg-[#eff6ff] p-4">
+              <p className="text-xs font-bold uppercase tracking-wide text-[#1d4ed8]">
+                Opened from the TEST home walkthrough
+              </p>
+              <p className="mt-2 text-sm leading-6 text-slate-700">
+                This profile stays inside the student shell so you can review your TEST identity,
+                points, and next event context without falling out of the member app.
+              </p>
+              <a
+                href="/app"
+                className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-[#2563eb]"
+              >
+                <ChevronLeft size={14} />
+                Back to Home
+              </a>
+            </SurfacePanel>
+          ) : null}
+
           <section>
             <ProfileSectionLabel>Achievements</ProfileSectionLabel>
             <div className="grid grid-cols-3 gap-3">
@@ -173,7 +194,7 @@ export function MemberProfilePanel({
               <div className="flex items-center gap-2">
                 <Shield size={15} className="text-[#2563eb]" />
                 <p className="text-sm font-semibold text-slate-950">
-                  Switch designation to preview access
+                  Designation preview
                 </p>
               </div>
               <div className="mt-3 flex flex-wrap gap-2">
@@ -197,7 +218,7 @@ export function MemberProfilePanel({
                 })}
               </div>
               <p className="mt-3 text-xs leading-5 text-slate-500">
-                Preview only: role changes and privileged views stay blocked until approved membership access is wired.
+                Preview only: designation changes and privileged views stay blocked until approved membership access is wired.
               </p>
             </SurfacePanel>
           </section>
@@ -249,16 +270,16 @@ export function MemberProfilePanel({
             </SurfacePanel>
           </section>
 
-          {isPreviewMode ? (
-            <div className="rounded-[1.35rem] border border-blue-200 bg-blue-50 px-4 py-3">
-              <p className="text-sm font-semibold text-[#1d4ed8]">Preview Mode — read-only</p>
-              <div className="mt-2 space-y-1.5 text-xs leading-5 text-slate-600">
-                <p>No profile save runs from this route, and profile writes stay blocked.</p>
-                <p>No join request, role approval, membership change, or coach assignment runs from this route.</p>
-                <p>Certificates stay blocked, and TEST content remains preview-only until launch cleanup.</p>
-              </div>
+          <div className="rounded-[1.35rem] border border-blue-200 bg-blue-50 px-4 py-3">
+            <p className="text-sm font-semibold text-[#1d4ed8]">Read-only profile</p>
+            <div className="mt-2 space-y-1.5 text-xs leading-5 text-slate-600">
+              <p>No profile save runs from this route.</p>
+              <p>No join request, role approval, membership change, or coach assignment runs from this route.</p>
+              {isPreviewMode ? (
+                <p>Certificates, profile sharing, and sign-out stay blocked in this preview shell.</p>
+              ) : null}
             </div>
-          ) : null}
+          </div>
 
           <button
             type="button"
@@ -268,9 +289,6 @@ export function MemberProfilePanel({
           >
             Sign out
           </button>
-          <p className="-mt-2 text-center text-xs leading-5 text-slate-500">
-            Sign-out and profile writes stay blocked in this preview shell.
-          </p>
           <p className="text-center text-xs text-slate-500">
             myMEDLIFE v1.0 · {testChapterName}
           </p>
