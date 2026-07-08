@@ -6,6 +6,9 @@ import {
   type WorkspaceKey,
 } from "@/services/workspace-access";
 
+export const WORKSPACE_ACCOUNT_MENU_SHELL_CLEARANCE =
+  "pr-[4.5rem] sm:pr-[16rem] lg:pr-[19rem] xl:pr-[21rem]";
+
 type WorkspaceAccountMenuProps = {
   actor: LocalActorContext;
   currentWorkspace: WorkspaceKey;

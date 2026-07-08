@@ -28,6 +28,7 @@ import {
   StaffLaunchEventsOperations,
   StaffLaunchOrganizationLeaderboard,
 } from "@/components/staff-launch-events-panels";
+import { WORKSPACE_ACCOUNT_MENU_SHELL_CLEARANCE } from "@/components/workspace-account-menu";
 import { getStaffChapterTypeFilterLabel, getStaffChapterTypeLabel, getStaffChapterTypeValue, staffChapterTypeFilterOptions, type StaffLaunchChapterTypeFilter } from "@/services/staff-chapter-type";
 import type { SOPCampaign } from "@/components/figma-sop-builder";
 import { FigmaAdminPanel as AdminPanel } from "@/components/figma-admin-panel";
@@ -119,8 +120,9 @@ interface BestPractice {
 
 type Screen = "chapters" | "campaigns" | "events" | "ugc" | "reports" | "admin" | "best-practices" | "sops";
 
-const STAFF_HEADER_ACCOUNT_CLEARANCE = "pr-[11rem] sm:pr-[16rem] lg:pr-[18rem] xl:pr-[19rem]";
-const STAFF_HEADER_ALERT_VISIBILITY = "hidden md:flex max-w-[8.5rem] lg:max-w-[10rem] xl:max-w-[11.5rem]";
+const STAFF_HEADER_ACCOUNT_CLEARANCE = WORKSPACE_ACCOUNT_MENU_SHELL_CLEARANCE;
+const STAFF_HEADER_ALERT_VISIBILITY =
+  "hidden md:flex max-w-[7rem] lg:max-w-[8.5rem] xl:max-w-[10rem] 2xl:max-w-[11.5rem]";
 
 /* ─────────────────────────────────────────────────────────── */
 /*  MOCK DATA                                                   */
