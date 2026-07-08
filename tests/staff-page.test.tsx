@@ -313,6 +313,11 @@ describe("staff page", () => {
     expect(source).toContain("Click any card to review consent and blocked actions, or open the Admin preview for DS audit readback without leaving the Staff Command Center.");
     expect(source).toContain("Caption and coach-note drafting stays local-only in this preview");
     expect(source).toContain("const selectedCardReturnLoopLabel = selectedCard");
+    expect(source).toContain("Open chapter drawer");
+    expect(source).toContain("buildStaffChapterHref(selectedCardChapter.id, pathname, currentSearch)");
+    expect(source).toContain("Keep the same chapter loop intact: after Admin readback, reopen this chapter drawer if the story needs coach or chapter follow-through.");
+    expect(source).toContain("If a chapter needs follow-up after that Admin readback, reopen the chapter drawer from this same Command Center flow instead of leaving the staff shell.");
+    expect(source).toContain("Reopen the chapter drawer from this queue when a story needs chapter-specific follow-through after the Admin review pass.");
     expect(source).toContain("getEmbeddedProofQueueContext(");
     expect(source).toContain("Next review step");
   });
@@ -628,6 +633,34 @@ describe("staff page", () => {
     expect(source).toContain("getStaffAdminReturnLoopLabel(backLabel, chapterContext, proofQueueContext)");
   });
 
+  it("keeps proof review chapter follow-through route-backed from the selected story panel", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("general.staff@mymedlife.test"),
+    );
+
+    const { default: StaffPage } = await import("@/app/staff/page");
+    const html = renderToStaticMarkup(
+      await StaffPage({
+        searchParams: Promise.resolve({
+          view: "proof_ugc",
+          ugcCard: "ugc4",
+          proofStatus: "pending",
+          proofPlatform: "instagram",
+        }),
+      }),
+    );
+
+    expect(html).toContain("Open chapter drawer");
+    expect(html).toContain(
+      'href="/staff?view=chapters&amp;proofStatus=pending&amp;proofPlatform=instagram&amp;chapter=ch13"',
+    );
+    expect(html).toContain("Keep the same chapter loop intact: after Admin readback, reopen this chapter drawer if the story needs coach or chapter follow-through.");
+    expect(html).toContain("If a chapter needs follow-up after that Admin readback, reopen the chapter drawer from this same Command Center flow instead of leaving the staff shell.");
+    expect(html).toContain("Reopen the chapter drawer from this queue when a story needs chapter-specific follow-through after the Admin review pass.");
+  });
+
   it("keeps chapter portfolio filter context route-backed for the chapter review loop", async () => {
     const actorModule = await import("@/services/local-actor-context");
 
@@ -703,7 +736,7 @@ describe("staff page", () => {
     const lineCount = source.split("\n").length;
 
     expect(lineCount).toBeGreaterThanOrEqual(2170);
-    expect(lineCount).toBeLessThanOrEqual(2985);
+    expect(lineCount).toBeLessThanOrEqual(3010);
     expect(source).toContain("type Screen = \"chapters\" | \"campaigns\" | \"events\" | \"ugc\" | \"reports\" | \"admin\" | \"best-practices\" | \"sops\";");
     expect(source).toContain("const NAV_ITEMS");
     expect(source).toContain("function PortfolioOverview");
