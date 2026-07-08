@@ -210,6 +210,24 @@ describe("chapter leader command center", () => {
     expect(markup.match(/style=\"width:0%\"/g)?.length).toBeGreaterThanOrEqual(2);
   });
 
+  it("keeps existing TEST prefixes visible without doubling them in the overview shell", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data);
+    const prefixedCommandCenter = {
+      ...commandCenter,
+      sidebarLeaderLabel: "TEST Sofia Reyes, President · New England Region",
+      chapterName: "TEST Boston College MEDLIFE",
+    };
+    const markup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter: prefixedCommandCenter }),
+    );
+
+    expect(markup).toContain("TEST Sofia Reyes, President · New England Region");
+    expect(markup).toContain("TEST Boston College MEDLIFE");
+    expect(markup).not.toContain("TEST TEST Sofia Reyes");
+    expect(markup).not.toContain("TEST TEST Boston College MEDLIFE");
+  });
+
   it("keeps the service-backed leader menu visible for supabase-backed route state too", () => {
     const actor = getMockLocalActorContext("leader.a@mymedlife.test");
     const supabaseData = {
@@ -999,6 +1017,29 @@ describe("chapter leader command center", () => {
       "href=\"/leader?view=committees&amp;committee=committee-events\"",
     );
     expect(markup).toContain("Selected");
+  });
+
+  it("keeps selected committee owner copy honest when a chair is still unassigned", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "committees",
+      committeeId: "committee-events",
+    });
+    const unassignedCommandCenter = {
+      ...commandCenter,
+      selectedCommittee: commandCenter.selectedCommittee
+        ? {
+            ...commandCenter.selectedCommittee,
+            ownerLabel: "No chair assigned",
+          }
+        : commandCenter.selectedCommittee,
+    };
+    const markup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter: unassignedCommandCenter }),
+    );
+
+    expect(markup).toContain("No TEST chair assigned");
+    expect(markup).not.toContain("TEST No chair assigned");
   });
 
   it("maps the events view to the attendance table and social recruiting panel from the mockup", () => {
