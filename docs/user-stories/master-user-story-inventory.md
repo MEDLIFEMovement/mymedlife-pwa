@@ -20,7 +20,12 @@ the built/partial/preview-only/blocked line clear for MVP planning.
 
 ## Sources Inspected
 
-- Repo truth refresh checked against `/Users/codex/Documents/Codex/2026-07-06/new-chat/mymedlife-staff-admin` on `origin/main` commit `12dd983` (`Add MED-512 staff admin review packet (#461)`).
+- Repo truth refresh checked against this repo checkout on `origin/main` commit
+  `bc091ee` (`Add shell acceptance planning packets (#501)`), which includes
+  the recent member event return continuity, member points continuity, member
+  stories reader preview honesty, leader live-route continuity, staff proof
+  review next steps, staff chapter drawer follow-through, embedded admin back
+  affordance, and shell acceptance packet work.
 - `/Users/codex/Documents/Codex/2026-07-06/new-chat/mymedlife-staff-admin/AGENTS.md`
 - `/Users/codex/Documents/Codex/2026-07-06/new-chat/mymedlife-staff-admin/docs/01-one-page-brief.md`
 - `/Users/codex/Documents/Codex/2026-07-06/new-chat/mymedlife-staff-admin/docs/02-user-stories.md`
@@ -64,6 +69,23 @@ does not use it as proof that a feature is implemented.
 | `not implemented` | No meaningful route/service evidence found for the story in the current repo truth pass. |
 
 ## Current Implementation Truth
+
+Current builder ownership for this story package:
+
+- `#1` owns General Member App shell continuity: member home, events, event
+  detail, RSVP/check-in posture, points visibility, stories, profile, and SLT
+  entry.
+- `#2` owns Student Leadership / Chapter Command Center continuity: broader
+  `/leader?view=*` menu/view restoration first, then member/profile, event,
+  attendance, leaderboard, values, succession, and training handoffs.
+- `#3` owns Staff / DS Admin shell continuity: staff Chapters loop, chapter
+  drawer, embedded Admin, Proof / UGC, Best Practices, Campaign SOPs, and dark
+  Admin review surfaces. `#3` is not the rollout packet, owner CSV, or
+  invite-gate evidence owner in the current shell model.
+- `#4` owns PR watch, focused browser checks, visual QA, and no-write smoke
+  classification.
+- `#5` owns repo-truth planning, story audit, backlog grooming, and stale
+  steering repair.
 
 ### Member Stories
 

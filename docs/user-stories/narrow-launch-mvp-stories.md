@@ -7,8 +7,9 @@ Purpose: provide a cleaned, MVP-ready story set for the narrow launch lane,
 without overstating production readiness.
 
 Repo-truth checkpoint: derived from the refreshed master inventory compared
-against `/Users/codex/Documents/Codex/2026-07-06/new-chat/mymedlife-staff-admin`
-on `origin/main` commit `12dd983` (`Add MED-512 staff admin review packet (#461)`).
+against this repo checkout on `origin/main` commit `bc091ee` (`Add shell
+acceptance planning packets (#501)`), including the recent member, leader,
+staff/admin, and shell acceptance planning wave visible on current main.
 
 ## MVP Scope Frame
 
@@ -28,6 +29,16 @@ The narrow launch lane is:
 
 Everything else should stay visible only when source-backed, and should remain
 read-only, preview-only, disabled, or future-wired until separately approved.
+
+## Current Builder Ownership
+
+- `#1` owns General Member App continuity.
+- `#2` owns Student Leadership / Chapter Command Center continuity.
+- `#3` owns Staff / DS Admin shell continuity, not rollout packet or invite-gate
+  evidence.
+- `#4` owns release watch, focused checks, visual QA, and no-write smoke
+  classification.
+- `#5` owns planning, story audit, backlog grooming, and stale-steering repair.
 
 ## MVP Story Writing Rules
 
