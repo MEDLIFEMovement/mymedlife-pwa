@@ -548,8 +548,8 @@ function renderView(
       return (
         <section className="grid gap-4">
           <SectionCard
-            eyebrow="Leaderboard"
-            title="Leaderboard"
+            eyebrow="Chapter Leaderboard"
+            title="Chapter Leaderboard"
           >
             <div className="flex flex-col gap-3">
               <p className="text-sm leading-6 text-slate-600">
@@ -1080,10 +1080,10 @@ function renderView(
             <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
               <div>
                 <p className="text-[0.72rem] font-semibold uppercase tracking-[0.2em] text-slate-400">
-                  Committees
+                  Event Committees
                 </p>
                 <h1 className="mt-2 text-[1.75rem] font-semibold leading-tight text-slate-950 sm:text-[1.9rem]">
-                  Action Committees
+                  Event Committees
                 </h1>
                 <p className="mt-2 text-sm leading-6 text-slate-600">
                   Monitor whether each committee is moving the chapter forward - not just existing.

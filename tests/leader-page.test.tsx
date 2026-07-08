@@ -169,7 +169,7 @@ describe("leader page", () => {
       }),
     );
 
-    expect(html).toContain("Leaderboard");
+    expect(html).toContain("Chapter Leaderboard");
     expect(html).toContain("Ideas to try");
     expect(html).toContain("Chapter Health");
     expect(html).toContain("All Regions");
@@ -207,7 +207,7 @@ describe("leader page", () => {
   it.each([
     ["members", "Member Leaderboard"],
     ["member_profile", "Member Profile"],
-    ["committees", "Action Committees"],
+    ["committees", "Event Committees"],
     ["succession", "Leadership Succession"],
     ["impact", "Impact Dashboard"],
     ["bridge_videos", "Bridge Video Hub"],
@@ -296,7 +296,7 @@ describe("leader page", () => {
         }),
       }),
     );
-    expect(committeesHtml).toContain("Action Committees");
+      expect(committeesHtml).toContain("Event Committees");
     expect(committeesHtml).toContain("Add Committee");
 
     const impactHtml = renderToStaticMarkup(

@@ -956,7 +956,7 @@ describe("chapter leader command center", () => {
       createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
     );
 
-    expect(markup).toContain("Action Committees");
+    expect(markup).toContain("Event Committees");
     expect(markup).toContain("<h1");
     expect(markup).toContain("Monitor whether each committee is moving the chapter forward - not just existing.");
     expect(markup).toContain("Add Committee");
@@ -1294,8 +1294,7 @@ describe("chapter leader command center", () => {
     expect(markup).toContain('aria-label="Leaderboard region filter"');
     expect(markup).toContain('id="chapter-leaderboard-region-filter"');
     expect(markup).toContain(">Canada</option>");
-    expect(markup).toContain("Leaderboard");
-    expect(markup).not.toContain("Chapter Leaderboard");
+    expect(markup).toContain("Chapter Leaderboard");
     expect(markup).toContain("Ideas to try");
     expect(markup).toContain("Learn from top chapters. Find ideas to try. Rise together.");
     expect(markup).not.toContain(">Apply<");
