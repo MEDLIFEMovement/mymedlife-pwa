@@ -190,6 +190,54 @@ describe("chapter leader command center", () => {
     expect(markup).not.toContain("Impact Snapshot");
   });
 
+  it("falls back to zeroed progress bars and chapter-posture copy when overview labels are not sample-formatted", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data);
+    const fallbackCommandCenter = {
+      ...commandCenter,
+      sampleLabel: null,
+      successionOverview: {
+        ...commandCenter.successionOverview,
+        eboardRolesFilledLabel: "not started",
+        activeCommitteesLabel: "4 / 0",
+      },
+    };
+    const markup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter: fallbackCommandCenter }),
+    );
+
+    expect(markup).toContain("Watch closely chapter posture");
+    expect(markup.match(/style=\"width:0%\"/g)?.length).toBeGreaterThanOrEqual(2);
+  });
+
+  it("keeps the service-backed leader menu visible for supabase-backed route state too", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const supabaseData = {
+      ...data,
+      source: {
+        mode: "supabase" as const,
+        status: "supabase_ready" as const,
+        message: "Testing supabase-backed chapter leader command center.",
+      },
+    };
+    const commandCenter = getChapterLeaderCommandCenter(actor, supabaseData, {
+      view: "members",
+      memberId: "member-maya",
+    });
+
+    expect(commandCenter.navGroups.map((group) => group.label)).toEqual([
+      "Chapter",
+      "Members",
+      "Operations",
+      "Impact & Culture",
+      "Leadership",
+    ]);
+    expect(commandCenter.viewOptions.find((item) => item.key === "member_profile")?.href).toBe(
+      "/leader?view=member_profile&member=member-maya",
+    );
+    expect(commandCenter.selectedMember?.displayName).toBe("Sofia Alvarez");
+  });
+
   it("keeps Review Members wired from the overview hero into the member-pipeline quick-action state", () => {
     const actor = getMockLocalActorContext("leader.a@mymedlife.test");
     const commandCenter = getChapterLeaderCommandCenter(actor, data);
