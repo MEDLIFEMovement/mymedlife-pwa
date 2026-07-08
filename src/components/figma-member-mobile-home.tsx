@@ -85,6 +85,7 @@ function getMemberEventHomeDetailHref(eventId: number) {
 }
 
 type PointsSource = "events" | "profile" | "points";
+type EventsSource = "events" | "profile" | "points";
 
 // ─── Primitives ────────────────────────────────────────────────────────────
 
@@ -2206,7 +2207,13 @@ const ALL_EVENTS: ChapterEvent[] = [
   { id: 11, title: "TEST Member Orientation",           date: "Wed Nov 22 · 5:30 PM", loc: "Engineering VI 289",        pts: 25, status: "Upcoming",   campaign: "General",               eventType: "Growing the Movement"  },
 ];
 
-function EventsScreen({ navigate }: { navigate: (s: Screen) => void }) {
+function EventsScreen({
+  navigate,
+  source,
+}: {
+  navigate: (s: Screen) => void;
+  source: EventsSource;
+}) {
   const [activeCampaign, setActiveCampaign] = useState<CampaignTag | "All">("All");
   const rsvpdIds = [2];
 
@@ -2220,6 +2227,26 @@ function EventsScreen({ navigate }: { navigate: (s: Screen) => void }) {
   const activeCampaignData = activeCampaign !== "All"
     ? CAMPAIGNS.find((c) => c.name === activeCampaign)
     : null;
+  const eventsReturnCard =
+    source === "profile"
+      ? {
+          eyebrow: "Opened from your TEST profile",
+          title: "Keep profile, events, and points in one member loop.",
+          body:
+            "Your TEST profile sent you here so the next chapter moment stays route-backed. Open an event, preview RSVP or attendance, then step back into points when you are ready.",
+          href: "/profile",
+          cta: "Back to Profile",
+        }
+      : source === "points"
+        ? {
+            eyebrow: "Opened from Points & Recognition",
+            title: "Move from TEST points readback into the next event.",
+            body:
+              "The member loop should not stop at the leaderboard. Use this route-backed return path to find the next event, preview RSVP or check-in, and come back to points when the chapter moment is done.",
+            href: "/app/points?source=events",
+            cta: "Back to Points",
+          }
+        : null;
 
   return (
     <div className="pb-28">
@@ -2262,6 +2289,28 @@ function EventsScreen({ navigate }: { navigate: (s: Screen) => void }) {
       </div>
 
       <div className="px-4 pt-4 space-y-4">
+        {eventsReturnCard ? (
+          <Card>
+            <p className="text-[0.68rem] font-bold uppercase tracking-[0.18em] text-primary">
+              {eventsReturnCard.eyebrow}
+            </p>
+            <h2 className="mt-2 text-base font-extrabold text-foreground">
+              {eventsReturnCard.title}
+            </h2>
+            <p className="mt-2 text-sm leading-6 text-muted-foreground">
+              {eventsReturnCard.body}
+            </p>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <Link
+                href={eventsReturnCard.href}
+                className="inline-flex items-center justify-center rounded-xl bg-secondary px-3.5 py-2 text-sm font-bold text-primary transition-colors hover:bg-muted"
+              >
+                {eventsReturnCard.cta}
+              </Link>
+            </div>
+          </Card>
+        ) : null}
+
         {/* Campaign context card — shown when a campaign is selected */}
         {activeCampaignData && (
           <div className={`bg-gradient-to-r ${activeCampaignData.color} rounded-2xl p-4`}>
@@ -3561,12 +3610,14 @@ export function FigmaMemberMobileHome({
   initialStoriesFilter = null,
   initialStoryId = null,
   pointsSource = "points",
+  eventsSource = "events",
 }: {
   initialScreen?: MemberMobileLaunchScreen;
   sltPrepEntry?: MemberSltPrepEntry | null;
   initialStoriesFilter?: string | null;
   initialStoryId?: string | null;
   pointsSource?: PointsSource;
+  eventsSource?: EventsSource;
 }) {
   const [screen, setScreen] = useState<Screen>(initialScreen);
   const [role, setRole] = useState<Role>("student");
@@ -3586,7 +3637,7 @@ export function FigmaMemberMobileHome({
       case "evidence": return <EvidenceSubmission navigate={navigate} />;
       case "confirm": return <Confirmation navigate={navigate} />;
       case "points": return <PointsLeaderboard source={pointsSource} />;
-      case "events": return <EventsScreen navigate={navigate} />;
+      case "events": return <EventsScreen navigate={navigate} source={eventsSource} />;
       case "event-detail": return <EventDetailScreen navigate={navigate} />;
       case "rsvp-confirm": return <RsvpConfirmScreen navigate={navigate} />;
       case "checkin": return <CheckInScreen navigate={navigate} />;
