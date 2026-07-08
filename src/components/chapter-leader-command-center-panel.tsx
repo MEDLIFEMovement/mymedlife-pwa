@@ -809,6 +809,31 @@ function renderView(
         </section>
       );
     case "member_profile":
+      const memberProfileOverviewHref = buildChapterLeaderCommandCenterHref("overview", {
+        source: commandCenter.selectedSource,
+        memberId: leadershipReviewMemberId,
+        pipelineFilter: commandCenter.selectedPipelineFilter,
+        searchQuery: commandCenter.pipelineSearchQuery,
+      });
+      const memberProfileLeadersHref = buildChapterLeaderCommandCenterHref("leaders", {
+        source: commandCenter.selectedSource,
+        memberId: leadershipReviewMemberId,
+        pipelineFilter: commandCenter.selectedPipelineFilter,
+        searchQuery: commandCenter.pipelineSearchQuery,
+      });
+      const memberProfileSuccessionHref = buildChapterLeaderCommandCenterHref("succession", {
+        source: commandCenter.selectedSource,
+        memberId: leadershipReviewMemberId,
+        pipelineFilter: commandCenter.selectedPipelineFilter,
+        searchQuery: commandCenter.pipelineSearchQuery,
+      });
+      const memberProfileTrainingHref = buildChapterLeaderCommandCenterHref("training", {
+        source: commandCenter.selectedSource,
+        memberId: leadershipReviewMemberId,
+        pipelineFilter: commandCenter.selectedPipelineFilter,
+        searchQuery: commandCenter.pipelineSearchQuery,
+      });
+
       return (
         commandCenter.selectedMember ? (
           <section className="grid gap-4">
@@ -957,6 +982,51 @@ function renderView(
                 >
                   Jump to points history
                 </Link>
+              </div>
+            </section>
+
+            <section className="rounded-[1.2rem] border border-[#bfdbfe] bg-[#eef5ff] p-4">
+              <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+                <div className="max-w-2xl">
+                  <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-[#1d4ed8]">
+                    TEST Leadership Review Loop
+                  </p>
+                  <h2 className="mt-2 text-lg font-semibold text-slate-950">
+                    Keep member review connected to chapter-home and leadership follow-through.
+                  </h2>
+                  <p className="mt-2 text-sm leading-6 text-slate-600">
+                    Use this profile while keeping Chapter Home, Current Leaders, Succession, and
+                    Leadership Training one step away. The goal is to review one person across the
+                    full leadership loop without turning on live notes, promotions, or assignment
+                    writes.
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-2 xl:max-w-sm xl:justify-end">
+                  <Link
+                    href={memberProfileOverviewHref}
+                    className="inline-flex rounded-full border border-[#bfdbfe] bg-white px-4 py-2 text-sm font-semibold text-[#1d4ed8]"
+                  >
+                    Back to Chapter Home
+                  </Link>
+                  <Link
+                    href={memberProfileLeadersHref}
+                    className="inline-flex rounded-full border border-[#bfdbfe] bg-white px-4 py-2 text-sm font-semibold text-[#1d4ed8]"
+                  >
+                    Open Current Leaders
+                  </Link>
+                  <Link
+                    href={memberProfileSuccessionHref}
+                    className="inline-flex rounded-full border border-[#bfdbfe] bg-white px-4 py-2 text-sm font-semibold text-[#1d4ed8]"
+                  >
+                    Open Succession Lane
+                  </Link>
+                  <Link
+                    href={memberProfileTrainingHref}
+                    className="inline-flex rounded-full bg-[#2563eb] px-4 py-2 text-sm font-semibold text-white"
+                  >
+                    Open Leadership Training
+                  </Link>
+                </div>
               </div>
             </section>
 
@@ -2124,6 +2194,31 @@ function renderView(
         </section>
       );
     case "succession":
+      const successionOverviewHref = buildChapterLeaderCommandCenterHref("overview", {
+        source: commandCenter.selectedSource,
+        memberId: leadershipReviewMemberId,
+        pipelineFilter: commandCenter.selectedPipelineFilter,
+        searchQuery: commandCenter.pipelineSearchQuery,
+      });
+      const successionLeadersHref = buildChapterLeaderCommandCenterHref("leaders", {
+        source: commandCenter.selectedSource,
+        memberId: leadershipReviewMemberId,
+        pipelineFilter: commandCenter.selectedPipelineFilter,
+        searchQuery: commandCenter.pipelineSearchQuery,
+      });
+      const successionValuesHref = buildChapterLeaderCommandCenterHref("values", {
+        source: commandCenter.selectedSource,
+        memberId: leadershipReviewMemberId,
+        pipelineFilter: commandCenter.selectedPipelineFilter,
+        searchQuery: commandCenter.pipelineSearchQuery,
+      });
+      const successionTrainingHref = buildChapterLeaderCommandCenterHref("training", {
+        source: commandCenter.selectedSource,
+        memberId: leadershipReviewMemberId,
+        pipelineFilter: commandCenter.selectedPipelineFilter,
+        searchQuery: commandCenter.pipelineSearchQuery,
+      });
+
       return (
         <section className="grid gap-4">
           {commandCenter.activeQuickAction === "promote_emerging_leader" ? (
@@ -2226,6 +2321,50 @@ function renderView(
             </div>
           </section>
 
+          <section className="rounded-[1.2rem] border border-[#bfdbfe] bg-[#eef5ff] p-4">
+            <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+              <div className="max-w-2xl">
+                <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-[#1d4ed8]">
+                  TEST Leadership Review Loop
+                </p>
+                <h2 className="mt-2 text-lg font-semibold text-slate-950">
+                  Keep succession planning connected to current leaders, values, and training.
+                </h2>
+                <p className="mt-2 text-sm leading-6 text-slate-600">
+                  Review transition timing with Chapter Home, Current Leaders, Values, and
+                  Leadership Training still one step away. This keeps successor prep visible
+                  without turning nomination, promotion, or notify flows into live writes.
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-2 xl:max-w-sm xl:justify-end">
+                <Link
+                  href={successionOverviewHref}
+                  className="inline-flex rounded-full border border-[#bfdbfe] bg-white px-4 py-2 text-sm font-semibold text-[#1d4ed8]"
+                >
+                  Back to Chapter Home
+                </Link>
+                <Link
+                  href={successionLeadersHref}
+                  className="inline-flex rounded-full border border-[#bfdbfe] bg-white px-4 py-2 text-sm font-semibold text-[#1d4ed8]"
+                >
+                  Open Current Leaders
+                </Link>
+                <Link
+                  href={successionValuesHref}
+                  className="inline-flex rounded-full border border-[#bfdbfe] bg-white px-4 py-2 text-sm font-semibold text-[#1d4ed8]"
+                >
+                  Open Values Review
+                </Link>
+                <Link
+                  href={successionTrainingHref}
+                  className="inline-flex rounded-full bg-[#2563eb] px-4 py-2 text-sm font-semibold text-white"
+                >
+                  Open Leadership Training
+                </Link>
+              </div>
+            </div>
+          </section>
+
           <div className="grid gap-4 xl:grid-cols-[1.02fr_0.98fr]">
             <SectionCard eyebrow="Leadership Gaps" title="Leadership Gaps">
               <div className="grid gap-3">
@@ -2263,6 +2402,31 @@ function renderView(
         </section>
       );
     case "leaders":
+      const leadersOverviewHref = buildChapterLeaderCommandCenterHref("overview", {
+        source: commandCenter.selectedSource,
+        memberId: leadershipReviewMemberId,
+        pipelineFilter: commandCenter.selectedPipelineFilter,
+        searchQuery: commandCenter.pipelineSearchQuery,
+      });
+      const leadersMemberProfileHref = buildChapterLeaderCommandCenterHref("member_profile", {
+        source: commandCenter.selectedSource,
+        memberId: leadershipReviewMemberId,
+        pipelineFilter: commandCenter.selectedPipelineFilter,
+        searchQuery: commandCenter.pipelineSearchQuery,
+      });
+      const leadersSuccessionHref = buildChapterLeaderCommandCenterHref("succession", {
+        source: commandCenter.selectedSource,
+        memberId: leadershipReviewMemberId,
+        pipelineFilter: commandCenter.selectedPipelineFilter,
+        searchQuery: commandCenter.pipelineSearchQuery,
+      });
+      const leadersTrainingHref = buildChapterLeaderCommandCenterHref("training", {
+        source: commandCenter.selectedSource,
+        memberId: leadershipReviewMemberId,
+        pipelineFilter: commandCenter.selectedPipelineFilter,
+        searchQuery: commandCenter.pipelineSearchQuery,
+      });
+
       return (
         <section className="grid gap-4">
           <section className="grid gap-4 rounded-[1.75rem] border border-slate-200 bg-white p-4 shadow-[0_14px_38px_rgba(15,23,42,0.06)] sm:p-5">
@@ -2339,6 +2503,51 @@ function renderView(
             />
           ) : null}
 
+          <section className="rounded-[1.2rem] border border-[#bfdbfe] bg-[#eef5ff] p-4">
+            <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+              <div className="max-w-2xl">
+                <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-[#1d4ed8]">
+                  TEST Leadership Review Loop
+                </p>
+                <h2 className="mt-2 text-lg font-semibold text-slate-950">
+                  Keep current leaders tied to member review and training follow-through.
+                </h2>
+                <p className="mt-2 text-sm leading-6 text-slate-600">
+                  Review visible ownership with the same person and chapter context still attached.
+                  This loop keeps Chapter Home, Member Profile, Succession, and Leadership
+                  Training connected before any promotion, assignment, or notify path becomes
+                  live.
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-2 xl:max-w-sm xl:justify-end">
+                <Link
+                  href={leadersOverviewHref}
+                  className="inline-flex rounded-full border border-[#bfdbfe] bg-white px-4 py-2 text-sm font-semibold text-[#1d4ed8]"
+                >
+                  Back to Chapter Home
+                </Link>
+                <Link
+                  href={leadersMemberProfileHref}
+                  className="inline-flex rounded-full border border-[#bfdbfe] bg-white px-4 py-2 text-sm font-semibold text-[#1d4ed8]"
+                >
+                  Open Member Profile
+                </Link>
+                <Link
+                  href={leadersSuccessionHref}
+                  className="inline-flex rounded-full border border-[#bfdbfe] bg-white px-4 py-2 text-sm font-semibold text-[#1d4ed8]"
+                >
+                  Open Succession Lane
+                </Link>
+                <Link
+                  href={leadersTrainingHref}
+                  className="inline-flex rounded-full bg-[#2563eb] px-4 py-2 text-sm font-semibold text-white"
+                >
+                  Open Leadership Training
+                </Link>
+              </div>
+            </div>
+          </section>
+
           <section className="grid gap-4 xl:grid-cols-[1.02fr_0.98fr]">
             <SectionCard eyebrow="Leadership Coverage" title="Who visibly owns each lane right now?">
               <div className="grid gap-3 sm:grid-cols-2">
@@ -2359,6 +2568,31 @@ function renderView(
         </section>
       );
     case "values":
+      const valuesOverviewHref = buildChapterLeaderCommandCenterHref("overview", {
+        source: commandCenter.selectedSource,
+        memberId: leadershipReviewMemberId,
+        pipelineFilter: commandCenter.selectedPipelineFilter,
+        searchQuery: commandCenter.pipelineSearchQuery,
+      });
+      const valuesLeadersHref = buildChapterLeaderCommandCenterHref("leaders", {
+        source: commandCenter.selectedSource,
+        memberId: leadershipReviewMemberId,
+        pipelineFilter: commandCenter.selectedPipelineFilter,
+        searchQuery: commandCenter.pipelineSearchQuery,
+      });
+      const valuesSuccessionHref = buildChapterLeaderCommandCenterHref("succession", {
+        source: commandCenter.selectedSource,
+        memberId: leadershipReviewMemberId,
+        pipelineFilter: commandCenter.selectedPipelineFilter,
+        searchQuery: commandCenter.pipelineSearchQuery,
+      });
+      const valuesTrainingHref = buildChapterLeaderCommandCenterHref("training", {
+        source: commandCenter.selectedSource,
+        memberId: leadershipReviewMemberId,
+        pipelineFilter: commandCenter.selectedPipelineFilter,
+        searchQuery: commandCenter.pipelineSearchQuery,
+      });
+
       return (
         <section className="grid gap-4">
           <section className="grid gap-4 rounded-[1.75rem] border border-slate-200 bg-white p-4 shadow-[0_14px_38px_rgba(15,23,42,0.06)] sm:p-5">
@@ -2433,6 +2667,51 @@ function renderView(
               member={commandCenter.selectedMember}
             />
           ) : null}
+
+          <section className="rounded-[1.2rem] border border-[#bfdbfe] bg-[#eef5ff] p-4">
+            <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+              <div className="max-w-2xl">
+                <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-[#1d4ed8]">
+                  TEST Leadership Review Loop
+                </p>
+                <h2 className="mt-2 text-lg font-semibold text-slate-950">
+                  Keep values review one step away from the broader leadership loop.
+                </h2>
+                <p className="mt-2 text-sm leading-6 text-slate-600">
+                  Stay anchored to Chapter Home, Current Leaders, Succession, and Leadership
+                  Training while this values screen remains review-only. That keeps leadership
+                  posture visible without turning interviews, approvals, or provider handoffs into
+                  live actions.
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-2 xl:max-w-sm xl:justify-end">
+                <Link
+                  href={valuesOverviewHref}
+                  className="inline-flex rounded-full border border-[#bfdbfe] bg-white px-4 py-2 text-sm font-semibold text-[#1d4ed8]"
+                >
+                  Back to Chapter Home
+                </Link>
+                <Link
+                  href={valuesLeadersHref}
+                  className="inline-flex rounded-full border border-[#bfdbfe] bg-white px-4 py-2 text-sm font-semibold text-[#1d4ed8]"
+                >
+                  Open Current Leaders
+                </Link>
+                <Link
+                  href={valuesSuccessionHref}
+                  className="inline-flex rounded-full border border-[#bfdbfe] bg-white px-4 py-2 text-sm font-semibold text-[#1d4ed8]"
+                >
+                  Open Succession Lane
+                </Link>
+                <Link
+                  href={valuesTrainingHref}
+                  className="inline-flex rounded-full bg-[#2563eb] px-4 py-2 text-sm font-semibold text-white"
+                >
+                  Open Leadership Training
+                </Link>
+              </div>
+            </div>
+          </section>
 
           <section className="grid gap-4 xl:grid-cols-2">
             <SectionCard eyebrow="Values Alignment" title="Values Alignment">

@@ -243,6 +243,11 @@ describe("leader page", () => {
       expect(html).toContain("Events, points, and follow-through stay in one story.");
       expect(html).toContain("Open event context");
       expect(html).toContain("Coach &amp; Leader Notes");
+      expect(html).toContain("TEST Leadership Review Loop");
+      expect(html).toContain("Back to Chapter Home");
+      expect(html).toContain("Open Current Leaders");
+      expect(html).toContain("Open Succession Lane");
+      expect(html).toContain("Open Leadership Training");
     }
 
     if (view === "committees") {
@@ -251,12 +256,22 @@ describe("leader page", () => {
     }
 
     if (view === "succession") {
+      expect(html).toContain("TEST Leadership Review Loop");
+      expect(html).toContain("Back to Chapter Home");
+      expect(html).toContain("Open Current Leaders");
       expect(html).toContain("Open Candidate Review");
+      expect(html).toContain("Open Values Review");
+      expect(html).toContain("Open Leadership Training");
       expect(html).toContain("Preview Transition Review");
       expect(html).toContain("Leadership Gaps");
     }
 
     if (view === "values") {
+      expect(html).toContain("TEST Leadership Review Loop");
+      expect(html).toContain("Back to Chapter Home");
+      expect(html).toContain("Open Current Leaders");
+      expect(html).toContain("Open Succession Lane");
+      expect(html).toContain("Open Leadership Training");
       expect(html).toContain("Preview Values Interview");
       expect(html).toContain("Preview Interview Scheduling");
       expect(html).toContain("Preview Interview Form");
@@ -273,6 +288,11 @@ describe("leader page", () => {
 
     if (view === "leaders") {
       expect(html).toContain("TEST leadership roster preview.");
+      expect(html).toContain("TEST Leadership Review Loop");
+      expect(html).toContain("Back to Chapter Home");
+      expect(html).toContain("Open Member Profile");
+      expect(html).toContain("Open Succession Lane");
+      expect(html).toContain("Open Leadership Training");
       expect(html).toContain("Preview Succession Review");
       expect(html).toContain("Preview Values Review");
       expect(html).toContain("Who visibly owns each lane right now?");

@@ -2511,9 +2511,18 @@ describe("chapter leader command center", () => {
     expect(markup).toContain("Selected candidate");
     expect(markup).toContain("Reviewing TEST Ivy Invite for succession readiness");
     expect(markup).toContain("Open member profile");
+    expect(markup).toContain("TEST Leadership Review Loop");
+    expect(markup).toContain("Back to Chapter Home");
+    expect(markup).toContain("Open Current Leaders");
+    expect(markup).toContain("Open Values Review");
+    expect(markup).toContain("Open Leadership Training");
     expect(markup).toContain("Selected now");
     expect(markup).toContain("Open Candidate Review");
     expect(markup).toContain("Preview Transition Review");
+    expect(markup).toContain("href=\"/leader?view=overview&amp;member=member-ivy\"");
+    expect(markup).toContain("href=\"/leader?view=leaders&amp;member=member-ivy\"");
+    expect(markup).toContain("href=\"/leader?view=values&amp;member=member-ivy\"");
+    expect(markup).toContain("href=\"/leader?view=training&amp;member=member-ivy\"");
     expect(markup).toContain("href=\"/leader?view=members\"");
     expect(markup).toContain("href=\"/leader?view=succession&amp;member=member-ivy\"");
     expect(markup.indexOf("Selected candidate")).toBeLessThan(
@@ -2540,6 +2549,91 @@ describe("chapter leader command center", () => {
     expect(markup).toContain("Start from succession planning, then open the candidate review lane.");
     expect(markup).toContain("Open candidate review");
     expect(markup).toContain("href=\"/leader?view=succession&amp;member=member-ivy\"");
+  });
+
+  it("keeps the member profile, leaders, and values routes in the same visible leadership review loop", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+
+    const memberProfileMarkup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, {
+        commandCenter: getChapterLeaderCommandCenter(actor, data, {
+          view: "member_profile",
+          memberId: "member-ivy",
+          pipeline: "follow_up",
+          search: "Ivy",
+        }),
+      }),
+    );
+    expect(memberProfileMarkup).toContain("TEST Leadership Review Loop");
+    expect(memberProfileMarkup).toContain("Open Current Leaders");
+    expect(memberProfileMarkup).toContain("Open Succession Lane");
+    expect(memberProfileMarkup).toContain("Open Leadership Training");
+    expect(memberProfileMarkup).toContain(
+      "href=\"/leader?view=overview&amp;member=member-ivy&amp;pipeline=follow_up&amp;q=Ivy\"",
+    );
+    expect(memberProfileMarkup).toContain(
+      "href=\"/leader?view=leaders&amp;member=member-ivy&amp;pipeline=follow_up&amp;q=Ivy\"",
+    );
+    expect(memberProfileMarkup).toContain(
+      "href=\"/leader?view=succession&amp;member=member-ivy&amp;pipeline=follow_up&amp;q=Ivy\"",
+    );
+    expect(memberProfileMarkup).toContain(
+      "href=\"/leader?view=training&amp;member=member-ivy&amp;pipeline=follow_up&amp;q=Ivy\"",
+    );
+
+    const leadersMarkup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, {
+        commandCenter: getChapterLeaderCommandCenter(actor, data, {
+          view: "leaders",
+          memberId: "member-ivy",
+          pipeline: "follow_up",
+          search: "Ivy",
+        }),
+      }),
+    );
+    expect(leadersMarkup).toContain("TEST Leadership Review Loop");
+    expect(leadersMarkup).toContain("Open Member Profile");
+    expect(leadersMarkup).toContain("Open Succession Lane");
+    expect(leadersMarkup).toContain("Open Leadership Training");
+    expect(leadersMarkup).toContain(
+      "href=\"/leader?view=overview&amp;member=member-ivy&amp;pipeline=follow_up&amp;q=Ivy\"",
+    );
+    expect(leadersMarkup).toContain(
+      "href=\"/leader?view=member_profile&amp;member=member-ivy&amp;pipeline=follow_up&amp;q=Ivy\"",
+    );
+    expect(leadersMarkup).toContain(
+      "href=\"/leader?view=succession&amp;member=member-ivy&amp;pipeline=follow_up&amp;q=Ivy\"",
+    );
+    expect(leadersMarkup).toContain(
+      "href=\"/leader?view=training&amp;member=member-ivy&amp;pipeline=follow_up&amp;q=Ivy\"",
+    );
+
+    const valuesMarkup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, {
+        commandCenter: getChapterLeaderCommandCenter(actor, data, {
+          view: "values",
+          memberId: "member-ivy",
+          pipeline: "follow_up",
+          search: "Ivy",
+        }),
+      }),
+    );
+    expect(valuesMarkup).toContain("TEST Leadership Review Loop");
+    expect(valuesMarkup).toContain("Open Current Leaders");
+    expect(valuesMarkup).toContain("Open Succession Lane");
+    expect(valuesMarkup).toContain("Open Leadership Training");
+    expect(valuesMarkup).toContain(
+      "href=\"/leader?view=overview&amp;member=member-ivy&amp;pipeline=follow_up&amp;q=Ivy\"",
+    );
+    expect(valuesMarkup).toContain(
+      "href=\"/leader?view=leaders&amp;member=member-ivy&amp;pipeline=follow_up&amp;q=Ivy\"",
+    );
+    expect(valuesMarkup).toContain(
+      "href=\"/leader?view=succession&amp;member=member-ivy&amp;pipeline=follow_up&amp;q=Ivy\"",
+    );
+    expect(valuesMarkup).toContain(
+      "href=\"/leader?view=training&amp;member=member-ivy&amp;pipeline=follow_up&amp;q=Ivy\"",
+    );
   });
 
   it("opens add committee as a chapter-owned committees state before the broader committee lane", () => {
