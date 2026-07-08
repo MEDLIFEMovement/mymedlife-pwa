@@ -628,7 +628,7 @@ export function ChapterDetailDrawer({ chapter, onClose }: { chapter: Chapter; on
               rows={3}
             />
             <p className="mt-2 text-[10px] leading-relaxed text-amber-700">
-              Chapter support notes stay visible for coach review. Next step: use the embedded Admin review for DS directory, audit readback, and blocked-control follow-up before requesting any write path.
+              Chapter support notes stay visible for coach review. Next step: use Admin review for DS directory, audit, and blocked-control follow-up before requesting any write path.
             </p>
           </div>
         </div>

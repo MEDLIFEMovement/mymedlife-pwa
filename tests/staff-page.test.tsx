@@ -411,7 +411,7 @@ describe("staff page", () => {
     expect(html).toContain("Survey sending stays blocked in this preview");
     expect(html).toContain("Survey sending is blocked in this preview");
     expect(html).toContain("Coach notes stay preview-only in this chapter drawer");
-    expect(html).toContain("Next step: use the embedded Admin review for DS directory, audit readback, and blocked-control follow-up before requesting any write path.");
+    expect(html).toContain("Next step: use Admin review for DS directory, audit, and blocked-control follow-up before requesting any write path.");
     expect(html).toContain('href="/staff?view=admin&amp;adminView=chapters"');
     expect(html).toContain("Admin review");
     expect(html).toContain("No note save, intervention status write, or follow-up task write runs for Boston College from this surface.");
