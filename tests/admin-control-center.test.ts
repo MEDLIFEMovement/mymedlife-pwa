@@ -234,6 +234,54 @@ describe("admin control center", () => {
     );
   });
 
+  it("keeps TEST demo labels stable when seeded admin data is already prefixed", () => {
+    const data = getMockReadOnlyAppData("Testing pre-labeled admin control center.");
+    const summary = getAdminControlCenterSummary(
+      {
+        ...data,
+        chapter: {
+          ...data.chapter,
+          name: "TEST UCLA MEDLIFE",
+          campus: "TEST UCLA",
+          coachName: "TEST Renato Coach",
+        },
+      },
+      [
+        {
+          ...localActorOptions[4],
+          displayName: "TEST Priya President",
+          chapterNames: ["TEST UCLA MEDLIFE"],
+        },
+      ],
+    );
+
+    expect(summary.areas.find((area) => area.key === "users")).toEqual(
+      expect.objectContaining({
+        primaryMetric: "1 TEST users",
+        nextAction: expect.stringContaining("Replace TEST users"),
+      }),
+    );
+    expect(summary.areas.find((area) => area.key === "chapters")).toEqual(
+      expect.objectContaining({
+        primaryMetric: "1 TEST chapter",
+        detail: "TEST UCLA MEDLIFE is the current local chapter scope.",
+      }),
+    );
+    expect(summary.masterDataInventory.users[0]).toEqual(
+      expect.objectContaining({
+        displayName: "TEST Priya President",
+        chapterNames: ["TEST UCLA MEDLIFE"],
+      }),
+    );
+    expect(summary.masterDataInventory.chapters[0]).toEqual(
+      expect.objectContaining({
+        name: "TEST UCLA MEDLIFE",
+        campus: "TEST UCLA",
+        coachName: "TEST Renato Coach",
+      }),
+    );
+  });
+
   it("renders route-backed review handoffs with blocked preview cues", () => {
     const data = getMockReadOnlyAppData("Testing admin control center review handoffs.");
     const summary = getAdminControlCenterSummary(data);
