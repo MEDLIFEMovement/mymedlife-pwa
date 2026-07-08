@@ -1353,10 +1353,16 @@ function PlatformBadge({ platform }: { platform: Platform }) {
 type ProofQueueStatusFilter = "all" | "pending" | "approved" | "rejected";
 
 function ProofUGCQueue() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [statusFilter, setStatusFilter] = useState<ProofQueueStatusFilter>("all");
   const [platformFilter, setPlatformFilter] = useState("all");
-  const [selectedCard, setSelectedCard] = useState<ContentCard | null>(null);
   const [linkInput, setLinkInput] = useState("");
+  const selectedCardId = searchParams.get("ugcCard");
+  const selectedCard = selectedCardId
+    ? UGC_CARDS.find((card) => card.id === selectedCardId) ?? null
+    : null;
   const approvedCount = UGC_CARDS.filter(
     (c) => c.visibility === "chapter" || c.visibility === "selected",
   ).length;
@@ -1376,6 +1382,8 @@ function ProofUGCQueue() {
   });
 
   const pendingCount = UGC_CARDS.filter(c => c.visibility === "pending").length;
+  const genericProofQueueHref = buildStaffProofHref(pathname, searchParams.toString());
+  const genericProofAdminHref = buildStaffAdminProofHref(pathname, searchParams.toString());
 
   return (
     <div className="flex gap-5 items-start">
@@ -1493,7 +1501,12 @@ function ProofUGCQueue() {
             return (
               <div
                 key={card.id}
-                onClick={() => setSelectedCard(isSelected ? null : card)}
+                onClick={() =>
+                  router.replace(
+                    buildStaffProofHref(pathname, searchParams.toString(), isSelected ? null : card.id),
+                    { scroll: false },
+                  )
+                }
                 className={`bg-white rounded-xl border overflow-hidden cursor-pointer transition-all hover:shadow-md group ${
                   isSelected ? "ring-2 ring-primary border-primary shadow-md" : "border-border hover:border-slate-300"
                 } ${card.visibility === "rejected" ? "opacity-60" : ""}`}
@@ -1623,13 +1636,13 @@ function ProofUGCQueue() {
               <div className="mt-1 text-[10px] leading-relaxed text-sky-700">Embedded Admin review keeps DS directory, audit logs, and blocked controls in the same command-center walkthrough.</div>
               <div className="mt-2 flex flex-wrap gap-2">
                 <a
-                  href="/staff?view=admin&adminView=audit&returnView=proof_ugc"
+                  href={buildStaffAdminProofHref(pathname, searchParams.toString(), selectedCard.id)}
                   className="inline-flex items-center gap-1 rounded-full border border-sky-200 bg-sky-50 px-2.5 py-1 text-[10px] font-semibold text-sky-700 hover:bg-sky-100"
                 >
                   <Shield className="w-3 h-3" /> Open Admin preview
                 </a>
                 <a
-                  href="/staff?view=proof_ugc"
+                  href={buildStaffProofHref(pathname, searchParams.toString(), selectedCard.id)}
                   className="inline-flex items-center gap-1 rounded-full border border-border bg-slate-50 px-2.5 py-1 text-[10px] font-semibold text-slate-700 hover:bg-slate-100"
                 >
                   <ArrowLeft className="w-3 h-3" /> Return to Proof / UGC
@@ -1728,13 +1741,13 @@ function ProofUGCQueue() {
             <div className="text-xs text-muted-foreground leading-relaxed">Click any card to review consent and blocked actions, or open the Admin preview for DS audit readback without leaving the Staff Command Center.</div>
             <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
               <a
-                href="/staff?view=admin&adminView=audit&returnView=proof_ugc"
+                href={genericProofAdminHref}
                 className="inline-flex items-center gap-1 rounded-full border border-sky-200 bg-sky-50 px-2.5 py-1 text-[10px] font-semibold text-sky-700 hover:bg-sky-100"
               >
                 <Shield className="w-3 h-3" /> Open Admin preview
               </a>
               <a
-                href="/staff?view=proof_ugc"
+                href={genericProofQueueHref}
                 className="inline-flex items-center gap-1 rounded-full border border-border bg-slate-50 px-2.5 py-1 text-[10px] font-semibold text-slate-700 hover:bg-slate-100"
               >
                 <ArrowLeft className="w-3 h-3" /> Return to Proof / UGC
@@ -2455,6 +2468,9 @@ function buildStaffShellHref(screen: Screen, pathname: string, search: string): 
   const params = new URLSearchParams(search);
   params.set("view", getStaffShellViewParam(screen));
   params.delete("chapter");
+  if (screen !== "ugc" && screen !== "admin") {
+    params.delete("ugcCard");
+  }
   if (screen !== "admin") {
     params.delete("adminView");
     params.delete("returnView");
@@ -2467,8 +2483,39 @@ function buildStaffChapterHref(chapterId: string, pathname: string, search: stri
   const params = new URLSearchParams(search);
   params.set("view", "chapters");
   params.set("chapter", chapterId);
+  params.delete("ugcCard");
   params.delete("adminView");
   params.delete("returnView");
+  const query = params.toString();
+  return query ? `${pathname}?${query}` : pathname;
+}
+
+function buildStaffProofHref(pathname: string, search: string, cardId?: string | null): string {
+  const params = new URLSearchParams(search);
+  params.set("view", "proof_ugc");
+  params.delete("chapter");
+  params.delete("adminView");
+  params.delete("returnView");
+  if (cardId) {
+    params.set("ugcCard", cardId);
+  } else {
+    params.delete("ugcCard");
+  }
+  const query = params.toString();
+  return query ? `${pathname}?${query}` : pathname;
+}
+
+function buildStaffAdminProofHref(pathname: string, search: string, cardId?: string | null): string {
+  const params = new URLSearchParams(search);
+  params.set("view", "admin");
+  params.set("adminView", "audit");
+  params.set("returnView", "proof_ugc");
+  params.delete("chapter");
+  if (cardId) {
+    params.set("ugcCard", cardId);
+  } else {
+    params.delete("ugcCard");
+  }
   const query = params.toString();
   return query ? `${pathname}?${query}` : pathname;
 }

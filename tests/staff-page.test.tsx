@@ -289,8 +289,11 @@ describe("staff page", () => {
     expect(source).toContain("Next step: finish consent and coach context here, then open Admin preview for embedded DS audit readback and blocked-control posture before any publishing request.");
     expect(source).toContain("DS Admin audit handoff");
     expect(source).toContain("Review consent and blocked actions here, then open the Admin preview for DS audit readback before any publishing or coach-note approval request.");
-    expect(source).toContain('href="/staff?view=admin&adminView=audit&returnView=proof_ugc"');
-    expect(source).toContain('href="/staff?view=proof_ugc"');
+    expect(source).toContain("const selectedCardId = searchParams.get(\"ugcCard\");");
+    expect(source).toContain("buildStaffAdminProofHref(pathname, searchParams.toString(), selectedCard.id)");
+    expect(source).toContain("buildStaffProofHref(pathname, searchParams.toString(), selectedCard.id)");
+    expect(source).toContain("const genericProofAdminHref = buildStaffAdminProofHref(pathname, searchParams.toString());");
+    expect(source).toContain("const genericProofQueueHref = buildStaffProofHref(pathname, searchParams.toString());");
     expect(source).toContain("Open Admin preview");
     expect(source).toContain("Return to Proof / UGC");
     expect(source).toContain("Embedded Admin review keeps DS directory, audit logs, and blocked controls in the same command-center walkthrough.");
@@ -368,7 +371,10 @@ describe("staff page", () => {
   it("keeps the proof review admin handoff wired to a Proof / UGC return target in source", () => {
     const source = readFileSync("src/components/figma-staff-command-center.tsx", "utf8");
 
-    expect(source).toContain('href="/staff?view=admin&adminView=audit&returnView=proof_ugc"');
+    expect(source).toContain("buildStaffAdminProofHref");
+    expect(source).toContain('params.set("returnView", "proof_ugc");');
+    expect(source).toContain('params.set("ugcCard", cardId);');
+    expect(source).toContain('params.delete("ugcCard");');
     expect(source).toContain("resolveStaffAdminReturnScreen");
     expect(source).toContain('if (screen === "ugc") return "Proof / UGC";');
     expect(source).toContain('return chapterId ? "this chapter" : "chapters";');
