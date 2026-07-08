@@ -10,8 +10,10 @@ type MemberSltPrepAliasPageProps = {
   }>;
 };
 
-export default async function MemberSltPrepAliasPage(props?: MemberSltPrepAliasPageProps) {
-  const query = (await props?.searchParams) ?? {};
+export default async function MemberSltPrepAliasPage(
+  props: MemberSltPrepAliasPageProps = {},
+) {
+  const query = (await props.searchParams) ?? {};
 
   return renderSltPrepPage(
     "/app/slt-prep",
