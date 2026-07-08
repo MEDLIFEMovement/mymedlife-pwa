@@ -21,10 +21,13 @@ Owner: `#1`, `#2`, `#3`, watched by `#4`
 
 Current queue context:
 
-- `#1`: let `#523/#536` settle before assigning another member event-loop slice.
+- `#1`: let `#551` settle before assigning another member event-loop slice. The
+  current blocker is narrow browser-smoke ambiguity between the new Stories
+  filter-chip `Events` link and the bottom-nav `Events` link.
 - `#2`: let `#545/#547` settle before assigning another leader event-loop slice.
-- `#3`: let `#522/#521/#534/#538/#550` settle before assigning another
-  Staff/Admin event-loop slice.
+- `#3`: keep `#550` as the active broadened Staff/Admin continuity
+  rerun/watch branch; do not assign another overlapping Staff/Admin event-loop
+  slice until its current head settles.
 
 Why first:
 
