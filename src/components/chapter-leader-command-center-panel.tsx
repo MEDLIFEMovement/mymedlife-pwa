@@ -3138,11 +3138,7 @@ function MemberLeadershipActionsCard({
 function renderMemberProfileQuickActionState(
   commandCenter: ChapterLeaderCommandCenter,
 ) {
-  const member = commandCenter.selectedMember;
-
-  if (!member) {
-    return null;
-  }
+  const member = commandCenter.selectedMember!;
 
   const baseProfileHref = buildChapterLeaderCommandCenterHref("member_profile", {
     source: commandCenter.selectedSource,

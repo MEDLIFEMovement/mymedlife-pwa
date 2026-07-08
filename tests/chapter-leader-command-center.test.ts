@@ -772,6 +772,24 @@ describe("chapter leader command center", () => {
     );
   });
 
+  it("does not render member quick-action state when no leader profile is selected", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "member_profile",
+      source: "feed_analytics",
+      quickAction: "promote_to_chair",
+    });
+    const commandCenterWithoutMember = {
+      ...commandCenter,
+      selectedMember: null,
+    };
+    const markup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter: commandCenterWithoutMember }),
+    );
+
+    expect(markup).not.toContain("Start from this member profile, then open chair-readiness review.");
+  });
+
   it("opens add-note as a member-profile-owned review state", () => {
     const actor = getMockLocalActorContext("leader.a@mymedlife.test");
     const commandCenter = getChapterLeaderCommandCenter(actor, data, {
@@ -2535,6 +2553,32 @@ describe("chapter leader command center", () => {
     expect(markup).toContain(
       "href=\"/leader?view=succession&amp;source=feed_analytics&amp;member=member-maya&amp;q=Sofia&amp;feedPost=feed-post-slt-recap\"",
     );
+  });
+
+  it("keeps succession review tied to the re-engagement workflow even without a selected post", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "succession",
+      source: "feed_analytics",
+      search: "Sofia",
+      memberId: "member-maya",
+    });
+    const markup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
+    );
+
+    expect(commandCenter.sourceContext).toMatchObject({
+      eyebrow: "Feed analytics handoff",
+      title: "Opened from a re-engagement workflow into succession review",
+      actions: [
+        {
+          label: "Open re-engagement queue",
+          href: "/leader?view=members&source=feed_analytics&member=member-maya&q=Sofia",
+        },
+      ],
+    });
+    expect(markup).toContain("Opened from a re-engagement workflow into succession review");
+    expect(markup).toContain("Open re-engagement queue");
   });
 
   it("opens promote emerging leader as a succession-owned quick-action state before nomination decisions", () => {
