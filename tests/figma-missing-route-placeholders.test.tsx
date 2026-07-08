@@ -102,6 +102,8 @@ describe("Figma missing route placeholders", () => {
     expect(integrationsHtml).toContain("this integrations surface is preview-only");
     expect(integrationsHtml).toContain("Provider Review Posture");
     expect(integrationsHtml).toContain("providers have no live credentials or outbound path");
+    expect(integrationsHtml).toContain("route-backed readback only");
+    expect(integrationsHtml).toContain("sends stay blocked from this shell");
     expect(integrationsHtml).toContain("Smile.io provider enablement is blocked until DS approval is complete");
     expect(integrationsHtml).toContain("Meta App Review and OAuth scope setup stay visible for DS review");
     expect(integrationsHtml).toContain("Enable blocked");
@@ -118,6 +120,8 @@ describe("Figma missing route placeholders", () => {
     expect(apiKeysHtml).toContain("Secrets Review Posture");
     expect(apiKeysHtml).toContain("seeded active keys still stay masked here");
     expect(apiKeysHtml).toContain("API keys stay masked in this preview");
+    expect(apiKeysHtml).toContain("every secrets action stays blocked from this shell");
+    expect(apiKeysHtml).toContain("every sensitive action remains blocked here for DS/Admin walkthroughs");
     expect(apiKeysHtml).toContain("Key material stays masked in this preview until the audited secrets workflow is approved.");
     expect(source).toContain("Key rotation is blocked in this preview");
     expect(source).toContain("Key revocation is blocked in this preview");
@@ -126,6 +130,7 @@ describe("Figma missing route placeholders", () => {
     expect(mcpHtml).toContain("MCP Access Policy");
     expect(mcpHtml).toContain("MCP Review Posture");
     expect(mcpHtml).toContain("providers remain read-only by policy");
+    expect(mcpHtml).toContain("connection tests, and connection changes remain blocked in this shell");
     expect(source).toContain("MCP write access is blocked in this preview");
     expect(source).toContain("MCP provider connections stay visible for policy review, but connection changes are blocked in this preview");
   });
