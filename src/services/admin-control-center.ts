@@ -174,9 +174,9 @@ export function getAdminControlCenterSummary(
       status: "ready_readonly",
       primaryMetric: `${disabledOutboxCount} disabled rows`,
       detail:
-        "Integration events and automation outbox records remain mock-safe and external-send disabled.",
+        "Integration events and automation outbox records remain visible for review while external sends stay blocked from preview.",
       nextAction:
-        "Keep n8n, HubSpot, Luma, warehouse, and Power BI writes disabled until separately approved.",
+        "Open the outbox review route for contract and zero-send checks; keep n8n, HubSpot, Luma, warehouse, and Power BI writes disabled until separately approved.",
     },
     {
       key: "audit_logs",
@@ -190,8 +190,8 @@ export function getAdminControlCenterSummary(
           : "Mock fallback can show audit intent, but persisted audit rows are not visible until local Supabase write/readback drills run.",
       nextAction:
         auditLogCount > 0
-          ? "Confirm each approved write path creates actor, target, before/after, reason, and readback evidence."
-          : "Run localhost Supabase write/readback drills before treating audit coverage as production-ready.",
+          ? "Open the audit review route and confirm each approved write path creates actor, target, before/after, reason, and readback evidence."
+          : "Run localhost Supabase write/readback drills before treating audit coverage as production-ready, then reopen the audit review route.",
     },
     {
       key: "system_health",
@@ -199,9 +199,9 @@ export function getAdminControlCenterSummary(
       status: "mock_only",
       primaryMetric: "placeholders",
       detail:
-        "The admin route now names health checks, but production monitors are not connected.",
+        "The admin route names health checks for review, but production monitors and live ops controls are not connected.",
       nextAction:
-        "Connect deployment, database, queue, and integration health after production environments exist.",
+        "Open the system health review route for runbook follow-through; connect deployment, database, queue, and integration health only after production environments exist.",
     },
   ] as const satisfies readonly AdminControlArea[];
 
