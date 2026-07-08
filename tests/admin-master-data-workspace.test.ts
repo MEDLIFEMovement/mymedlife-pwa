@@ -26,6 +26,7 @@ describe("admin master data workspace", () => {
     expect(workspace.users.map((user) => user.email)).toContain(
       "leader.a@mymedlife.test",
     );
+    expect(workspace.users[0]?.displayName).toContain("TEST ");
     expect(workspace.roles.map((role) => role.role)).toEqual([
       "General Member",
       "Action Committee Member",
@@ -40,6 +41,8 @@ describe("admin master data workspace", () => {
     expect(workspace.campaignTemplates.map((template) => template.slug)).toContain(
       "rush-month",
     );
+    expect(workspace.campaignTemplates[0]?.name).toContain("TEST ");
+    expect(workspace.chapters[0]?.name).toContain("TEST ");
   });
 
   it("keeps DS Admin eligible but routed back to safety review", () => {
@@ -79,5 +82,22 @@ describe("admin master data workspace", () => {
     expect(workspace.counts.externalWritesExpected).toBe(0);
     expect(workspace.safetyNotes.join(" ")).toContain("Production users");
     expect(workspace.safetyNotes.join(" ")).toContain("No HubSpot");
+  });
+
+  it("keeps read-only live-shaped chapter inventory clean while TEST labels stay on mock users and templates", () => {
+    const actor = getMockLocalActorContext("super.admin@mymedlife.test");
+    const workspace = getAdminMasterDataWorkspace(actor, {
+      ...data,
+      source: {
+        mode: "supabase",
+        status: "supabase_ready",
+        message: "Local Supabase read-only data.",
+      },
+    });
+
+    expect(workspace.chapters[0]?.name).toBe("UCLA MEDLIFE");
+    expect(workspace.chapters[0]?.campus).toBe("UCLA");
+    expect(workspace.users[0]?.displayName).toContain("TEST ");
+    expect(workspace.campaignTemplates[0]?.name).toContain("TEST ");
   });
 });

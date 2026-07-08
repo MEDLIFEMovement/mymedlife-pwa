@@ -131,7 +131,7 @@ function getUserInventory(
 ): readonly AdminUserInventoryItem[] {
   return actors.map((actor) => ({
     email: actor.email,
-    displayName: actor.displayName,
+    displayName: asTestLabel(actor.displayName),
     audience: actor.audience,
     chapterRoles: actor.chapterRoles,
     staffRoles: actor.staffRoles,
@@ -146,16 +146,18 @@ function getUserInventory(
 function getChapterInventory(
   data: ReadOnlyAppData,
 ): readonly AdminChapterInventoryItem[] {
+  const isReadOnlyLiveShape = data.source.mode === "supabase";
+
   return [
     {
       id: data.chapter.id,
-      name: data.chapter.name,
-      campus: data.chapter.campus,
-      region: data.chapter.region,
+      name: isReadOnlyLiveShape ? data.chapter.name : asTestLabel(data.chapter.name),
+      campus: isReadOnlyLiveShape ? data.chapter.campus : asTestLabel(data.chapter.campus),
+      region: isReadOnlyLiveShape ? data.chapter.region : asTestLabel(data.chapter.region),
       coachName: data.chapter.coachName,
-      status: data.source.mode === "supabase" ? "ready_readonly" : "mock_only",
+      status: isReadOnlyLiveShape ? "ready_readonly" : "mock_only",
       detail:
-        data.source.mode === "supabase"
+        isReadOnlyLiveShape
           ? "Read from the local Supabase read-only data source."
           : "Mock chapter scope used for local MVP review.",
     },
@@ -165,7 +167,7 @@ function getChapterInventory(
 function getCampaignTemplateInventory(): readonly AdminCampaignTemplateInventoryItem[] {
   return campaignShells.map((shell) => ({
     slug: shell.slug,
-    name: shell.name,
+    name: asTestLabel(shell.name),
     status: shell.status,
     primaryKpis: shell.primaryKpis,
     actionCommitteeLanes: shell.actionCommitteeLanes,
@@ -267,6 +269,10 @@ function hiddenWorkspace(): AdminMasterDataWorkspace {
       externalWritesExpected: 0,
     },
   };
+}
+
+function asTestLabel(value: string): string {
+  return /\bTEST\b/.test(value) ? value : `TEST ${value}`;
 }
 
 const requiredRoleDefinitions = [
