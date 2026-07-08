@@ -2127,12 +2127,14 @@ function AdminRouteBlocked({
   onBack,
   backLabel,
   chapterContext,
+  proofQueueContext,
 }: {
   onBack: () => void;
   backLabel: string;
   chapterContext?: string | null;
+  proofQueueContext?: string | null;
 }) {
-  const contextLabel = getStaffAdminContextLabel(backLabel, chapterContext);
+  const contextLabel = getStaffAdminContextLabel(backLabel, chapterContext, proofQueueContext);
   return (
     <div className="flex-1 flex items-center justify-center bg-[#0d1117]">
       <div className="w-full max-w-sm text-center space-y-6">
@@ -2178,14 +2180,16 @@ function AdminRoleGate({
   onBack,
   backLabel,
   chapterContext,
+  proofQueueContext,
 }: {
   onGrant: (role: AdminRole) => void;
   onBack: () => void;
   backLabel: string;
   chapterContext?: string | null;
+  proofQueueContext?: string | null;
 }) {
   const [picked, setPicked] = useState<AdminRole>("ds-admin");
-  const contextLabel = getStaffAdminContextLabel(backLabel, chapterContext);
+  const contextLabel = getStaffAdminContextLabel(backLabel, chapterContext, proofQueueContext);
 
   return (
     <div className="flex-1 flex items-center justify-center bg-[#0d1117]">
@@ -2320,6 +2324,10 @@ export function FigmaStaffCommandCenter({
   const adminReturnChapterId =
     activeScreen === "admin" && adminReturnScreen === "chapters" ? getRouteParam("chapter") : null;
   const adminChapterContext = activeScreen === "admin" ? getRouteParam("chapterContext") : null;
+  const adminProofQueueContext =
+    activeScreen === "admin"
+      ? getEmbeddedProofQueueContext(getRouteParam("proofStatus"), getRouteParam("proofPlatform"))
+      : null;
   const adminBackLabel = getStaffAdminReturnLabel(adminReturnScreen, adminReturnChapterId);
   const initialProofStatusFilter = resolveProofQueueStatusFilter(getRouteParam("proofStatus"));
   const initialProofPlatformFilter = resolveProofQueuePlatformFilter(getRouteParam("proofPlatform"));
@@ -2453,9 +2461,15 @@ export function FigmaStaffCommandCenter({
               onBack={handleAdminBack}
               backLabel={adminBackLabel}
               chapterContext={adminChapterContext}
+              proofQueueContext={adminProofQueueContext}
             />
           ) : (
-            <AdminRouteBlocked onBack={handleAdminBack} backLabel={adminBackLabel} chapterContext={adminChapterContext} />
+            <AdminRouteBlocked
+              onBack={handleAdminBack}
+              backLabel={adminBackLabel}
+              chapterContext={adminChapterContext}
+              proofQueueContext={adminProofQueueContext}
+            />
           )
         )}
 
@@ -2619,11 +2633,24 @@ function getStaffAdminReturnLabel(screen: Extract<Screen, "chapters" | "ugc">, c
   return chapterId ? "this chapter" : "chapters";
 }
 
-function getStaffAdminContextLabel(backLabel: string, chapterContext?: string | null) {
-  if (!chapterContext) return null;
+function getStaffAdminContextLabel(
+  backLabel: string,
+  chapterContext?: string | null,
+  proofQueueContext?: string | null,
+) {
   if (backLabel === "Proof / UGC") {
-    return `Proof review context: ${chapterContext}`;
+    if (chapterContext && proofQueueContext) {
+      return `Proof review context: ${chapterContext} (${proofQueueContext})`;
+    }
+    if (chapterContext) {
+      return `Proof review context: ${chapterContext}`;
+    }
+    if (proofQueueContext) {
+      return `Proof review context: ${proofQueueContext}`;
+    }
+    return null;
   }
+  if (!chapterContext) return null;
   return `Chapter review context: ${chapterContext}`;
 }
 
@@ -2788,4 +2815,37 @@ function buildStaffAdminProofHref(
   }
   const query = params.toString();
   return query ? `${pathname}?${query}` : pathname;
+}
+
+function getEmbeddedProofQueueContext(
+  proofStatus: string | null,
+  proofPlatform: string | null,
+) {
+  const statusLabel =
+    proofStatus === "pending"
+      ? "Pending"
+      : proofStatus === "approved"
+        ? "Approved"
+        : proofStatus === "rejected"
+          ? "Rejected"
+          : null;
+  const platformLabel =
+    proofPlatform === "facebook"
+      ? "Facebook"
+      : proofPlatform === "instagram"
+        ? "Instagram"
+        : proofPlatform === "linkedin"
+          ? "LinkedIn"
+          : proofPlatform === "loom"
+            ? "Loom"
+            : proofPlatform === "tiktok"
+              ? "TikTok"
+              : proofPlatform === "upload"
+                ? "Upload"
+                : proofPlatform === "youtube"
+                  ? "YouTube"
+                  : null;
+
+  if (statusLabel && platformLabel) return `${statusLabel} · ${platformLabel}`;
+  return statusLabel ?? platformLabel;
 }

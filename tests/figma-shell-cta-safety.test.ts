@@ -100,7 +100,7 @@ describe("copied Figma shell CTA safety", () => {
     expect(adminSource).toContain("onBack?: () => void");
     expect(staffSource).toContain("<AdminPanel");
     expect(staffSource).toContain("const adminReturnScreen =");
-    expect(staffSource).toContain("resolveStaffAdminReturnScreen(searchParams.get(\"returnView\"))");
+    expect(staffSource).toContain("resolveStaffAdminReturnScreen(getRouteParam(\"returnView\"))");
     expect(staffSource).toContain("embeddedBackLabel={adminBackLabel}");
   });
 

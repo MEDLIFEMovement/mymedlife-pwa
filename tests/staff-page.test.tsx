@@ -303,6 +303,8 @@ describe("staff page", () => {
     expect(source).toContain("buildStaffProofHref(pathname, currentSearch, selectedCard.id)");
     expect(source).toContain("const genericProofAdminHref = buildStaffAdminProofHref(pathname, currentSearch);");
     expect(source).toContain("const genericProofQueueHref = buildStaffProofHref(pathname, currentSearch);");
+    expect(source).toContain("const adminProofQueueContext =");
+    expect(source).toContain('getEmbeddedProofQueueContext(getRouteParam("proofStatus"), getRouteParam("proofPlatform"))');
     expect(source).toContain("Open Admin preview");
     expect(source).toContain("Return to Proof / UGC");
     expect(source).toContain("Embedded Admin review keeps DS directory, audit logs, and blocked controls in the same command-center walkthrough.");
@@ -540,11 +542,40 @@ describe("staff page", () => {
           returnView: "proof_ugc",
           ugcCard: "ugc4",
           chapterContext: "TEST Stanford University",
+          proofStatus: "pending",
+          proofPlatform: "instagram",
         }),
       }),
     );
 
-    expect(html).toContain("Proof review context: TEST Stanford University");
+    expect(html).toContain("Proof review context: TEST Stanford University (Pending · Instagram)");
+    expect(html).toContain("Return to Proof / UGC");
+  });
+
+  it("keeps proof queue context visible when admin access is blocked from a proof-linked handoff", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("general.staff@mymedlife.test"),
+    );
+
+    const { default: StaffPage } = await import("@/app/staff/page");
+    const html = renderToStaticMarkup(
+      await StaffPage({
+        searchParams: Promise.resolve({
+          view: "admin",
+          adminView: "audit",
+          returnView: "proof_ugc",
+          ugcCard: "ugc4",
+          chapterContext: "TEST Stanford University",
+          proofStatus: "pending",
+          proofPlatform: "instagram",
+        }),
+      }),
+    );
+
+    expect(html).toContain("Admin access blocked");
+    expect(html).toContain("Proof review context: TEST Stanford University (Pending · Instagram)");
     expect(html).toContain("Return to Proof / UGC");
   });
 
@@ -640,7 +671,7 @@ describe("staff page", () => {
     const lineCount = source.split("\n").length;
 
     expect(lineCount).toBeGreaterThanOrEqual(2170);
-    expect(lineCount).toBeLessThanOrEqual(2810);
+    expect(lineCount).toBeLessThanOrEqual(2865);
     expect(source).toContain("type Screen = \"chapters\" | \"campaigns\" | \"events\" | \"ugc\" | \"reports\" | \"admin\" | \"best-practices\" | \"sops\";");
     expect(source).toContain("const NAV_ITEMS");
     expect(source).toContain("function PortfolioOverview");
