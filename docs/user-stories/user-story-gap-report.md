@@ -11,8 +11,9 @@ the master inventory into PR-sized UI, data/safety, QA, rollout-evidence, and
 planning slices.
 
 Repo-truth checkpoint: latest source refresh compared this package against
-`/Users/codex/Documents/Codex/2026-07-06/new-chat/mymedlife-staff-admin` on
-`origin/main` commit `12dd983` (`Add MED-512 staff admin review packet (#461)`).
+this repo checkout on `origin/main` commit `bc091ee` (`Add shell acceptance
+planning packets (#501)`), including the recent member, leader, staff/admin,
+and shell acceptance planning wave visible on current main.
 
 ## Compact Backlog Table
 
@@ -38,6 +39,24 @@ Repo-truth checkpoint: latest source refresh compared this package against
 | MVP-SUP-02 | super admin | final invite gate | blocked | Owner data, live counts, signed-in proof, pilot proof |
 
 ## Launch Truth Summary
+
+### Current Shell Ownership Truth
+
+- `#1` should continue with General Member App continuity, especially
+  `/app/events`, event detail, RSVP/check-in posture, `/app/points`, and later
+  home-to-profile continuity.
+- `#2` should continue with broader `/leader?view=*` continuity and
+  service-backed menu/view restoration. Leaderboard/comparison polish is a
+  follow-up, not the primary next recommendation.
+- `#3` should continue with Staff / DS Admin shell continuity: staff
+  chapter-drawer, embedded Admin, Chapters loop coherence, Proof / UGC
+  follow-through, and broader staff-admin walkthrough continuity. `#3` should
+  not be assigned rollout packet, owner CSV, invite-gate, or production proof
+  ownership from this story package.
+- `#4` should continue PR-board watch, focused test/check interpretation,
+  visual QA, and no-write smoke classification.
+- `#5` should keep the repo-truth story/backlog layer current after shell PR
+  waves.
 
 ### Built Or Strong Local Review
 
@@ -117,7 +136,7 @@ Repo-truth checkpoint: latest source refresh compared this package against
 
 ## Missing Narrow-Launch Stories
 
-These should be added as delivery backlog items before launch can be called
+These should remain explicit delivery backlog items before launch can be called
 ready:
 
 1. Production signed-in route proof capture by role.
@@ -128,6 +147,9 @@ ready:
 6. Audit/outbox zero-send evidence from real pilot activity.
 7. Mobile/device QA sign-off for the member event loop.
 8. TEST-label removal/replacement gate for any production-visible rows.
+9. Role-by-role production account ownership and reviewer assignment.
+10. Final Coordinator/Nick approval packet that separates UI, QA, data/auth,
+    writes/integrations, and rollout-gate evidence.
 
 ## UI Coverage Without Enough Operating Or Data Proof
 
@@ -161,8 +183,8 @@ ready:
 
 - Adopt the IDs in `narrow-launch-mvp-stories.md` as the MVP story spine.
 - Map each story to one owner lane: #1 member UI, #2 leader UI, #3 staff/admin
-  UI, data/safety lane, #4 QA, #5 planning, or #3 rollout evidence depending on
-  the current team split.
+  UI, data/safety lane, #4 QA, #5 planning, or a separate rollout-evidence lane
+  depending on the current team split.
 - Keep rollout evidence stories separate from UI stories.
 
 ### Step 2 - Acceptance Criteria Tightening
