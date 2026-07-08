@@ -86,13 +86,13 @@ export default async function AdminReleaseReadinessPage() {
 function getNextStep(actor: LocalActorContext) {
   if (actor.audience === "ds_admin") {
     return {
-      label: "Open database security",
+      label: "Open database security review",
       href: "/admin/database-security",
     };
   }
 
   return {
-    label: "Open Nick review",
+    label: "Open Nick review packet",
     href: "/admin/nick-review",
   };
 }
