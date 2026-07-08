@@ -84,6 +84,8 @@ function getMemberEventHomeDetailHref(eventId: number) {
   return getMemberEventDetailHref(eventId).replace("source=events", "source=home");
 }
 
+type PointsSource = "events" | "profile" | "points";
+
 // ─── Primitives ────────────────────────────────────────────────────────────
 
 function cn(...c: (string | undefined | false | null)[]) {
@@ -1897,13 +1899,28 @@ function AdminDashboard({ navigate }: { navigate: (s: Screen) => void }) {
 
 // ─── SCREEN 10 · Points + Leaderboard ────────────────────────────────────────
 
-function PointsLeaderboard({ navigate }: { navigate: (s: Screen) => void }) {
+function PointsLeaderboard({ source }: { source: PointsSource }) {
   const badges = [
     { name: "TEST Rush Starter", desc: "Complete your first TEST Rush Month action", earned: true },
     { name: "TEST Connector", desc: "Invite 10+ TEST members to a TEST chapter event", earned: true },
     { name: "TEST Evidence Pro", desc: "3 TEST approvals in a single week", earned: false },
     { name: "TEST Chapter MVP", desc: "Top 3 on the TEST leaderboard for 2 weeks", earned: false },
   ];
+  const previewReadback =
+    source === "events"
+      ? {
+          title: "Opened from the TEST event loop",
+          detail: "This route-backed readback keeps the RSVP, attendance, and points loop visible. Leaderboard movement, rewards, and ledger writes stay preview-only until those writes are approved.",
+        }
+      : source === "profile"
+        ? {
+            title: "Opened from your TEST profile",
+            detail: "This profile-to-points handoff stays route-backed and read-only. Recognition stays visible here while profile can hand you back into the next chapter event.",
+          }
+        : {
+            title: "Preview-only recognition readback",
+            detail: "This route shows TEST leaderboard and approved-action readback only. No live points awards, reward claims, or share sends run from this screen.",
+          };
 
   return (
     <div className="pb-24">
@@ -1930,6 +1947,18 @@ function PointsLeaderboard({ navigate }: { navigate: (s: Screen) => void }) {
       </div>
 
       <div className="px-4 pt-5 space-y-6">
+        <Card className="bg-secondary/50 border-secondary">
+          <div className="flex items-start gap-3">
+            <Shield size={18} className="text-primary flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm font-bold text-foreground">{previewReadback.title}</p>
+              <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
+                {previewReadback.detail}
+              </p>
+            </div>
+          </div>
+        </Card>
+
         {/* Points by campaign */}
         <div>
           <SLabel>Points by Campaign</SLabel>
@@ -2043,7 +2072,7 @@ function PointsLeaderboard({ navigate }: { navigate: (s: Screen) => void }) {
                 system, or provider integration.
               </p>
               <Link
-                href="/app/events?source=points"
+                href={source === "profile" ? "/app/events?source=profile" : "/app/events?source=points"}
                 className="inline-flex text-primary text-xs font-bold mt-2"
               >
                 See how to earn more points →
@@ -3531,11 +3560,13 @@ export function FigmaMemberMobileHome({
   sltPrepEntry = null,
   initialStoriesFilter = null,
   initialStoryId = null,
+  pointsSource = "points",
 }: {
   initialScreen?: MemberMobileLaunchScreen;
   sltPrepEntry?: MemberSltPrepEntry | null;
   initialStoriesFilter?: string | null;
   initialStoryId?: string | null;
+  pointsSource?: PointsSource;
 }) {
   const [screen, setScreen] = useState<Screen>(initialScreen);
   const [role, setRole] = useState<Role>("student");
@@ -3554,7 +3585,7 @@ export function FigmaMemberMobileHome({
       case "action": return <ActionDetail navigate={navigate} />;
       case "evidence": return <EvidenceSubmission navigate={navigate} />;
       case "confirm": return <Confirmation navigate={navigate} />;
-      case "points": return <PointsLeaderboard navigate={navigate} />;
+      case "points": return <PointsLeaderboard source={pointsSource} />;
       case "events": return <EventsScreen navigate={navigate} />;
       case "event-detail": return <EventDetailScreen navigate={navigate} />;
       case "rsvp-confirm": return <RsvpConfirmScreen navigate={navigate} />;

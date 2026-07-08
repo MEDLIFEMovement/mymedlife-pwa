@@ -4,9 +4,26 @@ import { getStaticRouteMetadata } from "@/services/static-route-metadata";
 export const metadata = getStaticRouteMetadata("rushMonthLeaderboard");
 export const dynamic = "force-dynamic";
 
-export default async function AppPointsPage() {
+type AppPointsPageProps = {
+  searchParams?: Promise<{
+    source?: string;
+  }>;
+};
+
+function getPointsSource(source?: string): "events" | "profile" | "points" {
+  if (source === "events" || source === "profile" || source === "points") {
+    return source;
+  }
+
+  return "points";
+}
+
+export default async function AppPointsPage(props: AppPointsPageProps) {
+  const resolvedSearchParams: { source?: string } = await (props.searchParams ?? Promise.resolve({}));
+
   return renderMemberMobileShellPage({
     initialScreen: "points",
     redirectPath: "/app/points",
+    pointsSource: getPointsSource(resolvedSearchParams.source),
   });
 }
