@@ -277,7 +277,11 @@ describe("member event detail route", () => {
 
     expect(html).toContain('href="/profile"');
     expect(html).toContain('href="/app/events?source=profile"');
+<<<<<<< HEAD
     expect(html).toContain('href="/app/points?source=profile&amp;event=chapter-event-ucla-kickoff"');
+=======
+    expect(html).toContain('href="/app/points?source=profile"');
+>>>>>>> 12bdfa2 ([codex] preserve member event loop nav continuity)
     expect(html).toContain('aria-label="Back to Profile"');
     expect(html).toContain("Opened from your TEST profile");
     expect(html).toContain("Keep profile, events, and points in one member loop.");
