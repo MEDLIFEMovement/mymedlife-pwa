@@ -420,7 +420,7 @@ function StudentHome({
 
         {/* Points card — sits directly below priority in the blue zone */}
         <Link
-          href="/app/points"
+          href="/app/points?source=home"
           className="mt-3 flex items-center justify-between rounded-2xl border border-white/15 bg-white/10 px-4 py-3.5 transition-transform hover:bg-white/15 active:scale-[0.98]"
         >
           <div>
@@ -602,7 +602,7 @@ function StudentHome({
         <div>
           <div className="flex items-center justify-between mb-3">
             <SLabel>Chapter Leaderboard</SLabel>
-            <Link href="/app/points" className="text-primary text-xs font-semibold">Full board</Link>
+            <Link href="/app/points?source=home" className="text-primary text-xs font-semibold">Full board</Link>
           </div>
           <Card>
             {[
