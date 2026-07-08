@@ -267,8 +267,8 @@ describe("leader page", () => {
         "utf8",
       );
       expect(html).toContain("Preview Committee Setup");
-      expect(source).toContain("Preview Chair Assignment");
-      expect(source).toContain("Preview Committee Review");
+      expect(source).toContain("Preview Chair Coverage");
+      expect(source).toContain("Preview Ownership Review");
     }
 
     if (view === "succession") {
@@ -292,8 +292,8 @@ describe("leader page", () => {
 
     if (view === "leaders") {
       expect(html).toContain("TEST leadership roster preview.");
-      expect(html).toContain("Preview Succession Review");
-      expect(html).toContain("Preview Values Review");
+      expect(html).toContain("Preview Succession Readiness");
+      expect(html).toContain("Preview Values Readiness");
     }
   });
 
@@ -502,8 +502,8 @@ describe("leader page", () => {
     expect(source).toContain("toTestLabel");
     expect(source).toContain("TEST leadership roster preview.");
     expect(source).toContain("TEST leader roster preview only.");
-    expect(source).toContain("Preview Succession Review");
-    expect(source).toContain("Preview Values Review");
+    expect(source).toContain("Preview Succession Readiness");
+    expect(source).toContain("Preview Values Readiness");
     expect(source).toContain("Preview vacancy only");
     expect(source).toContain("No chair assigned in TEST preview");
     expect(source).toContain("Preview Review Actions");
@@ -513,10 +513,13 @@ describe("leader page", () => {
     expect(source).toContain("TEST reviewed Moving Mountains Kickoff event handoff preview");
     expect(source).toContain("TEST reviewed committee co-lead readiness preview");
     expect(source).toContain("Monitor whether each TEST committee is moving the chapter forward. Committee ownership, member review, and attendance follow-through stay preview-only in this shell.");
-    expect(source).toContain("Preview Follow-through");
-    expect(source).toContain("Preview Succession Review");
-    expect(source).toContain("Preview Member Follow-through");
-    expect(source).toContain("Keep chair coverage, member review, and attendance follow-through visible here without turning on live committee writes.");
+    expect(source).toContain("Preview Review Readback");
+    expect(source).toContain("Preview Succession Readiness");
+    expect(source).toContain("Preview Member Review");
+    expect(source).toContain("Keep chair coverage, member review, and attendance follow-through visible here as review-only readback without turning on live committee writes.");
+    expect(source).toContain("Preview Chair Coverage");
+    expect(source).toContain("Preview Ownership Review");
+    expect(source).toContain("No TEST chair assigned");
     expect(source).toContain("Track TEST event execution previews, survey posture, committee follow-through, and chapter-wide attendance readback without turning on live event operations.");
     expect(source).toContain("Preview Lead");
     expect(source).toContain("Event Score Preview —");

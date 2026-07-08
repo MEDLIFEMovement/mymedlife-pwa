@@ -1121,7 +1121,7 @@ function CommitteesScreen({
                     <div className="min-w-0">
                       <div className="font-bold text-slate-900 text-sm">{c.name}</div>
                       {c.chairs.length === 0
-                        ? <div className="text-xs text-red-500 font-semibold mt-0.5">⚠ No chair assigned</div>
+                        ? <div className="text-xs text-red-500 font-semibold mt-0.5">⚠ No TEST chair assigned</div>
                         : <div className="flex items-center gap-2 mt-1 flex-wrap">
                             {c.chairs.map(ch => (
                               <div key={ch} className="flex items-center gap-1">
@@ -1270,29 +1270,29 @@ function CommitteesScreen({
                   {/* Recommendation + CTAs */}
                   <div className="space-y-4">
                     <div>
-                      <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Preview Follow-through</div>
+                      <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Preview Review Readback</div>
                       <p className="text-xs text-slate-700 leading-relaxed">{c.rec}</p>
                     </div>
                     <div>
                       <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Quick Actions</div>
-                      <p className="text-[11px] text-slate-500 leading-relaxed mb-2">Keep chair coverage, member review, and attendance follow-through visible here without turning on live committee writes.</p>
+                      <p className="text-[11px] text-slate-500 leading-relaxed mb-2">Keep chair coverage, member review, and attendance follow-through visible here as review-only readback without turning on live committee writes.</p>
                       <div className="space-y-1.5">
                         <Btn
                           variant="primary"
                           className="w-full justify-start"
                           blockedTitle="Committee chair assignment is blocked in this preview."
                         >
-                          <Plus size={10}/>Preview Chair Assignment
+                          <Plus size={10}/>Preview Chair Coverage
                         </Btn>
-                        <Btn variant="secondary"  className="w-full justify-start" onClick={onPromote}><Star size={10}/>Preview Succession Review</Btn>
-                        <Btn variant="secondary"  className="w-full justify-start" onClick={onAssignAction}><Zap size={10}/>Preview Member Follow-through</Btn>
+                        <Btn variant="secondary"  className="w-full justify-start" onClick={onPromote}><Star size={10}/>Preview Succession Readiness</Btn>
+                        <Btn variant="secondary"  className="w-full justify-start" onClick={onAssignAction}><Zap size={10}/>Preview Member Review</Btn>
                         <Btn variant="secondary"  className="w-full justify-start" onClick={onCreateEvent}><Calendar size={10}/>Create Event Preview</Btn>
                         <Btn
                           variant="ghost"
                           className="w-full justify-start"
                           blockedTitle="Committee detail drill-in is not wired yet. Use this expanded committee card for the current preview context."
                         >
-                          <Eye size={10}/>Preview Committee Review
+                          <Eye size={10}/>Preview Ownership Review
                         </Btn>
                       </div>
                     </div>
@@ -3233,11 +3233,11 @@ function LeadersScreen({
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-black text-slate-900">Current Leaders</h1>
-          <p className="text-sm text-slate-500 mt-1">TEST leadership roster preview. E-Board coverage and committee ownership stay visible for review, but no appointment, promotion, vacancy fill, or notify flow goes live from this shell.</p>
+          <p className="text-sm text-slate-500 mt-1">TEST leadership roster preview. E-Board coverage, committee ownership, and successor readiness stay visible for review, but no appointment, promotion, vacancy fill, or notify flow goes live from this shell.</p>
         </div>
         <div className="flex gap-2">
-          <Btn variant="secondary" onClick={() => onNavigate("succession")}><GitBranch size={11}/>Preview Succession Review</Btn>
-          <Btn variant="secondary" onClick={() => onNavigate("values")}><Star size={11}/>Preview Values Review</Btn>
+          <Btn variant="secondary" onClick={() => onNavigate("succession")}><GitBranch size={11}/>Preview Succession Readiness</Btn>
+          <Btn variant="secondary" onClick={() => onNavigate("values")}><Star size={11}/>Preview Values Readiness</Btn>
         </div>
       </div>
 
