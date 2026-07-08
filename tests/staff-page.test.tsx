@@ -398,6 +398,7 @@ describe("staff page", () => {
     expect(html).toContain("admin preview route");
     expect(html).toContain("Current posture");
     expect(html).toContain("embedded admin preview from the staff workspace");
+    expect(html).toContain("When DS Admin access is available, return to chapters in the same Command Center review loop after the Admin readback closes.");
     expect(html).toContain("Return to chapters");
     expect(html).not.toContain("Open Admin preview");
   });
@@ -423,6 +424,7 @@ describe("staff page", () => {
     );
 
     expect(html).toContain("Chapter review context: TEST Boston College");
+    expect(html).toContain("When DS Admin access is available, return to TEST Boston College in the same Command Center review loop after the Admin readback closes.");
     expect(html).toContain("Return to this chapter");
   });
 
@@ -519,6 +521,7 @@ describe("staff page", () => {
     expect(html).toContain("Restricted Preview Access");
     expect(html).toContain("Preview as");
     expect(html).toContain("Open Admin preview");
+    expect(html).toContain("After the Admin readback, return to chapters in the same Command Center review loop.");
     expect(html).toContain("DS Admin");
     expect(html).toContain("Super Admin");
     const source = readFileSync("src/components/figma-staff-command-center.tsx", "utf8");
@@ -550,6 +553,7 @@ describe("staff page", () => {
 
     expect(html).toContain("Proof review context: TEST Stanford University (Pending · Instagram)");
     expect(html).toContain("Restricted to DS Admin and Super Admin only · Proof / UGC review for TEST Stanford University (Pending · Instagram)");
+    expect(html).toContain("After the Admin readback, return to TEST Stanford University in Proof / UGC (Pending · Instagram) in the same Command Center review loop.");
     expect(html).toContain("Return to Proof / UGC");
   });
 
@@ -579,6 +583,7 @@ describe("staff page", () => {
     expect(html).toContain("Proof review context: TEST Stanford University (Pending · Instagram)");
     expect(html).toContain("Return to Proof / UGC");
     expect(html).toContain("Restricted to DS Admin and Super Admin only · Proof / UGC review for TEST Stanford University (Pending · Instagram)");
+    expect(html).toContain("When DS Admin access is available, return to TEST Stanford University in Proof / UGC (Pending · Instagram) in the same Command Center review loop after the Admin readback closes.");
   });
 
   it("keeps proof queue filter context on the proof-to-admin handoff from first render", async () => {
@@ -609,6 +614,7 @@ describe("staff page", () => {
     expect(source).toContain("const selectedCardId = searchParams.get(\"ugcCard\") ?? initialSelectedCardId;");
     expect(source).toContain("const adminHeaderSubtitle =");
     expect(source).toContain("getStaffAdminHeaderSubtitle(adminBackLabel, adminChapterContext, adminProofQueueContext)");
+    expect(source).toContain("getStaffAdminReturnLoopLabel(backLabel, chapterContext, proofQueueContext)");
   });
 
   it("keeps chapter portfolio filter context route-backed for the chapter review loop", async () => {
@@ -675,7 +681,7 @@ describe("staff page", () => {
     const lineCount = source.split("\n").length;
 
     expect(lineCount).toBeGreaterThanOrEqual(2170);
-    expect(lineCount).toBeLessThanOrEqual(2900);
+    expect(lineCount).toBeLessThanOrEqual(2940);
     expect(source).toContain("type Screen = \"chapters\" | \"campaigns\" | \"events\" | \"ugc\" | \"reports\" | \"admin\" | \"best-practices\" | \"sops\";");
     expect(source).toContain("const NAV_ITEMS");
     expect(source).toContain("function PortfolioOverview");

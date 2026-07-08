@@ -2135,6 +2135,7 @@ function AdminRouteBlocked({
   proofQueueContext?: string | null;
 }) {
   const contextLabel = getStaffAdminContextLabel(backLabel, chapterContext, proofQueueContext);
+  const returnLoopLabel = getStaffAdminReturnLoopLabel(backLabel, chapterContext, proofQueueContext);
   return (
     <div className="flex-1 flex items-center justify-center bg-[#0d1117]">
       <div className="w-full max-w-sm text-center space-y-6">
@@ -2162,6 +2163,9 @@ function AdminRouteBlocked({
               {contextLabel}
             </div>
           ) : null}
+          <p className="mt-3 text-[11px] leading-relaxed text-slate-500">
+            {`When DS Admin access is available, return to ${returnLoopLabel} in the same Command Center review loop after the Admin readback closes.`}
+          </p>
         </div>
 
         <button
@@ -2190,6 +2194,7 @@ function AdminRoleGate({
 }) {
   const [picked, setPicked] = useState<AdminRole>("ds-admin");
   const contextLabel = getStaffAdminContextLabel(backLabel, chapterContext, proofQueueContext);
+  const returnLoopLabel = getStaffAdminReturnLoopLabel(backLabel, chapterContext, proofQueueContext);
 
   return (
     <div className="flex-1 flex items-center justify-center bg-[#0d1117]">
@@ -2250,6 +2255,10 @@ function AdminRoleGate({
         >
           Open Admin preview
         </button>
+
+        <p className="text-[11px] leading-relaxed text-slate-600">
+          {`After the Admin readback, return to ${returnLoopLabel} in the same Command Center review loop.`}
+        </p>
 
         <p className="text-[11px] text-slate-700">
           Not DS Admin or Super Admin?{" "}
@@ -2682,6 +2691,31 @@ function getStaffAdminHeaderSubtitle(
     return `Chapter review for ${chapterContext}`;
   }
   return null;
+}
+
+function getStaffAdminReturnLoopLabel(
+  backLabel: string,
+  chapterContext?: string | null,
+  proofQueueContext?: string | null,
+) {
+  if (backLabel === "Proof / UGC") {
+    if (chapterContext && proofQueueContext) {
+      return `${chapterContext} in Proof / UGC (${proofQueueContext})`;
+    }
+    if (chapterContext) {
+      return `${chapterContext} in Proof / UGC`;
+    }
+    if (proofQueueContext) {
+      return `Proof / UGC (${proofQueueContext})`;
+    }
+    return "Proof / UGC";
+  }
+
+  if (backLabel === "this chapter") {
+    return chapterContext ?? "this chapter";
+  }
+
+  return backLabel;
 }
 
 function getStaffShellViewParam(screen: Screen): string {
