@@ -153,7 +153,7 @@ test.describe("myMEDLIFE launch route smoke", () => {
     await page.goto("/leader");
 
     await expect(page).toHaveURL(/\/leader/);
-    await expect(page.getByText("Chapter Leadership Home")).toBeVisible();
+    await expect(page.getByRole("link", { name: "Chapter Home", exact: true })).toBeVisible();
     await expect(page.getByRole("heading", { name: /Chapter Metrics/ })).toBeVisible();
 
     await page.getByRole("link", { name: "Chapter Leaderboard" }).click();
@@ -161,16 +161,22 @@ test.describe("myMEDLIFE launch route smoke", () => {
     await expect(
       page.getByRole("heading", { name: "Chapter Leaderboard", exact: true }),
     ).toBeVisible();
-    await expect(page.getByLabel("Ranked chapter leaderboard")).toBeVisible();
+    await expect(page.getByText("Ideas to try", { exact: true })).toBeVisible();
+    await expect(page.getByText("TEST UCLA MEDLIFE")).toBeVisible();
 
     await page.getByRole("link", { name: "Event Performance" }).click();
     await expect(page).toHaveURL(/\/leader\?view=events/);
     await expect(page.getByRole("heading", { name: "Event Performance" })).toBeVisible();
 
     await page.goto("/leader?view=overview");
-    await page.getByRole("button", { name: "Create Event" }).first().click();
+    await page.locator('a[href*="view=events"][href*="quickAction=create_event"]').first().click();
     await expect(page).toHaveURL(/\/leader\?view=events/);
-    await expect(page.getByRole("heading", { name: "Create Event Preview" })).toBeVisible();
+    await expect(
+      page.getByRole("heading", {
+        name: "Open the chapter event preview lane with ownership and follow-through in mind.",
+      }),
+    ).toBeVisible();
+    await expect(page.getByRole("link", { name: "Open event preview flow" })).toBeVisible();
   });
 
   test("clicks every student command center menu item into its matching screen", async ({
@@ -184,7 +190,11 @@ test.describe("myMEDLIFE launch route smoke", () => {
       { label: "Chapter Leaderboard", view: "leaderboard", heading: "Chapter Leaderboard" },
       { label: "Feed Analytics", view: "feed_analytics", heading: "Feed & Engagement Analytics" },
       { label: "Member Leaderboard", view: "members", heading: "Member Leaderboard" },
-      { label: "Member Profile", view: "member_profile", heading: "Member Profile" },
+      {
+        label: "Member Profile",
+        view: "member_profile",
+        heading: "Events, points, and follow-through stay in one story.",
+      },
       { label: "Event Committees", view: "committees", heading: "Event Committees" },
       { label: "Event Performance", view: "events", heading: "Event Performance" },
       { label: "Create Event", view: "create_event", heading: "Create Event Preview" },
@@ -197,17 +207,19 @@ test.describe("myMEDLIFE launch route smoke", () => {
       { label: "Leadership Training", view: "training", heading: "Leadership & Resources Hub" },
     ] as const;
 
-    await page.goto("/leader?view=overview");
-
     for (const item of menuItems) {
-      await page.getByRole("link", { name: item.label, exact: true }).click();
+      await page.goto("/leader?view=overview");
+      const leaderNav = page.getByRole("navigation", { name: "Leadership command center views" });
+      await leaderNav.getByRole("link", { name: item.label, exact: true }).click();
       await expect(page).toHaveURL(new RegExp(`/leader\\?view=${item.view}`));
       await expect(page.getByRole("heading", { name: item.heading, exact: true })).toBeVisible();
     }
 
-    await page.getByRole("link", { name: "Chapter Leaderboard", exact: true }).click();
-    await expect(page.getByLabel("Ranked chapter leaderboard")).toBeVisible();
-    await expect(page.getByRole("columnheader", { name: "Points Score" })).toBeVisible();
+    await page.goto("/leader?view=overview");
+    const leaderNav = page.getByRole("navigation", { name: "Leadership command center views" });
+    await leaderNav.getByRole("link", { name: "Chapter Leaderboard", exact: true }).click();
+    await expect(page.getByText("Ideas to try", { exact: true })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Best practices" }).first()).toBeVisible();
   });
 
   test("loads the staff command center with the preview actor", async ({
