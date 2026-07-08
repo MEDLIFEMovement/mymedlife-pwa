@@ -234,15 +234,17 @@ function Sidebar({
   onBack,
   backLabel = "staff preview",
   chapterContext,
+  proofQueueContext,
 }: {
   active: string;
   onNav: (id: string) => void;
   onBack?: () => void;
   backLabel?: string;
   chapterContext?: string | null;
+  proofQueueContext?: string | null;
 }) {
   const isEmbeddedPreview = Boolean(onBack);
-  const embeddedReviewCopy = getEmbeddedAdminReviewCopy(backLabel, chapterContext);
+  const embeddedReviewCopy = getEmbeddedAdminReviewCopy(backLabel, chapterContext, proofQueueContext);
 
   return (
     <aside className="fixed left-0 top-0 h-screen w-[220px] bg-[#090d12] border-r border-white/[0.05] flex flex-col z-40">
@@ -266,6 +268,11 @@ function Sidebar({
             {chapterContext ? (
               <div className="mt-1 text-[10px] leading-tight text-slate-500 group-hover:text-slate-300">
                 {`Chapter context: ${chapterContext}`}
+              </div>
+            ) : null}
+            {proofQueueContext ? (
+              <div className="mt-1 text-[10px] leading-tight text-slate-500 group-hover:text-slate-300">
+                {`Queue context: ${proofQueueContext}`}
               </div>
             ) : null}
           </div>
@@ -349,7 +356,11 @@ function Sidebar({
   );
 }
 
-function getEmbeddedAdminReviewCopy(backLabel: string, chapterContext?: string | null) {
+function getEmbeddedAdminReviewCopy(
+  backLabel: string,
+  chapterContext?: string | null,
+  proofQueueContext?: string | null,
+) {
   const normalized = backLabel.trim().toLowerCase();
 
   if (normalized === "proof / ugc") {
@@ -357,9 +368,13 @@ function getEmbeddedAdminReviewCopy(backLabel: string, chapterContext?: string |
       badge: "Proof review handoff",
       label: "Embedded Proof Review",
       footer:
-        chapterContext
-          ? `Return with Command Center after this Proof / UGC review pass for ${chapterContext}, or use the top-right menu to switch workspaces or log out.`
-          : "Return with Command Center after this Proof / UGC review pass, or use the top-right menu to switch workspaces or log out.",
+        chapterContext && proofQueueContext
+          ? `Return with Command Center after this Proof / UGC review pass for ${chapterContext} (${proofQueueContext}), or use the top-right menu to switch workspaces or log out.`
+          : chapterContext
+            ? `Return with Command Center after this Proof / UGC review pass for ${chapterContext}, or use the top-right menu to switch workspaces or log out.`
+            : proofQueueContext
+              ? `Return with Command Center after this Proof / UGC review pass for ${proofQueueContext}, or use the top-right menu to switch workspaces or log out.`
+              : "Return with Command Center after this Proof / UGC review pass, or use the top-right menu to switch workspaces or log out.",
       tag: "Proof review",
     };
   }
@@ -391,14 +406,16 @@ function Header({
   isEmbeddedPreview = false,
   embeddedBackLabel = "staff preview",
   chapterContext,
+  proofQueueContext,
 }: {
   title: string;
   subtitle?: string;
   isEmbeddedPreview?: boolean;
   embeddedBackLabel?: string;
   chapterContext?: string | null;
+  proofQueueContext?: string | null;
 }) {
-  const embeddedReviewCopy = getEmbeddedAdminReviewCopy(embeddedBackLabel, chapterContext);
+  const embeddedReviewCopy = getEmbeddedAdminReviewCopy(embeddedBackLabel, chapterContext, proofQueueContext);
   return (
     <div className="h-[52px] flex items-center justify-between px-6 border-b border-white/[0.06] bg-[#0d1117]/90 backdrop-blur-sm sticky top-0 z-30 flex-shrink-0">
       <div className="flex items-center gap-3">
@@ -412,6 +429,11 @@ function Header({
             {chapterContext ? (
               <span className="text-[10px] text-slate-500">
                 {`Context: ${chapterContext}`}
+              </span>
+            ) : null}
+            {proofQueueContext ? (
+              <span className="text-[10px] text-slate-500">
+                {`Queue: ${proofQueueContext}`}
               </span>
             ) : null}
           </div>
@@ -3885,6 +3907,9 @@ export function FigmaAdminPanel({
   const routeActive = routeActiveParam ? resolveAdminShellView(routeActiveParam) : null;
   const active = routeActive ?? resolveAdminShellView(initialActive);
   const embeddedChapterContext = pathname.startsWith("/staff") ? searchParams.get("chapterContext") : null;
+  const embeddedProofQueueContext = pathname.startsWith("/staff")
+    ? getEmbeddedProofQueueContext(searchParams.get("proofStatus"), searchParams.get("proofPlatform"))
+    : null;
   const page = PAGES[active] ?? PAGES.overview;
 
   const handleNav = (id: string) => {
@@ -3919,6 +3944,7 @@ export function FigmaAdminPanel({
         onBack={onBack}
         backLabel={embeddedBackLabel}
         chapterContext={embeddedChapterContext}
+        proofQueueContext={embeddedProofQueueContext}
       />
       <div className="ml-[220px] flex-1 flex flex-col min-h-0 overflow-hidden">
         <Header
@@ -3927,6 +3953,7 @@ export function FigmaAdminPanel({
           isEmbeddedPreview={Boolean(onBack)}
           embeddedBackLabel={embeddedBackLabel}
           chapterContext={embeddedChapterContext}
+          proofQueueContext={embeddedProofQueueContext}
         />
         <main className="flex-1 overflow-y-auto scrollbar-hide bg-[#0d1117]">
           {renderPage()}
@@ -3939,6 +3966,39 @@ export function FigmaAdminPanel({
 function resolveAdminShellView(view: string | null | undefined): string {
   if (!view) return "overview";
   return Object.prototype.hasOwnProperty.call(PAGES, view) ? view : "overview";
+}
+
+function getEmbeddedProofQueueContext(
+  proofStatus: string | null,
+  proofPlatform: string | null,
+) {
+  const statusLabel =
+    proofStatus === "pending"
+      ? "Pending"
+      : proofStatus === "approved"
+        ? "Approved"
+        : proofStatus === "rejected"
+          ? "Rejected"
+          : null;
+  const platformLabel =
+    proofPlatform === "facebook"
+      ? "Facebook"
+      : proofPlatform === "instagram"
+        ? "Instagram"
+        : proofPlatform === "linkedin"
+          ? "LinkedIn"
+          : proofPlatform === "loom"
+            ? "Loom"
+            : proofPlatform === "tiktok"
+              ? "TikTok"
+              : proofPlatform === "upload"
+                ? "Upload"
+                : proofPlatform === "youtube"
+                  ? "YouTube"
+                  : null;
+
+  if (statusLabel && platformLabel) return `${statusLabel} · ${platformLabel}`;
+  return statusLabel ?? platformLabel;
 }
 
 function buildAdminShellHref(active: string, pathname: string, search: string): string {
