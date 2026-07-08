@@ -22,6 +22,11 @@ export function AdminControlCenterPanel({ summary }: AdminControlCenterPanelProp
         campaign templates, integrations, audit logs, and system health. It is
         read-only and mock-safe until auth, RLS, audit, and rollback are approved.
       </p>
+      <p className="mt-2 text-xs leading-5 text-white/52">
+        Treat every route from this control center as a DS Admin review handoff.
+        Inventory, health, audit, and outbox surfaces stay visible for walkthrough
+        fidelity, but no write, export, retry, or provider action runs from here.
+      </p>
 
       <div className="mt-4 flex flex-wrap gap-2">
         <PreviewToken>Read-only preview</PreviewToken>
@@ -221,6 +226,11 @@ export function AdminControlCenterPanel({ summary }: AdminControlCenterPanelProp
           External writes expected from this inventory:{" "}
           {summary.masterDataInventory.externalWritesExpected}.
         </p>
+        <p className="mt-2 text-xs leading-5 text-white/44">
+          Inventory review remains read-only in this shell. Role edits, chapter
+          writes, invite sends, and provider-linked changes stay blocked until the
+          audited admin workflow is approved.
+        </p>
       </div>
 
       <div className="mt-4 rounded-2xl border border-sky-300/20 bg-sky-300/10 p-4">
@@ -323,6 +333,10 @@ export function AdminControlCenterPanel({ summary }: AdminControlCenterPanelProp
             <p className="mt-3 text-2xl font-semibold text-white">{area.primaryMetric}</p>
             <p className="mt-2 text-sm leading-6 text-white/64">{area.detail}</p>
             <p className="mt-2 text-xs leading-5 text-white/46">Next: {area.nextAction}</p>
+            <p className="mt-2 text-xs leading-5 text-white/40">
+              Review handoff only. This card keeps the route visible without implying
+              a live admin mutation path from the overview shell.
+            </p>
             {area.key === "system_health" ? (
               <Link
                 href="/admin/system-health"
