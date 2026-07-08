@@ -197,7 +197,11 @@ test.describe("myMEDLIFE launch route smoke", () => {
       },
       { label: "Event Committees", view: "committees", heading: "Event Committees" },
       { label: "Event Performance", view: "events", heading: "Event Performance" },
-      { label: "Create Event", view: "create_event", heading: "Create Event Preview" },
+      {
+        label: "Create Event",
+        view: "events",
+        heading: "Open the chapter event preview lane with ownership and follow-through in mind.",
+      },
       { label: "Impact", view: "impact", heading: "Impact Dashboard" },
       { label: "Bridge Videos", view: "bridge_videos", heading: "Bridge Video Hub" },
       { label: "MEDLIFE Stories", view: "stories", heading: "MEDLIFE Stories" },
