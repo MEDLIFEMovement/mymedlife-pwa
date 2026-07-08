@@ -385,16 +385,36 @@ function getEmbeddedAdminReviewCopy(backLabel: string, chapterContext?: string |
   };
 }
 
-function Header({ title, subtitle, isEmbeddedPreview = false }: { title: string; subtitle?: string; isEmbeddedPreview?: boolean }) {
+function Header({
+  title,
+  subtitle,
+  isEmbeddedPreview = false,
+  embeddedBackLabel = "staff preview",
+  chapterContext,
+}: {
+  title: string;
+  subtitle?: string;
+  isEmbeddedPreview?: boolean;
+  embeddedBackLabel?: string;
+  chapterContext?: string | null;
+}) {
+  const embeddedReviewCopy = getEmbeddedAdminReviewCopy(embeddedBackLabel, chapterContext);
   return (
     <div className="h-[52px] flex items-center justify-between px-6 border-b border-white/[0.06] bg-[#0d1117]/90 backdrop-blur-sm sticky top-0 z-30 flex-shrink-0">
       <div className="flex items-center gap-3">
         <h1 className="text-[15px] font-semibold text-white">{title}</h1>
         {subtitle && <span className="text-[12px] text-slate-600 border-l border-white/[0.06] pl-3">{subtitle}</span>}
         {isEmbeddedPreview ? (
-          <span className="inline-flex items-center rounded-full border border-sky-500/15 bg-sky-500/10 px-2 py-0.5 text-[9px] font-mono uppercase tracking-[0.14em] text-sky-300">
-            Staff-linked review route
-          </span>
+          <div className="flex items-center gap-2">
+            <span className="inline-flex items-center rounded-full border border-sky-500/15 bg-sky-500/10 px-2 py-0.5 text-[9px] font-mono uppercase tracking-[0.14em] text-sky-300">
+              {embeddedReviewCopy.label}
+            </span>
+            {chapterContext ? (
+              <span className="text-[10px] text-slate-500">
+                {`Context: ${chapterContext}`}
+              </span>
+            ) : null}
+          </div>
         ) : null}
       </div>
       <div className="flex items-center gap-3">
@@ -3901,7 +3921,13 @@ export function FigmaAdminPanel({
         chapterContext={embeddedChapterContext}
       />
       <div className="ml-[220px] flex-1 flex flex-col min-h-0 overflow-hidden">
-        <Header title={page.title} subtitle={page.subtitle} isEmbeddedPreview={Boolean(onBack)} />
+        <Header
+          title={page.title}
+          subtitle={page.subtitle}
+          isEmbeddedPreview={Boolean(onBack)}
+          embeddedBackLabel={embeddedBackLabel}
+          chapterContext={embeddedChapterContext}
+        />
         <main className="flex-1 overflow-y-auto scrollbar-hide bg-[#0d1117]">
           {renderPage()}
         </main>
