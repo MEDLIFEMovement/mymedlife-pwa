@@ -2172,7 +2172,7 @@ function AdminRouteBlocked({
           onClick={onBack}
           className="w-full py-2.5 bg-slate-800 text-white rounded-lg text-sm font-semibold hover:bg-slate-700 transition-colors"
         >
-          {`Return to ${backLabel}`}
+          {`Return to ${returnLoopLabel}`}
         </button>
       </div>
     </div>
@@ -2262,7 +2262,7 @@ function AdminRoleGate({
 
         <p className="text-[11px] text-slate-700">
           Not DS Admin or Super Admin?{" "}
-          <button onClick={onBack} className="text-slate-500 underline underline-offset-2">{`Return to ${backLabel}`}</button>
+          <button onClick={onBack} className="text-slate-500 underline underline-offset-2">{`Return to ${returnLoopLabel}`}</button>
         </p>
       </div>
     </div>

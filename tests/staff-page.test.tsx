@@ -426,7 +426,7 @@ describe("staff page", () => {
     expect(html).toContain("Chapter review context: TEST Boston College");
     expect(html).toContain(">Chapters</h1>");
     expect(html).toContain("When DS Admin access is available, return to TEST Boston College in the same Command Center review loop after the Admin readback closes.");
-    expect(html).toContain("Return to this chapter");
+    expect(html).toContain("Return to TEST Boston College");
   });
 
   it("keeps the proof review admin handoff wired to a Proof / UGC return target in source", () => {
@@ -556,7 +556,7 @@ describe("staff page", () => {
     expect(html).toContain(">Audit Logs</h1>");
     expect(html).toContain("Restricted to DS Admin and Super Admin only · Proof / UGC review for TEST Stanford University (Pending · Instagram)");
     expect(html).toContain("After the Admin readback, return to TEST Stanford University in Proof / UGC (Pending · Instagram) in the same Command Center review loop.");
-    expect(html).toContain("Return to Proof / UGC");
+    expect(html).toContain("Return to TEST Stanford University in Proof / UGC (Pending · Instagram)");
   });
 
   it("keeps proof queue context visible when admin access is blocked from a proof-linked handoff", async () => {
@@ -584,7 +584,7 @@ describe("staff page", () => {
     expect(html).toContain("Admin access blocked");
     expect(html).toContain("Proof review context: TEST Stanford University (Pending · Instagram)");
     expect(html).toContain(">Audit Logs</h1>");
-    expect(html).toContain("Return to Proof / UGC");
+    expect(html).toContain("Return to TEST Stanford University in Proof / UGC (Pending · Instagram)");
     expect(html).toContain("Restricted to DS Admin and Super Admin only · Proof / UGC review for TEST Stanford University (Pending · Instagram)");
     expect(html).toContain("When DS Admin access is available, return to TEST Stanford University in Proof / UGC (Pending · Instagram) in the same Command Center review loop after the Admin readback closes.");
   });
