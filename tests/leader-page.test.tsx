@@ -259,22 +259,33 @@ describe("leader page", () => {
     }
 
     if (view === "values") {
-      expect(html).toContain("Preview Values Interview");
-      expect(html).toContain("Preview Interview Scheduling");
-      expect(html).toContain("Preview Interview Form");
-      expect(html).toContain("TEST values preview.");
+      expect(html).toContain("Open member review");
+      expect(html).toContain("Open full leader shell");
+      expect(html).toContain("Keep values alignment visible as a chapter review surface");
+      expect(html).toContain("Values review stays tied to TEST");
     }
 
     if (view === "training") {
-      expect(html).toContain("Preview Resource Intake");
-      expect(html).toContain("Preview Video");
-      expect(html).toContain("Preview Deck");
+      expect(html).toContain("Back to succession review");
+      expect(html).toContain("Open full leader shell");
+      expect(html).toContain("Keep coaching, development, and next-step training visible as chapter support context");
     }
 
     if (view === "leaders") {
-      expect(html).toContain("TEST leadership roster preview.");
-      expect(html).toContain("Preview Succession Review");
-      expect(html).toContain("Preview Values Review");
+      expect(html).toContain("Back to succession review");
+      expect(html).toContain("Open full leader shell");
+      expect(html).toContain("Keep chapter ownership, committee chairs, and current role coverage visible here");
+      expect(html).toContain("Current leader context: TEST");
+    }
+
+    if (view === "create_event") {
+      expect(html).toContain("Keep TEST event setup attached to chapter health, committee ownership, and follow-through");
+      expect(html).toContain("Back to event performance");
+    }
+
+    if (view === "stories") {
+      expect(html).toContain("Keep bridge videos, feed readback, and impact storytelling in one visible chapter lane");
+      expect(html).toContain("Story review stays anchored to TEST chapter content and member follow-through.");
     }
   });
 
@@ -340,10 +351,10 @@ describe("leader page", () => {
         }),
       }),
     );
-    expect(valuesHtml).toContain("TEST values preview.");
-    expect(valuesHtml).toContain("Values interview scheduling is blocked in this preview until the approved leadership-review workflow exists.");
-    expect(valuesHtml).toContain("Interview scheduling is blocked in this preview until the approved leadership-review workflow exists.");
-    expect(valuesHtml).toContain("The Values Alignment Interview form is blocked in this preview until the approved leadership-review workflow exists.");
+    expect(valuesHtml).toContain("MEDLIFE Values");
+    expect(valuesHtml).toContain("Keep values alignment visible as a chapter review surface");
+    expect(valuesHtml).toContain("Open member review");
+    expect(valuesHtml).toContain("Values review stays tied to TEST");
 
     const successionHtml = renderToStaticMarkup(
       await LeaderPage({
@@ -363,12 +374,10 @@ describe("leader page", () => {
         }),
       }),
     );
-    expect(trainingHtml).toContain("TEST training preview.");
-    expect(trainingHtml).toContain("TEST Featured Resources");
-    expect(trainingHtml).toContain("TEST How to Run Your First Committee as Chair");
-    expect(trainingHtml).toContain("TEST MEDLIFE Chapter Leadership Guide — Full Onboarding");
-    expect(trainingHtml).toContain("Preview Link");
-    expect(trainingHtml).toContain("External resource opens are blocked in this preview until leadership-content approval is complete.");
+    expect(trainingHtml).toContain("Leadership Training");
+    expect(trainingHtml).toContain("Keep coaching, development, and next-step training visible as chapter support context");
+    expect(trainingHtml).toContain("Back to succession review");
+    expect(trainingHtml).toContain("Open full leader shell");
 
     const storiesHtml = renderToStaticMarkup(
       await LeaderPage({
@@ -377,9 +386,10 @@ describe("leader page", () => {
         }),
       }),
     );
-    expect(storiesHtml).toContain("TEST stories preview.");
-    expect(storiesHtml).toContain("Preview Story Intake");
-    expect(storiesHtml).toContain("TEST MEDLIFE Stories preview");
+    expect(storiesHtml).toContain("MEDLIFE Stories");
+    expect(storiesHtml).toContain("Keep bridge videos, feed readback, and impact storytelling in one visible chapter lane");
+    expect(storiesHtml).toContain("Back to bridge videos");
+    expect(storiesHtml).toContain("Story review stays anchored to TEST chapter content and member follow-through.");
   });
 
   it("keeps the copied Figma leader shell close to the exported code size and state map", () => {

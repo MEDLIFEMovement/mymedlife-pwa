@@ -46,9 +46,14 @@ const SERVICE_BACKED_LEADER_VIEWS = new Set([
   "member_profile",
   "committees",
   "events",
+  "create_event",
   "impact",
   "bridge_videos",
+  "stories",
+  "leaders",
   "succession",
+  "values",
+  "training",
   "feed_analytics",
 ]);
 
