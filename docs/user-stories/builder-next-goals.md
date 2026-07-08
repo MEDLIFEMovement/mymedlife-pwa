@@ -2,8 +2,8 @@
 
 Date: 2026-07-08
 Owner lane: myMEDLIFE #5, planning/docs only
-Planning base: PR #505 story package plus the active PR context for
-`#497/#502/#503/#504`.
+Planning base: PR #548 active builder truth refresh plus the current member,
+leader, and Staff/Admin queue context.
 
 Purpose: paste-ready next-goal packets for Coordinator once the current shell
 wave settles. These are planning slices, not proof that the work is already
@@ -25,12 +25,12 @@ implemented.
 
 Target thread: `#1`
 Suggested model: `gpt-5.4` medium/high
-Backlog IDs: `DB-001`, then `DB-002` or `DB-003` depending on what #502 leaves.
+Backlog IDs: `DB-001`, `DB-002`, `DB-003`.
 
-Plain-English goal: tighten the member event participation path so a reviewer
-can move from `/app` into `/app/events`, open event detail, understand the
-RSVP/check-in posture, and land in `/app/points` without the UI implying live
-RSVP, attendance, or points writes.
+Plain-English goal: after `#523/#536` clear, tighten the member event
+participation path so a reviewer can move from `/app` into `/app/events`, open
+event detail, understand the RSVP/check-in posture, and land in `/app/points`
+without the UI implying live RSVP, attendance, or points writes.
 
 In scope:
 
@@ -71,10 +71,10 @@ Suggested model: `gpt-5.4` high for route/menu restoration, `gpt-5.4` medium
 for smaller preview-honesty follow-ups.
 Backlog IDs: `DB-005`, `DB-006`, `DB-007`.
 
-Plain-English goal: use the service-backed `/leader?view=*` shell continuity as
-the base, then keep succession, values, leadership training, member/profile,
-event, and attendance handoffs visibly source-faithful without enabling leader
-writes.
+Plain-English goal: let `#545/#547` settle, then use the service-backed
+`/leader?view=*` shell continuity as the base for succession, values,
+leadership training, member/profile, event review, and attendance handoffs
+without enabling leader writes.
 
 In scope:
 
@@ -115,9 +115,10 @@ Suggested model: `gpt-5.4` high for broad staff/admin shell coherence,
 `gpt-5.4` medium for narrower blocked-control clusters.
 Backlog IDs: `DB-009`, `DB-010`, `DB-011`, `DB-012`.
 
-Plain-English goal: keep the staff chapter drawer, embedded Admin, Chapters
-loop, Proof/UGC review posture, and dark DS Admin menu family coherent and
-demo-safe without turning staff/admin preview surfaces into rollout evidence or
+Plain-English goal: let `#522` and the behind-only Staff/Admin follow-ons settle,
+then keep the staff chapter drawer, embedded Admin, Chapters loop, Proof/UGC
+review posture, and dark DS Admin menu family coherent and demo-safe without
+turning staff/admin preview surfaces into rollout evidence or
 live admin operations.
 
 In scope:

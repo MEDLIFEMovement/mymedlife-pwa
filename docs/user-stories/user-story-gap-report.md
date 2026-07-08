@@ -11,20 +11,18 @@ the master inventory into PR-sized UI, data/safety, QA, rollout-evidence, and
 planning slices.
 
 Repo-truth checkpoint: latest source refresh compared this package against
-this repo checkout on `origin/main` commit `86d378c` (`Add next shell slice
-briefs (#517)`), including the merged repo-truth story package, builder
-delivery map, member home/profile continuity, member Stories feed parity,
-member event/points return continuity, embedded Admin review posture, admin
-command center return cues, and next-shell slice brief planning.
+this repo checkout on `origin/main` commit `8a2a7f4` (`Add active builder lane
+truth refresh (#548)`), including the merged repo-truth story package, builder
+delivery map, shell acceptance maps, member profile body and Stories IG-feed
+acceptance maps, leader cross-route continuity guidance, staff embedded Admin
+return-loop guidance, and active builder steering.
 
 Live PR queue context at refresh time:
 
-- `#503` remained the one real staff/admin blocker, with core checks green but
-  review/queue state still blocking merge.
-- `#512` and `#515` were healthy rerun/behind-watch lanes.
-- `#516` was healthy and still draft.
-- `#518` was the live member repair branch.
-- `#519` was a healthy admin launch-gate review-label follow-on.
+- Member queue: `#523` rerunning, with `#536` rerunning behind it.
+- Leader queue: `#545` clean behind-only, with `#547` Codecov-only red.
+- Staff/Admin queue: `#522` clean, with `#521`, `#534`, and `#538` fully green
+  and behind-only.
 
 Open PRs are not counted as implementation truth until they merge.
 
@@ -55,17 +53,18 @@ Open PRs are not counted as implementation truth until they merge.
 
 ### Current Shell Ownership Truth
 
-- `#1` should continue with General Member App continuity, especially
-  cross-route member shell continuity after the merged home/profile, Stories,
-  and event/points work. The live member repair branch `#518` should clear
-  before assigning another overlapping member route slice.
+- `#1` should continue with General Member App continuity. Let `#523` and
+  `#536` clear before assigning another overlapping member route slice; after
+  that, the broader event/detail/RSVP-check-in/points continuity remains the
+  highest launch-path member gap.
 - `#2` should continue with broader `/leader?view=*` continuity and
   service-backed menu/view restoration. Leaderboard/comparison polish is a
   follow-up, not the primary next recommendation.
 - `#3` should continue with Staff / DS Admin shell continuity: staff
   chapter-drawer, embedded Admin, Chapters loop coherence, Proof / UGC
-  follow-through, and broader staff-admin walkthrough continuity. `#503`
-  remains the blocker before starting another chapter-drawer-adjacent slice.
+  follow-through, and broader staff-admin walkthrough continuity. `#522` should
+  be treated as the active Proof / UGC chapter follow-through gate, while
+  `#521/#534/#538` are behind-only Staff/Admin follow-ons.
   `#3` should not be assigned rollout packet, owner CSV, invite-gate, or
   production proof ownership from this story package.
 - `#4` should continue PR-board watch, focused test/check interpretation,
@@ -178,8 +177,9 @@ ready:
 - Leader create-event and event operations are visible, but live event writes
   and Luma actions are blocked.
 - Staff portfolio and campaign surfaces look operational, but real intervention,
-  export, provider, and production chapter data are missing. `#503` still blocks
-  the cleanest chapter-drawer continuity handoff.
+  export, provider, and production chapter data are missing. Current
+  Staff/Admin work improves Proof / UGC, embedded Admin, and TEST/readback
+  clarity, not live staff operations.
 - Admin shell looks demo-ready, but API/MCP/provider/module/user/chapter writes
   are blocked. Recent admin return-cue and review-label work improves demo
   clarity but does not change provider/write readiness.
@@ -188,9 +188,9 @@ ready:
 
 ## Prioritized Narrow-Launch Gap Report
 
-1. Clear active shell blockers without overclaiming proof: `#503` for
-   staff/admin and `#518` for member repair are the current practical blockers
-   before assigning overlapping shell slices.
+1. Clear active shell queues without overclaiming proof: `#523/#536` for the
+   member lane, `#545/#547` for the leader lane, and `#522/#521/#534/#538` for
+   Staff/Admin should settle before assigning overlapping shell slices.
 2. Validate owner-returned CSVs when they arrive.
 3. Build or refresh production rollout packet from approved real data only.
 4. Capture production live data counts from Supabase/myMEDLIFE.
