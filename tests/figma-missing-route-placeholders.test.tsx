@@ -126,6 +126,12 @@ describe("Figma missing route placeholders", () => {
     expect(mcpHtml).toContain("MCP Access Policy");
     expect(mcpHtml).toContain("MCP Review Posture");
     expect(mcpHtml).toContain("providers remain read-only by policy");
+    expect(mcpHtml).toContain("preview keeps all MCP write changes blocked");
+    expect(mcpHtml).toContain("Test blocked");
+    expect(mcpHtml).toContain("Disconnect blocked");
+    expect(mcpHtml).toContain("Logs in audited surface");
+    expect(mcpHtml).not.toContain("Test Connection");
+    expect(mcpHtml).not.toContain("View Logs");
     expect(source).toContain("MCP write access is blocked in this preview");
     expect(source).toContain("MCP provider connections stay visible for policy review, but connection changes are blocked in this preview");
   });

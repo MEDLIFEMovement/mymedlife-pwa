@@ -3482,7 +3482,7 @@ const MCP_PROVIDERS_INIT = [
 ];
 
 const ROLE_PERMISSIONS = [
-  { role: "Super Admin", read: true, write: true, note: "Full access — can enable write per connection" },
+  { role: "Super Admin", read: true, write: true, note: "Can review write policy, but preview shell keeps write changes blocked" },
   { role: "DS Admin", read: true, write: false, note: "Read-only by policy" },
   { role: "Staff", read: true, write: false, note: "Read-only by policy" },
   { role: "Coach", read: true, write: false, note: "Read-only by policy" },
@@ -3524,7 +3524,7 @@ function McpPage() {
             <div className="text-[12px] font-semibold text-slate-200 mb-0.5">MCP Access Policy</div>
             <p className="text-[12px] text-slate-500 leading-relaxed">
               All authenticated users with MCP access are granted <span className="text-sky-400 font-medium">read-only</span> by default.
-              Write access through any MCP connection is restricted to <span className="text-amber-400 font-medium">Super Admins only</span> and must be explicitly enabled per connection. All MCP actions are logged.
+              Write access through any MCP connection is restricted to <span className="text-amber-400 font-medium">Super Admins only</span>, and this preview keeps all MCP write changes blocked until the audited admin workflow is explicitly approved. All MCP actions stay reviewable here, but no connection or permission mutation runs from this shell.
             </p>
           </div>
         </div>
@@ -3665,14 +3665,14 @@ function McpPage() {
                       <>
                         <button disabled title="MCP connection tests require audited provider credentials" className="flex items-center gap-1.5 px-3 py-1.5 bg-sky-500/10 text-sky-400 border border-sky-500/20 rounded text-[11px] font-medium transition-colors opacity-50 cursor-not-allowed">
                           <RefreshCw size={11} />
-                          Test Connection
+                          Test blocked
                         </button>
                         <button disabled title="MCP logs are available only from the audited integration log surface" className="flex items-center gap-1.5 px-3 py-1.5 bg-white/[0.04] text-slate-400 border border-white/[0.08] rounded text-[11px] transition-colors opacity-50 cursor-not-allowed">
                           <FileText size={11} />
-                          View Logs
+                          Logs in audited surface
                         </button>
                         <button disabled title="MCP disconnect is blocked until DS approval is complete" className="flex items-center gap-1.5 px-3 py-1.5 bg-red-500/8 text-red-400 border border-red-500/15 rounded text-[11px] font-medium transition-colors opacity-50 cursor-not-allowed ml-auto">
-                          Disconnect
+                          Disconnect blocked
                         </button>
                       </>
                     ) : (
@@ -3682,7 +3682,7 @@ function McpPage() {
                         title="MCP provider connections stay visible for policy review, but connection changes are blocked in this preview"
                         className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded text-[11px] font-medium transition-colors opacity-50 cursor-not-allowed"
                       >
-                        Connect
+                        Connect blocked
                       </button>
                     )}
                   </div>
