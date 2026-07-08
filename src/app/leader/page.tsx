@@ -42,6 +42,7 @@ type LeaderPageProps = {
 const SERVICE_BACKED_LEADER_VIEWS = new Set([
   "overview",
   "leaderboard",
+  "leaders",
   "members",
   "member_profile",
   "committees",
@@ -49,6 +50,8 @@ const SERVICE_BACKED_LEADER_VIEWS = new Set([
   "impact",
   "bridge_videos",
   "succession",
+  "values",
+  "training",
   "feed_analytics",
 ]);
 

@@ -135,6 +135,10 @@ describe("chapter leader command center", () => {
     expect(markup).toContain("Operations");
     expect(markup).toContain("Impact &amp; Culture");
     expect(markup).toContain("Leadership");
+    expect(markup).toContain("Feed Analytics");
+    expect(markup).toContain("Current Leaders");
+    expect(markup).toContain("Values");
+    expect(markup).toContain("Leadership Training");
     expect(markup).toContain("Chapter Metrics — June 2025");
     expect(markup).toContain("E-Board roles");
     expect(markup).toContain("Health Score");
@@ -252,6 +256,15 @@ describe("chapter leader command center", () => {
     ]);
     expect(commandCenter.viewOptions.find((item) => item.key === "member_profile")?.href).toBe(
       "/leader?view=member_profile&member=member-maya",
+    );
+    expect(commandCenter.viewOptions.find((item) => item.key === "leaders")?.href).toBe(
+      "/leader?view=leaders&member=member-maya",
+    );
+    expect(commandCenter.viewOptions.find((item) => item.key === "values")?.href).toBe(
+      "/leader?view=values&member=member-maya",
+    );
+    expect(commandCenter.viewOptions.find((item) => item.key === "training")?.href).toBe(
+      "/leader?view=training&member=member-maya",
     );
     expect(commandCenter.selectedMember?.displayName).toBe("Sofia Alvarez");
   });

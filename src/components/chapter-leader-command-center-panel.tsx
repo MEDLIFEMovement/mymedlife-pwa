@@ -28,6 +28,27 @@ type ChapterLeaderCommandCenterPanelProps = {
   commandCenter: ChapterLeaderCommandCenter;
 };
 
+const leadershipTrainingResources = [
+  {
+    title: "TEST How to Run Your First Committee as Chair",
+    format: "Preview Video",
+    detail:
+      "TEST committee launch walkthrough covering agendas, owner follow-through, and chapter handoff posture.",
+  },
+  {
+    title: "TEST MEDLIFE Chapter Leadership Guide — Full Onboarding",
+    format: "Preview Deck",
+    detail:
+      "TEST onboarding packet for presidents, chairs, and committee owners before any live publish or sharing step exists.",
+  },
+  {
+    title: "TEST Values Interview Facilitation Guide",
+    format: "Preview Link",
+    detail:
+      "TEST interview preparation notes that stay visible for review, but no external open or provider sync is live from this shell.",
+  },
+] as const;
+
 export function ChapterLeaderCommandCenterPanel({
   commandCenter,
 }: ChapterLeaderCommandCenterPanelProps) {
@@ -2246,6 +2267,274 @@ function renderView(
             <div className="grid gap-3">
               {commandCenter.successionTimeline.map((item) => (
                 <SuccessionTimelineRow key={`${item.dateLabel}-${item.title}`} item={item} />
+              ))}
+            </div>
+          </SectionCard>
+        </section>
+      );
+    case "leaders":
+      return (
+        <section className="grid gap-4">
+          <section className="grid gap-4 rounded-[1.75rem] border border-slate-200 bg-white p-4 shadow-[0_14px_38px_rgba(15,23,42,0.06)] sm:p-5">
+            <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+              <div>
+                <p className="text-[0.72rem] font-semibold uppercase tracking-[0.2em] text-slate-400">
+                  Current Leaders
+                </p>
+                <h1 className="mt-2 text-[1.75rem] font-semibold leading-tight text-slate-950 sm:text-[1.9rem]">
+                  Current Leaders
+                </h1>
+                <p className="mt-4 text-sm leading-6 text-slate-600">
+                  TEST leadership roster preview. Keep visible owners, committee coverage, and
+                  chapter role handoffs together before any nomination, assignment, or promotion
+                  turns into a live workflow.
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <Link
+                  href={buildChapterLeaderCommandCenterHref("succession", {
+                    source: commandCenter.selectedSource,
+                    memberId: commandCenter.selectedMember?.id ?? commandCenter.navigationMemberId,
+                    pipelineFilter: commandCenter.selectedPipelineFilter,
+                    searchQuery: commandCenter.pipelineSearchQuery,
+                  })}
+                  className="inline-flex rounded-full border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700"
+                >
+                  Preview Succession Review
+                </Link>
+                <Link
+                  href={buildChapterLeaderCommandCenterHref("values", {
+                    source: commandCenter.selectedSource,
+                    memberId: commandCenter.selectedMember?.id ?? commandCenter.navigationMemberId,
+                    pipelineFilter: commandCenter.selectedPipelineFilter,
+                    searchQuery: commandCenter.pipelineSearchQuery,
+                  })}
+                  className="inline-flex rounded-full bg-[#2563eb] px-4 py-2.5 text-sm font-semibold text-white"
+                >
+                  Preview Values Review
+                </Link>
+              </div>
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+              <EventOpsStat
+                label="E-Board Roles Filled"
+                value={commandCenter.successionOverview.eboardRolesFilledLabel}
+                note="Visible current leadership coverage"
+              />
+              <EventOpsStat
+                label="Active Committees"
+                value={commandCenter.successionOverview.activeCommitteesLabel}
+                note="Committees with visible owners"
+              />
+              <EventOpsStat
+                label="Candidates Identified"
+                value={commandCenter.successionOverview.candidatesIdentifiedLabel}
+                note="Successor bench stays review-only here"
+              />
+              <EventOpsStat
+                label="Transition Readiness"
+                value={commandCenter.successionOverview.transitionReadinessLabel}
+                note={commandCenter.successionOverview.transitionReadinessNote}
+              />
+            </div>
+          </section>
+
+          {commandCenter.selectedMember ? (
+            <SelectedMemberContextBanner
+              eyebrow="Leader in focus"
+              title={`Reviewing ${toVisibleTestLabel(commandCenter.selectedMember.displayName)} across the current leadership roster`}
+              summary="Keep the selected member anchored while you compare current ownership, succession pressure, and values posture. No promotion, assignment, or note write goes live from this review shell."
+              member={commandCenter.selectedMember}
+            />
+          ) : null}
+
+          <section className="grid gap-4 xl:grid-cols-[1.02fr_0.98fr]">
+            <SectionCard eyebrow="Leadership Coverage" title="Who visibly owns each lane right now?">
+              <div className="grid gap-3 sm:grid-cols-2">
+                {commandCenter.leadershipRoles.map((role) => (
+                  <LeadershipRoleCard key={role.key} role={role} />
+                ))}
+              </div>
+            </SectionCard>
+
+            <SectionCard eyebrow="Roster in review" title="Leadership roster review">
+              <div className="grid gap-3">
+                {commandCenter.successionCandidates.slice(0, 4).map((candidate) => (
+                  <SuccessionPipelineRow key={candidate.id} candidate={candidate} />
+                ))}
+              </div>
+            </SectionCard>
+          </section>
+        </section>
+      );
+    case "values":
+      return (
+        <section className="grid gap-4">
+          <section className="grid gap-4 rounded-[1.75rem] border border-slate-200 bg-white p-4 shadow-[0_14px_38px_rgba(15,23,42,0.06)] sm:p-5">
+            <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+              <div>
+                <p className="text-[0.72rem] font-semibold uppercase tracking-[0.2em] text-slate-400">
+                  MEDLIFE Values
+                </p>
+                <h1 className="mt-2 text-[1.75rem] font-semibold leading-tight text-slate-950 sm:text-[1.9rem]">
+                  MEDLIFE Values
+                </h1>
+                <p className="mt-4 text-sm leading-6 text-slate-600">
+                  TEST values preview. Three values guide every MEDLIFE leader, but no interview,
+                  nomination, promotion, or approval decision becomes live from this shell.
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <Link
+                  href={buildChapterLeaderCommandCenterHref("member_profile", {
+                    source: commandCenter.selectedSource,
+                    memberId: commandCenter.selectedMember?.id ?? commandCenter.navigationMemberId,
+                    pipelineFilter: commandCenter.selectedPipelineFilter,
+                    searchQuery: commandCenter.pipelineSearchQuery,
+                    quickAction: "schedule_values_interview",
+                  })}
+                  className="inline-flex rounded-full border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700"
+                >
+                  Preview Values Interview
+                </Link>
+                <Link
+                  href={buildChapterLeaderCommandCenterHref("values", {
+                    source: commandCenter.selectedSource,
+                    memberId: commandCenter.selectedMember?.id ?? commandCenter.navigationMemberId,
+                    pipelineFilter: commandCenter.selectedPipelineFilter,
+                    searchQuery: commandCenter.pipelineSearchQuery,
+                    quickAction: "schedule_values_interview",
+                  })}
+                  className="inline-flex rounded-full border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700"
+                >
+                  Preview Interview Scheduling
+                </Link>
+                <Link
+                  href={buildChapterLeaderCommandCenterHref("values", {
+                    source: commandCenter.selectedSource,
+                    memberId: commandCenter.selectedMember?.id ?? commandCenter.navigationMemberId,
+                    pipelineFilter: commandCenter.selectedPipelineFilter,
+                    searchQuery: commandCenter.pipelineSearchQuery,
+                  })}
+                  className="inline-flex rounded-full bg-[#2563eb] px-4 py-2.5 text-sm font-semibold text-white"
+                >
+                  Preview Interview Form
+                </Link>
+              </div>
+            </div>
+
+            <div className="rounded-[1.2rem] border border-[#bfdbfe] bg-[#f8fbff] p-4">
+              <p className="text-sm leading-6 text-slate-700">
+                Values interview scheduling is blocked in this preview until the approved
+                leadership-review workflow exists. Interview scheduling is blocked in this preview
+                until the approved leadership-review workflow exists. The Values Alignment
+                Interview form is blocked in this preview until the approved leadership-review
+                workflow exists.
+              </p>
+            </div>
+          </section>
+
+          {commandCenter.selectedMember ? (
+            <SelectedMemberContextBanner
+              eyebrow="Values review in focus"
+              title={`Reviewing ${toVisibleTestLabel(commandCenter.selectedMember.displayName)} for values alignment`}
+              summary="Keep this review tied to a real chapter member and their visible leadership context. No interview invite, provider handoff, or approval write becomes live from this shell."
+              member={commandCenter.selectedMember}
+            />
+          ) : null}
+
+          <section className="grid gap-4 xl:grid-cols-2">
+            <SectionCard eyebrow="Values Alignment" title="Values Alignment">
+              <div className="grid gap-3">
+                {(commandCenter.selectedMember?.valuesAlignment ?? []).map((item) => (
+                  <div
+                    key={item.label}
+                    className="rounded-[1.1rem] border border-slate-200 bg-white p-4"
+                  >
+                    <p className="text-sm font-semibold text-[#1d4ed8]">{item.label}</p>
+                    <p className="mt-2 text-sm leading-6 text-slate-600">{item.summary}</p>
+                  </div>
+                ))}
+              </div>
+            </SectionCard>
+
+            <SectionCard eyebrow="Readiness" title="Values follow-through stays human-reviewed">
+              <div className="grid gap-3">
+                {commandCenter.successionCandidates.slice(0, 4).map((candidate) => (
+                  <SuccessionPipelineRow key={candidate.id} candidate={candidate} />
+                ))}
+              </div>
+            </SectionCard>
+          </section>
+        </section>
+      );
+    case "training":
+      return (
+        <section className="grid gap-4">
+          <section className="grid gap-4 rounded-[1.75rem] border border-slate-200 bg-white p-4 shadow-[0_14px_38px_rgba(15,23,42,0.06)] sm:p-5">
+            <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+              <div>
+                <p className="text-[0.72rem] font-semibold uppercase tracking-[0.2em] text-slate-400">
+                  Leadership Training
+                </p>
+                <h1 className="mt-2 text-[1.75rem] font-semibold leading-tight text-slate-950 sm:text-[1.9rem]">
+                  Leadership Training
+                </h1>
+                <p className="mt-4 text-sm leading-6 text-slate-600">
+                  TEST training preview. Sample leadership-development resources stay visible for
+                  review, but no publishing, playback, deck viewing, external opens, or chapter
+                  sharing is live.
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <span className="inline-flex rounded-full border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700">
+                  Preview Resource Intake
+                </span>
+                <span className="inline-flex rounded-full border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700">
+                  Preview Video
+                </span>
+                <span className="inline-flex rounded-full bg-[#2563eb] px-4 py-2.5 text-sm font-semibold text-white">
+                  Preview Deck
+                </span>
+              </div>
+            </div>
+
+            <div className="rounded-[1.2rem] border border-[#bfdbfe] bg-[#f8fbff] p-4">
+              <p className="text-sm leading-6 text-slate-700">
+                External resource opens are blocked in this preview until leadership-content
+                approval is complete.
+              </p>
+            </div>
+          </section>
+
+          <SectionCard eyebrow="TEST Featured Resources" title="Leadership Development Resources">
+            <div className="grid gap-3">
+              {leadershipTrainingResources.map((resource) => (
+                <div
+                  key={resource.title}
+                  className="flex flex-col gap-3 rounded-[1.15rem] border border-slate-200 bg-white p-4 md:flex-row md:items-start md:justify-between"
+                >
+                  <div>
+                    <p className="text-sm font-semibold text-slate-950">{resource.title}</p>
+                    <p className="mt-2 text-sm leading-6 text-slate-600">{resource.detail}</p>
+                  </div>
+                  <span className="inline-flex rounded-full border border-[#bfdbfe] bg-[#eef5ff] px-3 py-1 text-xs font-semibold text-[#1d4ed8]">
+                    {resource.format}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </SectionCard>
+
+          <SectionCard eyebrow="Leadership follow-through" title="Training stays connected to succession and values">
+            <div className="grid gap-3 sm:grid-cols-2">
+              {commandCenter.successionTimeline.slice(0, 4).map((item) => (
+                <TimelineItem
+                  key={`${item.dateLabel}-${item.title}`}
+                  dateLabel={item.dateLabel}
+                  detail={`${item.title} — ${item.summary}`}
+                />
               ))}
             </div>
           </SectionCard>
