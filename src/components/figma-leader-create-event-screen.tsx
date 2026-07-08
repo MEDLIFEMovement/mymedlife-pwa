@@ -154,7 +154,7 @@ export function CreateEventForm({ onBack }: { onBack: () => void }) {
           disabled={!canPublish}
           onClick={() => setPublished(true)}
           className="flex items-center gap-2 px-5 py-2.5 bg-[#1A56E8] text-white text-sm font-bold rounded-xl cursor-pointer hover:bg-blue-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed shadow-sm">
-          <Share2 size={14}/>Preview Event Staging
+          <Share2 size={14}/>Stage Event Preview
           {shareChannels.length > 0 && <span className="bg-white/20 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">{shareChannels.length}</span>}
         </button>
       </div>
@@ -477,7 +477,7 @@ export function CreateEventForm({ onBack }: { onBack: () => void }) {
 
             {/* Readiness checklist */}
             <div className="bg-white rounded-xl border border-slate-200 p-4">
-              <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Ready to preview?</div>
+              <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Ready to stage?</div>
               <div className="space-y-1.5">
                 {[
                   { label:"Event type selected",    done: !!eventType },
