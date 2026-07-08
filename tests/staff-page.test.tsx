@@ -416,9 +416,11 @@ describe("staff page", () => {
     expect(html).toContain("Survey sending stays blocked in this preview");
     expect(html).toContain("Survey sending is blocked in this preview");
     expect(html).toContain("Coach notes stay preview-only in this chapter drawer");
-    expect(html).toContain("Next step: open the Admin preview for DS directory readback, audit, and blocked-control follow-through before requesting any write path.");
+    expect(html).toContain("Next step: open the Admin preview for DS directory readback, audit, and blocked-control follow-through before requesting any write path, then return to chapters in the same Command Center loop.");
     expect(html).toContain('href="/staff?view=admin&amp;adminView=chapters"');
     expect(html).toContain("Open Admin preview");
+    expect(html).toContain("Return to chapters");
+    expect(html).toContain("Return to the chapters overview after this preview readback");
     expect(html).toContain("No note save, intervention status write, or follow-up task write runs for Boston College from this surface.");
     expect(html).toContain("disabled:cursor-not-allowed");
     expect(html).not.toContain(">Send NPS Survey<");
