@@ -78,6 +78,21 @@ export default async function LeaderPage({ searchParams }: LeaderPageProps) {
       ? null
       : getLeaderLaunchLaneCanonicalHref({
           view: resolvedSearchParams?.view,
+          source: resolvedSearchParams?.source,
+          member: resolvedSearchParams?.member,
+          committee: resolvedSearchParams?.committee,
+          eventCommittee: resolvedSearchParams?.eventCommittee,
+          event: resolvedSearchParams?.event,
+          leaderboardMetric: resolvedSearchParams?.leaderboardMetric,
+          region: resolvedSearchParams?.region,
+          benchmark: resolvedSearchParams?.benchmark,
+          impactStory: resolvedSearchParams?.impactStory,
+          pipeline: resolvedSearchParams?.pipeline,
+          q: resolvedSearchParams?.q,
+          bridgeFilter: resolvedSearchParams?.bridgeFilter,
+          bridgeVideo: resolvedSearchParams?.bridgeVideo,
+          feedPost: resolvedSearchParams?.feedPost,
+          quickAction: resolvedSearchParams?.quickAction,
         });
 
   if (canonicalHref) {
