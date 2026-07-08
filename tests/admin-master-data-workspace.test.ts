@@ -44,6 +44,9 @@ describe("admin master data workspace", () => {
     expect(workspace.campaignTemplates[0]?.name).toContain("TEST ");
     expect(workspace.chapters[0]?.name).toContain("TEST ");
     expect(workspace.chapters[0]?.coachName).toContain("TEST ");
+    expect(
+      workspace.roles.find((role) => role.role === "President / VP")?.detail,
+    ).toContain("TEST Priya President previews President / VP permissions locally.");
   });
 
   it("keeps DS Admin eligible but routed back to safety review", () => {
@@ -101,5 +104,8 @@ describe("admin master data workspace", () => {
     expect(workspace.chapters[0]?.coachName).toBe("Renato Coach");
     expect(workspace.users[0]?.displayName).toContain("TEST ");
     expect(workspace.campaignTemplates[0]?.name).toContain("TEST ");
+    expect(
+      workspace.roles.find((role) => role.role === "President / VP")?.detail,
+    ).toContain("TEST Priya President previews President / VP permissions locally.");
   });
 });

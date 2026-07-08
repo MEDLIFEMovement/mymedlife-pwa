@@ -61,6 +61,7 @@ describe("admin master data page", () => {
     expect(html).toContain("TEST Rush Month");
     expect(html).toContain("TEST UCLA MEDLIFE");
     expect(html).toContain("Coach: TEST Renato Coach.");
+    expect(html).toContain("TEST Priya President previews President / VP permissions locally.");
     expect(html.match(/>TEST</g)?.length ?? 0).toBeGreaterThanOrEqual(4);
   });
 
@@ -127,5 +128,6 @@ describe("admin master data page", () => {
     expect(html).not.toContain("TEST UCLA MEDLIFE");
     expect(html).toContain("Coach: Renato Coach.");
     expect(html).not.toContain("Coach: TEST Renato Coach.");
+    expect(html).toContain("TEST Priya President previews President / VP permissions locally.");
   });
 });

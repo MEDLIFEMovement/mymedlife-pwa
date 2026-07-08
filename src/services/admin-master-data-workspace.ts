@@ -197,7 +197,7 @@ function getRequiredRoleCoverage(
       localActorEmail: actor?.email ?? null,
       status: actor ? "ready_readonly" : "blocked",
       detail: actor
-        ? `${actor.displayName} previews ${definition.role} permissions locally.`
+        ? `${asTestLabel(actor.displayName)} previews ${definition.role} permissions locally.`
         : `No local actor previews ${definition.role} yet.`,
     };
   });
