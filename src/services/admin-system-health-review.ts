@@ -28,6 +28,8 @@ export type AdminSystemHealthReview = {
   launchReady: false;
   summary: string;
   sourceLabel: string;
+  readbackLabel: string;
+  readbackNote: string;
   browserWritesEnabled: number;
   externalWritesEnabled: 0;
   secretsShown: 0;
@@ -60,6 +62,8 @@ export function getAdminSystemHealthReview(
       summary:
         "System health is an admin launch-readiness surface, not a chapter operating view.",
       sourceLabel: data.source.mode,
+      readbackLabel: "",
+      readbackNote: "",
       browserWritesEnabled: 0,
       externalWritesEnabled: 0,
       secretsShown: 0,
@@ -72,6 +76,18 @@ export function getAdminSystemHealthReview(
 
   const environmentSafety = getEnvironmentSafetySummary(actor, env);
   const checks = getSystemHealthChecks(data, environmentSafety.counts);
+  const readback =
+    data.source.mode === "supabase"
+      ? {
+          label: "Local Supabase readback",
+          note:
+            "Visible checks below reflect local Supabase readback in review mode. Keep launch, monitoring, backup, and integration claims blocked until separate production evidence exists.",
+        }
+      : {
+          label: "Local TEST readback",
+          note:
+            "Visible checks below reflect local TEST or mock-safe readback only. Keep launch, monitoring, backup, and integration claims blocked until separate production evidence exists.",
+        };
 
   return {
     canReadReview: true,
@@ -80,6 +96,8 @@ export function getAdminSystemHealthReview(
     summary:
       "Shows what is locally healthy, what is safely mocked, and what remains blocked before a live myMEDLIFE pilot. This review route stays read-only, so writes, sends, and secret reveals remain blocked here.",
     sourceLabel: data.source.mode,
+    readbackLabel: readback.label,
+    readbackNote: readback.note,
     browserWritesEnabled: environmentSafety.counts.browserWritesEnabled,
     externalWritesEnabled: environmentSafety.counts.externalWritesEnabled,
     secretsShown: environmentSafety.counts.secretsShown,
