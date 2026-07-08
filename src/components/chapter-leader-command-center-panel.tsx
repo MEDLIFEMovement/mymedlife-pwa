@@ -3147,6 +3147,7 @@ function renderMemberProfileQuickActionState(
   const baseProfileHref = buildChapterLeaderCommandCenterHref("member_profile", {
     source: commandCenter.selectedSource,
     memberId: member.id,
+    feedPostId: commandCenter.selectedFeedPostId,
     pipelineFilter: commandCenter.selectedPipelineFilter,
     searchQuery: commandCenter.pipelineSearchQuery,
   });
@@ -3154,6 +3155,7 @@ function renderMemberProfileQuickActionState(
   const successionHref = buildChapterLeaderCommandCenterHref("succession", {
     source: commandCenter.selectedSource,
     memberId: member.id,
+    feedPostId: commandCenter.selectedFeedPostId,
     pipelineFilter: commandCenter.selectedPipelineFilter,
     searchQuery: commandCenter.pipelineSearchQuery,
   });

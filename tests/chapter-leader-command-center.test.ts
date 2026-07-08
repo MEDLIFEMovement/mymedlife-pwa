@@ -753,6 +753,25 @@ describe("chapter leader command center", () => {
     );
   });
 
+  it("keeps selected-post context attached when member review hands off into succession", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "member_profile",
+      source: "feed_analytics",
+      feedPostId: "feed-post-slt-recap",
+      search: "Sofia",
+      memberId: "member-maya",
+      quickAction: "promote_to_chair",
+    });
+    const markup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
+    );
+
+    expect(markup).toContain(
+      "href=\"/leader?view=succession&amp;source=feed_analytics&amp;member=member-maya&amp;q=Sofia&amp;feedPost=feed-post-slt-recap\"",
+    );
+  });
+
   it("opens add-note as a member-profile-owned review state", () => {
     const actor = getMockLocalActorContext("leader.a@mymedlife.test");
     const commandCenter = getChapterLeaderCommandCenter(actor, data, {
@@ -2477,6 +2496,45 @@ describe("chapter leader command center", () => {
     expect(markup).toContain("Leadership Gaps");
     expect(markup).toContain("Candidate Pipeline");
     expect(markup).toContain("Succession Timeline");
+  });
+
+  it("keeps selected-post handoff context attached when succession opens from feed analytics", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "succession",
+      source: "feed_analytics",
+      feedPostId: "feed-post-slt-recap",
+      search: "Sofia",
+      memberId: "member-maya",
+    });
+    const markup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
+    );
+
+    expect(commandCenter.sourceContext).toMatchObject({
+      eyebrow: "Feed analytics handoff",
+      title: "Opened from a selected feed post into succession review",
+      actions: [
+        {
+          label: "Back to selected post",
+          href: "/leader?view=feed_analytics&source=feed_analytics&member=member-maya&q=Sofia&feedPost=feed-post-slt-recap",
+        },
+        {
+          label: "Open re-engagement queue",
+          href: "/leader?view=members&source=feed_analytics&member=member-maya&q=Sofia&feedPost=feed-post-slt-recap",
+        },
+      ],
+    });
+    expect(
+      commandCenter.successionCandidates.find((candidate) => candidate.displayName === "Sofia Alvarez"),
+    ).toMatchObject({
+      href: "/leader?view=succession&source=feed_analytics&member=member-maya&q=Sofia&feedPost=feed-post-slt-recap",
+    });
+    expect(markup).toContain("Opened from a selected feed post into succession review");
+    expect(markup).toContain("TEST Sofia Alvarez");
+    expect(markup).toContain(
+      "href=\"/leader?view=succession&amp;source=feed_analytics&amp;member=member-maya&amp;q=Sofia&amp;feedPost=feed-post-slt-recap\"",
+    );
   });
 
   it("opens promote emerging leader as a succession-owned quick-action state before nomination decisions", () => {

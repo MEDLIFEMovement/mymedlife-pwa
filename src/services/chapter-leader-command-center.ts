@@ -1416,6 +1416,15 @@ export function getChapterLeaderCommandCenter(
     recognition.leaderboard,
     data.source.mode,
     selectedView === "succession" && !requestedMemberId ? null : selectedMember?.id ?? null,
+    {
+      source: selectedSource,
+      feedPostId: selectedFeedPostId,
+      pipelineFilter: selectedPipelineFilter,
+      searchQuery: pipelineSearchQuery,
+      leaderboardMetric: selectedLeaderboardMetric,
+      leaderboardRegion: selectedLeaderboardRegion,
+      bestPracticeChapterId: options.bestPracticeChapterId ?? null,
+    },
   );
   const navigationMemberId = getNavigationMemberId({
     requestedMemberId,
@@ -1968,11 +1977,18 @@ function getChapterLeaderSourceContext(
       switch (context.selectedView) {
         case "members":
         case "member_profile":
+        case "succession":
           return context.feedPostId && context.feedPostTitle
             ? {
                 eyebrow: "Feed analytics handoff",
-                title: "Opened from a selected feed post",
-                summary: `This chapter-leader route was opened from "${context.feedPostTitle}" so the follow-up stays tied to the specific post that surfaced the re-engagement question. Keep that post context visible instead of flattening this into a generic member review.`,
+                title:
+                  context.selectedView === "succession"
+                    ? "Opened from a selected feed post into succession review"
+                    : "Opened from a selected feed post",
+                summary:
+                  context.selectedView === "succession"
+                    ? `This chapter-leader route was opened from "${context.feedPostTitle}" so succession review stays tied to the specific post that surfaced this leadership follow-through question. Keep that post context visible instead of flattening this into a generic candidate review.`
+                    : `This chapter-leader route was opened from "${context.feedPostTitle}" so the follow-up stays tied to the specific post that surfaced the re-engagement question. Keep that post context visible instead of flattening this into a generic member review.`,
                 actions: [
                   {
                     label: "Back to selected post",
@@ -1986,7 +2002,9 @@ function getChapterLeaderSourceContext(
                   },
                   {
                     label:
-                      context.pipelineFilter === "follow_up"
+                      context.selectedView === "succession"
+                        ? "Open re-engagement queue"
+                        : context.pipelineFilter === "follow_up"
                         ? "Back to re-engagement queue"
                         : "Open member pipeline",
                     href: buildChapterLeaderCommandCenterHref("members", {
@@ -2001,12 +2019,20 @@ function getChapterLeaderSourceContext(
               }
             : {
                 eyebrow: "Feed analytics handoff",
-                title: "Opened from a re-engagement workflow",
+                title:
+                  context.selectedView === "succession"
+                    ? "Opened from a re-engagement workflow into succession review"
+                    : "Opened from a re-engagement workflow",
                 summary:
-                  "This chapter-leader route was opened from Feed Analytics to act on low-engagement signals. Keep the follow-up flow tied to the content-performance question that surfaced it instead of flattening it into a generic member review.",
+                  context.selectedView === "succession"
+                    ? "This chapter-leader route was opened from Feed Analytics to act on low-engagement signals before a leadership transition decision. Keep the succession review tied to the content-performance question that surfaced it instead of flattening it into a generic candidate lane."
+                    : "This chapter-leader route was opened from Feed Analytics to act on low-engagement signals. Keep the follow-up flow tied to the content-performance question that surfaced it instead of flattening it into a generic member review.",
                 actions: [
                   {
-                    label: "Back to re-engagement queue",
+                    label:
+                      context.selectedView === "succession"
+                        ? "Open re-engagement queue"
+                        : "Back to re-engagement queue",
                     href: buildChapterLeaderCommandCenterHref("members", {
                       source: "feed_analytics",
                       memberId: context.memberId,
@@ -2171,6 +2197,7 @@ export function buildChapterLeaderCommandCenterHref(
     view === "bridge_videos" ||
     view === "members" ||
     view === "member_profile" ||
+    view === "succession" ||
     options.source === "feed_analytics" ||
     options.source === "leaderboard";
 
@@ -5452,6 +5479,15 @@ function getSuccessionCandidates(
   leaderboard: LeaderboardRow[],
   sourceMode: ReadOnlyAppData["source"]["mode"],
   selectedMemberId: string | null,
+  context: {
+    source: ChapterLeaderCommandCenterSource | null;
+    feedPostId: string | null;
+    pipelineFilter: ChapterLeaderPipelineFilter;
+    searchQuery: string;
+    leaderboardMetric: ChapterLeaderboardMetric;
+    leaderboardRegion: ChapterLeaderboardRegion;
+    bestPracticeChapterId: string | null;
+  },
 ): ChapterLeaderCommandCenterSuccessionCandidate[] {
   if (sourceMode === "mock") {
     return [
@@ -5466,6 +5502,13 @@ function getSuccessionCandidates(
         reason: "Current president who needs a visible successor plan before graduation.",
         href: buildChapterLeaderCommandCenterHref("succession", {
           memberId: "member-leo",
+          source: context.source,
+          feedPostId: context.feedPostId,
+          pipelineFilter: context.pipelineFilter,
+          searchQuery: context.searchQuery,
+          leaderboardMetric: context.leaderboardMetric,
+          leaderboardRegion: context.leaderboardRegion,
+          bestPracticeChapterId: context.bestPracticeChapterId,
         }),
         isSelected: selectedMemberId === "member-leo",
       },
@@ -5480,6 +5523,13 @@ function getSuccessionCandidates(
         reason: "Already carrying chapter operations and positioned to mentor event successors.",
         href: buildChapterLeaderCommandCenterHref("succession", {
           memberId: "member-zara",
+          source: context.source,
+          feedPostId: context.feedPostId,
+          pipelineFilter: context.pipelineFilter,
+          searchQuery: context.searchQuery,
+          leaderboardMetric: context.leaderboardMetric,
+          leaderboardRegion: context.leaderboardRegion,
+          bestPracticeChapterId: context.bestPracticeChapterId,
         }),
         isSelected: selectedMemberId === "member-zara",
       },
@@ -5494,6 +5544,13 @@ function getSuccessionCandidates(
         reason: "Strong fundraiser who still needs a named backup and transition notes.",
         href: buildChapterLeaderCommandCenterHref("succession", {
           memberId: "member-nina",
+          source: context.source,
+          feedPostId: context.feedPostId,
+          pipelineFilter: context.pipelineFilter,
+          searchQuery: context.searchQuery,
+          leaderboardMetric: context.leaderboardMetric,
+          leaderboardRegion: context.leaderboardRegion,
+          bestPracticeChapterId: context.bestPracticeChapterId,
         }),
         isSelected: selectedMemberId === "member-nina",
       },
@@ -5508,6 +5565,13 @@ function getSuccessionCandidates(
         reason: "Visible recruitment owner who could step into a larger lane with coaching.",
         href: buildChapterLeaderCommandCenterHref("succession", {
           memberId: "member-ivy",
+          source: context.source,
+          feedPostId: context.feedPostId,
+          pipelineFilter: context.pipelineFilter,
+          searchQuery: context.searchQuery,
+          leaderboardMetric: context.leaderboardMetric,
+          leaderboardRegion: context.leaderboardRegion,
+          bestPracticeChapterId: context.bestPracticeChapterId,
         }),
         isSelected: selectedMemberId === "member-ivy",
       },
@@ -5522,6 +5586,13 @@ function getSuccessionCandidates(
         reason: "Welcoming recruiter who needs one owned lane before stepping into a larger chapter role.",
         href: buildChapterLeaderCommandCenterHref("succession", {
           memberId: "member-maya",
+          source: context.source,
+          feedPostId: context.feedPostId,
+          pipelineFilter: context.pipelineFilter,
+          searchQuery: context.searchQuery,
+          leaderboardMetric: context.leaderboardMetric,
+          leaderboardRegion: context.leaderboardRegion,
+          bestPracticeChapterId: context.bestPracticeChapterId,
         }),
         isSelected: selectedMemberId === "member-maya",
       },
@@ -5536,6 +5607,13 @@ function getSuccessionCandidates(
         reason: "Mission-aligned service leader who needs more visible evidence and succession reps.",
         href: buildChapterLeaderCommandCenterHref("succession", {
           memberId: "member-omar",
+          source: context.source,
+          feedPostId: context.feedPostId,
+          pipelineFilter: context.pipelineFilter,
+          searchQuery: context.searchQuery,
+          leaderboardMetric: context.leaderboardMetric,
+          leaderboardRegion: context.leaderboardRegion,
+          bestPracticeChapterId: context.bestPracticeChapterId,
         }),
         isSelected: selectedMemberId === "member-omar",
       },
@@ -5559,6 +5637,13 @@ function getSuccessionCandidates(
       reason: `${getMemberRecognitionLabel(member, leaderboard)} ${member.nextStep}`,
       href: buildChapterLeaderCommandCenterHref("succession", {
         memberId: member.id,
+        source: context.source,
+        feedPostId: context.feedPostId,
+        pipelineFilter: context.pipelineFilter,
+        searchQuery: context.searchQuery,
+        leaderboardMetric: context.leaderboardMetric,
+        leaderboardRegion: context.leaderboardRegion,
+        bestPracticeChapterId: context.bestPracticeChapterId,
       }),
       isSelected: member.id === selectedMemberId,
     }))
