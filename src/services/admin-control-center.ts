@@ -259,7 +259,7 @@ function getAdminMasterDataInventory(
     ],
     campaignTemplates: campaignShells.map((shell) => ({
       slug: shell.slug,
-      name: shell.name,
+      name: asTestLabel(shell.name),
       status: shell.status,
       primaryKpis: shell.primaryKpis,
       actionCommitteeLanes: shell.actionCommitteeLanes,

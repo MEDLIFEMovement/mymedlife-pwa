@@ -71,7 +71,7 @@ describe("admin control center", () => {
     expect(summary.masterDataInventory.campaignTemplates[0]).toEqual(
       expect.objectContaining({
         slug: "rush-month",
-        name: "Rush Month",
+        name: "TEST Rush Month",
         status: "active",
         adminStatus: "ready_readonly",
         integrationPosture: expect.stringContaining("No live external send"),
@@ -299,6 +299,7 @@ describe("admin control center", () => {
     expect(html).toContain("TEST users");
     expect(html).toContain("Read-only admin view of TEST users, role coverage, TEST chapter scope,");
     expect(html).toContain("TEST Priya President");
+    expect(html).toContain("TEST Rush Month");
     expect(html).toContain(expectedChapterName);
     expect(html).toContain(`${expectedCampusName} / ${data.chapter.region}`);
     expect(html).toContain(`Coach: ${expectedCoachName}.`);
