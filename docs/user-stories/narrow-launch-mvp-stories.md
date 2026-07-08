@@ -1,15 +1,17 @@
 # myMEDLIFE Narrow Launch MVP Stories
 
-Date: 2026-07-07
+Date: 2026-07-08
 Owner lane: myMEDLIFE #5, planning/docs only
 Linear planning reference: MED-512
 Purpose: provide a cleaned, MVP-ready story set for the narrow launch lane,
 without overstating production readiness.
 
 Repo-truth checkpoint: derived from the refreshed master inventory compared
-against this repo checkout on `origin/main` commit `bc091ee` (`Add shell
-acceptance planning packets (#501)`), including the recent member, leader,
-staff/admin, and shell acceptance planning wave visible on current main.
+against this repo checkout on `origin/main` commit `86d378c` (`Add next shell
+slice briefs (#517)`). Current main includes the repo-truth story package,
+builder delivery map, member home/profile continuity, member Stories feed
+parity, member event/points return continuity, embedded Admin review posture,
+admin command center return cues, and next-shell slice brief planning.
 
 ## MVP Scope Frame
 
@@ -57,6 +59,17 @@ read-only, preview-only, disabled, or future-wired until separately approved.
 | Partial | User path exists but real data/auth/proof/write readiness is missing. |
 | Preview-only | User can review the intended behavior, but actions are blocked. |
 | Blocked | Story cannot support launch until named evidence or approval exists. |
+
+## Current MVP Story Spine
+
+| Persona | MVP IDs | Current repo-truth summary |
+| --- | --- | --- |
+| member | `MVP-MEM-01` through `MVP-MEM-06` | Member shell, home/profile, Stories, events, and points are reviewable; RSVP/check-in/attendance writes and real points authority remain blocked. |
+| leader | `MVP-LDR-01` through `MVP-LDR-03` | Leader command center is visible and active route-continuity work is underway; event/attendance/leaderboard data remains partial and write-blocked. |
+| coach/staff | `MVP-STF-01` through `MVP-STF-03` | Staff shell is reviewable; chapter drawer/admin continuity is still constrained by #503 until that branch clears. |
+| admin | `MVP-ADM-01` through `MVP-ADM-02` | Admin review and launch-gate posture are visible/staged; owner CSVs, production rows, invites, and gate advancement remain blocked. |
+| DS admin | `MVP-DSA-01` through `MVP-DSA-02` | Dark admin shell and safety surfaces are reviewable; provider/API/MCP/audit/outbox live operations remain blocked. |
+| super admin | `MVP-SUP-01` through `MVP-SUP-02` | Cross-shell review is partial; final invite approval is blocked until real production evidence exists. |
 
 ## Member MVP Stories
 

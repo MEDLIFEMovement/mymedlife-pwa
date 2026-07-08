@@ -1,6 +1,6 @@
 # myMEDLIFE Master User Story Inventory
 
-Date: 2026-07-07
+Date: 2026-07-08
 Owner lane: myMEDLIFE #5, planning/docs only
 Linear planning reference: MED-512
 Purpose: capture current repo implementation truth as user stories, then make
@@ -21,11 +21,26 @@ the built/partial/preview-only/blocked line clear for MVP planning.
 ## Sources Inspected
 
 - Repo truth refresh checked against this repo checkout on `origin/main` commit
-  `bc091ee` (`Add shell acceptance planning packets (#501)`), which includes
-  the recent member event return continuity, member points continuity, member
-  stories reader preview honesty, leader live-route continuity, staff proof
-  review next steps, staff chapter drawer follow-through, embedded admin back
-  affordance, and shell acceptance packet work.
+  `86d378c` (`Add next shell slice briefs (#517)`), which includes the
+  repo-truth story package, builder delivery map, member home/profile
+  continuity, member Stories feed parity, member event/points return
+  continuity, embedded Admin review posture, admin command center return cues,
+  and next-shell slice brief planning.
+- Live PR board checked during this refresh: `#503` remained the real staff
+  blocker, `#512` and `#515` were healthy rerun/behind-watch lanes, `#516` was
+  healthy and still draft, `#518` was the live member repair branch, and `#519`
+  was a healthy admin launch-gate review-label follow-on. These are coordination
+  context only, not merged implementation truth unless they land on `main`.
+- Current repo files inspected for route/surface truth: `src/app/app/*`,
+  `src/app/leader/page.tsx`, `src/app/staff/page.tsx`, `src/app/admin/*`,
+  `src/components/figma-member-mobile-home.tsx`,
+  `src/components/figma-member-stories-page.tsx`,
+  `src/components/figma-leader-command-center.tsx`,
+  `src/components/figma-leader-training-screen.tsx`,
+  `src/components/figma-staff-command-center.tsx`,
+  `src/components/figma-admin-panel.tsx`, `tests/member-figma-route-pages.test.tsx`,
+  `tests/leader-command-center-routing.test.ts`, `tests/staff-page.test.tsx`,
+  `tests/admin-review-handoff-pages.test.tsx`, and `tests/e2e/launch-smoke.spec.ts`.
 - `/Users/codex/Documents/Codex/2026-07-06/new-chat/mymedlife-staff-admin/AGENTS.md`
 - `/Users/codex/Documents/Codex/2026-07-06/new-chat/mymedlife-staff-admin/docs/01-one-page-brief.md`
 - `/Users/codex/Documents/Codex/2026-07-06/new-chat/mymedlife-staff-admin/docs/02-user-stories.md`
@@ -86,6 +101,17 @@ Current builder ownership for this story package:
   classification.
 - `#5` owns repo-truth planning, story audit, backlog grooming, and stale
   steering repair.
+
+Current-main story rollup:
+
+| Persona group | Story IDs | Repo-truth posture after #517 |
+| --- | --- | --- |
+| Member | `MEM-001` through `MEM-009` | Strong shell coverage; home/profile, Stories, event return, points return, and SLT entry are reviewable. RSVP, check-in, attendance, points award authority, story publishing, profile writes, and SLT traveler/payment/provider workflow remain preview-only or blocked. |
+| Leader | `LDR-001` through `LDR-007` | Rich command-center shell; route/menu continuity and leadership-family handoffs are active work. Live event creation, attendance imports, assignments, succession, role/member mutations, points awards, and provider sends remain blocked. |
+| Coach/staff | `STF-001` through `STF-006` | Staff shell and embedded Admin posture are reviewable; #503 still blocks full chapter-drawer continuity. Interventions, exports, proof moderation, survey sends, and provider sync remain blocked. |
+| Admin | `ADM-001` through `ADM-004` | Admin review surfaces and launch-gate posture are visible; owner CSV application, invites, user/role/chapter writes, audit/outbox mutation, and final gate remain blocked. |
+| DS admin | `DSA-001` through `DSA-004` | Dark admin shell, integrations/API/MCP, system health, and signed-in proof readiness are reviewable/staged; provider/API/MCP operations and production proof capture are not live. |
+| Super admin | `SUP-001` through `SUP-003` | Cross-shell review and write-promotion governance are staged; final invite approval is blocked until real rollout evidence exists. |
 
 ### Member Stories
 
