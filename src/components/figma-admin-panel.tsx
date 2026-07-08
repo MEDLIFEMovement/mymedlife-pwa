@@ -3271,7 +3271,7 @@ function ApiKeysPage() {
                   className="flex items-center gap-1.5 px-3 py-1.5 bg-sky-500/10 text-sky-400 border border-sky-500/20 rounded text-[11px] font-medium transition-colors opacity-50 cursor-not-allowed"
                 >
                   <RotateCcw size={11} />
-                  Rotate
+                  Rotate blocked
                 </button>
                 <button
                   onClick={() => gate({ type: "revoke", target: k })}
@@ -3280,7 +3280,7 @@ function ApiKeysPage() {
                   className="flex items-center gap-1.5 px-3 py-1.5 bg-red-500/8 text-red-400 border border-red-500/15 rounded text-[11px] font-medium transition-colors opacity-50 cursor-not-allowed"
                 >
                   <Trash2 size={11} />
-                  Revoke
+                  Revoke blocked
                 </button>
               </>
             )}
