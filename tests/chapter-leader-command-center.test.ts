@@ -2524,6 +2524,45 @@ describe("chapter leader command center", () => {
     expect(markup).toContain("Succession Timeline");
   });
 
+  it("keeps leadership training tied into the same chapter review loop as leaders, succession, and values", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "training",
+      memberId: "member-ivy",
+      pipeline: "follow_up",
+      search: "Ivy",
+    });
+    const markup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
+    );
+
+    expect(markup).toContain("Leadership Training");
+    expect(markup).toContain("TEST Leadership Review Loop");
+    expect(markup).toContain(
+      "Keep leadership development tied to chapter review, not a detached library.",
+    );
+    expect(markup).toContain("Back to Chapter Home");
+    expect(markup).toContain("Open Current Leaders");
+    expect(markup).toContain("Open Succession Lane");
+    expect(markup).toContain("Open Values Review");
+    expect(markup).toContain("Leadership training in focus");
+    expect(markup).toContain(
+      "Reviewing TEST Ivy Invite through the leadership development loop",
+    );
+    expect(markup).toContain(
+      "href=\"/leader?view=overview&amp;member=member-ivy&amp;pipeline=follow_up&amp;q=Ivy\"",
+    );
+    expect(markup).toContain(
+      "href=\"/leader?view=leaders&amp;member=member-ivy&amp;pipeline=follow_up&amp;q=Ivy\"",
+    );
+    expect(markup).toContain(
+      "href=\"/leader?view=succession&amp;member=member-ivy&amp;pipeline=follow_up&amp;q=Ivy\"",
+    );
+    expect(markup).toContain(
+      "href=\"/leader?view=values&amp;member=member-ivy&amp;pipeline=follow_up&amp;q=Ivy\"",
+    );
+  });
+
   it("opens promote emerging leader as a succession-owned quick-action state before nomination decisions", () => {
     const actor = getMockLocalActorContext("leader.a@mymedlife.test");
     const commandCenter = getChapterLeaderCommandCenter(actor, data, {

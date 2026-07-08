@@ -265,6 +265,12 @@ describe("leader page", () => {
     }
 
     if (view === "training") {
+      expect(html).toContain("TEST Leadership Review Loop");
+      expect(html).toContain("Back to Chapter Home");
+      expect(html).toContain("Open Current Leaders");
+      expect(html).toContain("Open Succession Lane");
+      expect(html).toContain("Open Values Review");
+      expect(html).toContain("Leadership training in focus");
       expect(html).toContain("Preview Resource Intake");
       expect(html).toContain("Preview Video");
       expect(html).toContain("Preview Deck");

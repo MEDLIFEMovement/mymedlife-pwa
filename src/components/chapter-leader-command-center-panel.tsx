@@ -2460,6 +2460,31 @@ function renderView(
         </section>
       );
     case "training":
+      const trainingOverviewHref = buildChapterLeaderCommandCenterHref("overview", {
+        source: commandCenter.selectedSource,
+        memberId: leadershipReviewMemberId,
+        pipelineFilter: commandCenter.selectedPipelineFilter,
+        searchQuery: commandCenter.pipelineSearchQuery,
+      });
+      const trainingLeadersHref = buildChapterLeaderCommandCenterHref("leaders", {
+        source: commandCenter.selectedSource,
+        memberId: leadershipReviewMemberId,
+        pipelineFilter: commandCenter.selectedPipelineFilter,
+        searchQuery: commandCenter.pipelineSearchQuery,
+      });
+      const trainingSuccessionHref = buildChapterLeaderCommandCenterHref("succession", {
+        source: commandCenter.selectedSource,
+        memberId: leadershipReviewMemberId,
+        pipelineFilter: commandCenter.selectedPipelineFilter,
+        searchQuery: commandCenter.pipelineSearchQuery,
+      });
+      const trainingValuesHref = buildChapterLeaderCommandCenterHref("values", {
+        source: commandCenter.selectedSource,
+        memberId: leadershipReviewMemberId,
+        pipelineFilter: commandCenter.selectedPipelineFilter,
+        searchQuery: commandCenter.pipelineSearchQuery,
+      });
+
       return (
         <section className="grid gap-4">
           <section className="grid gap-4 rounded-[1.75rem] border border-slate-200 bg-white p-4 shadow-[0_14px_38px_rgba(15,23,42,0.06)] sm:p-5">
@@ -2497,6 +2522,60 @@ function renderView(
               </p>
             </div>
           </section>
+
+          <section className="rounded-[1.2rem] border border-[#bfdbfe] bg-[#eef5ff] p-4">
+            <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+              <div className="max-w-2xl">
+                <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-[#1d4ed8]">
+                  TEST Leadership Review Loop
+                </p>
+                <h2 className="mt-2 text-lg font-semibold text-slate-950">
+                  Keep leadership development tied to chapter review, not a detached library.
+                </h2>
+                <p className="mt-2 text-sm leading-6 text-slate-600">
+                  Use this training hub while keeping Chapter Home, Current Leaders, Succession,
+                  and Values one step away. The goal is to review growth and preparation in the
+                  same visible leadership loop, without turning on live publishing, sends, or
+                  external opens.
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-2 xl:max-w-sm xl:justify-end">
+                <Link
+                  href={trainingOverviewHref}
+                  className="inline-flex rounded-full border border-[#bfdbfe] bg-white px-4 py-2 text-sm font-semibold text-[#1d4ed8]"
+                >
+                  Back to Chapter Home
+                </Link>
+                <Link
+                  href={trainingLeadersHref}
+                  className="inline-flex rounded-full border border-[#bfdbfe] bg-white px-4 py-2 text-sm font-semibold text-[#1d4ed8]"
+                >
+                  Open Current Leaders
+                </Link>
+                <Link
+                  href={trainingSuccessionHref}
+                  className="inline-flex rounded-full border border-[#bfdbfe] bg-white px-4 py-2 text-sm font-semibold text-[#1d4ed8]"
+                >
+                  Open Succession Lane
+                </Link>
+                <Link
+                  href={trainingValuesHref}
+                  className="inline-flex rounded-full bg-[#2563eb] px-4 py-2 text-sm font-semibold text-white"
+                >
+                  Open Values Review
+                </Link>
+              </div>
+            </div>
+          </section>
+
+          {commandCenter.selectedMember ? (
+            <SelectedMemberContextBanner
+              eyebrow="Leadership training in focus"
+              title={`Reviewing ${toVisibleTestLabel(commandCenter.selectedMember.displayName)} through the leadership development loop`}
+              summary="Keep this person anchored while you review training, values, and succession prep so growth context stays connected to a real chapter member. No resource publish, invite, or provider handoff goes live from this shell."
+              member={commandCenter.selectedMember}
+            />
+          ) : null}
 
           <SectionCard eyebrow="TEST Featured Resources" title="Leadership Development Resources">
             <div className="grid gap-3">
