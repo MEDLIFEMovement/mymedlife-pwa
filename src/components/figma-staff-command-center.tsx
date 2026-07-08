@@ -1435,6 +1435,8 @@ function ProofUGCQueue({
   const selectedCard = selectedCardId
     ? UGC_CARDS.find((card) => card.id === selectedCardId) ?? null
     : null;
+  const selectedCardChapter =
+    selectedCard ? CHAPTERS.find((chapter) => chapter.name === selectedCard.chapter) ?? null : null;
   const selectedCardReturnLoopLabel = selectedCard
     ? getStaffAdminReturnLoopLabel(
         "Proof / UGC",
@@ -1758,6 +1760,15 @@ function ProofUGCQueue({
                 >
                   <ArrowLeft className="w-3 h-3" /> Return to Proof / UGC
                 </a>
+                {selectedCardChapter ? (
+                  <a
+                    href={buildStaffChapterHref(selectedCardChapter.id, pathname, currentSearch)}
+                    title={`Open ${selectedCardChapter.name} in Chapters without dropping the current Proof / UGC review context.`}
+                    className="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[10px] font-semibold text-emerald-700 hover:bg-emerald-100"
+                  >
+                    <LayoutDashboard className="w-3 h-3" /> Open chapter drawer
+                  </a>
+                ) : null}
               </div>
             </div>
 
@@ -1810,6 +1821,9 @@ function ProofUGCQueue({
                 <p className="text-[10px] text-amber-700 mt-2 leading-relaxed">
                   Share targets stay visible for moderation review. Next step: finish consent and coach context here, then open Admin preview for embedded DS audit readback and blocked-control posture before any publishing request.
                 </p>
+                <p className="mt-1 text-[10px] leading-relaxed text-slate-600">
+                  Keep the same chapter loop intact: after Admin readback, reopen this chapter drawer if the story needs coach or chapter follow-through.
+                </p>
               </div>
 
               {/* Actions */}
@@ -1839,6 +1853,9 @@ function ProofUGCQueue({
                 />
                 <p className="mt-1.5 text-[10px] leading-relaxed text-amber-700">
                   {`Context drafting stays visible for review, but no coach note, moderation note, or caption save runs from this queue until Admin review approves the next step in the same command-center flow. Return to ${selectedCardReturnLoopLabel} after Admin readback to continue the same review loop in the staff shell.`}
+                </p>
+                <p className="mt-1 text-[10px] leading-relaxed text-slate-600">
+                  If a chapter needs follow-up after that Admin readback, reopen the chapter drawer from this same Command Center flow instead of leaving the staff shell.
                 </p>
               </div>
             </div>
@@ -1891,6 +1908,9 @@ function ProofUGCQueue({
             </p>
             <p className="mt-1 text-[10px] leading-relaxed text-muted-foreground">
               {`Return to ${proofQueueReturnLoopLabel} after the Admin readback to continue the same Command Center review loop.`}
+            </p>
+            <p className="mt-1 text-[10px] leading-relaxed text-muted-foreground">
+              Reopen the chapter drawer from this queue when a story needs chapter-specific follow-through after the Admin review pass.
             </p>
           </div>
         </div>
