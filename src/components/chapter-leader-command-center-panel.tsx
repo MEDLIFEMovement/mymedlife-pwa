@@ -265,7 +265,7 @@ export function ChapterLeaderCommandCenterPanel({
               </div>
               <div className="min-w-0">
                 <p className="truncate text-sm font-semibold text-white">
-                  {commandCenter.sidebarLeaderLabel}
+                  {toVisibleTestLabel(commandCenter.sidebarLeaderLabel)}
                 </p>
                 <p className="truncate text-xs text-white/65">
                   {commandCenter.sidebarLeaderRoleLabel}
@@ -319,10 +319,10 @@ export function ChapterLeaderCommandCenterPanel({
                       {dashboardHeading}
                     </p>
                     <h1 className="mt-2 text-[1.9rem] font-semibold leading-[1.05] text-white sm:text-[2.1rem]">
-                      {commandCenter.chapterName}
+                      {toVisibleTestLabel(commandCenter.chapterName)}
                     </h1>
                     <p className="mt-2 text-sm leading-6 text-[#bfdbfe]">
-                      {commandCenter.sidebarLeaderLabel}
+                      {toVisibleTestLabel(commandCenter.sidebarLeaderLabel)}
                       {", "}
                       {commandCenter.sidebarLeaderRoleLabel}
                       {" · "}
@@ -820,14 +820,14 @@ function renderView(
                       {commandCenter.selectedFeedPost.summary}
                     </p>
                     <p className="mt-3 text-sm leading-6 text-slate-600">
-                      Review {commandCenter.selectedMember.displayName}
+                      Review {toVisibleTestLabel(commandCenter.selectedMember.displayName)}
                       {"'"}s next move against this content signal first so the follow-up stays
                       anchored to the actual post that surfaced them.
                     </p>
                   </div>
                   <div className="flex flex-col gap-2 xl:items-end">
                     <p className="text-sm text-slate-500">
-                      {commandCenter.selectedFeedPost.authorLabel} ·{" "}
+                      {toVisibleTestLabel(commandCenter.selectedFeedPost.authorLabel)} ·{" "}
                       {commandCenter.selectedFeedPost.dateLabel}
                     </p>
                   </div>
@@ -1107,7 +1107,7 @@ function renderView(
                       Chair
                     </p>
                     <p className="mt-2 text-sm font-semibold text-slate-950">
-                      {commandCenter.selectedCommittee.ownerLabel}
+                      {toVisibleCommitteeOwnerLabel(commandCenter.selectedCommittee.ownerLabel)}
                     </p>
                     <p className="mt-1 text-sm text-slate-500">
                       {commandCenter.selectedCommittee.memberCountLabel}
@@ -1970,7 +1970,7 @@ function renderView(
                     </h3>
                     <p className="mt-2 text-sm leading-6 text-slate-600">
                       {commandCenter.selectedBridgeVideo.categoryLabel} ·{" "}
-                      {commandCenter.selectedBridgeVideo.authorLabel} ·{" "}
+                      {toVisibleTestLabel(commandCenter.selectedBridgeVideo.authorLabel)} ·{" "}
                       {commandCenter.selectedBridgeVideo.chaptersUsingLabel}
                     </p>
                   </div>
@@ -2028,8 +2028,8 @@ function renderView(
               <div className="mt-4">
                 <SelectedMemberContextBanner
                   eyebrow="Story owner context"
-                  title={`Reviewing bridge content with ${commandCenter.selectedMember.displayName} in focus`}
-                  summary={`Keep ${commandCenter.selectedMember.displayName} selected while reviewing examples, share flows, and handoff quality so this library still feels connected to a real chapter leader.`}
+                  title={`Reviewing bridge content with ${toVisibleTestLabel(commandCenter.selectedMember.displayName)} in focus`}
+                  summary={`Keep ${toVisibleTestLabel(commandCenter.selectedMember.displayName)} selected while reviewing examples, share flows, and handoff quality so this library still feels connected to a real chapter leader.`}
                   member={commandCenter.selectedMember}
                 />
               </div>
@@ -2134,7 +2134,7 @@ function renderView(
                       Selected candidate
                     </p>
                     <h3 className="mt-2 text-lg font-semibold text-slate-950">
-                      Reviewing {commandCenter.selectedMember.displayName} for succession readiness
+                      Reviewing {toVisibleTestLabel(commandCenter.selectedMember.displayName)} for succession readiness
                     </h3>
                     <p className="mt-2 text-sm leading-6 text-slate-600">
                       Keep this person anchored while reviewing leadership gaps, candidate readiness,
@@ -3028,7 +3028,7 @@ function MemberProfileSummaryCard({
           .map((part) => part[0])
           .join("")}
       </div>
-      <h3 className="mt-3 text-xl font-semibold text-slate-950">{member.displayName}</h3>
+      <h3 className="mt-3 text-xl font-semibold text-slate-950">{toVisibleTestLabel(member.displayName)}</h3>
       <div className="mt-1 text-sm leading-6 text-slate-600">
         <p>{member.roleLabel}</p>
         <p>{member.committeeLane}</p>
@@ -3713,7 +3713,7 @@ function renderCommitteeOwnerBadges(ownerLabel: string) {
         className="inline-flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700"
       >
         <span aria-hidden="true">⚠</span>
-        No chair assigned
+        No TEST chair assigned
       </span>,
     ];
   }
@@ -3726,7 +3726,7 @@ function renderCommitteeOwnerBadges(ownerLabel: string) {
       <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#2563eb] text-[0.58rem] font-semibold text-white">
         {getInitials(owner)}
       </span>
-      {owner}
+      {toVisibleTestLabel(owner)}
     </span>
   ));
 }
@@ -3740,7 +3740,24 @@ function splitCommitteeOwners(ownerLabel: string) {
 
 function isCommitteeOwnerUnassigned(ownerLabel: string) {
   const normalized = ownerLabel.trim().toLowerCase();
-  return normalized.includes("open") || normalized === "no chair assigned";
+  return normalized.includes("open") || normalized === "no chair assigned" || normalized === "no test chair assigned";
+}
+
+function toVisibleTestLabel(label: string) {
+  const trimmed = label.trim();
+  if (!trimmed || trimmed.startsWith("TEST ")) {
+    return trimmed || label;
+  }
+
+  return `TEST ${trimmed}`;
+}
+
+function toVisibleCommitteeOwnerLabel(ownerLabel: string) {
+  if (isCommitteeOwnerUnassigned(ownerLabel)) {
+    return "No TEST chair assigned";
+  }
+
+  return splitCommitteeOwners(ownerLabel).map(toVisibleTestLabel).join(", ");
 }
 
 function CommitteeMetricCell({
@@ -4125,7 +4142,7 @@ function FeedPostsTable({
               <td className="px-4 py-3">
                 <span className={getFeedPostBadgeClassName(row.badgeLabel)}>{row.typeLabel}</span>
               </td>
-              <td className="px-4 py-3">{row.authorLabel}</td>
+              <td className="px-4 py-3">{toVisibleTestLabel(row.authorLabel)}</td>
               <td className="px-4 py-3">{row.viewsLabel}</td>
               <td className="px-4 py-3">{row.likesLabel}</td>
               <td className="px-4 py-3">{row.commentsLabel}</td>
@@ -4167,7 +4184,7 @@ function FeedMemberRow({
         <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#2563eb] text-xs font-semibold text-white">
           {member.initials}
         </div>
-        <p className="truncate text-sm font-semibold text-slate-950">{member.displayName}</p>
+        <p className="truncate text-sm font-semibold text-slate-950">{toVisibleTestLabel(member.displayName)}</p>
       </div>
       <div className="flex items-center gap-3">
         <span className="text-sm font-semibold text-slate-700">{member.scoreLabel}</span>
@@ -4267,7 +4284,7 @@ function BridgeVideoHubCard({
               </span>
             </div>
             <p className="mt-2 text-sm text-slate-500">
-              {entry.authorLabel} · {entry.submittedDateLabel}
+              {toVisibleTestLabel(entry.authorLabel)} · {entry.submittedDateLabel}
             </p>
             <div className="mt-2 flex flex-wrap gap-x-4 gap-y-2 text-xs font-semibold text-slate-500">
               <span>Views {entry.viewsLabel}</span>
@@ -4343,7 +4360,7 @@ function SuccessionPipelineRow({
           {getInitials(candidate.displayName)}
         </div>
         <div className="min-w-0">
-          <p className="truncate text-sm font-semibold text-slate-950">{candidate.displayName}</p>
+          <p className="truncate text-sm font-semibold text-slate-950">{toVisibleTestLabel(candidate.displayName)}</p>
           <p className="truncate text-xs text-slate-500">
             {candidate.committeeLabel} · {candidate.pointsLabel}
           </p>
@@ -4450,7 +4467,7 @@ function ChapterBenchmarkCard({
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-lg">{chapter.rankLabel}</span>
-            <p className="text-lg font-semibold text-slate-950">{chapter.chapterName}</p>
+            <p className="text-lg font-semibold text-slate-950">{toVisibleTestLabel(chapter.chapterName)}</p>
             {chapter.badgeLabel ? (
               <span className="rounded-full border border-[#bfdbfe] bg-[#eef5ff] px-3 py-1 text-xs font-semibold text-[#1d4ed8]">
                 {chapter.badgeLabel}

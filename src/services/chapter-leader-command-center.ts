@@ -13,7 +13,6 @@ import {
   type ChapterMemberRow,
 } from "@/services/chapter-membership-workspace";
 import { getLeaderActionsFocus } from "@/services/leader-actions-focus";
-import { isEventsPointsLaunchLaneEnabled } from "@/services/launch-lane-product-focus";
 import type { LocalActorContext } from "@/services/local-actor-context";
 import { buildStudentHomePreviewHref } from "@/services/local-preview-route";
 import { getMemberRecognitionSummary } from "@/services/member-recognition";
@@ -941,17 +940,6 @@ const commandCenterNavGroups: ChapterLeaderCommandCenterNavGroup[] = [
   },
 ];
 
-const launchLaneCommandCenterNavGroups: ChapterLeaderCommandCenterNavGroup[] = [
-  {
-    label: "Chapter",
-    viewKeys: ["overview"],
-  },
-  {
-    label: "Event Loop",
-    viewKeys: ["events", "leaderboard"],
-  },
-];
-
 const chapterPointsTrendSample: ChapterLeaderCommandCenterTrendPoint[] = [
   { label: "Apr W1", value: 920 },
   { label: "Apr W2", value: 1080 },
@@ -1361,7 +1349,6 @@ export function getChapterLeaderCommandCenter(
   }
 
   const selectedView = parseChapterLeaderCommandCenterView(options.view);
-  const launchLaneFocused = isEventsPointsLaunchLaneEnabled();
   const selectedSource = parseChapterLeaderSource(options.source);
   const selectedPipelineFilter = parsePipelineFilter(options.pipeline);
   const selectedLeaderboardMetric = parseLeaderboardMetric(options.leaderboardMetric);
@@ -1686,9 +1673,7 @@ export function getChapterLeaderCommandCenter(
       searchQuery: pipelineSearchQuery,
       bridgeVideoFilter: selectedBridgeVideoFilter,
     }),
-    navGroups: launchLaneFocused
-      ? launchLaneCommandCenterNavGroups
-      : commandCenterNavGroups,
+    navGroups: commandCenterNavGroups,
     pipelineFilterOptions: getPipelineFilterOptions({
       view: selectedView,
       source: selectedSource,
@@ -2671,15 +2656,9 @@ function getViewOptions(input: {
   searchQuery: string;
   bridgeVideoFilter?: ChapterLeaderBridgeVideoFilterKey;
 }): ChapterLeaderCommandCenterViewOption[] {
-  const visibleEntries = isEventsPointsLaunchLaneEnabled()
-    ? ([
-        ["overview", commandCenterViewLabels.overview],
-        ["events", commandCenterViewLabels.events],
-        ["leaderboard", commandCenterViewLabels.leaderboard],
-      ] as Array<[ChapterLeaderCommandCenterView, string]>)
-    : (Object.entries(commandCenterViewLabels) as Array<
-        [ChapterLeaderCommandCenterView, string]
-      >);
+  const visibleEntries = Object.entries(commandCenterViewLabels) as Array<
+    [ChapterLeaderCommandCenterView, string]
+  >;
 
   return visibleEntries.map(([key, label]) => ({
     key,
