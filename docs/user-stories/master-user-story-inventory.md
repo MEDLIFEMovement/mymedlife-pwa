@@ -20,20 +20,25 @@ the built/partial/preview-only/blocked line clear for MVP planning.
 
 ## Sources Inspected
 
-- `/Users/codex/Documents/Codex/2026-06-16/mymedlife/work/mymedlife/AGENTS.md`
-- `/Users/codex/Documents/Codex/2026-06-16/mymedlife/work/mymedlife/docs/01-one-page-brief.md`
-- `/Users/codex/Documents/Codex/2026-06-16/mymedlife/work/mymedlife/docs/02-user-stories.md`
-- `/Users/codex/Documents/Codex/2026-06-16/mymedlife/work/mymedlife/docs/functionality-map.md`
-- `/Users/codex/Documents/Codex/2026-06-16/mymedlife/work/mymedlife/src/app`
-- `/Users/codex/Documents/Codex/2026-06-16/mymedlife/work/mymedlife/src/services/static-route-metadata.ts`
-- `/Users/codex/Documents/Codex/2026-06-16/mymedlife/work/mymedlife/src/services/launch-lane-auth-readiness.ts`
-- `/Users/codex/Documents/Codex/2026-06-16/mymedlife/work/mymedlife/src/services/mvp-coverage-checklist.ts`
-- `/Users/codex/Documents/Codex/2026-06-16/mymedlife/work/mymedlife/src/services/write-readiness.ts`
-- `/Users/codex/Documents/Codex/2026-06-16/mymedlife/work/mymedlife/src/services/production-launch-gate.ts`
-- `/Users/codex/Documents/Codex/2026-06-16/mymedlife/work/mymedlife/src/services/production-signed-in-route-proof-readiness.ts`
-- `/Users/codex/Documents/Codex/2026-06-16/mymedlife/work/mymedlife/tests/e2e/launch-smoke.spec.ts`
-- `/Users/codex/Documents/Codex/2026-06-16/mymedlife/work/mymedlife/tests/member-launch-lane-events.test.ts`
-- `/Users/codex/Documents/Codex/2026-06-16/mymedlife/work/mymedlife/tests/launch-lane-points-readback.test.ts`
+- Repo truth refresh checked against `/Users/codex/Documents/Codex/2026-07-06/new-chat/mymedlife-staff-admin` on `origin/main` commit `12dd983` (`Add MED-512 staff admin review packet (#461)`).
+- `/Users/codex/Documents/Codex/2026-07-06/new-chat/mymedlife-staff-admin/AGENTS.md`
+- `/Users/codex/Documents/Codex/2026-07-06/new-chat/mymedlife-staff-admin/docs/01-one-page-brief.md`
+- `/Users/codex/Documents/Codex/2026-07-06/new-chat/mymedlife-staff-admin/docs/02-user-stories.md`
+- `/Users/codex/Documents/Codex/2026-07-06/new-chat/mymedlife-staff-admin/docs/functionality-map.md`
+- `/Users/codex/Documents/Codex/2026-07-06/new-chat/mymedlife-staff-admin/src/app`
+- `/Users/codex/Documents/Codex/2026-07-06/new-chat/mymedlife-staff-admin/src/services/static-route-metadata.ts`
+- `/Users/codex/Documents/Codex/2026-07-06/new-chat/mymedlife-staff-admin/src/services/launch-lane-auth-readiness.ts`
+- `/Users/codex/Documents/Codex/2026-07-06/new-chat/mymedlife-staff-admin/src/services/mvp-coverage-checklist.ts`
+- `/Users/codex/Documents/Codex/2026-07-06/new-chat/mymedlife-staff-admin/src/services/write-readiness.ts`
+- `/Users/codex/Documents/Codex/2026-07-06/new-chat/mymedlife-staff-admin/src/services/production-launch-gate.ts`
+- `/Users/codex/Documents/Codex/2026-07-06/new-chat/mymedlife-staff-admin/src/services/production-signed-in-route-proof-readiness.ts`
+- `/Users/codex/Documents/Codex/2026-07-06/new-chat/mymedlife-staff-admin/tests/e2e/launch-smoke.spec.ts`
+- `/Users/codex/Documents/Codex/2026-07-06/new-chat/mymedlife-staff-admin/tests/member-launch-lane-events.test.ts`
+- `/Users/codex/Documents/Codex/2026-07-06/new-chat/mymedlife-staff-admin/tests/launch-lane-points-readback.test.ts`
+- `/Users/codex/Documents/Codex/2026-07-06/new-chat/mymedlife-staff-admin/tests/member-stories-profile-pages.test.tsx`
+- `/Users/codex/Documents/Codex/2026-07-06/new-chat/mymedlife-staff-admin/tests/leader-page.test.tsx`
+- `/Users/codex/Documents/Codex/2026-07-06/new-chat/mymedlife-staff-admin/tests/staff-page.test.tsx`
+- `/Users/codex/Documents/Codex/2026-07-06/new-chat/mymedlife-staff-admin/tests/admin-control-center.test.ts`
 - `/Users/codex/Documents/Codex/2026-07-06/ca/outputs/mymedlife-readiness-matrix-2026-07-06.md`
 - `/Users/codex/Documents/Codex/2026-07-06/mymedlife-5/docs/figma-production-build-plan.md`
 - `/Users/codex/Documents/Codex/2026-07-06/mymedlife-5/docs/real-data-source-to-rollout-evidence-crosswalk.md`

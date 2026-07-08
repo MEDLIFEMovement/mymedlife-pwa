@@ -33,7 +33,7 @@ recommended #1/#2/#3/#4 slices after the latest merged shell wave.
 - `docs/user-stories/master-user-story-inventory.md`
 - `docs/user-stories/narrow-launch-mvp-stories.md`
 - `docs/user-stories/user-story-gap-report.md`
-- Repo `origin/main` as of `4f64e80` (`Tighten staff route honesty (#433)`)
+- Repo `origin/main` as of `12dd983` (`Add MED-512 staff admin review packet (#461)`)
 - `src/app/login/page.tsx`
 - `src/app/app/*`
 - `src/app/leader/page.tsx`
