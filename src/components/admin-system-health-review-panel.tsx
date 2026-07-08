@@ -61,6 +61,17 @@ export function AdminSystemHealthReviewPanel({
         ))}
       </div>
 
+      <div className="mt-4 flex flex-wrap gap-2">
+        {review.blockedControls.map((control) => (
+          <span
+            key={control}
+            className="rounded-full border border-white/10 bg-black/20 px-3 py-1 text-xs font-semibold text-white/64"
+          >
+            Blocked here {control}
+          </span>
+        ))}
+      </div>
+
       <p className="mt-4 rounded-2xl border border-white/10 bg-[#071d1a]/70 p-3 text-xs leading-5 text-white/58">
         {review.finalPrompt}
       </p>

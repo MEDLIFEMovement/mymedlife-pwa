@@ -201,10 +201,10 @@ describe("admin audit log review", () => {
     expect(html).toContain(
       "This review route shows audit posture and readback evidence only.",
     );
-    expect(html).toContain("Blocked edit audit rows in browser");
-    expect(html).toContain("Blocked export audit rows from preview");
+    expect(html).toContain("Blocked here edit audit rows");
+    expect(html).toContain("Blocked here export audit rows");
     expect(html).toContain(
-      "Audit edits, exports, retention changes, secret reveals, and production write approvals remain blocked from the browser.",
+      "This review stays read-only. No audit export, retention change, secret reveal, or production-write approval runs from this surface.",
     );
   });
 });

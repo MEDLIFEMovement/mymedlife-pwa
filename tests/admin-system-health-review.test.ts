@@ -46,6 +46,14 @@ describe("admin system health review", () => {
       "external_integrations",
       "monitoring_backup",
     ]);
+    expect(review.blockedControls).toEqual(
+      expect.arrayContaining([
+        "restart incidents",
+        "rerun provider syncs",
+        "export health logs",
+        "approve live launch",
+      ]),
+    );
     expect(
       review.checks.find((check) => check.key === "monitoring_backup")?.signal,
     ).toContain("operations runbook");
@@ -125,7 +133,10 @@ describe("admin system health review", () => {
 
     expect(getAdminSystemHealthReview(member, data).canReadReview).toBe(false);
     expect(getAdminSystemHealthReview(leader, data).canReadReview).toBe(false);
-    expect(getAdminSystemHealthReview(coach, data).canReadReview).toBe(false);
+    const coachReview = getAdminSystemHealthReview(coach, data);
+
+    expect(coachReview.canReadReview).toBe(false);
+    expect(coachReview.blockedControls).toEqual([]);
   });
 
   it("renders the read-only review copy in the system health panel", () => {
@@ -148,6 +159,7 @@ describe("admin system health review", () => {
     expect(html).toContain(
       "move into the linked follow-through routes only for approved runbook and evidence checks.",
     );
+    expect(html).toContain("Blocked here restart incidents");
     expect(html).toContain("Next: Approve retry, idempotency, dead-letter, and manual recovery rules before any real external send.");
   });
 });
