@@ -258,6 +258,94 @@ describe("chapter leader command center", () => {
     expect(markup).toContain("Open leaderboard");
   });
 
+  it("keeps chapter-home committee follow-through inside the same leader event loop", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "committees",
+      source: "overview",
+      memberId: "member-ivy",
+      committeeId: "committee-events",
+      pipeline: "follow_up",
+      search: "Ivy",
+    });
+    const markup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
+    );
+
+    expect(commandCenter.selectedSource).toBe("overview");
+    expect(commandCenter.sourceContext).toMatchObject({
+      eyebrow: "Chapter Home handoff",
+      title: "Opened from Chapter Home into committee follow-through",
+      actions: [
+        {
+          label: "Back to Chapter Home",
+          href: "/leader?view=overview&source=overview&member=member-ivy&pipeline=follow_up&q=Ivy",
+        },
+        {
+          label: "Open Event Performance",
+          href: "/leader?view=events&source=overview&member=member-ivy",
+        },
+        {
+          label: "Open leaderboard",
+          href: "/leader?view=leaderboard&source=overview&member=member-ivy&leaderboardMetric=attendance",
+        },
+      ],
+    });
+    expect(markup).toContain("Chapter Home handoff");
+    expect(markup).toContain("Opened from Chapter Home into committee follow-through");
+    expect(markup).toContain("Open committee lane");
+    expect(markup).toContain(
+      "href=\"/leader?view=events&amp;source=overview&amp;member=member-ivy\"",
+    );
+    expect(markup).toContain(
+      "href=\"/leader?view=leaderboard&amp;source=overview&amp;member=member-ivy&amp;leaderboardMetric=attendance\"",
+    );
+  });
+
+  it("keeps chapter-home leaderboard follow-through anchored to the event loop", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "leaderboard",
+      source: "overview",
+      memberId: "member-ivy",
+      eventCommittee: "events",
+      leaderboardMetric: "attendance",
+      pipeline: "follow_up",
+      search: "Ivy",
+    });
+    const markup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
+    );
+
+    expect(commandCenter.selectedSource).toBe("overview");
+    expect(commandCenter.sourceContext).toMatchObject({
+      eyebrow: "Chapter Home handoff",
+      title: "Opened from Chapter Home into leaderboard follow-through",
+      actions: [
+        {
+          label: "Back to Chapter Home",
+          href: "/leader?view=overview&source=overview&member=member-ivy&pipeline=follow_up&q=Ivy",
+        },
+        {
+          label: "Open Event Performance",
+          href: "/leader?view=events&source=overview&member=member-ivy&eventCommittee=events",
+        },
+        {
+          label: "Open leaderboard",
+          href: "/leader?view=leaderboard&source=overview&member=member-ivy&eventCommittee=events&leaderboardMetric=attendance",
+        },
+      ],
+    });
+    expect(markup).toContain("Chapter Home handoff");
+    expect(markup).toContain("Opened from Chapter Home into leaderboard follow-through");
+    expect(markup).toContain(
+      "attendance-backed points can be reviewed without losing the event-operations posture",
+    );
+    expect(markup).toContain(
+      "href=\"/leader?view=events&amp;source=overview&amp;member=member-ivy&amp;eventCommittee=events\"",
+    );
+  });
+
   it("falls back to zeroed progress bars and chapter-posture copy when overview labels are not sample-formatted", () => {
     const actor = getMockLocalActorContext("leader.a@mymedlife.test");
     const commandCenter = getChapterLeaderCommandCenter(actor, data);
