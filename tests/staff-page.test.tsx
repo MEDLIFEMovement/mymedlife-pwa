@@ -288,13 +288,18 @@ describe("staff page", () => {
     expect(source).toContain("Proof sharing is blocked until feed publishing approval is complete");
     expect(source).toContain("Next step: finish consent and coach context here, then open Admin preview for embedded DS audit readback and blocked-control posture before any publishing request.");
     expect(source).toContain("DS Admin audit handoff");
-    expect(source).toContain("Next step: review consent and blocked actions here, then open the Admin preview for DS audit readback before any publishing or coach-note approval request.");
+    expect(source).toContain("Review consent and blocked actions here, then open the Admin preview for DS audit readback before any publishing or coach-note approval request.");
     expect(source).toContain('href="/staff?view=admin&adminView=audit"');
+    expect(source).toContain('href="/staff?view=chapters"');
     expect(source).toContain("Open Admin preview");
+    expect(source).toContain("Return to chapters");
     expect(source).toContain("Embedded Admin review keeps DS directory, audit logs, and blocked controls in the same command-center walkthrough.");
     expect(source).toContain("Admin review approves the next step");
     expect(source).toContain("Click any card to review consent and blocked actions, or open the Admin preview for DS audit readback without leaving the Staff Command Center.");
     expect(source).toContain("Caption and coach-note drafting stays local-only in this preview");
+    expect(source).toContain("Return to chapters after Admin readback to confirm the chapter follow-through in the same staff shell.");
+    expect(source).toContain("Return to chapters after the Admin readback to confirm the chapter follow-through in the same Command Center loop.");
+    expect(source).toContain("Next review step");
   });
 
   it("keeps campaign SOP creation and publish controls visibly blocked inside the SOP surface", async () => {
@@ -448,7 +453,7 @@ describe("staff page", () => {
     const lineCount = source.split("\n").length;
 
     expect(lineCount).toBeGreaterThanOrEqual(2170);
-    expect(lineCount).toBeLessThanOrEqual(2400);
+    expect(lineCount).toBeLessThanOrEqual(2425);
     expect(source).toContain("type Screen = \"chapters\" | \"campaigns\" | \"events\" | \"ugc\" | \"reports\" | \"admin\" | \"best-practices\" | \"sops\";");
     expect(source).toContain("const NAV_ITEMS");
     expect(source).toContain("function PortfolioOverview");

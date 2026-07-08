@@ -18,7 +18,7 @@ import {
   UserCheck, TrendingDown, Circle, Wifi, WifiOff,
   RotateCcw, Info, MapPin, Hash, Camera, Mail,
   ChevronUp, Package, Link, Edit3, Copy, Trash2,
-  GitBranch
+  GitBranch, ArrowLeft
 } from "lucide-react";
 import {
   LibraryScreen as SOPLibraryScreen,
@@ -1611,8 +1611,22 @@ function ProofUGCQueue() {
 
             <div className="px-4 py-3 border-b border-border">
               <div className="text-xs font-bold text-foreground leading-snug">{selectedCard.linkTitle ?? selectedCard.assignment}</div>
-              <div className="mt-0.5 flex items-center justify-between gap-2 text-[10px]"><span className="min-w-0 truncate text-muted-foreground">{selectedCard.chapter} · {selectedCard.student}</span><a href="/staff?view=admin&adminView=audit" className="font-semibold text-primary hover:underline">Open Admin preview</a></div>
+              <div className="mt-0.5 text-[10px]"><span className="min-w-0 truncate text-muted-foreground">{selectedCard.chapter} · {selectedCard.student}</span></div>
               <div className="mt-1 text-[10px] leading-relaxed text-sky-700">Embedded Admin review keeps DS directory, audit logs, and blocked controls in the same command-center walkthrough.</div>
+              <div className="mt-2 flex flex-wrap gap-2">
+                <a
+                  href="/staff?view=admin&adminView=audit"
+                  className="inline-flex items-center gap-1 rounded-full border border-sky-200 bg-sky-50 px-2.5 py-1 text-[10px] font-semibold text-sky-700 hover:bg-sky-100"
+                >
+                  <Shield className="w-3 h-3" /> Open Admin preview
+                </a>
+                <a
+                  href="/staff?view=chapters"
+                  className="inline-flex items-center gap-1 rounded-full border border-border bg-slate-50 px-2.5 py-1 text-[10px] font-semibold text-slate-700 hover:bg-slate-100"
+                >
+                  <ArrowLeft className="w-3 h-3" /> Return to chapters
+                </a>
+              </div>
             </div>
 
             <div className="p-4 space-y-4">
@@ -1692,7 +1706,7 @@ function ProofUGCQueue() {
                   rows={3}
                 />
                 <p className="mt-1.5 text-[10px] leading-relaxed text-amber-700">
-                  Context drafting stays visible for review, but no coach note, moderation note, or caption save runs from this queue until Admin review approves the next step in the same command-center flow.
+                  Context drafting stays visible for review, but no coach note, moderation note, or caption save runs from this queue until Admin review approves the next step in the same command-center flow. Return to chapters after Admin readback to confirm the chapter follow-through in the same staff shell.
                 </p>
               </div>
             </div>
@@ -1704,6 +1718,20 @@ function ProofUGCQueue() {
             </div>
             <div className="text-sm font-semibold text-foreground mb-1">Select a story to review</div>
             <div className="text-xs text-muted-foreground leading-relaxed">Click any card to review consent and blocked actions, or open the Admin preview for DS audit readback without leaving the Staff Command Center.</div>
+            <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
+              <a
+                href="/staff?view=admin&adminView=audit"
+                className="inline-flex items-center gap-1 rounded-full border border-sky-200 bg-sky-50 px-2.5 py-1 text-[10px] font-semibold text-sky-700 hover:bg-sky-100"
+              >
+                <Shield className="w-3 h-3" /> Open Admin preview
+              </a>
+              <a
+                href="/staff?view=chapters"
+                className="inline-flex items-center gap-1 rounded-full border border-border bg-slate-50 px-2.5 py-1 text-[10px] font-semibold text-slate-700 hover:bg-slate-100"
+              >
+                <ArrowLeft className="w-3 h-3" /> Return to chapters
+              </a>
+            </div>
           </div>
         )}
 
@@ -1723,9 +1751,15 @@ function ProofUGCQueue() {
               </div>
             ))}
           </div>
-          <p className="mt-3 text-[10px] leading-relaxed text-muted-foreground">
-            Next step: review consent and blocked actions here, then open the Admin preview for DS audit readback before any publishing or coach-note approval request.
-          </p>
+          <div className="mt-3 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
+            <div className="text-[10px] font-semibold uppercase tracking-wider text-slate-600">Next review step</div>
+            <p className="mt-1 text-[10px] leading-relaxed text-muted-foreground">
+              Review consent and blocked actions here, then open the Admin preview for DS audit readback before any publishing or coach-note approval request.
+            </p>
+            <p className="mt-1 text-[10px] leading-relaxed text-muted-foreground">
+              Return to chapters after the Admin readback to confirm the chapter follow-through in the same Command Center loop.
+            </p>
+          </div>
         </div>
       </div>
     </div>
