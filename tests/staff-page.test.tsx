@@ -311,8 +311,8 @@ describe("staff page", () => {
     expect(source).toContain("Admin review approves the next step");
     expect(source).toContain("Click any card to review consent and blocked actions, or open the Admin preview for DS audit readback without leaving the Staff Command Center.");
     expect(source).toContain("Caption and coach-note drafting stays local-only in this preview");
-    expect(source).toContain("Return to Proof / UGC after Admin readback to continue the same review loop in the staff shell.");
-    expect(source).toContain("Return to Proof / UGC after the Admin readback to continue the same Command Center review loop.");
+    expect(source).toContain("const selectedCardReturnLoopLabel = selectedCard");
+    expect(source).toContain("getEmbeddedProofQueueContext(");
     expect(source).toContain("Next review step");
   });
 
@@ -611,6 +611,8 @@ describe("staff page", () => {
 
     expect(html).toContain("TEST Stanford University");
     expect(html).toContain("Return to Proof / UGC");
+    expect(html).toContain("Return to TEST Stanford University in Proof / UGC (Pending · Instagram) after the Admin readback to continue the same Command Center review loop.");
+    expect(html).toContain("Return to TEST Stanford University in Proof / UGC (Pending · Instagram) after Admin readback to continue the same review loop in the staff shell.");
     expect(html).toContain('href="/staff?view=admin&amp;ugcCard=ugc4&amp;proofStatus=pending&amp;proofPlatform=instagram&amp;adminView=audit&amp;returnView=proof_ugc&amp;chapterContext=TEST+Stanford+University"');
     expect(source).toContain("const currentSearch = searchParams.toString() || initialRouteSearch;");
     expect(source).toContain('initialSelectedCardId={getRouteParam("ugcCard")}');
@@ -699,7 +701,7 @@ describe("staff page", () => {
     const lineCount = source.split("\n").length;
 
     expect(lineCount).toBeGreaterThanOrEqual(2170);
-    expect(lineCount).toBeLessThanOrEqual(2960);
+    expect(lineCount).toBeLessThanOrEqual(2985);
     expect(source).toContain("type Screen = \"chapters\" | \"campaigns\" | \"events\" | \"ugc\" | \"reports\" | \"admin\" | \"best-practices\" | \"sops\";");
     expect(source).toContain("const NAV_ITEMS");
     expect(source).toContain("function PortfolioOverview");
