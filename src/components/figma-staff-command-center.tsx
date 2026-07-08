@@ -1456,6 +1456,14 @@ function ProofUGCQueue({
   const pendingCount = UGC_CARDS.filter(c => c.visibility === "pending").length;
   const genericProofQueueHref = buildStaffProofHref(pathname, currentSearch);
   const genericProofAdminHref = buildStaffAdminProofHref(pathname, currentSearch);
+  const proofQueueReturnLoopLabel = getStaffAdminReturnLoopLabel(
+    "Proof / UGC",
+    null,
+    getEmbeddedProofQueueContext(
+      statusFilter === "all" ? null : statusFilter,
+      platformFilter === "all" ? null : platformFilter,
+    ),
+  );
   const handleFilterChange = (
     nextStatusFilter: ProofQueueStatusFilter,
     nextPlatformFilter: Platform | "all",
@@ -1851,6 +1859,7 @@ function ProofUGCQueue({
               </a>
               <a
                 href={genericProofQueueHref}
+                title={`Return to ${proofQueueReturnLoopLabel} after the Admin readback to continue the same Command Center review loop.`}
                 className="inline-flex items-center gap-1 rounded-full border border-border bg-slate-50 px-2.5 py-1 text-[10px] font-semibold text-slate-700 hover:bg-slate-100"
               >
                 <ArrowLeft className="w-3 h-3" /> Return to Proof / UGC
@@ -1881,7 +1890,7 @@ function ProofUGCQueue({
               Review consent and blocked actions here, then open the Admin preview for DS audit readback before any publishing or coach-note approval request.
             </p>
             <p className="mt-1 text-[10px] leading-relaxed text-muted-foreground">
-              Return to Proof / UGC after the Admin readback to continue the same Command Center review loop.
+              {`Return to ${proofQueueReturnLoopLabel} after the Admin readback to continue the same Command Center review loop.`}
             </p>
           </div>
         </div>

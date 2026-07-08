@@ -303,6 +303,7 @@ describe("staff page", () => {
     expect(source).toContain("buildStaffProofHref(pathname, currentSearch, selectedCard.id)");
     expect(source).toContain("const genericProofAdminHref = buildStaffAdminProofHref(pathname, currentSearch);");
     expect(source).toContain("const genericProofQueueHref = buildStaffProofHref(pathname, currentSearch);");
+    expect(source).toContain("const proofQueueReturnLoopLabel = getStaffAdminReturnLoopLabel(");
     expect(source).toContain("const adminProofQueueContext =");
     expect(source).toContain('getEmbeddedProofQueueContext(getRouteParam("proofStatus"), getRouteParam("proofPlatform"))');
     expect(source).toContain("Open Admin preview");
@@ -337,6 +338,7 @@ describe("staff page", () => {
     expect(html).toContain("1 stories");
     expect(html).toContain("TEST Rush Month tabling");
     expect(html).not.toContain("TEST Bridge Video: Why I joined MEDLIFE");
+    expect(html).toContain("Return to Proof / UGC (Pending · Instagram) after the Admin readback to continue the same Command Center review loop.");
   });
 
   it("keeps campaign SOP creation and publish controls visibly blocked inside the SOP surface", async () => {
