@@ -549,6 +549,9 @@ export function ChapterDetailDrawer({
                 </div>
               ))}
             </div>
+            <div className="border-t border-border bg-slate-50/80 px-4 py-2 text-[10px] leading-relaxed text-slate-600">
+              Event, RSVP, attendance, and points figures stay read-only in this chapter drawer. Use the embedded Admin preview for DS audit readback before requesting any attendance correction, point adjustment, or event-status write.
+            </div>
           </div>
 
           {/* Post-Event NPS */}
