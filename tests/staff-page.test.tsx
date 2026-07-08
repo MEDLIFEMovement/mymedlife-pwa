@@ -370,7 +370,9 @@ describe("staff page", () => {
 
     expect(source).toContain('href="/staff?view=admin&adminView=audit&returnView=proof_ugc"');
     expect(source).toContain("resolveStaffAdminReturnScreen");
-    expect(source).toContain('return screen === "ugc" ? "Proof / UGC" : "chapters";');
+    expect(source).toContain('if (screen === "ugc") return "Proof / UGC";');
+    expect(source).toContain('return chapterId ? "this chapter" : "chapters";');
+    expect(source).toContain("buildStaffChapterHref");
   });
 
   it("keeps chapter-detail NPS controls preview-only instead of implying a live send", () => {
@@ -425,8 +427,8 @@ describe("staff page", () => {
     expect(html).toContain("Survey sending is blocked in this preview");
     expect(html).toContain("Coach notes stay preview-only in this chapter drawer");
     expect(html).toContain("Next step: open the Admin preview for DS directory readback, audit, and blocked-control follow-through before requesting any write path.");
-    expect(html).toContain("Return to chapters in the same Command Center loop after the Admin readback closes.");
-    expect(html).toContain('href="/staff?view=admin&amp;adminView=chapters"');
+    expect(html).toContain("Return to this chapter in the same Command Center loop after the Admin readback closes.");
+    expect(html).toContain('href="/staff?view=admin&amp;adminView=chapters&amp;returnView=chapters&amp;chapter=chapter-test"');
     expect(html).toContain("Open Admin preview");
     expect(html).toContain("Return to chapters");
     expect(html).toContain("Return to the chapters overview after this preview readback");
@@ -464,7 +466,7 @@ describe("staff page", () => {
     const lineCount = source.split("\n").length;
 
     expect(lineCount).toBeGreaterThanOrEqual(2170);
-    expect(lineCount).toBeLessThanOrEqual(2465);
+    expect(lineCount).toBeLessThanOrEqual(2525);
     expect(source).toContain("type Screen = \"chapters\" | \"campaigns\" | \"events\" | \"ugc\" | \"reports\" | \"admin\" | \"best-practices\" | \"sops\";");
     expect(source).toContain("const NAV_ITEMS");
     expect(source).toContain("function PortfolioOverview");
