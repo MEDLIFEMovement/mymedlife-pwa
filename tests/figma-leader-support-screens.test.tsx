@@ -36,9 +36,9 @@ describe("copied Figma leader support screens", () => {
     const html = renderToStaticMarkup(<TrainingScreen />);
 
     expect(html).toContain("Leadership &amp; Resources Hub");
-    expect(html).toContain("Videos, presentations, and external resources");
+    expect(html).toContain("TEST leadership-development review hub.");
     expect(html).toContain("TEST training preview.");
-    expect(html).toContain("Preview Resource Intake");
+    expect(html).toContain("Preview Resource Review");
     expect(html).toContain("All (16)");
     expect(html).toContain("Videos (6)");
     expect(html).toContain("Presentations (5)");
@@ -46,9 +46,9 @@ describe("copied Figma leader support screens", () => {
     expect(html).toContain("TEST Featured Resources");
     expect(html).toContain("TEST What Is Servant Leadership?");
     expect(html).toContain("TEST MEDLIFE Chapter Leadership Guide");
-    expect(html).toContain("Preview Video");
-    expect(html).toContain("Preview Deck");
-    expect(html).toContain("Preview Link");
+    expect(html).toContain("Preview Video Review");
+    expect(html).toContain("Preview Deck Review");
+    expect(html).toContain("Preview Link Review");
     expect(html).toContain("Resource publishing is blocked in this preview until leadership-content approval is complete.");
     expect(html).toContain("External resource opens are blocked in this preview until leadership-content approval is complete.");
     expect(html).toContain("Video playback is blocked in this preview.");

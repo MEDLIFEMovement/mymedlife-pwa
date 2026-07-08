@@ -269,10 +269,10 @@ export function TrainingScreen() {
         <div>
           <h1 className="text-2xl font-black text-slate-900">Leadership & Resources Hub</h1>
           <p className="text-sm text-slate-500 mt-1">
-            Videos, presentations, and external resources to develop MEDLIFE leaders.
+            TEST leadership-development review hub. Videos, presentations, and external resources stay visible here for chapter review, but they do not open, publish, or share live from this shell.
           </p>
         </div>
-        <Btn variant="primary" blockedTitle="Resource publishing is blocked in this preview until leadership-content approval is complete."><Plus size={11}/>Preview Resource Intake</Btn>
+        <Btn variant="primary" blockedTitle="Resource publishing is blocked in this preview until leadership-content approval is complete."><Plus size={11}/>Preview Resource Review</Btn>
       </div>
 
       <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3">
@@ -406,7 +406,7 @@ function ResourceCard({ resource: r, expanded, onToggle }: { resource: TrainingR
               title="External resource opens are blocked in this preview until leadership-content approval is complete."
               className="flex-1 flex items-center justify-center gap-1.5 text-xs font-bold py-2 rounded-xl text-white cursor-pointer hover:opacity-90 transition-opacity disabled:opacity-70 disabled:cursor-not-allowed"
               style={{ background: meta.color }}>
-              <ExternalLink size={11}/>Preview Link
+              <ExternalLink size={11}/>Preview Link Review
             </button>
           ) : (
             <button
@@ -416,7 +416,7 @@ function ResourceCard({ resource: r, expanded, onToggle }: { resource: TrainingR
               className="flex-1 flex items-center justify-center gap-1.5 text-xs font-bold py-2 rounded-xl text-white cursor-pointer hover:opacity-90 transition-opacity"
               style={{ background: meta.color }}>
               {r.type==="video" ? <Play size={11}/> : <Upload size={11}/>}
-              {r.type==="video" ? "Preview Video" : "Preview Deck"}
+              {r.type==="video" ? "Preview Video Review" : "Preview Deck Review"}
             </button>
           )}
           <button

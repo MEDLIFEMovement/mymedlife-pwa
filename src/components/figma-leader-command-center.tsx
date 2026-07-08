@@ -2958,15 +2958,15 @@ function ValuesScreen() {
         <div>
           <h1 className="text-2xl font-black text-slate-900">MEDLIFE Values</h1>
           <p className="text-sm text-slate-500 mt-1">
-            TEST values preview. Three values guide every MEDLIFE leader, but no interview, nomination, promotion, or approval decision becomes live from this shell.
+            TEST values readiness preview. Three values guide every MEDLIFE leader, but no interview, nomination, promotion, or approval decision becomes live from this shell.
           </p>
         </div>
         <Btn
           variant="primary"
-          blockedTitle="Values interview scheduling is blocked in this preview until the approved leadership-review workflow exists."
+          blockedTitle="Values readiness review is blocked in this preview until the approved leadership-review workflow exists."
           className="shadow-sm"
         >
-          <MessageSquare size={14}/>Preview Values Interview
+          <MessageSquare size={14}/>Preview Values Readiness
         </Btn>
       </div>
 
@@ -3000,10 +3000,10 @@ function ValuesScreen() {
               <span className="text-xs text-slate-500">Values alignment requires a human conversation — not an automatic score.</span>
               <Btn
                 variant="secondary"
-                blockedTitle="Interview scheduling is blocked in this preview until the approved leadership-review workflow exists."
+                blockedTitle="Values readiness scheduling is blocked in this preview until the approved leadership-review workflow exists."
                 className="!text-white !border-transparent"
               >
-                <MessageSquare size={11}/>Preview Interview Scheduling
+                <MessageSquare size={11}/>Preview Readiness Scheduling
               </Btn>
             </div>
           </div>
@@ -3014,17 +3014,17 @@ function ValuesScreen() {
       <div className="bg-[#07192E] rounded-2xl p-6 flex items-start gap-4">
         <BookOpen size={20} className="text-blue-300 mt-0.5 shrink-0"/>
         <div>
-          <div className="font-bold text-white text-sm mb-1">Values Alignment Interview</div>
+          <div className="font-bold text-white text-sm mb-1">Values Readiness Interview</div>
           <p className="text-xs text-blue-200 leading-relaxed">
             The Values Alignment Interview is a structured conversation between a chapter leader and a candidate for Chair or E-Board. It is not a test — it is a chance to understand who someone is, what drives them, and whether they are ready to lead with character, fire, and growth. Use this preview guidance to understand the review standard while the actual scheduling and submission workflow stays blocked.
           </p>
           <p className="text-[11px] text-blue-300 mt-2">No live invite, contact sync, form submission, or provider handoff is sent from this preview.</p>
           <Btn
             variant="ghost"
-            blockedTitle="The Values Alignment Interview form is blocked in this preview until the approved leadership-review workflow exists."
+            blockedTitle="The values readiness interview form is blocked in this preview until the approved leadership-review workflow exists."
             className="mt-3 !px-0 !py-0 !border-0 !bg-transparent !text-blue-300 hover:!bg-transparent hover:!text-white"
           >
-            <ExternalLink size={11}/>Preview Interview Form<span className="sr-only"> Preview Values Interview Form</span> →
+            <ExternalLink size={11}/>Preview Readiness Form<span className="sr-only"> Preview Values Readiness Form</span> →
           </Btn>
         </div>
       </div>
@@ -3237,7 +3237,7 @@ function LeadersScreen({
         </div>
         <div className="flex gap-2">
           <Btn variant="secondary" onClick={() => onNavigate("succession")}><GitBranch size={11}/>Preview Succession Review</Btn>
-          <Btn variant="secondary" onClick={() => onNavigate("values")}><Star size={11}/>Preview Values Review</Btn>
+          <Btn variant="secondary" onClick={() => onNavigate("values")}><Star size={11}/>Preview Values Readiness</Btn>
         </div>
       </div>
 

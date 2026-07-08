@@ -278,22 +278,22 @@ describe("leader page", () => {
     }
 
     if (view === "values") {
-      expect(html).toContain("Preview Values Interview");
-      expect(html).toContain("Preview Interview Scheduling");
-      expect(html).toContain("Preview Interview Form");
-      expect(html).toContain("TEST values preview.");
+      expect(html).toContain("Preview Values Readiness");
+      expect(html).toContain("Preview Readiness Scheduling");
+      expect(html).toContain("Preview Readiness Form");
+      expect(html).toContain("TEST values readiness preview.");
     }
 
     if (view === "training") {
-      expect(html).toContain("Preview Resource Intake");
-      expect(html).toContain("Preview Video");
-      expect(html).toContain("Preview Deck");
+      expect(html).toContain("Preview Resource Review");
+      expect(html).toContain("Preview Video Review");
+      expect(html).toContain("Preview Deck Review");
     }
 
     if (view === "leaders") {
       expect(html).toContain("TEST leadership roster preview.");
       expect(html).toContain("Preview Succession Review");
-      expect(html).toContain("Preview Values Review");
+      expect(html).toContain("Preview Values Readiness");
     }
   });
 
@@ -367,10 +367,10 @@ describe("leader page", () => {
         }),
       }),
     );
-    expect(valuesHtml).toContain("TEST values preview.");
-    expect(valuesHtml).toContain("Values interview scheduling is blocked in this preview until the approved leadership-review workflow exists.");
-    expect(valuesHtml).toContain("Interview scheduling is blocked in this preview until the approved leadership-review workflow exists.");
-    expect(valuesHtml).toContain("The Values Alignment Interview form is blocked in this preview until the approved leadership-review workflow exists.");
+    expect(valuesHtml).toContain("TEST values readiness preview.");
+    expect(valuesHtml).toContain("Values readiness review is blocked in this preview until the approved leadership-review workflow exists.");
+    expect(valuesHtml).toContain("Values readiness scheduling is blocked in this preview until the approved leadership-review workflow exists.");
+    expect(valuesHtml).toContain("The values readiness interview form is blocked in this preview until the approved leadership-review workflow exists.");
 
     const successionHtml = renderToStaticMarkup(
       await LeaderPage({
@@ -394,7 +394,7 @@ describe("leader page", () => {
     expect(trainingHtml).toContain("TEST Featured Resources");
     expect(trainingHtml).toContain("TEST How to Run Your First Committee as Chair");
     expect(trainingHtml).toContain("TEST MEDLIFE Chapter Leadership Guide — Full Onboarding");
-    expect(trainingHtml).toContain("Preview Link");
+    expect(trainingHtml).toContain("Preview Link Review");
     expect(trainingHtml).toContain("External resource opens are blocked in this preview until leadership-content approval is complete.");
 
     const storiesHtml = renderToStaticMarkup(
@@ -490,20 +490,20 @@ describe("leader page", () => {
     expect(source).toContain("TEST succession preview. Candidate planning stays route-backed for review, but no nomination, transition, promotion, or notify flow goes live from this shell.");
     expect(source).toContain("TEST Appoint Member Engagement chair");
     expect(source).toContain("TEST Full E-Board transition complete");
-    expect(source).toContain("TEST values preview. Three values guide every MEDLIFE leader, but no interview, nomination, promotion, or approval decision becomes live from this shell.");
+    expect(source).toContain("TEST values readiness preview. Three values guide every MEDLIFE leader, but no interview, nomination, promotion, or approval decision becomes live from this shell.");
     expect(source).not.toContain("Activate Transition Plan");
     expect(source).toContain("Preview Promotion");
     expect(source).toContain("Preview Candidate Nomination");
     expect(source).toContain("Preview Transition Plan");
-    expect(source).toContain("Preview Values Interview");
-    expect(source).toContain("Preview Interview Scheduling");
-    expect(source).toContain("Preview Values Interview Form");
+    expect(source).toContain("Preview Values Readiness");
+    expect(source).toContain("Preview Readiness Scheduling");
+    expect(source).toContain("Preview Values Readiness Form");
     expect(source).toContain("No live invite, contact sync, form submission, or provider handoff is sent from this preview.");
     expect(source).toContain("toTestLabel");
     expect(source).toContain("TEST leadership roster preview.");
     expect(source).toContain("TEST leader roster preview only.");
     expect(source).toContain("Preview Succession Review");
-    expect(source).toContain("Preview Values Review");
+    expect(source).toContain("Preview Values Readiness");
     expect(source).toContain("Preview vacancy only");
     expect(source).toContain("No chair assigned in TEST preview");
     expect(source).toContain("Preview Review Actions");
@@ -548,13 +548,17 @@ describe("leader page", () => {
 
     expect(source).toContain("Leadership & Resources Hub");
     expect(source).toContain("TEST training preview. Sample leadership-development resources stay visible for review, but no publishing, playback, deck viewing, external opens, or chapter sharing is live.");
+    expect(source).toContain("TEST leadership-development review hub. Videos, presentations, and external resources stay visible here for chapter review, but they do not open, publish, or share live from this shell.");
     expect(source).toContain("TEST Featured Resources");
     expect(source).toContain("All TEST Resources");
     expect(source).toContain("TEST What Is Servant Leadership? A MEDLIFE Framework");
     expect(source).toContain("TEST How to Run Your First Committee as Chair");
     expect(source).toContain("TEST MEDLIFE Chapter Leadership Guide — Full Onboarding");
     expect(source).toContain("TEST AshokaU — Social Innovation Leadership Resources");
-    expect(source).toContain("Preview Link");
+    expect(source).toContain("Preview Resource Review");
+    expect(source).toContain("Preview Link Review");
+    expect(source).toContain("Preview Video Review");
+    expect(source).toContain("Preview Deck Review");
     expect(source).toContain("External resource opens are blocked in this preview until leadership-content approval is complete.");
     expect(source).not.toContain('href={r.url}');
   });
