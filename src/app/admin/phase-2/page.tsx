@@ -27,7 +27,7 @@ export default async function AdminPhase2Page() {
           title="Phase 2 review is hidden for this role."
           message="This surface is for admin, DS Admin, and Super Admin review only. Chapter, coach, and member roles should stay on their operating routes."
           nextHref="/admin"
-          nextLabel="Back to Admin"
+          nextLabel="Return to Command Center"
         />
       ) : (
         <>
