@@ -404,4 +404,152 @@ describe("member stories and profile pages", () => {
     expect(html).not.toContain("member.a@mymedlife.test");
     expect(html).not.toContain("Profile Details");
   });
+
+  it("keeps custom designation labels and single-name avatars inside the mobile profile shell", () => {
+    const html = renderToStaticMarkup(
+      <MemberProfilePanel
+        chapterName="Sandbox Chapter"
+        displayName="Avery"
+        workspace={{
+          title: "Your myMEDLIFE profile",
+          summary: "Preview profile",
+          profileLabel: "Preview Captain",
+          nextStep: {
+            label: "Open events",
+            href: "/app/events?source=profile",
+            detail: "Preview next step",
+          },
+          identityRows: [],
+          scopeRows: [],
+          futureStructuredEvents: [],
+          safetyNotes: [],
+          counts: {
+            chapterRoles: 1,
+            staffRoles: 0,
+            chapterScopes: 1,
+            coachPortfolioChapters: 0,
+            profileWritesExpected: 0,
+            membershipWritesExpected: 0,
+            roleWritesExpected: 0,
+            externalWritesExpected: 0,
+          },
+        }}
+        studentHome={{
+          greeting: "Hi, TEST Avery",
+          chapterName: "Sandbox Chapter",
+          chapterMeta: "General Member • Sandbox",
+          primaryEvent: null,
+          pointsBalance: "15 pts",
+          pointsDetail: "Preview rank",
+          pointsRankLabel: "#7",
+          pointsTotal: 15,
+          attendanceStatusLabel: "Attendance pending",
+          recognition: "Preview only",
+          recentHistory: [],
+          chapterCard: {
+            title: "Sandbox Chapter",
+            detail: "Profile preview",
+            profileHref: "/profile",
+          },
+          travelerHref: null,
+        }}
+        recognition={{
+          canReadRecognition: true,
+          title: "Recognition",
+          summary: "Preview recognition",
+          leaderboard: [],
+          impacts: [],
+          topStats: [],
+          campaignPoints: [],
+          badges: [],
+          recentApprovedActions: [],
+          explainer: {
+            title: "How points work",
+            body: "Preview only",
+            ctaLabel: "See how to earn more points",
+            ctaHref: "/app/events?source=profile",
+          },
+          pointsLedgerPosture: "mock_read_only",
+        }}
+      />,
+    );
+
+    expect(html).toContain("TEST Avery");
+    expect(html).toContain("TEST Sandbox Chapter");
+    expect(html).toContain(">Preview Captain<");
+    expect(html).toContain(">A<");
+  });
+
+  it("falls back to a TEST monogram when the preview profile name is blank", () => {
+    const html = renderToStaticMarkup(
+      <MemberProfilePanel
+        chapterName="Sandbox Chapter"
+        displayName=""
+        workspace={{
+          title: "Your myMEDLIFE profile",
+          summary: "Preview profile",
+          profileLabel: "General Member",
+          nextStep: {
+            label: "Open events",
+            href: "/app/events?source=profile",
+            detail: "Preview next step",
+          },
+          identityRows: [],
+          scopeRows: [],
+          futureStructuredEvents: [],
+          safetyNotes: [],
+          counts: {
+            chapterRoles: 1,
+            staffRoles: 0,
+            chapterScopes: 1,
+            coachPortfolioChapters: 0,
+            profileWritesExpected: 0,
+            membershipWritesExpected: 0,
+            roleWritesExpected: 0,
+            externalWritesExpected: 0,
+          },
+        }}
+        studentHome={{
+          greeting: "Hi, TEST member",
+          chapterName: "Sandbox Chapter",
+          chapterMeta: "General Member • Sandbox",
+          primaryEvent: null,
+          pointsBalance: "15 pts",
+          pointsDetail: "Preview rank",
+          pointsRankLabel: "#7",
+          pointsTotal: 15,
+          attendanceStatusLabel: "Attendance pending",
+          recognition: "Preview only",
+          recentHistory: [],
+          chapterCard: {
+            title: "Sandbox Chapter",
+            detail: "Profile preview",
+            profileHref: "/profile",
+          },
+          travelerHref: null,
+        }}
+        recognition={{
+          canReadRecognition: true,
+          title: "Recognition",
+          summary: "Preview recognition",
+          leaderboard: [],
+          impacts: [],
+          topStats: [],
+          campaignPoints: [],
+          badges: [],
+          recentApprovedActions: [],
+          explainer: {
+            title: "How points work",
+            body: "Preview only",
+            ctaLabel: "See how to earn more points",
+            ctaHref: "/app/events?source=profile",
+          },
+          pointsLedgerPosture: "mock_read_only",
+        }}
+      />,
+    );
+
+    expect(html).toContain(">T<");
+    expect(html).toContain(">TEST </h1>");
+  });
 });
