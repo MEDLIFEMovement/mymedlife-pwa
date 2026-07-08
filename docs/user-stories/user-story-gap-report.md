@@ -10,6 +10,10 @@ Supporting delivery artifact: `docs/user-stories/delivery-backlog.md` decomposes
 the master inventory into PR-sized UI, data/safety, QA, rollout-evidence, and
 planning slices.
 
+Repo-truth checkpoint: latest source refresh compared this package against
+`/Users/codex/Documents/Codex/2026-07-06/new-chat/mymedlife-staff-admin` on
+`origin/main` commit `12dd983` (`Add MED-512 staff admin review packet (#461)`).
+
 ## Compact Backlog Table
 
 | ID | Persona | Route / surface | Current status | Main blocker |
