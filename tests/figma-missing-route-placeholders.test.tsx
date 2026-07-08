@@ -192,7 +192,7 @@ describe("Figma missing route placeholders", () => {
     const { FigmaAdminPanel } = await import("@/components/figma-admin-panel");
 
     mockPathname = "/staff";
-    mockSearchParams = new URLSearchParams("view=admin&adminView=settings");
+    mockSearchParams = new URLSearchParams("view=admin&adminView=settings&chapter=chapter-test&chapterContext=TEST%20Boston%20College");
 
     const html = renderToStaticMarkup(
       <FigmaAdminPanel initialActive="settings" onBack={() => {}} embeddedBackLabel="chapters" />,
@@ -203,6 +203,8 @@ describe("Figma missing route placeholders", () => {
     expect(html).toContain("Chapter review handoff");
     expect(html).toContain("Embedded Chapter Review");
     expect(html).toContain("Chapter review");
+    expect(html).toContain("Chapter context: TEST Boston College");
+    expect(html).toContain("Return with Command Center after this chapter review pass for TEST Boston College");
     expect(html).toContain("Return with Command Center after this chapter review pass");
     expect(html).toContain("Overview");
     expect(html).toContain("Users");
