@@ -3580,7 +3580,12 @@ export function FigmaMemberMobileHome({
         : ["events", "event-detail", "rsvp-confirm", "checkin"].includes(screen)
           ? "events"
           : "home";
-  const profileHref = screen === "home" ? "/profile?source=home" : "/profile";
+  const profileHref =
+    screen === "home"
+      ? "/profile?source=home"
+      : screen === "points"
+        ? "/profile?source=points"
+        : "/profile";
   const bottomNavHrefOverrides = getMemberBottomNavHrefOverrides({
     screen,
     pointsSource,

@@ -21,8 +21,12 @@ type ProfilePageProps = {
   }>;
 };
 
-function getProfileSource(source?: string): "home" | null {
-  return source === "home" ? "home" : null;
+function getProfileSource(source?: string): "home" | "points" | null {
+  if (source === "home" || source === "points") {
+    return source;
+  }
+
+  return null;
 }
 
 export default async function ProfilePage(props: ProfilePageProps) {
@@ -33,6 +37,7 @@ export default async function ProfilePage(props: ProfilePageProps) {
   const resolvedSearchParams: { source?: string } = await (
     props.searchParams ?? Promise.resolve({})
   );
+  const profileSource = getProfileSource(resolvedSearchParams.source);
   const workspace = getProfileWorkspace(actor, data);
   const isMemberProfile = canAccessMemberWorkspace(actor);
   const studentHome = isMemberProfile
@@ -58,7 +63,7 @@ export default async function ProfilePage(props: ProfilePageProps) {
             <MemberProfilePanel
               chapterName={studentHome.chapterName}
               displayName={actor.user.displayName}
-              entrySource={getProfileSource(resolvedSearchParams.source)}
+              entrySource={profileSource}
               isPreviewMode={isPreviewWorkspaceAccess(actor, "student_app")}
               workspace={workspace}
               studentHome={studentHome}
@@ -66,7 +71,16 @@ export default async function ProfilePage(props: ProfilePageProps) {
             />
           ) : null}
         </div>
-        <MemberBottomNav activeTab="profile" />
+        <MemberBottomNav
+          activeTab="profile"
+          hrefOverrides={{
+            events: "/app/events?source=profile",
+            points:
+              profileSource === "points"
+                ? "/app/points?source=points"
+                : "/app/points?source=profile",
+          }}
+        />
       </div>
     </main>
   );

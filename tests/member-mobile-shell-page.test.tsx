@@ -262,6 +262,23 @@ describe("member mobile shell routes", () => {
     expect(getBottomNavHtml(html)).toContain('href="/app/events?source=profile"');
   });
 
+  it("keeps the member points route connected to the profile walkthrough when opened from points", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("member.a@mymedlife.test"),
+    );
+
+    const { default: PointsPage } = await import("@/app/app/points/page");
+    const html = renderToStaticMarkup(
+      await PointsPage({
+        searchParams: Promise.resolve({ source: "points" }),
+      }),
+    );
+
+    expect(html).toContain('href="/profile?source=points"');
+  });
+
   it("returns the member points route to the exact TEST event detail when the home walkthrough opens a specific event", async () => {
     const actorModule = await import("@/services/local-actor-context");
 
