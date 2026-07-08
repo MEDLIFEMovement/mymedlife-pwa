@@ -461,7 +461,7 @@ export function ChapterDetailDrawer({ chapter, onClose }: { chapter: Chapter; on
             </div>
             <h2 className="text-base font-bold text-foreground">{chapter.name}</h2>
             <div className="text-xs text-muted-foreground">{chapter.school}</div>
-            <div className="mt-1 text-[11px] text-amber-700">Preview readback only - no chapter writes, owner changes, or outreach sends run from this drawer. Use the Admin tab for DS directory and audit review.</div>
+            <div className="mt-1 text-[11px] text-amber-700">Preview readback only - no chapter writes, owner changes, or outreach sends run from this drawer. Use the Admin preview for DS directory and audit review.</div>
             <div className="flex items-center gap-3 mt-1.5 text-xs text-muted-foreground">
               <span className="flex items-center gap-1"><Globe className="w-3 h-3" />{chapter.country}</span>
               <span className="flex items-center gap-1"><Users className="w-3 h-3" />{chapter.activeMembers} members</span>
@@ -628,7 +628,7 @@ export function ChapterDetailDrawer({ chapter, onClose }: { chapter: Chapter; on
               rows={3}
             />
             <p className="mt-2 text-[10px] leading-relaxed text-amber-700">
-              Chapter support notes stay visible for coach review. Next step: use Admin review for DS directory, audit, and blocked-control follow-up before requesting any write path.
+              Chapter support notes stay visible for coach review. Next step: open the Admin preview for DS directory readback, audit, and blocked-control follow-through before requesting any write path.
             </p>
           </div>
         </div>
@@ -647,11 +647,11 @@ export function ChapterDetailDrawer({ chapter, onClose }: { chapter: Chapter; on
           </button>
           <a
             href="/staff?view=admin&adminView=chapters"
-            title="Open the embedded Admin preview for DS directory and audit review"
+            title="Open the embedded Admin preview for DS directory readback and audit review"
             className="flex items-center gap-1.5 rounded-lg bg-muted px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted/70"
           >
             <Shield className="w-3.5 h-3.5" />
-            <span>Admin review</span>
+            <span>Open Admin preview</span>
           </a>
         </div>
       </div>
