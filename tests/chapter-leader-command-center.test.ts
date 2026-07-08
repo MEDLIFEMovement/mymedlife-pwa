@@ -217,6 +217,53 @@ describe("chapter leader command center", () => {
     expect(markup.match(/style=\"width:0%\"/g)?.length).toBeGreaterThanOrEqual(2);
   });
 
+  it("keeps health posture and committee status fallbacks visible when sample formatting is missing", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data);
+
+    const healthyMarkup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, {
+        commandCenter: {
+          ...commandCenter,
+          sampleLabel: null,
+          healthTone: "green",
+        },
+      }),
+    );
+    expect(healthyMarkup).toContain("Healthy chapter posture");
+
+    const supportMarkup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, {
+        commandCenter: {
+          ...commandCenter,
+          sampleLabel: null,
+          healthTone: "red",
+        },
+      }),
+    );
+    expect(supportMarkup).toContain("Needs support chapter posture");
+
+    const pausedCommitteeMarkup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, {
+        commandCenter: {
+          ...commandCenter,
+          sampleLabel: null,
+          healthTone: "red",
+          selectedView: "committees",
+          committees: commandCenter.committees.map((committee, index) =>
+            index === 0
+              ? {
+                  ...committee,
+                  operatingStatusLabel: "Paused",
+                }
+              : committee,
+          ),
+        },
+      }),
+    );
+    expect(pausedCommitteeMarkup).toContain("Paused");
+  });
+
   it("keeps existing TEST prefixes visible without doubling them in the overview shell", () => {
     const actor = getMockLocalActorContext("leader.a@mymedlife.test");
     const commandCenter = getChapterLeaderCommandCenter(actor, data);
