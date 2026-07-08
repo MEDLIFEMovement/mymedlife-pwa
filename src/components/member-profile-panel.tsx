@@ -17,7 +17,7 @@ import type { ReactNode } from "react";
 type MemberProfilePanelProps = {
   chapterName: string;
   displayName: string;
-  entrySource?: "home" | null;
+  entrySource?: "home" | "points" | null;
   isPreviewMode?: boolean;
   workspace: ProfileWorkspace;
   studentHome: MvpMemberHome;
@@ -47,6 +47,24 @@ export function MemberProfilePanel({
   const taskCount =
     recognition.selectedMember?.completedActions ?? recognition.recentApprovedActions.length;
   const recentActivity = getRecentActivity(recognition, studentHome);
+  const continuityCard =
+    entrySource === "home"
+      ? {
+          eyebrow: "Opened from the TEST home walkthrough",
+          body:
+            "This profile stays inside the student shell so you can review your TEST identity, points, and next event context without falling out of the member app.",
+          href: "/app",
+          cta: "Back to Home",
+        }
+      : entrySource === "points"
+        ? {
+            eyebrow: "Opened from Points & Recognition",
+            body:
+              "This profile stays inside the student shell so you can review your TEST identity and chapter standing without breaking the points-to-profile member loop.",
+            href: "/app/points?source=points",
+            cta: "Back to Points",
+          }
+        : null;
 
   return (
     <section className="bg-white pb-5">
@@ -115,21 +133,20 @@ export function MemberProfilePanel({
         </div>
 
         <div className="space-y-5 px-4 pb-4 pt-5">
-          {entrySource === "home" ? (
+          {continuityCard ? (
             <SurfacePanel className="rounded-[1.6rem] border border-[#bfdbfe] bg-[#eff6ff] p-4">
               <p className="text-xs font-bold uppercase tracking-wide text-[#1d4ed8]">
-                Opened from the TEST home walkthrough
+                {continuityCard.eyebrow}
               </p>
               <p className="mt-2 text-sm leading-6 text-slate-700">
-                This profile stays inside the student shell so you can review your TEST identity,
-                points, and next event context without falling out of the member app.
+                {continuityCard.body}
               </p>
               <a
-                href="/app"
+                href={continuityCard.href}
                 className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-[#2563eb]"
               >
                 <ChevronLeft size={14} />
-                Back to Home
+                {continuityCard.cta}
               </a>
             </SurfacePanel>
           ) : null}

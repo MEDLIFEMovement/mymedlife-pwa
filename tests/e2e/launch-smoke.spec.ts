@@ -88,7 +88,7 @@ test.describe("myMEDLIFE launch route smoke", () => {
 
     await page.goto("/app/points");
     await page.getByRole("link", { name: "Profile", exact: true }).click();
-    await expect(page).toHaveURL(/\/profile$/);
+    await expect(page).toHaveURL(/\/profile\?source=points$/);
     await expect(page.getByRole("heading", { name: "TEST Sofia Alvarez" })).toBeVisible();
   });
 

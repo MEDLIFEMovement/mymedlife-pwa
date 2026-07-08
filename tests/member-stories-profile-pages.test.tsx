@@ -171,7 +171,7 @@ describe("member stories and profile pages", () => {
     expect(html).not.toContain("Profile Details");
     expect(html).not.toContain("Next chapter moment");
     expect(html).toContain('href="/app/stories"');
-    expect(html).toContain('href="/app/events"');
+    expect(html).toContain('href="/app/events?source=profile"');
     expect(html).toContain('href="/app/points?source=profile"');
     expect(html).toContain('href="/profile"');
     expect(html).toContain('aria-current="page"');
@@ -201,6 +201,31 @@ describe("member stories and profile pages", () => {
     expect(html).toContain("This profile stays inside the student shell");
     expect(html).toContain("Back to Home");
     expect(html).toContain('href="/app"');
+  });
+
+  it("keeps points-to-profile continuity inside the mobile member shell", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const dataModule = await import("@/services/read-only-app-data");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("member.a@mymedlife.test"),
+    );
+    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
+      getMockReadOnlyAppData("Testing member profile points continuity."),
+    );
+
+    const { default: ProfilePage } = await import("@/app/profile/page");
+    const html = renderToStaticMarkup(
+      await ProfilePage({
+        searchParams: Promise.resolve({ source: "points" }),
+      }),
+    );
+
+    expect(html).toContain("Opened from Points &amp; Recognition");
+    expect(html).toContain("without breaking the points-to-profile member loop");
+    expect(html).toContain("Back to Points");
+    expect(html).toContain('href="/app/points?source=points"');
+    expect(html).toContain('href="/app/events?source=profile"');
   });
 
   it("redirects signed-out actors to login before rendering the member profile shell", async () => {
