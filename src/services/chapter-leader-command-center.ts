@@ -27,6 +27,7 @@ import type { LeaderboardRow } from "@/shared/types/rush-month-dashboard";
 export type ChapterLeaderCommandCenterView =
   | "overview"
   | "leaderboard"
+  | "leaders"
   | "members"
   | "member_profile"
   | "committees"
@@ -34,6 +35,8 @@ export type ChapterLeaderCommandCenterView =
   | "impact"
   | "bridge_videos"
   | "succession"
+  | "values"
+  | "training"
   | "feed"
   | "feed_analytics";
 
@@ -657,6 +660,7 @@ const mockLeaderProfileId = "member-sofia-profile";
 const commandCenterViewLabels: Record<ChapterLeaderCommandCenterView, string> = {
   overview: "Chapter Home",
   leaderboard: "Chapter Leaderboard",
+  leaders: "Current Leaders",
   members: "Member Leaderboard",
   member_profile: "Member Profile",
   committees: "Event Committees",
@@ -664,6 +668,8 @@ const commandCenterViewLabels: Record<ChapterLeaderCommandCenterView, string> = 
   impact: "Impact",
   bridge_videos: "Bridge Videos",
   succession: "Succession",
+  values: "Values",
+  training: "Leadership Training",
   feed: "Feed Analytics",
   feed_analytics: "Feed Analytics",
 };
@@ -920,7 +926,7 @@ const mockPipelineRowOverrides: Record<string, MockPipelineRowOverride> = {
 const commandCenterNavGroups: ChapterLeaderCommandCenterNavGroup[] = [
   {
     label: "Chapter",
-    viewKeys: ["overview", "leaderboard"],
+    viewKeys: ["overview", "leaderboard", "feed_analytics"],
   },
   {
     label: "Members",
@@ -936,7 +942,7 @@ const commandCenterNavGroups: ChapterLeaderCommandCenterNavGroup[] = [
   },
   {
     label: "Leadership",
-    viewKeys: ["succession", "feed_analytics"],
+    viewKeys: ["leaders", "succession", "values", "training"],
   },
 ];
 
@@ -1428,7 +1434,10 @@ export function getChapterLeaderCommandCenter(
       ? selectedMember.id
       : selectedView === "members" ||
           selectedView === "member_profile" ||
-          selectedView === "succession"
+          selectedView === "leaders" ||
+          selectedView === "succession" ||
+          selectedView === "values" ||
+          selectedView === "training"
         ? selectedMember?.id ?? successionCandidates[0]?.id ?? null
         : null;
   const quickActionSource =
@@ -2357,6 +2366,7 @@ export function parseChapterLeaderCommandCenterView(
 ): ChapterLeaderCommandCenterView {
   switch (value) {
     case "leaderboard":
+    case "leaders":
     case "members":
     case "member_profile":
     case "committees":
@@ -2364,6 +2374,8 @@ export function parseChapterLeaderCommandCenterView(
     case "impact":
     case "bridge_videos":
     case "succession":
+    case "values":
+    case "training":
     case "feed_analytics":
       return value;
     case "feed":
