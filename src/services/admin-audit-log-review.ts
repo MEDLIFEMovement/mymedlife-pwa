@@ -99,7 +99,7 @@ export function getAdminAuditLogReview(
       title: "DS Admin audit posture",
       posture: "row_details_hidden",
       summary:
-        "DS Admin can confirm audit-readback posture, but row-level chapter/member audit details stay with Admin and Super Admin.",
+        "DS Admin can confirm audit-readback posture from this read-only review surface, but row-level chapter/member audit details stay with Admin and Super Admin.",
       sourceLabel: data.source.mode,
       rows: [],
       auditPreflight: buildAuditPreflightChecklist({
@@ -125,8 +125,8 @@ export function getAdminAuditLogReview(
         : "Admin audit readback",
     posture: hasRows ? "persisted_readback_visible" : "mock_intent_only",
     summary: hasRows
-      ? "Persisted audit rows are visible in the read-only admin review surface."
-      : "Mock fallback can show audit intent in local contracts, but no persisted audit rows are visible yet.",
+      ? "Persisted audit rows are visible in this read-only admin review surface."
+      : "Mock fallback can show audit intent in this read-only review surface, but no persisted audit rows are visible yet.",
     sourceLabel: data.source.mode,
     rows,
     auditPreflight: buildAuditPreflightChecklist({
@@ -142,8 +142,8 @@ export function getAdminAuditLogReview(
       secretsShown: 0,
     },
     nextStep: hasRows
-      ? "Before production launch, confirm each approved write path creates an audit row with actor, target, before/after value, reason, and readback evidence."
-      : "Run localhost Supabase write/readback drills before treating audit coverage as production-ready.",
+      ? "Before production launch, confirm each approved write path creates an audit row with actor, target, before/after value, reason, and readback evidence; this surface remains read-only."
+      : "Run localhost Supabase write/readback drills before treating audit coverage as production-ready; this surface remains read-only.",
   };
 }
 
@@ -258,7 +258,8 @@ function buildAuditPreflightChecklist({
       question: "Are audit exports, deletion, retention changes, and secret display unavailable from the browser?",
       requiredEvidence:
         "Launch approval needs retention/export policy, but the local app must keep audit edits, deletes, exports, and secrets disabled.",
-      currentPosture: "0 browser writes, 0 external sends, and 0 secrets shown.",
+      currentPosture:
+        "0 browser writes, 0 external sends, and 0 secrets shown from this read-only route.",
       routeEvidence: ["/admin/audit-log", "/admin/system-health"],
       browserWritesExpected: 0,
       externalWritesExpected: 0,
@@ -271,12 +272,12 @@ function buildAuditPreflightChecklist({
       "Use this before approving any production write path to confirm actor, target, before/after, reason, visibility, and retention posture.",
     items,
     blockedControls: [
-      "edit audit rows",
-      "delete audit rows",
-      "export audit rows",
-      "change retention",
-      "show secrets",
-      "approve production writes",
+      "edit audit rows in browser",
+      "delete audit rows in browser",
+      "export audit rows from preview",
+      "change retention from preview",
+      "show secrets in preview",
+      "approve production writes from preview",
     ],
     counts: {
       total: items.length,
