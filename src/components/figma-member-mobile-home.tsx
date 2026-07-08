@@ -1879,6 +1879,16 @@ function PointsLeaderboard({
   };
   const preview = previewReadback[source];
   const continuity = continuityMap[source];
+  const returnEvent = getMemberLoopEventByRouteId(returnEventId ?? null);
+  const returnLoopSource: MemberLoopSource = source === "events" ? "points" : source;
+  const returnEventDetailHref =
+    returnEvent && returnEvent.routeId
+      ? getMemberEventDetailHref(returnEvent.id, returnLoopSource)
+      : continuity[1];
+  const returnEventRsvpHref =
+    returnEvent ? getMemberEventStepHref(returnEvent.id, returnLoopSource, "rsvp") : null;
+  const returnEventCheckInHref =
+    returnEvent ? getMemberEventStepHref(returnEvent.id, returnLoopSource, "checkin") : null;
 
   return (
     <div className="pb-24">
@@ -1916,6 +1926,40 @@ function PointsLeaderboard({
             </div>
           </div>
         </Card>
+
+        {returnEvent ? (
+          <Card className="border-[#bfdbfe] bg-[#eff6ff]">
+            <p className="text-[0.68rem] font-bold uppercase tracking-[0.18em] text-primary">
+              Exact TEST event readback
+            </p>
+            <h2 className="mt-2 text-base font-extrabold text-foreground">
+              {returnEvent.title} brought you here
+            </h2>
+            <p className="mt-2 text-sm leading-6 text-muted-foreground">
+              This preview keeps the member loop compact: event detail, RSVP posture, check-in posture, and points readback all stay route-backed without pretending a live reward or attendance write happened.
+            </p>
+            <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-3">
+              <Link
+                href={returnEventDetailHref}
+                className="rounded-2xl border border-[#bfdbfe] bg-white px-3 py-3 text-sm font-semibold text-foreground transition hover:bg-slate-50"
+              >
+                Back to TEST event detail
+              </Link>
+              <Link
+                href={returnEventRsvpHref ?? continuity[1]}
+                className="rounded-2xl border border-[#bfdbfe] bg-white px-3 py-3 text-sm font-semibold text-foreground transition hover:bg-slate-50"
+              >
+                Preview RSVP posture
+              </Link>
+              <Link
+                href={returnEventCheckInHref ?? continuity[1]}
+                className="rounded-2xl border border-[#bfdbfe] bg-white px-3 py-3 text-sm font-semibold text-foreground transition hover:bg-slate-50"
+              >
+                Preview check-in posture
+              </Link>
+            </div>
+          </Card>
+        ) : null}
 
         {/* Points by campaign */}
         <div>
@@ -2028,7 +2072,7 @@ function PointsLeaderboard({
                 {continuity[0]}
               </p>
               <Link
-                href={continuity[1]}
+                href={returnEvent ? returnEventDetailHref : continuity[1]}
                 className="inline-flex text-primary text-xs font-bold mt-2"
               >
                 {continuity[2]} →
@@ -2097,6 +2141,7 @@ function EventTypePill({ type }: { type: EventType }) {
 
 interface ChapterEvent {
   id: number;
+  routeId?: string;
   title: string;
   date: string;
   loc: string;
@@ -2146,11 +2191,11 @@ const CAMPAIGNS: { name: CampaignTag; phase: string; color: string; accent: stri
 ];
 
 const ALL_EVENTS: ChapterEvent[] = [
-  { id: 1,  title: "TEST Intro GBM",                   date: "Thu Nov 15 · 6:00 PM", loc: "Ackerman Union 2100",       pts: 20, status: "RSVP Open",  campaign: "Rush Month",            eventType: "GBM",                  featured: true, luma: true, organizer: "TEST Marcus T.", rsvps: 23 },
-  { id: 2,  title: "TEST Tabling at Bruin Walk",        date: "Tue Nov 13 · 11 AM",   loc: "Bruin Walk Table 7",        pts: 15, status: "RSVP Open",  campaign: "Rush Month",            eventType: "Local Volunteering"    },
-  { id: 3,  title: "TEST Rush Week Social",             date: "Sat Nov 18 · 7:00 PM", loc: "Student Activities Center", pts: 10, status: "Upcoming",   campaign: "Rush Month",            eventType: "Meet People / Social"  },
-  { id: 4,  title: "TEST Rush Month Recap GBM",         date: "Mon Nov 25 · 6:30 PM", loc: "Boelter 4413",              pts: 15, status: "Upcoming",   campaign: "Rush Month",            eventType: "GBM"                   },
-  { id: 5,  title: "TEST Spring Showcase Kickoff",      date: "Fri Jan 10 · 5:00 PM", loc: "Covel Commons",             pts: 20, status: "Upcoming",   campaign: "Spring Showcase",       eventType: "Growing the Movement"  },
+  { id: 1,  routeId: "chapter-event-ucla-kickoff",      title: "TEST Intro GBM",                   date: "Thu Nov 15 · 6:00 PM", loc: "Ackerman Union 2100",       pts: 20, status: "RSVP Open",  campaign: "Rush Month",            eventType: "GBM",                  featured: true, luma: true, organizer: "TEST Marcus T.", rsvps: 23 },
+  { id: 2,  routeId: "chapter-event-lakeside-welcome",  title: "TEST Tabling at Bruin Walk",        date: "Tue Nov 13 · 11 AM",   loc: "Bruin Walk Table 7",        pts: 15, status: "RSVP Open",  campaign: "Rush Month",            eventType: "Local Volunteering"    },
+  { id: 3,  routeId: "chapter-event-boston-info-night", title: "TEST Rush Week Social",             date: "Sat Nov 18 · 7:00 PM", loc: "Student Activities Center", pts: 10, status: "Upcoming",   campaign: "Rush Month",            eventType: "Meet People / Social"  },
+  { id: 4,  routeId: "chapter-event-ucsd-service-social", title: "TEST Rush Month Recap GBM",      date: "Mon Nov 25 · 6:30 PM", loc: "Boelter 4413",              pts: 15, status: "Upcoming",   campaign: "Rush Month",            eventType: "GBM"                   },
+  { id: 5,  routeId: "chapter-event-mcgill-coffee-chat", title: "TEST Spring Showcase Kickoff",    date: "Fri Jan 10 · 5:00 PM", loc: "Covel Commons",             pts: 20, status: "Upcoming",   campaign: "Spring Showcase",       eventType: "Growing the Movement"  },
   { id: 6,  title: "TEST Showcase Planning Meeting",    date: "Tue Jan 14 · 6:00 PM", loc: "Powell 320",                pts: 10, status: "Upcoming",   campaign: "Spring Showcase",       eventType: "Growing the Movement"  },
   { id: 7,  title: "TEST Fundraising Bake Sale",        date: "Wed Nov 20 · 11 AM",   loc: "Bruin Plaza",               pts: 20, status: "Upcoming",   campaign: "Safe Homes Fundraiser", eventType: "Fundraising"           },
   { id: 8,  title: "TEST Donor Info Night",             date: "Thu Nov 21 · 7:00 PM", loc: "Ackerman 2100",             pts: 15, status: "Upcoming",   campaign: "Safe Homes Fundraiser", eventType: "Fundraising"           },
@@ -2158,6 +2203,23 @@ const ALL_EVENTS: ChapterEvent[] = [
   { id: 10, title: "TEST First Aid Training",           date: "Sat Nov 30 · 10 AM",   loc: "Bunche Hall 1209A",         pts: 30, status: "RSVP Open",  campaign: "General",               eventType: "Skills Session"        },
   { id: 11, title: "TEST Member Orientation",           date: "Wed Nov 22 · 5:30 PM", loc: "Engineering VI 289",        pts: 25, status: "Upcoming",   campaign: "General",               eventType: "Growing the Movement"  },
 ];
+
+function getMemberLoopEventByRouteId(routeId: string | null) {
+  if (!routeId) {
+    return null;
+  }
+
+  return ALL_EVENTS.find((event) => event.routeId === routeId) ?? null;
+}
+
+function getMemberEventStepHref(
+  eventId: number,
+  source: MemberLoopSource,
+  step: "rsvp" | "checkin",
+) {
+  const detailHref = getMemberEventDetailHref(eventId, source);
+  return detailHref.includes("?") ? `${detailHref}&step=${step}` : `${detailHref}?step=${step}`;
+}
 function EventsScreen({ navigate, source }: { navigate: (s: Screen) => void; source: MemberLoopSource }) {
   const [activeCampaign, setActiveCampaign] = useState<CampaignTag | "All">("All");
   const rsvpdIds = [2];

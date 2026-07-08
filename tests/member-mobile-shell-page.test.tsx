@@ -231,6 +231,12 @@ describe("member mobile shell routes", () => {
     expect(html).toContain("Back to the TEST event detail");
     expect(html).toContain('href="/app/events/chapter-event-ucla-kickoff?source=points"');
     expect(html).toContain("without claiming a live award sync");
+    expect(html).toContain("Exact TEST event readback");
+    expect(html).toContain("TEST Intro GBM brought you here");
+    expect(html).toContain('href="/app/events/chapter-event-ucla-kickoff?source=points&amp;step=rsvp"');
+    expect(html).toContain('href="/app/events/chapter-event-ucla-kickoff?source=points&amp;step=checkin"');
+    expect(html).toContain("Preview RSVP posture");
+    expect(html).toContain("Preview check-in posture");
     expect(getBottomNavHtml(html)).toContain(
       'href="/app/events/chapter-event-ucla-kickoff?source=points"',
     );
@@ -275,6 +281,9 @@ describe("member mobile shell routes", () => {
 
     expect(html).toContain("Back to the TEST event detail");
     expect(html).toContain('href="/app/events/chapter-event-ucla-kickoff?source=home"');
+    expect(html).toContain("TEST Intro GBM brought you here");
+    expect(html).toContain('href="/app/events/chapter-event-ucla-kickoff?source=home&amp;step=rsvp"');
+    expect(html).toContain('href="/app/events/chapter-event-ucla-kickoff?source=home&amp;step=checkin"');
     expect(getBottomNavHtml(html)).toContain(
       'href="/app/events/chapter-event-ucla-kickoff?source=home"',
     );
@@ -299,6 +308,9 @@ describe("member mobile shell routes", () => {
 
     expect(html).toContain("Back to the TEST event detail");
     expect(html).toContain('href="/app/events/chapter-event-ucla-kickoff?source=profile"');
+    expect(html).toContain("TEST Intro GBM brought you here");
+    expect(html).toContain('href="/app/events/chapter-event-ucla-kickoff?source=profile&amp;step=rsvp"');
+    expect(html).toContain('href="/app/events/chapter-event-ucla-kickoff?source=profile&amp;step=checkin"');
     expect(getBottomNavHtml(html)).toContain(
       'href="/app/events/chapter-event-ucla-kickoff?source=profile"',
     );
