@@ -86,6 +86,10 @@ export default async function AppEventDetailPage({
           ? buildEventStepHref(eventId, "rsvp", resolvedSearchParams.source)
           : buildEventStepHref(eventId, "checkin", resolvedSearchParams.source);
   const activeTab = getEventDetailActiveTab(step);
+  const navHrefOverrides = getEventDetailNavHrefOverrides(
+    eventId,
+    resolvedSearchParams.source,
+  );
 
   return (
     <main className="min-h-screen bg-[#d6e0f0] px-0 py-0 text-[#10223f] md:px-4 md:py-8">
@@ -120,7 +124,7 @@ export default async function AppEventDetailPage({
             />
           )}
         </div>
-        <MemberBottomNav activeTab={activeTab} />
+        <MemberBottomNav activeTab={activeTab} hrefOverrides={navHrefOverrides} />
       </div>
     </main>
   );
@@ -706,6 +710,27 @@ function Card({
 
 function getEventDetailActiveTab(step: EventDetailStep): MemberBottomNavTab {
   return step === "points" ? "points" : "events";
+}
+
+function getEventDetailNavHrefOverrides(
+  eventId: string,
+  source?: string,
+): Partial<Record<MemberBottomNavTab, string>> {
+  const overrides: Partial<Record<MemberBottomNavTab, string>> = {
+    events:
+      source === "profile"
+        ? "/app/events?source=profile"
+        : source === "points"
+          ? "/app/events?source=points"
+          : "/app/events",
+    points: getLaunchLaneEventPointsHref(eventId, source),
+  };
+
+  if (source === "home") {
+    overrides.profile = "/profile?source=home";
+  }
+
+  return overrides;
 }
 
 function getEventDetailStep(step: string | undefined): EventDetailStep {

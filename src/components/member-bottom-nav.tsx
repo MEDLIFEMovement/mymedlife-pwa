@@ -15,11 +15,13 @@ export type MemberBottomNavTab =
 type MemberBottomNavProps = {
   activeTab: MemberBottomNavTab;
   profileHref?: string;
+  hrefOverrides?: Partial<Record<MemberBottomNavTab, string>>;
 };
 
 export function MemberBottomNav({
   activeTab,
   profileHref = "/profile",
+  hrefOverrides,
 }: MemberBottomNavProps) {
   const items: {
     id: MemberBottomNavTab;
@@ -41,11 +43,12 @@ export function MemberBottomNav({
     >
       {items.map(({ id, label, href, Icon }) => {
         const isActive = activeTab === id;
+        const resolvedHref = hrefOverrides?.[id] ?? href;
 
         return (
           <Link
             key={id}
-            href={href}
+            href={resolvedHref}
             className={cn(
               "flex flex-1 flex-col items-center gap-0.5 py-2.5 text-[10px] font-semibold transition-colors",
               isActive ? "text-primary" : "text-muted-foreground",

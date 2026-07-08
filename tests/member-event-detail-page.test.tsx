@@ -93,7 +93,7 @@ describe("member event detail route", () => {
     expect(html).toContain('href="/app"');
     expect(html).toContain('href="/app/stories"');
     expect(html).toContain('href="/app/events"');
-    expect(html).toContain('href="/app/points"');
+    expect(html).toContain('href="/app/points?source=events&amp;event=chapter-event-ucla-kickoff"');
     expect(html).toContain('href="/profile"');
     expect(html).toContain('aria-current="page"');
     expect(html).toContain('href="/app/events/chapter-event-ucla-kickoff?source=events&amp;step=rsvp"');
@@ -177,7 +177,7 @@ describe("member event detail route", () => {
     expect(html).toContain("Chapter Leaderboard");
     expect(html).toContain("View leaderboard impact");
     expect(html).toContain("Local preview of the post-check-in state");
-    expect(html).toContain('href="/app/points"');
+    expect(html).toContain('href="/app/points?source=events&amp;event=chapter-event-ucla-kickoff"');
     expect(html).toContain('aria-current="page"');
     expect(html).toContain('href="/app/points?source=events&amp;event=chapter-event-ucla-kickoff"');
   });
@@ -253,6 +253,8 @@ describe("member event detail route", () => {
     );
 
     expect(html).toContain('href="/profile"');
+    expect(html).toContain('href="/app/events?source=profile"');
+    expect(html).toContain('href="/app/points?source=profile"');
     expect(html).toContain('aria-label="Back to Profile"');
     expect(html).toContain("Opened from your TEST profile");
     expect(html).toContain("Keep profile, events, and points in one member loop.");
