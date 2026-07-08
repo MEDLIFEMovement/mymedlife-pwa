@@ -200,11 +200,10 @@ describe("Figma missing route placeholders", () => {
 
     expect(html).toContain("Command Center");
     expect(html).toContain("Return to chapters");
-    expect(html).toContain("Staff review handoff");
-    expect(html).toContain("Embedded Admin Review");
-    expect(html).toContain("Staff review");
-    expect(html).toContain("Staff-linked review route");
-    expect(html).toContain("Return with Command Center after this review pass");
+    expect(html).toContain("Chapter review handoff");
+    expect(html).toContain("Embedded Chapter Review");
+    expect(html).toContain("Chapter review");
+    expect(html).toContain("Return with Command Center after this chapter review pass");
     expect(html).toContain("Overview");
     expect(html).toContain("Users");
     expect(html).toContain("Chapters");
@@ -217,6 +216,26 @@ describe("Figma missing route placeholders", () => {
     expect(html).toContain("API Keys");
     expect(html).toContain("MCP Connections");
     expect(html).toContain("Settings");
+  });
+
+  it("keeps the embedded admin shell specific when the staff handoff starts from Proof / UGC", async () => {
+    const { FigmaAdminPanel } = await import("@/components/figma-admin-panel");
+
+    mockPathname = "/staff";
+    mockSearchParams = new URLSearchParams("view=admin&adminView=audit&returnView=proof_ugc&story=bp3");
+
+    const html = renderToStaticMarkup(
+      <FigmaAdminPanel initialActive="audit" onBack={() => {}} embeddedBackLabel="Proof / UGC" />,
+    );
+
+    expect(html).toContain("Command Center");
+    expect(html).toContain("Return to Proof / UGC");
+    expect(html).toContain("Proof review handoff");
+    expect(html).toContain("Embedded Proof Review");
+    expect(html).toContain("Proof review");
+    expect(html).toContain("Return with Command Center after this Proof / UGC review pass");
+    expect(html).toContain("Audit Logs");
+    expect(html).toContain("MCP Connections");
   });
 
   it("keeps audit logs visible without treating the panel as live production evidence", async () => {
