@@ -141,7 +141,7 @@ describe("staff page", () => {
     expect(html).toContain("<span class=\"truncate\">Campaign SOPs</span>");
     expect(html).toContain("pointer-events-none");
     expect(html).toContain(
-      "pointer-events-none ml-auto min-w-0 flex-none items-center justify-end hidden md:flex max-w-[7.5rem] lg:max-w-[9rem] xl:max-w-[11rem] 2xl:max-w-[12.5rem]",
+      "pointer-events-none ml-auto min-w-0 flex-none items-center justify-end hidden md:flex max-w-[7rem] lg:max-w-[8.5rem] xl:max-w-[10rem] 2xl:max-w-[11.5rem]",
     );
     expect(html).toContain("truncate text-xs font-semibold text-red-300");
     expect(html).not.toContain("w-7 h-7 rounded-full bg-accent flex items-center justify-center text-xs font-bold text-sidebar");
@@ -1726,7 +1726,7 @@ describe("staff page", () => {
     expect(staffSource).toContain('flex min-w-0 shrink items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold transition-all lg:px-3');
     expect(staffSource).toContain('<span className="truncate">{item.label}</span>');
     expect(staffSource).toContain(
-      'hidden md:flex max-w-[7.5rem] lg:max-w-[9rem] xl:max-w-[11rem] 2xl:max-w-[12.5rem]',
+      'hidden md:flex max-w-[7rem] lg:max-w-[8.5rem] xl:max-w-[10rem] 2xl:max-w-[11.5rem]',
     );
   });
 
