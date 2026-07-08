@@ -628,7 +628,7 @@ export function ChapterDetailDrawer({ chapter, onClose }: { chapter: Chapter; on
               rows={3}
             />
             <p className="mt-2 text-[10px] leading-relaxed text-amber-700">
-              Chapter support notes stay visible for coach review. Next step: open the Admin preview for DS directory readback, audit, and blocked-control follow-through before requesting any write path.
+              Chapter support notes stay visible for coach review. Next step: open the Admin preview for DS directory readback, audit, and blocked-control follow-through before requesting any write path. Return to chapters in the same Command Center loop after the Admin readback closes.
             </p>
           </div>
         </div>
@@ -653,6 +653,14 @@ export function ChapterDetailDrawer({ chapter, onClose }: { chapter: Chapter; on
             <Shield className="w-3.5 h-3.5" />
             <span>Open Admin preview</span>
           </a>
+          <button
+            onClick={onClose}
+            title="Return to the chapters overview after this preview readback"
+            className="flex items-center gap-1.5 rounded-lg border border-border bg-white px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted/40"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" />
+            <span>Return to chapters</span>
+          </button>
         </div>
       </div>
 
