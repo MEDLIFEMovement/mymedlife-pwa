@@ -7,6 +7,7 @@ export const dynamic = "force-dynamic";
 type AppPointsPageProps = {
   searchParams?: Promise<{
     source?: string;
+    event?: string;
   }>;
 };
 
@@ -19,11 +20,14 @@ function getPointsSource(source?: string): "events" | "home" | "profile" | "poin
 }
 
 export default async function AppPointsPage(props: AppPointsPageProps) {
-  const resolvedSearchParams: { source?: string } = await (props.searchParams ?? Promise.resolve({}));
+  const resolvedSearchParams: { source?: string; event?: string } = await (
+    props.searchParams ?? Promise.resolve({})
+  );
 
   return renderMemberMobileShellPage({
     initialScreen: "points",
     redirectPath: "/app/points",
     pointsSource: getPointsSource(resolvedSearchParams.source),
+    pointsReturnEventId: resolvedSearchParams.event ?? null,
   });
 }

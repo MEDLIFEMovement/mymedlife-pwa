@@ -140,7 +140,7 @@ test.describe("myMEDLIFE launch route smoke", () => {
     await expect(page.getByRole("heading", { name: "Checked in!" })).toBeVisible();
     await expect(page.getByRole("link", { name: "View leaderboard impact" })).toHaveAttribute(
       "href",
-      "/app/points?source=events",
+      "/app/points?source=events&event=chapter-event-ucla-kickoff",
     );
   });
 

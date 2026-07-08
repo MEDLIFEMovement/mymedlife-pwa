@@ -19,6 +19,7 @@ export async function renderMemberMobileShellPage({
   initialStoriesFilter,
   initialStoryId,
   pointsSource,
+  pointsReturnEventId,
   eventsSource,
 }: {
   initialScreen?: MemberMobileLaunchScreen;
@@ -26,6 +27,7 @@ export async function renderMemberMobileShellPage({
   initialStoriesFilter?: string | null;
   initialStoryId?: string | null;
   pointsSource?: "events" | "home" | "profile" | "points";
+  pointsReturnEventId?: string | null;
   eventsSource?: "events" | "profile" | "points";
 }) {
   const actor = await getLocalActorContext();
@@ -63,6 +65,7 @@ export async function renderMemberMobileShellPage({
         initialStoriesFilter={initialStoriesFilter}
         initialStoryId={initialStoryId}
         pointsSource={pointsSource}
+        pointsReturnEventId={pointsReturnEventId}
         eventsSource={eventsSource}
       />
     </>

@@ -170,7 +170,7 @@ describe("member event detail route", () => {
     expect(html).toContain("Chapter Leaderboard");
     expect(html).toContain("View leaderboard impact");
     expect(html).toContain("Local preview of the post-check-in state");
-    expect(html).toContain('href="/app/points?source=events"');
+    expect(html).toContain('href="/app/points?source=events&amp;event=chapter-event-ucla-kickoff"');
   });
 
   it("preserves the home walkthrough when event points impact starts from home", async () => {

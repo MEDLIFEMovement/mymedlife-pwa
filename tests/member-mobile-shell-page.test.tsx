@@ -178,6 +178,28 @@ describe("member mobile shell routes", () => {
     expect(html).toContain("without claiming a live award sync");
   });
 
+  it("returns the member points route to the exact TEST event detail when that handoff is available", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("member.a@mymedlife.test"),
+    );
+
+    const { default: PointsPage } = await import("@/app/app/points/page");
+    const html = renderToStaticMarkup(
+      await PointsPage({
+        searchParams: Promise.resolve({
+          source: "events",
+          event: "chapter-event-ucla-kickoff",
+        }),
+      }),
+    );
+
+    expect(html).toContain("Back to the TEST event detail");
+    expect(html).toContain('href="/app/events/chapter-event-ucla-kickoff?source=points"');
+    expect(html).toContain("without claiming a live award sync");
+  });
+
   it("keeps the member points route connected to the profile walkthrough when opened from profile", async () => {
     const actorModule = await import("@/services/local-actor-context");
 
