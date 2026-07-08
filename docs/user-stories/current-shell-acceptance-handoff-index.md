@@ -21,6 +21,9 @@ based on current repo truth and the verified PR queue.
   unless new checks fail.
 - `#1` is actively implementing the member profile/mobile-feel fix from
   `member-profile-rhythm-acceptance-map.md`.
+- After the active profile route-shell fix lands, the next member-only pressure
+  splits into profile body rhythm and Stories IG-feed fidelity; neither should
+  broaden into profile writes, story publishing, or proof/provider behavior.
 - `#2` is continuing the leader continuity wave after repairing `#539`.
 - `#3` confirmed the staff topbar overlap is not the next missing slice on
   current main; the next staff/admin pressure is embedded Admin return-loop
@@ -34,6 +37,8 @@ based on current repo truth and the verified PR queue.
 | --- | --- | --- |
 | `#1` Member | `member-stories-feed-reader-delta-map.md` | After `#523`, restore Stories feed/reader source feel without fake-live social/proof behavior. |
 | `#1` Member | `member-profile-rhythm-acceptance-map.md` | Use for the next narrow profile rhythm pass: make `/profile` feel mobile/member-app native without adding profile writes. |
+| `#1` Member | `member-profile-body-rhythm-acceptance-map.md` | Use only after the active profile route-shell bug is clean; tune body density, hierarchy, spacing, and mobile feel without redesigning profile. |
+| `#1` Member | `member-stories-ig-feed-acceptance-map.md` | Use after profile settles to restore Stories IG-feed fidelity while keeping reactions, publishing, saves, shares, and proof/provider behavior preview-safe. |
 | `#1` Member | `member-slt-prep-placement-map.md` | Use immediately for review of `#523`; keep `/app/slt-prep` as member-shell handoff and standalone `/slt-prep/*` as preview-safe workspace. |
 | `#2` Leader | `leader-shell-acceptance-packet.md` plus current leader continuity PRs | Leader guidance is now return-path and cross-route polish, not broad shell rebuild or leaderboard-first polish. |
 | `#2` Leader | `leader-cross-route-continuity-acceptance-map.md` | Use after the current `#533/#535/#539` wave to tighten Chapter Home, Member Profile, Current Leaders, Succession, Values, and Leadership Training continuity. |
@@ -53,6 +58,9 @@ based on current repo truth and the verified PR queue.
 - They make the member profile rhythm concern concrete without pretending there
   is a full exported profile screen beyond the source-backed bottom-nav/profile
   signal.
+- They split the next member polish into route-shell/body rhythm versus Stories
+  IG-feed fidelity, so `#1` can avoid mixing active profile work with future
+  Stories feed work.
 - They make the staff topbar overlap fix concrete without turning screenshot
   feedback into redesign permission.
 - They make the leader next slice concrete: cross-route continuity and
