@@ -3225,6 +3225,8 @@ function StoryCard({ story, liked, onToggleLike, onClick, featured }: {
 function StoryModal({ story, liked, onToggleLike, closeHref }: { story: Story; liked: boolean; onToggleLike: (id: number) => void; closeHref: string }) {
   const cfg = sourceConfig[story.source];
   const previewSourceLabel = `${cfg.label} preview`;
+  const previewHandle = getStoryPreviewHandle(story.chapter);
+  const previewAvatarLabel = getStoryPreviewAvatarLabel(story.chapter);
   return (
     /* ── Mobile: true full-screen story reader ── */
     <div className="fixed inset-0 z-50 flex flex-col bg-card sm:items-center sm:justify-center sm:p-6 sm:bg-foreground/40 sm:backdrop-blur-sm">
@@ -3244,7 +3246,7 @@ function StoryModal({ story, liked, onToggleLike, closeHref }: { story: Story; l
             </Link>
           </div>
         ) : (
-          <div className="relative flex-shrink-0 bg-muted" style={{ aspectRatio: "16/9" }}>
+          <div className="relative flex-shrink-0 bg-muted aspect-square sm:aspect-[16/9]">
             <img src={story.image} alt={story.title} className="w-full h-full object-cover" />
             <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
 
@@ -3275,32 +3277,50 @@ function StoryModal({ story, liked, onToggleLike, closeHref }: { story: Story; l
         {/* ── Scrollable story content ── */}
         <div className="flex-1 overflow-y-auto" style={{ scrollbarWidth: "none" }}>
           <div className="px-5 pt-5 pb-4 space-y-4">
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div
+                  className="flex h-11 w-11 items-center justify-center rounded-full text-sm font-bold text-white"
+                  style={{ background: cfg.bg.startsWith("linear") ? "#e6683c" : cfg.bg }}
+                >
+                  {previewAvatarLabel}
+                </div>
+                <div className="space-y-1 leading-tight">
+                  <p className="text-sm font-semibold text-foreground">{previewHandle}</p>
+                  <div
+                    className="flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground"
+                    style={{ fontFamily: "'DM Mono', monospace" }}
+                  >
+                    <span>{cfg.label}</span>
+                    <span className="opacity-30">·</span>
+                    <span>{story.chapter}</span>
+                    <span className="opacity-30">·</span>
+                    <span>{story.date}</span>
+                  </div>
+                </div>
+              </div>
+              <Pill label="Preview reader" variant="gray" />
+            </div>
 
-            {/* Metadata pill row */}
-            <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap"
-              style={{ fontFamily: "'DM Mono', monospace" }}>
+            <div
+              className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap"
+              style={{ fontFamily: "'DM Mono', monospace" }}
+            >
               <span>{story.type}</span>
               <span className="opacity-30">·</span>
               <MapPin size={10} />
               <span>{story.country}</span>
-              <span className="opacity-30">·</span>
-              <span>{story.chapter}</span>
-              <span className="opacity-30">·</span>
-              <span>{story.date}</span>
             </div>
 
-            {/* Title — large and readable */}
-            <h2 className="text-2xl font-bold leading-snug text-foreground"
+            <h2 className="text-[1.7rem] font-bold leading-snug text-foreground"
               style={{ fontFamily: "'Playfair Display', serif" }}>
               {story.title}
             </h2>
 
-            {/* Caption */}
             <p className="text-[17px] text-foreground/80 leading-relaxed">
               {story.caption}
             </p>
 
-            {/* Pull quote */}
             {story.quote && (
               <blockquote className="border-l-4 border-primary pl-4 py-1 text-lg italic text-foreground/75 leading-relaxed"
                 style={{ fontFamily: "'Playfair Display', serif" }}>
@@ -3308,7 +3328,6 @@ function StoryModal({ story, liked, onToggleLike, closeHref }: { story: Story; l
               </blockquote>
             )}
 
-            {/* Body */}
             {story.body && (
               <p className="text-base text-foreground/75 leading-[1.8]">{story.body}</p>
             )}
