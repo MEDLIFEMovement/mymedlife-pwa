@@ -21,6 +21,7 @@ describe("admin system health review", () => {
     expect(review.canReadReview).toBe(true);
     expect(review.title).toBe("Admin system health review");
     expect(review.launchReady).toBe(false);
+    expect(review.summary).toContain("read-only");
     expect(review.browserWritesEnabled).toBe(0);
     expect(review.externalWritesEnabled).toBe(0);
     expect(review.secretsShown).toBe(0);
@@ -45,6 +46,9 @@ describe("admin system health review", () => {
     expect(
       review.checks.find((check) => check.key === "monitoring_backup")?.signal,
     ).toContain("operations runbook");
+    expect(
+      review.checks.find((check) => check.key === "outbox_safety")?.signal,
+    ).toContain("read-only review");
     expect(
       review.checks.find((check) => check.key === "monitoring_backup")
         ?.routeEvidence,
@@ -104,6 +108,10 @@ describe("admin system health review", () => {
     expect(
       review.checks.find((check) => check.key === "environment_flags")?.status,
     ).toBe("needs_review");
+    expect(
+      review.checks.find((check) => check.key === "external_integrations")
+        ?.signal,
+    ).toContain("blocked from this review surface");
   });
 
   it("hides system health from chapter and coach roles", () => {

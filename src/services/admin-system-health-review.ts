@@ -76,7 +76,7 @@ export function getAdminSystemHealthReview(
     title: getTitle(actor),
     launchReady: false,
     summary:
-      "Shows what is locally healthy, what is safely mocked, and what remains blocked before a live myMEDLIFE pilot.",
+      "Shows what is locally healthy, what is safely mocked, and what remains blocked before a live myMEDLIFE pilot. This review route stays read-only, so writes, sends, and secret reveals remain blocked here.",
     sourceLabel: data.source.mode,
     browserWritesEnabled: environmentSafety.counts.browserWritesEnabled,
     externalWritesEnabled: environmentSafety.counts.externalWritesEnabled,
@@ -84,7 +84,7 @@ export function getAdminSystemHealthReview(
     counts: countChecks(checks),
     checks,
     finalPrompt:
-      "Do not approve live launch until blocked production health checks have owners, the production operations runbook is approved, smoke evidence is current, and rollback or incident response plans are named.",
+      "Keep this route read-only and do not approve live launch until blocked production health checks have owners, the production operations runbook is approved, smoke evidence is current, and rollback or incident response plans are named.",
   };
 }
 
@@ -161,7 +161,7 @@ function getSystemHealthChecks(
       label: "Outbox safety",
       ownerLane: "Data Solutions",
       status: "local_ready",
-      signal: `${disabledOutboxCount} disabled outbox row(s) are visible; external sends remain off.`,
+      signal: `${disabledOutboxCount} disabled outbox row(s) are visible in read-only review; external sends remain off.`,
       nextStep:
         "Approve retry, idempotency, dead-letter, and manual recovery rules before any real external send.",
       routeEvidence: ["/admin", "/rush-month/loop"],
@@ -192,7 +192,7 @@ function getSystemHealthChecks(
       ownerLane: "Data Solutions",
       status: "blocked_before_live",
       signal:
-        "HubSpot, Luma, n8n, warehouse, Power BI, SMS, email, and AI writes are disabled.",
+        "HubSpot, Luma, n8n, warehouse, Power BI, SMS, email, and AI writes remain blocked from this review surface.",
       nextStep:
         "Approve each integration contract only after app truth and audit readback are stable.",
       routeEvidence: ["/admin"],

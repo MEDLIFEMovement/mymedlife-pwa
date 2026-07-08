@@ -29,6 +29,7 @@ describe("admin audit log review", () => {
     expect(review.canReadRows).toBe(true);
     expect(review.title).toBe("Admin audit readback");
     expect(review.posture).toBe("persisted_readback_visible");
+    expect(review.summary).toContain("read-only admin review surface");
     expect(review.counts).toEqual({
       visibleRows: 1,
       hiddenRows: 0,
@@ -65,7 +66,7 @@ describe("admin audit log review", () => {
       "retention_export_lock",
     ]);
     expect(review.auditPreflight.blockedControls).toContain(
-      "approve production writes",
+      "approve production writes from preview",
     );
   });
 
@@ -83,6 +84,7 @@ describe("admin audit log review", () => {
     expect(review.title).toBe("Super Admin audit readback");
     expect(review.posture).toBe("mock_intent_only");
     expect(review.rows).toEqual([]);
+    expect(review.summary).toContain("read-only review surface");
     expect(review.auditPreflight.counts).toEqual({
       total: 6,
       ready: 2,
@@ -102,13 +104,14 @@ describe("admin audit log review", () => {
     ]);
     expect(review.auditPreflight.blockedControls).toEqual(
       expect.arrayContaining([
-        "edit audit rows",
-        "delete audit rows",
-        "export audit rows",
-        "approve production writes",
+        "edit audit rows in browser",
+        "delete audit rows in browser",
+        "export audit rows from preview",
+        "approve production writes from preview",
       ]),
     );
     expect(review.nextStep).toContain("localhost Supabase write/readback drills");
+    expect(review.nextStep).toContain("read-only");
   });
 
   it("lets DS Admin see posture while hiding row-level audit truth", () => {
@@ -134,6 +137,7 @@ describe("admin audit log review", () => {
     expect(review.canReadReview).toBe(true);
     expect(review.canReadRows).toBe(false);
     expect(review.posture).toBe("row_details_hidden");
+    expect(review.summary).toContain("read-only review surface");
     expect(review.counts.hiddenRows).toBe(1);
     expect(review.rows).toEqual([]);
     expect(review.summary).toContain("row-level chapter/member audit details");

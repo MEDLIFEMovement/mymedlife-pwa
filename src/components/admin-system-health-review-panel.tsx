@@ -49,6 +49,12 @@ export function AdminSystemHealthReviewPanel({
         <MiniToken label="Secrets" value={`${review.secretsShown}`} />
       </div>
 
+      <p className="mt-4 rounded-2xl border border-white/10 bg-[#071d1a]/70 p-3 text-xs leading-5 text-white/58">
+        This route stays read-only. Use it to review health posture, then move
+        into the linked follow-through routes only for approved runbook and
+        evidence checks.
+      </p>
+
       <div className="mt-5 grid gap-3 lg:grid-cols-2">
         {review.checks.map((check) => (
           <HealthCheckCard key={check.key} check={check} />
