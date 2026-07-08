@@ -420,7 +420,7 @@ function StudentHome({
 
         {/* Points card — sits directly below priority in the blue zone */}
         <Link
-          href="/app/points"
+          href="/app/points?source=home"
           className="mt-3 flex items-center justify-between rounded-2xl border border-white/15 bg-white/10 px-4 py-3.5 transition-transform hover:bg-white/15 active:scale-[0.98]"
         >
           <div>
@@ -602,7 +602,7 @@ function StudentHome({
         <div>
           <div className="flex items-center justify-between mb-3">
             <SLabel>Chapter Leaderboard</SLabel>
-            <Link href="/app/points" className="text-primary text-xs font-semibold">Full board</Link>
+            <Link href="/app/points?source=home" className="text-primary text-xs font-semibold">Full board</Link>
           </div>
           <Card>
             {[
@@ -634,6 +634,9 @@ function StudentHome({
               <p className="text-sm text-foreground leading-relaxed">
                 "TEST great energy this week, TEST UCLA! Focus on TEST Intro GBM follow-ups — this is where we convert interest into TEST members. Keep it up."
               </p>
+              <Link href="/profile" className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-primary">
+                Open TEST profile & chapter scope <ChevronRight size={12} />
+              </Link>
             </div>
           </div>
         </Card>

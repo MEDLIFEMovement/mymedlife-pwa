@@ -44,7 +44,7 @@ describe("member mobile shell routes", () => {
     expect(html).toContain('href="/app/events/chapter-event-ucla-kickoff?source=home&amp;step=rsvp"');
     expect(html).toContain('href="/app/events/chapter-event-ucla-kickoff?source=home"');
     expect(html).toContain('href="/app/events/chapter-event-lakeside-welcome?source=home"');
-    expect(html).toContain('href="/app/points"');
+    expect(html).toContain('href="/app/points?source=home"');
     expect(html).toContain('href="/app/stories"');
     expect(html).toContain('href="/profile"');
   });
