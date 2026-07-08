@@ -215,7 +215,6 @@ describe("leader page", () => {
     ["training", "Leadership Training"],
     ["values", "MEDLIFE Values"],
     ["leaders", "Current Leaders"],
-    ["create_event", "Create Event Preview"],
     ["stories", "MEDLIFE Stories"],
   ])("keeps the %s leader view route-backed inside the leader shell", async (view, expectedCopy) => {
     const actorModule = await import("@/services/local-actor-context");
@@ -277,6 +276,32 @@ describe("leader page", () => {
       expect(html).toContain("Preview Values Review");
       expect(html).toContain("Who visibly owns each lane right now?");
     }
+  });
+
+  it("routes create_event into the service-backed events lane with preview ownership intact", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const dataModule = await import("@/services/read-only-app-data");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("leader.a@mymedlife.test"),
+    );
+    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
+      getMockReadOnlyAppData("Testing leader create-event continuity redirect."),
+    );
+
+    const { default: LeaderPage } = await import("@/app/leader/page");
+
+    await expect(
+      LeaderPage({
+        searchParams: Promise.resolve({
+          view: "create_event",
+          member: "member-ivy",
+          eventCommittee: "events",
+        }),
+      }),
+    ).rejects.toThrow(
+      "NEXT_REDIRECT:/leader?view=events&member=member-ivy&eventCommittee=events&quickAction=create_event",
+    );
   });
 
   it("keeps blocked leader controls visibly honest inside the restored shell", async () => {
