@@ -71,8 +71,9 @@ export function ChapterLeaderCommandCenterPanel({
     searchQuery: commandCenter.pipelineSearchQuery,
     feedPostId: commandCenter.selectedFeedPostId,
   } as const;
+  const chapterHomeWorkflowSource = commandCenter.selectedSource ?? "overview";
   const createEventHref = buildChapterLeaderCommandCenterHref("events", {
-    source: preservedChapterState.source,
+    source: chapterHomeWorkflowSource,
     memberId: preservedChapterState.memberId,
     eventCommitteeFilter: commandCenter.selectedEventCommitteeFilter,
     pipelineFilter: preservedChapterState.pipelineFilter,
@@ -80,7 +81,7 @@ export function ChapterLeaderCommandCenterPanel({
     quickAction: "create_event",
   });
   const assignActionHref = buildChapterLeaderCommandCenterHref("events", {
-    source: preservedChapterState.source,
+    source: chapterHomeWorkflowSource,
     memberId: preservedChapterState.memberId,
     eventCommitteeFilter: commandCenter.selectedEventCommitteeFilter,
     pipelineFilter: preservedChapterState.pipelineFilter,
@@ -115,9 +116,20 @@ export function ChapterLeaderCommandCenterPanel({
       tone: "secondary",
     },
     {
+      label: "Open Event Committees",
+      href: buildChapterLeaderCommandCenterHref("committees", {
+        source: chapterHomeWorkflowSource,
+        memberId: preservedChapterState.memberId,
+        pipelineFilter: preservedChapterState.pipelineFilter,
+        searchQuery: preservedChapterState.searchQuery,
+      }),
+      helper: "Review committee ownership",
+      tone: "secondary",
+    },
+    {
       label: "Open Leaderboard",
       href: buildChapterLeaderCommandCenterHref("leaderboard", {
-        source: preservedChapterState.source,
+        source: chapterHomeWorkflowSource,
         memberId: preservedChapterState.memberId,
         leaderboardMetric: "attendance",
       }),
@@ -509,7 +521,7 @@ export function ChapterLeaderCommandCenterPanel({
             </SectionCard>
 
             <SectionCard eyebrow="Quick Actions" title="Quick Actions">
-              <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+              <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-5">
                 {overviewQuickActions.map((action) => (
                   <QuickActionLink key={action.label} action={action} variant="overview" />
                 ))}

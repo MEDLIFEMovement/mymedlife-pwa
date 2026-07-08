@@ -40,16 +40,16 @@ describe("chapter leader command center", () => {
       "Review Leaderboard",
     ]);
     expect(commandCenter.quickActions.find((action) => action.label === "Create Event")?.href).toBe(
-      "/leader?view=events&quickAction=create_event",
+      "/leader?view=events&source=overview&quickAction=create_event",
     );
     expect(commandCenter.quickActions.find((action) => action.label === "Confirm Attendance")?.href).toBe(
-      "/leader?view=events&quickAction=assign_action",
+      "/leader?view=events&source=overview&quickAction=assign_action",
     );
     expect(commandCenter.quickActions.find((action) => action.label === "Review Members")?.href).toBe(
       "/leader?view=members&quickAction=review_members",
     );
     expect(commandCenter.quickActions.find((action) => action.label === "Review Leaderboard")?.href).toBe(
-      "/leader?view=leaderboard&leaderboardMetric=attendance",
+      "/leader?view=leaderboard&source=overview&leaderboardMetric=attendance",
     );
     expect(commandCenter.activeCampaignLabel).toBe("Moving Mountains 🏔");
     expect(commandCenter.navGroups.map((group) => group.label)).toEqual([
@@ -84,25 +84,25 @@ describe("chapter leader command center", () => {
       expect.objectContaining({
         severity: "high",
         title: "Next event needs an owner before RSVP momentum drops",
-        href: "/leader?view=events&eventCommittee=recruitment",
+        href: "/leader?view=events&source=overview&eventCommittee=recruitment",
       }),
     );
     expect(commandCenter.riskAlerts[1]).toEqual(
       expect.objectContaining({
         title: "RSVP conversion needs attention before the next event",
-        href: "/leader?view=events&eventCommittee=recruitment",
+        href: "/leader?view=events&source=overview&eventCommittee=recruitment",
       }),
     );
     expect(commandCenter.riskAlerts[2]).toEqual(
       expect.objectContaining({
         title: "Attendance confirmation is blocking points",
-        href: "/leader?view=events",
+        href: "/leader?view=events&source=overview",
       }),
     );
     expect(commandCenter.riskAlerts[3]).toEqual(
       expect.objectContaining({
         title: "Leaderboard movement is waiting on event follow-up",
-        href: "/leader?view=events&eventCommittee=recruitment&event=bc-event-quad-tabling",
+        href: "/leader?view=events&source=overview&eventCommittee=recruitment&event=bc-event-quad-tabling",
       }),
     );
   });
@@ -130,6 +130,7 @@ describe("chapter leader command center", () => {
     expect(markup).toContain("3rd in New England · top 15% globally");
     expect(markup).toContain("Create Event");
     expect(markup).toContain("Confirm Attendance");
+    expect(markup).toContain("Open Event Committees");
     expect(markup).toContain("Open Leaderboard");
     expect(markup).toContain("Members");
     expect(markup).toContain("Operations");
@@ -183,6 +184,7 @@ describe("chapter leader command center", () => {
     expect(markup.indexOf("This Week&#x27;s Priority")).toBeLessThan(markup.indexOf("Quick Actions"));
     expect(markup.indexOf("Quick Actions")).toBeLessThan(markup.lastIndexOf("Confirm Attendance"));
     expect(markup.indexOf("Quick Actions")).toBeLessThan(markup.lastIndexOf("Create Event"));
+    expect(markup.indexOf("Quick Actions")).toBeLessThan(markup.lastIndexOf("Open Event Committees"));
     expect(markup.indexOf("Quick Actions")).toBeLessThan(markup.lastIndexOf("Open Leaderboard"));
     expect(markup.indexOf("Risk Alerts")).toBeLessThan(markup.indexOf("Weekly Points Trend"));
     expect(markup.indexOf("Chapter Metrics")).toBeLessThan(markup.indexOf("Org Rank"));
@@ -211,9 +213,49 @@ describe("chapter leader command center", () => {
     );
 
     expect(markup).toContain(
-      'href="/leader?view=events&amp;member=member-ivy&amp;eventCommittee=events&amp;pipeline=follow_up&amp;q=Ivy&amp;quickAction=assign_action"',
+      'href="/leader?view=events&amp;source=overview&amp;member=member-ivy&amp;eventCommittee=events&amp;pipeline=follow_up&amp;q=Ivy&amp;quickAction=assign_action"',
     );
     expect(markup).not.toContain("/rush-month/actions?source=chapter_assign_action");
+  });
+
+  it("keeps chapter-home source context visible through event-loop routes", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "events",
+      source: "overview",
+      memberId: "member-ivy",
+      eventCommittee: "events",
+      eventId: "bc-event-moving-mountains-kickoff",
+      quickAction: "assign_action",
+    });
+    const markup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
+    );
+
+    expect(commandCenter.selectedSource).toBe("overview");
+    expect(commandCenter.sourceContext).toMatchObject({
+      eyebrow: "Chapter Home handoff",
+      title: "Opened from Chapter Home into event follow-through",
+      actions: [
+        {
+          label: "Back to Chapter Home",
+          href: "/leader?view=overview&source=overview&member=member-ivy",
+        },
+        {
+          label: "Open Event Performance",
+          href: "/leader?view=events&source=overview&member=member-ivy&eventCommittee=events&event=bc-event-moving-mountains-kickoff",
+        },
+        {
+          label: "Open leaderboard",
+          href: "/leader?view=leaderboard&source=overview&member=member-ivy&eventCommittee=events&leaderboardMetric=attendance",
+        },
+      ],
+    });
+    expect(markup).toContain("Chapter Home handoff");
+    expect(markup).toContain("Opened from Chapter Home into event follow-through");
+    expect(markup).toContain("Back to Chapter Home");
+    expect(markup).toContain("Open Event Performance");
+    expect(markup).toContain("Open leaderboard");
   });
 
   it("falls back to zeroed progress bars and chapter-posture copy when overview labels are not sample-formatted", () => {
@@ -402,13 +444,13 @@ describe("chapter leader command center", () => {
       "/leader?view=members&member=member-ivy&quickAction=review_members",
     );
     expect(commandCenter.quickActions.find((action) => action.label === "Create Event")?.href).toBe(
-      "/leader?view=events&member=member-ivy&quickAction=create_event",
+      "/leader?view=events&source=overview&member=member-ivy&quickAction=create_event",
     );
     expect(commandCenter.quickActions.find((action) => action.label === "Confirm Attendance")?.href).toBe(
-      "/leader?view=events&member=member-ivy&quickAction=assign_action",
+      "/leader?view=events&source=overview&member=member-ivy&quickAction=assign_action",
     );
     expect(commandCenter.quickActions.find((action) => action.label === "Review Leaderboard")?.href).toBe(
-      "/leader?view=leaderboard&member=member-ivy&leaderboardMetric=attendance",
+      "/leader?view=leaderboard&source=overview&member=member-ivy&leaderboardMetric=attendance",
     );
     expect(commandCenter.pipelineItems.map((item) => item.displayName)).toEqual(
       expect.arrayContaining(["Avery New", "Sam Service", "Ivy Invite", "Zara Events"]),
@@ -438,10 +480,10 @@ describe("chapter leader command center", () => {
       "/leader?view=members&member=member-ivy&pipeline=follow_up&q=Ivy&quickAction=review_members",
     );
     expect(commandCenter.quickActions.find((action) => action.label === "Confirm Attendance")?.href).toBe(
-      "/leader?view=events&member=member-ivy&quickAction=assign_action",
+      "/leader?view=events&source=overview&member=member-ivy&quickAction=assign_action",
     );
     expect(commandCenter.quickActions.find((action) => action.label === "Review Leaderboard")?.href).toBe(
-      "/leader?view=leaderboard&member=member-ivy&leaderboardMetric=attendance",
+      "/leader?view=leaderboard&source=overview&member=member-ivy&leaderboardMetric=attendance",
     );
     expect(commandCenter.pipelineFilterOptions.map((option) => option.label)).toEqual([
       "All Pipeline Levels",
