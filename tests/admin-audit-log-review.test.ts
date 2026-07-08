@@ -43,8 +43,8 @@ describe("admin audit log review", () => {
     expect(review.rows[0]).toEqual(
       expect.objectContaining({
         action: "action_started",
-        actorUserId: "member-1",
-        chapterId: "chapter-1",
+        actorUserId: "TEST member-1",
+        chapterId: "TEST chapter-1",
         target: "assignments:assignment-1",
         beforeSummary: "status",
         afterSummary: "status",
@@ -201,10 +201,41 @@ describe("admin audit log review", () => {
     expect(html).toContain(
       "This review route shows audit posture and readback evidence only.",
     );
+    expect(html).toContain("Visible rows below are local TEST audit readback only.");
+    expect(html).toContain("TEST member-1");
+    expect(html).toContain("TEST chapter-1");
     expect(html).toContain("Blocked here edit audit rows");
     expect(html).toContain("Blocked here export audit rows");
     expect(html).toContain(
       "This review stays read-only. No audit export, retention change, secret reveal, or production-write approval runs from this surface.",
+    );
+  });
+
+  it("does not double-prefix already labeled audit row values", () => {
+    const actor = getMockLocalActorContext("admin@mymedlife.test");
+    const review = getAdminAuditLogReview(
+      actor,
+      dataWithAuditLogs([
+        {
+          id: "audit-1",
+          actor_user_id: "TEST member-1",
+          chapter_id: "TEST chapter-1",
+          action: "action_started",
+          target_table: "assignments",
+          target_id: "assignment-1",
+          before_value: { status: "not_started" },
+          after_value: { status: "in_progress" },
+          reason: "Local action start test.",
+          created_at: "2026-06-15T00:00:00Z",
+        },
+      ]),
+    );
+
+    expect(review.rows[0]).toEqual(
+      expect.objectContaining({
+        actorUserId: "TEST member-1",
+        chapterId: "TEST chapter-1",
+      }),
     );
   });
 });

@@ -110,7 +110,12 @@ export function AdminAuditLogReviewPanel({
       {review.canReadRows ? (
         <div className="mt-5 grid gap-3">
           {review.rows.length > 0 ? (
-            review.rows.map((row) => <AuditRowCard key={row.id} row={row} />)
+            <>
+              <p className="rounded-2xl border border-white/10 bg-[#071d1a]/70 p-3 text-xs leading-5 text-white/58">
+                Visible rows below are local TEST audit readback only. Keep this route in review mode until approved write paths create real production evidence.
+              </p>
+              {review.rows.map((row) => <AuditRowCard key={row.id} row={row} />)}
+            </>
           ) : (
             <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
               <p className="text-sm font-semibold text-white">
