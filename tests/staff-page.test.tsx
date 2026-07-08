@@ -412,6 +412,7 @@ describe("staff page", () => {
     expect(html).toContain("embedded admin preview from the staff workspace");
     expect(html).toContain("When DS Admin access is available, return to chapters in the same Command Center review loop after the Admin readback closes.");
     expect(html).toContain("Return to chapters");
+    expect(html).toContain('href="/staff?view=chapters"');
     expect(html).not.toContain("Open Admin preview");
   });
 
@@ -439,6 +440,7 @@ describe("staff page", () => {
     expect(html).toContain(">Chapters</h1>");
     expect(html).toContain("When DS Admin access is available, return to TEST Boston College in the same Command Center review loop after the Admin readback closes.");
     expect(html).toContain("Return to TEST Boston College");
+    expect(html).toContain('href="/staff?view=chapters&amp;chapter=chapter-test&amp;chapterContext=TEST+Boston+College"');
   });
 
   it("keeps a route-backed chapter return visible inside the embedded admin review surface", async () => {
@@ -611,9 +613,11 @@ describe("staff page", () => {
     expect(html).toContain("After the Admin readback, return to chapters in the same Command Center review loop.");
     expect(html).toContain("DS Admin");
     expect(html).toContain("Super Admin");
+    expect(html).toContain('href="/staff?view=chapters"');
     const source = readFileSync("src/components/figma-staff-command-center.tsx", "utf8");
     expect(source).toContain("Retry blocked");
     expect(source).toContain("Previewing as");
+    expect(source).toContain("backHref={adminReturnHref ?? undefined}");
   });
 
   it("keeps proof review context visible in the admin role gate before opening the embedded admin shell", async () => {
@@ -870,7 +874,7 @@ describe("staff page", () => {
     const lineCount = source.split("\n").length;
 
     expect(lineCount).toBeGreaterThanOrEqual(2170);
-    expect(lineCount).toBeLessThanOrEqual(3060);
+    expect(lineCount).toBeLessThanOrEqual(3090);
     expect(source).toContain("type Screen = \"chapters\" | \"campaigns\" | \"events\" | \"ugc\" | \"reports\" | \"admin\" | \"best-practices\" | \"sops\";");
     expect(source).toContain("const NAV_ITEMS");
     expect(source).toContain("function PortfolioOverview");

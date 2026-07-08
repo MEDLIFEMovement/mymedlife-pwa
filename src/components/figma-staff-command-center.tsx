@@ -2198,11 +2198,13 @@ type AdminRole = "ds-admin" | "super-admin";
 
 function AdminRouteBlocked({
   onBack,
+  backHref,
   backLabel,
   chapterContext,
   proofQueueContext,
 }: {
   onBack: () => void;
+  backHref?: string;
   backLabel: string;
   chapterContext?: string | null;
   proofQueueContext?: string | null;
@@ -2241,12 +2243,16 @@ function AdminRouteBlocked({
           </p>
         </div>
 
-        <button
-          onClick={onBack}
-          className="w-full py-2.5 bg-slate-800 text-white rounded-lg text-sm font-semibold hover:bg-slate-700 transition-colors"
+        <a
+          href={backHref ?? "#"}
+          onClick={(event) => {
+            event.preventDefault();
+            onBack();
+          }}
+          className="block w-full rounded-lg bg-slate-800 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-slate-700"
         >
           {`Return to ${returnLoopLabel}`}
-        </button>
+        </a>
       </div>
     </div>
   );
@@ -2255,12 +2261,14 @@ function AdminRouteBlocked({
 function AdminRoleGate({
   onGrant,
   onBack,
+  backHref,
   backLabel,
   chapterContext,
   proofQueueContext,
 }: {
   onGrant: (role: AdminRole) => void;
   onBack: () => void;
+  backHref?: string;
   backLabel: string;
   chapterContext?: string | null;
   proofQueueContext?: string | null;
@@ -2335,7 +2343,16 @@ function AdminRoleGate({
 
         <p className="text-[11px] text-slate-700">
           Not DS Admin or Super Admin?{" "}
-          <button onClick={onBack} className="text-slate-500 underline underline-offset-2">{`Return to ${returnLoopLabel}`}</button>
+          <a
+            href={backHref ?? "#"}
+            onClick={(event) => {
+              event.preventDefault();
+              onBack();
+            }}
+            className="text-slate-500 underline underline-offset-2"
+          >
+            {`Return to ${returnLoopLabel}`}
+          </a>
         </p>
       </div>
     </div>
@@ -2568,6 +2585,7 @@ export function FigmaStaffCommandCenter({
             <AdminRoleGate
               onGrant={(role) => setAdminRole(role)}
               onBack={handleAdminBack}
+              backHref={adminReturnHref ?? undefined}
               backLabel={adminBackLabel}
               chapterContext={adminChapterContext}
               proofQueueContext={adminProofQueueContext}
@@ -2575,6 +2593,7 @@ export function FigmaStaffCommandCenter({
           ) : (
             <AdminRouteBlocked
               onBack={handleAdminBack}
+              backHref={adminReturnHref ?? undefined}
               backLabel={adminBackLabel}
               chapterContext={adminChapterContext}
               proofQueueContext={adminProofQueueContext}
