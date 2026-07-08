@@ -289,8 +289,8 @@ describe("staff page", () => {
     expect(source).toContain("Next step: finish consent and coach context here, then open Admin preview for embedded DS audit readback and blocked-control posture before any publishing request.");
     expect(source).toContain("DS Admin audit handoff");
     expect(source).toContain("Review consent and blocked actions here, then open the Admin preview for DS audit readback before any publishing or coach-note approval request.");
-    expect(source).toContain('href="/staff?view=admin&adminView=audit&returnView=proof_ugc"');
-    expect(source).toContain('href="/staff?view=proof_ugc"');
+    expect(source).toContain("buildStaffProofAdminHref");
+    expect(source).toContain("buildStaffProofHref");
     expect(source).toContain("Open Admin preview");
     expect(source).toContain("Return to Proof / UGC");
     expect(source).toContain("Embedded Admin review keeps DS directory, audit logs, and blocked controls in the same command-center walkthrough.");
@@ -368,11 +368,15 @@ describe("staff page", () => {
   it("keeps the proof review admin handoff wired to a Proof / UGC return target in source", () => {
     const source = readFileSync("src/components/figma-staff-command-center.tsx", "utf8");
 
-    expect(source).toContain('href="/staff?view=admin&adminView=audit&returnView=proof_ugc"');
+    expect(source).toContain("const adminReturnStoryId =");
+    expect(source).toContain('adminReturnScreen === "ugc" ? searchParams.get("story") : null;');
+    expect(source).toContain("buildStaffProofAdminHref(selectedCard.id, pathname, searchParams.toString())");
+    expect(source).toContain("buildStaffProofHref(adminReturnStoryId, pathname, searchParams.toString())");
     expect(source).toContain("resolveStaffAdminReturnScreen");
     expect(source).toContain('if (screen === "ugc") return "Proof / UGC";');
     expect(source).toContain('return chapterId ? "this chapter" : "chapters";');
     expect(source).toContain("buildStaffChapterHref");
+    expect(source).toContain('params.set("story", storyId);');
   });
 
   it("keeps chapter-detail NPS controls preview-only instead of implying a live send", () => {
