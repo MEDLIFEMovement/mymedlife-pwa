@@ -175,7 +175,7 @@ export function AdminChaptersManagementPanel({
               <input
                 className="w-full rounded border border-white/10 bg-[#0d1117] px-3 py-2 text-sm text-slate-100"
                 name="q"
-                placeholder="UCLA, Boston, Howard"
+                placeholder="TEST UCLA, TEST Boston, TEST Howard"
                 type="search"
                 defaultValue={query}
               />
@@ -239,7 +239,7 @@ export function AdminChaptersManagementPanel({
               </select>
             </label>
             <button className="self-end rounded bg-sky-500 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-400">
-              Apply filters
+              Apply preview filters
             </button>
           </div>
         </form>
@@ -267,9 +267,9 @@ export function AdminChaptersManagementPanel({
                   {filteredChapters.map((chapter) => (
                     <tr key={chapter.id}>
                       <td className="px-5 py-4">
-                        <div className="font-semibold text-white">{chapter.name}</div>
+                        <div className="font-semibold text-white">{getVisibleChapterName(chapter)}</div>
                         <div className="mt-1 text-xs text-slate-500">
-                          {chapter.school} - {chapter.region}
+                          {getVisibleSchoolName(chapter)} - {chapter.region}
                         </div>
                         <div className="mt-1">
                           <TypePill type={chapter.chapterType} />
@@ -318,9 +318,9 @@ export function AdminChaptersManagementPanel({
               Chapter Detail
             </h2>
             <div className="mt-4">
-              <h3 className="text-xl font-bold text-white">{selectedChapter.name}</h3>
+              <h3 className="text-xl font-bold text-white">{getVisibleChapterName(selectedChapter)}</h3>
               <p className="mt-1 text-sm text-slate-500">
-                {selectedChapter.school} - {selectedChapter.region}
+                {getVisibleSchoolName(selectedChapter)} - {selectedChapter.region}
               </p>
               <div className="mt-2">
                 <TypePill type={selectedChapter.chapterType} />
@@ -369,6 +369,10 @@ export function AdminChaptersManagementPanel({
                   writes are explicitly enabled. Chapter type classification is
                   shown here for review; hosted persistence needs the later
                   chapter-type migration/RPC update.
+                </p>
+                <p className="mt-2 text-xs leading-5 text-sky-200/80">
+                  This review shell keeps chapter mutation verbs visibly blocked until the
+                  audited local write path is approved.
                 </p>
               </div>
               <StatusPill value={formsEnabled ? "writes-local-only" : "write_disabled"} />
@@ -447,9 +451,9 @@ function ChapterCreateForm({
       operation="create_chapter"
       title="Create chapter"
     >
-      <FormInput disabled={disabled} label="Chapter name" name="name" placeholder="Test Pilot MEDLIFE" />
-      <FormInput disabled={disabled} label="School" name="campus" placeholder="Test Pilot University" />
-      <FormInput disabled={disabled} label="Region / portfolio" name="region" placeholder="West Coast" />
+      <FormInput disabled={disabled} label="Chapter name" name="name" placeholder="TEST Pilot MEDLIFE" />
+      <FormInput disabled={disabled} label="School" name="campus" placeholder="TEST Pilot University" />
+      <FormInput disabled={disabled} label="Region / portfolio" name="region" placeholder="TEST West Coast" />
       <SelectField
         disabled={disabled}
         label="Chapter type"
@@ -674,7 +678,7 @@ function AdminChapterForm({
   returnTo?: string;
   title: string;
 }) {
-  const renderedButtonLabel = disabled ? `${buttonLabel} blocked` : buttonLabel;
+  const renderedButtonLabel = disabled ? `${buttonLabel} (blocked)` : buttonLabel;
 
   return (
     <form action={action} className="space-y-3 rounded border border-white/10 bg-[#161b22] p-3">
@@ -766,7 +770,7 @@ function SelectField({
 
 function userOptions(users: ManagedUser[]) {
   return users.map((user) => ({
-    label: `${user.name} (${user.email})`,
+    label: `${getVisibleUserName(user)} (${user.email})`,
     value: user.id,
   }));
 }
@@ -1007,5 +1011,30 @@ function getUserName(users: ManagedUser[], userId: string | null | undefined): s
     return "Unassigned";
   }
 
-  return users.find((user) => user.id === userId)?.name ?? userId;
+  const user = users.find((item) => item.id === userId);
+  return user ? getVisibleUserName(user) : userId;
+}
+
+function getVisibleUserName(user: ManagedUser) {
+  return isFixtureUser(user) ? prefixTestLabel(user.name) : user.name;
+}
+
+function getVisibleChapterName(chapter: ManagedChapter) {
+  return isFixtureChapter(chapter) ? prefixTestLabel(chapter.name) : chapter.name;
+}
+
+function getVisibleSchoolName(chapter: ManagedChapter) {
+  return isFixtureChapter(chapter) ? prefixTestLabel(chapter.school) : chapter.school;
+}
+
+function isFixtureUser(user: ManagedUser) {
+  return managedUserFixtures.some((fixture) => fixture.id === user.id);
+}
+
+function isFixtureChapter(chapter: ManagedChapter) {
+  return managedChapterFixtures.some((fixture) => fixture.id === chapter.id);
+}
+
+function prefixTestLabel(value: string) {
+  return value.startsWith("TEST ") ? value : `TEST ${value}`;
 }
