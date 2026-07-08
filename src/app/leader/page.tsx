@@ -2,7 +2,10 @@ import { redirect } from "next/navigation";
 
 import { ChapterLeaderCommandCenterPanel } from "@/components/chapter-leader-command-center-panel";
 import { FigmaLeaderCommandCenter } from "@/components/figma-leader-command-center";
-import { buildChapterLeaderCommandCenterHref } from "@/services/chapter-leader-command-center";
+import {
+  buildChapterLeaderCommandCenterHref,
+  type ChapterLeaderCommandCenterSource,
+} from "@/services/chapter-leader-command-center";
 import { WorkspaceAccountMenu } from "@/components/workspace-account-menu";
 import { WorkspacePreviewBanner } from "@/components/workspace-preview-banner";
 import { getChapterLeaderCommandCenter } from "@/services/chapter-leader-command-center";
@@ -78,11 +81,23 @@ export default async function LeaderPage({ searchParams }: LeaderPageProps) {
   }
 
   const requestedView = resolvedSearchParams?.view ?? "overview";
+  const requestedSource = (() => {
+    switch (resolvedSearchParams?.source) {
+      case "member_home":
+      case "bridge_videos":
+      case "feed_analytics":
+      case "impact":
+      case "leaderboard":
+        return resolvedSearchParams.source as ChapterLeaderCommandCenterSource;
+      default:
+        return null;
+    }
+  })();
 
   if (requestedView === "create_event") {
     redirect(
       buildChapterLeaderCommandCenterHref("events", {
-        source: resolvedSearchParams?.source,
+        source: requestedSource,
         memberId: resolvedSearchParams?.member,
         eventCommitteeFilter: resolvedSearchParams?.eventCommittee as
           | "all"
