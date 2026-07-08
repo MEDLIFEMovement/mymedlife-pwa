@@ -299,6 +299,11 @@ describe("staff page", () => {
     expect(source).toContain("Caption and coach-note drafting stays local-only in this preview");
     expect(source).toContain("Return to Proof / UGC after Admin readback to continue the same review loop in the staff shell.");
     expect(source).toContain("Return to Proof / UGC after the Admin readback to continue the same Command Center review loop.");
+    expect(source).toContain("Open chapter drawer");
+    expect(source).toContain("Keep the same chapter loop intact: after Admin readback, reopen this chapter drawer if the story needs coach or chapter follow-through.");
+    expect(source).toContain("If a chapter needs follow-up after that Admin readback, reopen the chapter drawer from this same Command Center flow instead of leaving the staff shell.");
+    expect(source).toContain("Reopen the chapter drawer from this queue when a story needs chapter-specific follow-through after the Admin review pass.");
+    expect(source).toContain("buildStaffChapterHref(selectedCardChapter.id, pathname, searchParams.toString())");
     expect(source).toContain("Next review step");
   });
 
