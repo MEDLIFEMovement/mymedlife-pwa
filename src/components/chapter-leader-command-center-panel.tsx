@@ -1133,6 +1133,15 @@ function renderView(
               />
             </div>
 
+            {commandCenter.selectedMember ? (
+              <SelectedMemberContextBanner
+                eyebrow="Committee review in focus"
+                title={`Reviewing ${toVisibleTestLabel(commandCenter.selectedMember.displayName)} across committee ownership`}
+                summary="Keep this committee review tied to a visible chapter member before it turns into a lane-level ownership decision. No chair assignment, publish step, or provider handoff becomes live from this shell."
+                member={commandCenter.selectedMember}
+              />
+            ) : null}
+
             {commandCenter.selectedCommittee ? (
               <div className="mt-4 rounded-[1.2rem] border border-[#bfdbfe] bg-[#eef5ff] p-4">
                 <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
@@ -1224,6 +1233,31 @@ function renderView(
                     </p>
                   </div>
                   <div className="flex flex-wrap items-center gap-3">
+                    <Link
+                      href={buildChapterLeaderCommandCenterHref("overview", {
+                        source: commandCenter.selectedSource,
+                        memberId: commandCenter.navigationMemberId,
+                        pipelineFilter: commandCenter.selectedPipelineFilter,
+                        searchQuery: commandCenter.pipelineSearchQuery,
+                      })}
+                      className="inline-flex rounded-full border border-[#bfdbfe] bg-white px-4 py-2 text-sm font-semibold text-[#1d4ed8]"
+                    >
+                      Back to Chapter Home
+                    </Link>
+                    <Link
+                      href={buildChapterLeaderCommandCenterHref("events", {
+                        source: commandCenter.selectedSource,
+                        memberId: commandCenter.navigationMemberId,
+                        pipelineFilter: commandCenter.selectedPipelineFilter,
+                        searchQuery: commandCenter.pipelineSearchQuery,
+                        eventCommitteeFilter: getCommitteeEventFilterKey(
+                          commandCenter.selectedCommittee.id,
+                        ),
+                      })}
+                      className="inline-flex rounded-full border border-[#bfdbfe] bg-white px-4 py-2 text-sm font-semibold text-[#1d4ed8]"
+                    >
+                      Open Event Performance
+                    </Link>
                     <Link
                       href={buildChapterLeaderCommandCenterHref("committees", {
                         source: commandCenter.selectedSource,
@@ -1361,6 +1395,15 @@ function renderView(
               </p>
             </div>
 
+            {commandCenter.selectedMember ? (
+              <SelectedMemberContextBanner
+                eyebrow="Event review in focus"
+                title={`Reviewing ${toVisibleTestLabel(commandCenter.selectedMember.displayName)} through event follow-through`}
+                summary="Keep the selected member visible while you review event posture, attendance readback, and proof follow-through. No attendance confirmation, points movement, or provider sync becomes live from this shell."
+                member={commandCenter.selectedMember}
+              />
+            ) : null}
+
             <div className="grid gap-3 sm:grid-cols-2 2xl:grid-cols-5">
               <EventOpsStat
                 label="Events This Month"
@@ -1488,7 +1531,32 @@ function renderView(
                     </div>
                   </div>
 
-                  <div className="flex justify-end">
+                  <div className="flex flex-wrap items-center justify-end gap-3">
+                    <Link
+                      href={buildChapterLeaderCommandCenterHref("overview", {
+                        source: commandCenter.selectedSource,
+                        memberId: commandCenter.navigationMemberId,
+                        pipelineFilter: commandCenter.selectedPipelineFilter,
+                        searchQuery: commandCenter.pipelineSearchQuery,
+                      })}
+                      className="inline-flex rounded-full border border-[#bfdbfe] bg-white px-4 py-2 text-sm font-semibold text-[#1d4ed8]"
+                    >
+                      Back to Chapter Home
+                    </Link>
+                    <Link
+                      href={buildChapterLeaderCommandCenterHref("committees", {
+                        source: commandCenter.selectedSource,
+                        memberId: commandCenter.navigationMemberId,
+                        pipelineFilter: commandCenter.selectedPipelineFilter,
+                        searchQuery: commandCenter.pipelineSearchQuery,
+                        committeeId: getCommitteeIdForEventFilter(
+                          commandCenter.selectedEventCommitteeFilter,
+                        ),
+                      })}
+                      className="inline-flex rounded-full border border-[#bfdbfe] bg-white px-4 py-2 text-sm font-semibold text-[#1d4ed8]"
+                    >
+                      Open Event Committees
+                    </Link>
                     <Link
                       href={buildChapterLeaderEventFlowHref({
                         source: commandCenter.selectedSource,
@@ -3873,6 +3941,48 @@ function getCommitteeNextMoveSummary(
   }
 
   return "Capture what is working now so the lane can scale without depending on one strong person.";
+}
+
+function getCommitteeEventFilterKey(
+  committeeId: string | null,
+): ChapterLeaderEventCommitteeFilterKey {
+  switch (committeeId) {
+    case "committee-events":
+      return "events";
+    case "committee-slt-promotion":
+      return "slt_promotion";
+    case "committee-recruitment":
+      return "recruitment";
+    case "committee-fundraising":
+      return "fundraising";
+    case "committee-service":
+      return "service";
+    case "committee-communications":
+      return "comms";
+    default:
+      return "all";
+  }
+}
+
+function getCommitteeIdForEventFilter(
+  eventCommitteeFilter: ChapterLeaderEventCommitteeFilterKey,
+): string | null {
+  switch (eventCommitteeFilter) {
+    case "events":
+      return "committee-events";
+    case "slt_promotion":
+      return "committee-slt-promotion";
+    case "recruitment":
+      return "committee-recruitment";
+    case "fundraising":
+      return "committee-fundraising";
+    case "service":
+      return "committee-service";
+    case "comms":
+      return "committee-communications";
+    default:
+      return null;
+  }
 }
 
 function ChapterEventsTable({

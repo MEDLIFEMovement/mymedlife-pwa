@@ -1032,6 +1032,7 @@ describe("chapter leader command center", () => {
     const actor = getMockLocalActorContext("leader.a@mymedlife.test");
     const commandCenter = getChapterLeaderCommandCenter(actor, data, {
       view: "committees",
+      memberId: "member-ivy",
       committeeId: "committee-events",
     });
     const markup = renderToStaticMarkup(
@@ -1049,17 +1050,25 @@ describe("chapter leader command center", () => {
     expect(markup).toContain("11 events linked to this lane");
     expect(markup).toContain("Next committee move");
     expect(markup).toContain("Keep the lane reusable for the next owner");
+    expect(markup).toContain("Committee review in focus");
+    expect(markup).toContain("Reviewing TEST Ivy Invite across committee ownership");
     expect(markup).toContain("Committee lane");
+    expect(markup).toContain("Back to Chapter Home");
     expect(markup).toContain("Add another committee");
+    expect(markup).toContain("Open Event Performance");
     expect(markup).toContain("Open committee lane");
     expect(markup).toContain(
-      "/leader?view=committees&amp;committee=committee-events",
+      "/leader?view=committees&amp;member=member-ivy&amp;committee=committee-events",
     );
     expect(markup).toContain(
-      "/leader?view=committees&amp;committee=committee-events&amp;quickAction=add_committee",
+      "/leader?view=committees&amp;member=member-ivy&amp;committee=committee-events&amp;quickAction=add_committee",
+    );
+    expect(markup).toContain("href=\"/leader?view=overview&amp;member=member-ivy\"");
+    expect(markup).toContain(
+      "href=\"/leader?view=events&amp;member=member-ivy&amp;eventCommittee=events\"",
     );
     expect(markup).toContain(
-      "href=\"/leader?view=committees&amp;committee=committee-events\"",
+      "href=\"/leader?view=committees&amp;member=member-ivy&amp;committee=committee-events\"",
     );
     expect(markup).toContain("Selected");
   });
@@ -1224,6 +1233,8 @@ describe("chapter leader command center", () => {
     );
     expect(markup).toContain(">Event Performance</h1>");
     expect(markup).toContain("Event Detail");
+    expect(markup).toContain("Event review in focus");
+    expect(markup).toContain("Reviewing TEST Ivy Invite through event follow-through");
     expect(markup).toContain(
       "Keep the selected event in chapter context before you leave this surface.",
     );
@@ -1234,6 +1245,12 @@ describe("chapter leader command center", () => {
     expect(markup).toContain("Intent before check-in");
     expect(markup).toContain("Attendance unlocks the point step");
     expect(markup).toContain("Awarded");
+    expect(markup).toContain("Back to Chapter Home");
+    expect(markup).toContain("Open Event Committees");
+    expect(markup).toContain("href=\"/leader?view=overview&amp;member=member-ivy\"");
+    expect(markup).toContain(
+      "href=\"/leader?view=committees&amp;member=member-ivy&amp;committee=committee-events\"",
+    );
     expect(markup).toContain(
       "href=\"/leader?view=events&amp;member=member-ivy&amp;eventCommittee=events&amp;quickAction=create_event\"",
     );
