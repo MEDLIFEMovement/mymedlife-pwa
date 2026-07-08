@@ -86,7 +86,7 @@ describe("member mobile shell routes", () => {
     );
 
     const { default: EventsPage } = await import("@/app/app/events/page");
-    const html = renderToStaticMarkup(await EventsPage());
+    const html = renderToStaticMarkup(await EventsPage({}));
 
     expect(html).toContain(">Events<");
     expect(html).toContain("Show up. Check in. Earn points.");

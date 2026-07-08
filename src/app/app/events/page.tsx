@@ -18,8 +18,8 @@ function getEventsSource(source?: string): "events" | "profile" | "points" {
   return "events";
 }
 
-export default async function AppEventsPage(props: AppEventsPageProps = {}) {
-  const resolvedSearchParams: { source?: string } = await (props.searchParams ?? Promise.resolve({}));
+export default async function AppEventsPage({ searchParams }: AppEventsPageProps) {
+  const resolvedSearchParams: { source?: string } = await (searchParams ?? Promise.resolve({}));
 
   return renderMemberMobileShellPage({
     initialScreen: "events",
