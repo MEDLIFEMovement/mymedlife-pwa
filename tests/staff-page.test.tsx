@@ -799,7 +799,7 @@ describe("staff page", () => {
     expect(source).toContain('params.set("adminView", "chapters");');
   });
 
-  it("drops proof queue params when the chapter drawer opens an admin chapter review handoff", async () => {
+  it("keeps proof queue return context when the chapter drawer opens an admin chapter review handoff", async () => {
     const actorModule = await import("@/services/local-actor-context");
 
     vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
@@ -819,10 +819,10 @@ describe("staff page", () => {
     );
     const source = readFileSync("src/components/figma-staff-command-center.tsx", "utf8");
 
-    expect(html).toContain('href="/staff?view=admin&amp;chapter=ch13&amp;adminView=chapters&amp;returnView=chapters&amp;chapterContext=TEST+Stanford+University"');
-    expect(source).toContain('params.delete("ugcCard");');
-    expect(source).toContain('params.delete("proofStatus");');
-    expect(source).toContain('params.delete("proofPlatform");');
+    expect(html).toContain('href="/staff?view=admin&amp;chapter=ch13&amp;proofStatus=pending&amp;proofPlatform=instagram&amp;adminView=chapters&amp;returnView=proof_ugc&amp;chapterContext=TEST+Stanford+University"');
+    expect(source).toContain('params.set("returnView", proofQueueContext ? "proof_ugc" : "chapters");');
+    expect(source).toContain("const proofQueueContext = getEmbeddedProofQueueContext(");
+    expect(source).toContain("if (!proofQueueContext) {");
   });
 
   it("keeps a proof queue return path visible when a chapter drawer opens from Proof / UGC context", async () => {
