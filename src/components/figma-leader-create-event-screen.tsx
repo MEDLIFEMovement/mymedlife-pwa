@@ -78,7 +78,17 @@ function Field({ label, children, required }: { label: string; children: React.R
   );
 }
 
-export function CreateEventForm({ onBack }: { onBack: () => void }) {
+export function CreateEventForm({
+  onBack,
+  onOpenHome,
+  onOpenCommittees,
+  onOpenEvents,
+}: {
+  onBack: () => void;
+  onOpenHome?: () => void;
+  onOpenCommittees?: () => void;
+  onOpenEvents?: () => void;
+}) {
   const [published, setPublished] = useState(false);
 
   // Form state
@@ -129,7 +139,7 @@ export function CreateEventForm({ onBack }: { onBack: () => void }) {
       <div className="flex gap-3">
         <button onClick={onBack}
           className="px-5 py-2.5 border border-slate-200 text-slate-700 text-sm font-semibold rounded-xl cursor-pointer hover:bg-slate-50 transition-colors">
-          Back to Events
+          Back to Event Performance
         </button>
         <button onClick={() => { setPublished(false); setName(""); setEventType(""); setDate(""); setStartTime(""); setEndTime(""); setDescription(""); setCommittee(""); }}
           className="px-5 py-2.5 bg-[#1A56E8] text-white text-sm font-bold rounded-xl cursor-pointer hover:bg-blue-700 transition-colors">
@@ -145,7 +155,7 @@ export function CreateEventForm({ onBack }: { onBack: () => void }) {
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
           <button onClick={onBack} className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-800 cursor-pointer transition-colors">
-            <ChevronRight size={13} className="rotate-180"/>Back to Events
+            <ChevronRight size={13} className="rotate-180"/>Back to Event Performance
           </button>
           <span className="text-slate-300">/</span>
           <h1 className="text-xl font-black text-slate-900">Create Event Preview</h1>
@@ -161,6 +171,48 @@ export function CreateEventForm({ onBack }: { onBack: () => void }) {
 
       <div className="mb-6 rounded-2xl border border-blue-200 bg-blue-50 px-4 py-3 text-xs text-blue-800">
         This route stages TEST event previews only. Live publishing, RSVP sharing, attendance updates, points awards, and provider writes stay blocked from this shell.
+      </div>
+
+      <div className="mb-6 rounded-2xl border border-[#bfdbfe] bg-[#eef5ff] px-4 py-4">
+        <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+          <div className="max-w-2xl">
+            <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-[#1d4ed8]">
+              TEST Event Operations Loop
+            </p>
+            <h2 className="mt-2 text-base font-black text-slate-900">
+              Keep event staging connected to chapter-home, committee ownership, and attendance review.
+            </h2>
+            <p className="mt-2 text-xs leading-6 text-slate-600">
+              Use this create-event preview while keeping Chapter Home, Event Committees, and Event
+              Performance one step away. That keeps event planning attached to the real chapter
+              operating loop without turning on live Luma writes, RSVP sends, attendance updates,
+              or points awards.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2 xl:max-w-sm xl:justify-end">
+            <button
+              type="button"
+              onClick={() => onOpenHome?.()}
+              className="inline-flex rounded-full border border-[#bfdbfe] bg-white px-4 py-2 text-xs font-semibold text-[#1d4ed8] transition hover:border-[#93c5fd] hover:bg-[#f8fbff]"
+            >
+              Back to Chapter Home
+            </button>
+            <button
+              type="button"
+              onClick={() => onOpenCommittees?.()}
+              className="inline-flex rounded-full border border-[#bfdbfe] bg-white px-4 py-2 text-xs font-semibold text-[#1d4ed8] transition hover:border-[#93c5fd] hover:bg-[#f8fbff]"
+            >
+              Open Event Committees
+            </button>
+            <button
+              type="button"
+              onClick={() => onOpenEvents?.()}
+              className="inline-flex rounded-full bg-[#1A56E8] px-4 py-2 text-xs font-semibold text-white transition hover:bg-blue-700"
+            >
+              Open Event Performance
+            </button>
+          </div>
+        </div>
       </div>
 
       <div className="grid grid-cols-3 gap-6">
