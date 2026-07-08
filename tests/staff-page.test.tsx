@@ -720,6 +720,34 @@ describe("staff page", () => {
     expect(source).toContain('params.set("adminView", "chapters");');
   });
 
+  it("drops proof queue params when the chapter drawer opens an admin chapter review handoff", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("general.staff@mymedlife.test"),
+    );
+
+    const { default: StaffPage } = await import("@/app/staff/page");
+    const html = renderToStaticMarkup(
+      await StaffPage({
+        searchParams: Promise.resolve({
+          view: "chapters",
+          chapter: "ch13",
+          proofStatus: "pending",
+          proofPlatform: "instagram",
+        }),
+      }),
+    );
+    const source = readFileSync("src/components/figma-staff-command-center.tsx", "utf8");
+
+    expect(html).toContain('href="/staff?view=admin&amp;chapter=ch13&amp;adminView=chapters&amp;returnView=chapters&amp;chapterContext=TEST+Stanford+University"');
+    expect(html).not.toContain("proofStatus=pending");
+    expect(html).not.toContain("proofPlatform=instagram");
+    expect(source).toContain('params.delete("ugcCard");');
+    expect(source).toContain('params.delete("proofStatus");');
+    expect(source).toContain('params.delete("proofPlatform");');
+  });
+
   it("shares account-menu clearance with the staff header and truncates the alert pill before the profile chip", () => {
     const staffSource = readFileSync("src/components/figma-staff-command-center.tsx", "utf8");
     const accountMenuSource = readFileSync("src/components/workspace-account-menu.tsx", "utf8");
