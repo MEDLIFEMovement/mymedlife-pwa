@@ -247,6 +247,9 @@ function Sidebar({ active, onNav, onBack }: { active: string; onNav: (id: string
             <div className="mt-0.5 text-[10px] leading-tight text-slate-500 group-hover:text-slate-300">
               Return to staff preview
             </div>
+            <div className="mt-1 inline-flex items-center rounded-full border border-sky-500/15 bg-sky-500/10 px-1.5 py-0.5 text-[9px] font-mono uppercase tracking-[0.14em] text-sky-300">
+              Staff review handoff
+            </div>
           </div>
         </button>
       )}
@@ -260,7 +263,7 @@ function Sidebar({ active, onNav, onBack }: { active: string; onNav: (id: string
             <div className="text-[10px] text-slate-500 font-mono tracking-wider">DS Admin · v2.4</div>
             {isEmbeddedPreview ? (
               <div className="mt-1 inline-flex items-center rounded-full border border-sky-500/20 bg-sky-500/10 px-2 py-0.5 text-[9px] font-mono uppercase tracking-[0.16em] text-sky-300">
-                Embedded Preview
+                Embedded Admin Review
               </div>
             ) : null}
           </div>
@@ -315,12 +318,12 @@ function Sidebar({ active, onNav, onBack }: { active: string; onNav: (id: string
             <div className="text-[10px] text-slate-600 font-mono">Super Admin</div>
             <div className="mt-1 text-[9px] text-slate-500">
               {isEmbeddedPreview
-                ? "Return with Command Center, or use the top-right menu to switch workspaces or log out."
+                ? "Return with Command Center after this review pass, or use the top-right menu to switch workspaces or log out."
                 : "Use the top-right menu to switch workspaces or log out."}
             </div>
           </div>
           <span className="rounded border border-white/[0.06] px-1.5 py-0.5 text-[9px] font-mono uppercase tracking-wider text-slate-600">
-            {isEmbeddedPreview ? "Staff embed" : "Account menu"}
+            {isEmbeddedPreview ? "Staff review" : "Account menu"}
           </span>
         </div>
       </div>
@@ -328,12 +331,17 @@ function Sidebar({ active, onNav, onBack }: { active: string; onNav: (id: string
   );
 }
 
-function Header({ title, subtitle }: { title: string; subtitle?: string }) {
+function Header({ title, subtitle, isEmbeddedPreview = false }: { title: string; subtitle?: string; isEmbeddedPreview?: boolean }) {
   return (
     <div className="h-[52px] flex items-center justify-between px-6 border-b border-white/[0.06] bg-[#0d1117]/90 backdrop-blur-sm sticky top-0 z-30 flex-shrink-0">
       <div className="flex items-center gap-3">
         <h1 className="text-[15px] font-semibold text-white">{title}</h1>
         {subtitle && <span className="text-[12px] text-slate-600 border-l border-white/[0.06] pl-3">{subtitle}</span>}
+        {isEmbeddedPreview ? (
+          <span className="inline-flex items-center rounded-full border border-sky-500/15 bg-sky-500/10 px-2 py-0.5 text-[9px] font-mono uppercase tracking-[0.14em] text-sky-300">
+            Staff-linked review route
+          </span>
+        ) : null}
       </div>
       <div className="flex items-center gap-3">
         <div className="flex items-center gap-1.5 bg-emerald-500/8 border border-emerald-500/15 rounded px-2.5 py-1">
@@ -3830,7 +3838,7 @@ export function FigmaAdminPanel({
     <div className="flex min-h-screen bg-[#0d1117] overflow-hidden" style={{ fontFamily: "'Manrope', system-ui, sans-serif" }}>
       <Sidebar active={active} onNav={handleNav} onBack={onBack} />
       <div className="ml-[220px] flex-1 flex flex-col min-h-0 overflow-hidden">
-        <Header title={page.title} subtitle={page.subtitle} />
+        <Header title={page.title} subtitle={page.subtitle} isEmbeddedPreview={Boolean(onBack)} />
         <main className="flex-1 overflow-y-auto scrollbar-hide bg-[#0d1117]">
           {renderPage()}
         </main>
