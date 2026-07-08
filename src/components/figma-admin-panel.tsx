@@ -2593,13 +2593,13 @@ function IntegrationsPage() {
       <div className="flex items-start gap-3 bg-amber-500/8 border border-amber-500/15 rounded-lg px-4 py-3">
         <AlertTriangle size={13} className="text-amber-400 flex-shrink-0 mt-0.5" />
         <p className="text-[12px] text-amber-300/80 leading-relaxed">
-          These provider controls stay visible for DS review, but this integrations surface is preview-only. Connection tests, enablement, syncs, exports, and external writes remain blocked until the audited workflow is approved.
+          These provider controls stay visible for DS review, but this integrations surface is preview-only. Treat every provider row as route-backed readback only: connection tests, enablement, syncs, exports, and external writes remain blocked until the audited workflow is approved.
         </p>
       </div>
 
       <AdminReviewPostureCard
         title="Provider Review Posture"
-        summary="This page is for DS Admin comparison and launch-readiness review only. Providers stay visible by family, but connection tests, enablement, syncs, exports, and sends remain blocked until the audited integration workflow is approved."
+        summary="This page is for DS Admin comparison and launch-readiness review only. Providers stay visible by family so Renato and DS can review coverage, but connection tests, enablement, syncs, exports, and sends stay blocked from this shell until the audited integration workflow is approved."
         items={[
           { label: "Disabled", value: `${disabledProviders} providers have no live credentials or outbound path` },
           { label: "Staging", value: `${stagingProviders} providers remain mock-safe or staging-only` },
@@ -3300,13 +3300,13 @@ function ApiKeysPage() {
         <div className="flex items-start gap-3 bg-amber-500/8 border border-amber-500/15 rounded-lg px-4 py-3">
           <Shield size={14} className="text-amber-400 flex-shrink-0 mt-0.5" />
           <p className="text-[12px] text-amber-300/80">
-            API keys stay masked in this preview. Reveal, copy, rotate, and revoke controls remain visible for workflow review, but the audited secrets workflow is still blocked here.
+            API keys stay masked in this preview. Reveal, copy, rotate, and revoke controls remain visible for workflow review, but every secrets action stays blocked from this shell until the audited secrets workflow is approved.
           </p>
         </div>
 
         <AdminReviewPostureCard
           title="Secrets Review Posture"
-          summary="Use this page to confirm which credentials exist, which environments they belong to, and which workflows remain blocked. Key material stays masked and every sensitive action remains visible for review only."
+          summary="Use this page to confirm which credentials exist, which environments they belong to, and which workflows remain blocked. Key material stays masked, route-backed review stays visible, and every sensitive action remains blocked here for DS/Admin walkthroughs."
           items={[
             { label: "Active", value: `${activeKeys.length} seeded active keys still stay masked here` },
             { label: "Disabled", value: `${disabledKeys} keys belong to disabled provider paths` },
@@ -3531,7 +3531,7 @@ function McpPage() {
 
         <AdminReviewPostureCard
           title="MCP Review Posture"
-          summary="Keep MCP providers visible so DS Admin can review policy and deep-link fidelity, but treat every connection state as preview-only. Read access may be shown, while write access and connection changes remain blocked in this shell."
+          summary="Keep MCP providers visible so DS Admin can review policy and deep-link fidelity, but treat every connection state as preview-only. Read access may be shown for walkthroughs, while write access, connection tests, and connection changes remain blocked in this shell."
           items={[
             { label: "Connected", value: `${connectedProviders} providers show seeded connection posture` },
             { label: "Read-only", value: `${readOnlyProviders} providers remain read-only by policy` },
