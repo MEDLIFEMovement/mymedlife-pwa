@@ -27,7 +27,7 @@ function getProfileSource(source?: string): "home" | null {
   return source === "home" ? "home" : null;
 }
 
-export default async function ProfilePage(props: ProfilePageProps = {}) {
+export default async function ProfilePage(props: ProfilePageProps) {
   const [actor, data] = await Promise.all([
     getLocalActorContext(),
     getReadOnlyAppData(),

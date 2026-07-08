@@ -122,7 +122,7 @@ describe("member stories and profile pages", () => {
     );
 
     const { default: ProfilePage } = await import("@/app/profile/page");
-    const html = renderToStaticMarkup(await ProfilePage());
+    const html = renderToStaticMarkup(await ProfilePage({}));
 
     expect(html).toContain("Hi, TEST Sofia");
     expect(html).toContain("TEST Sofia Alvarez");
