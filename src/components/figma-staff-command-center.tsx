@@ -440,8 +440,26 @@ function NPSSurveyPreview({ onClose }: { onClose: () => void }) {
 /*  CHAPTER DETAIL DRAWER                                       */
 /* ─────────────────────────────────────────────────────────── */
 
-export function ChapterDetailDrawer({ chapter, onClose }: { chapter: Chapter; onClose: () => void }) {
+export function ChapterDetailDrawer({
+  chapter,
+  onClose,
+  adminPreviewHref,
+}: {
+  chapter: Chapter;
+  onClose: () => void;
+  adminPreviewHref?: string;
+}) {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [showSurvey, setShowSurvey] = useState(false);
+  const resolvedAdminPreviewHref =
+    adminPreviewHref ??
+    buildStaffChapterAdminHref(
+      chapter.id,
+      chapter.name,
+      pathname,
+      searchParams.toString(),
+    );
 
   const recentEvents = [
     { name:"TEST Rush Month Info Night",   date:"Jun 14",  attendees: chapter.attendance,                  nps: chapter.avgNpsScore },
@@ -646,7 +664,7 @@ export function ChapterDetailDrawer({ chapter, onClose }: { chapter: Chapter; on
             <Star className="w-3.5 h-3.5" /> Preview NPS Survey
           </button>
           <a
-            href={`/staff?view=admin&adminView=chapters&returnView=chapters&chapter=${chapter.id}`}
+            href={resolvedAdminPreviewHref}
             title="Open the embedded Admin preview for DS directory readback and audit review"
             className="flex items-center gap-1.5 rounded-lg bg-muted px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted/70"
           >
@@ -673,12 +691,29 @@ export function ChapterDetailDrawer({ chapter, onClose }: { chapter: Chapter; on
 /*  SCREEN 1 – PORTFOLIO OVERVIEW                              */
 /* ─────────────────────────────────────────────────────────── */
 
-function PortfolioOverview({ onSelectChapter }: { onSelectChapter: (c: Chapter) => void }) {
-  const [search, setSearch] = useState("");
-  const [regionFilter, setRegionFilter] = useState("all");
-  const [coachFilter, setCoachFilter] = useState("all");
-  const [chapterTypeFilter, setChapterTypeFilter] = useState<StaffLaunchChapterTypeFilter>("all");
-  const [sortBy, setSortBy] = useState<"name"|"nps"|"events"|"leads"|"leadPct"|"points">("name");
+function PortfolioOverview({
+  onSelectChapter,
+  initialSearch = "",
+  initialRegionFilter = "all",
+  initialCoachFilter = "all",
+  initialChapterTypeFilter = "all",
+  initialSortBy = "name",
+}: {
+  onSelectChapter: (c: Chapter) => void;
+  initialSearch?: string;
+  initialRegionFilter?: string;
+  initialCoachFilter?: string;
+  initialChapterTypeFilter?: StaffLaunchChapterTypeFilter;
+  initialSortBy?: "name"|"nps"|"events"|"leads"|"leadPct"|"points";
+}) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const search = searchParams.get("chapterSearch") ?? initialSearch;
+  const regionFilter = searchParams.get("chapterRegion") ?? initialRegionFilter;
+  const coachFilter = searchParams.get("chapterCoach") ?? initialCoachFilter;
+  const chapterTypeFilter = resolveStaffChapterTypeFilter(searchParams.get("chapterType"), initialChapterTypeFilter);
+  const sortBy = resolveStaffChapterSort(searchParams.get("chapterSort"), initialSortBy);
   const [showSurvey, setShowSurvey] = useState(false);
 
   const REGIONS = ["New England", "Mid Atlantic", "South", "Midwest", "West", "Puerto Rico", "UK", "Canada", "International"];
@@ -701,6 +736,28 @@ function PortfolioOverview({ onSelectChapter }: { onSelectChapter: (c: Chapter) 
   }, [search, regionFilter, coachFilter, chapterTypeFilter, sortBy]);
 
   const avgEventsPerMonth = (CHAPTERS.reduce((a,c) => a + c.eventsThisMonth, 0) / CHAPTERS.length).toFixed(1);
+  const handleChapterFilterChange = (updates: Partial<Record<"chapterSearch" | "chapterRegion" | "chapterCoach" | "chapterType" | "chapterSort", string>>) => {
+    const params = new URLSearchParams(searchParams.toString());
+
+    const applyValue = (key: "chapterSearch" | "chapterRegion" | "chapterCoach" | "chapterType" | "chapterSort", defaultValue: string) => {
+      const value = updates[key];
+      if (value === undefined) return;
+      if (!value || value === defaultValue) {
+        params.delete(key);
+      } else {
+        params.set(key, value);
+      }
+    };
+
+    applyValue("chapterSearch", "");
+    applyValue("chapterRegion", "all");
+    applyValue("chapterCoach", "all");
+    applyValue("chapterType", "all");
+    applyValue("chapterSort", "name");
+
+    const query = params.toString();
+    router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
+  };
 
   return (
     <div className="flex flex-col gap-5">
@@ -714,13 +771,13 @@ function PortfolioOverview({ onSelectChapter }: { onSelectChapter: (c: Chapter) 
       <div className="bg-white rounded-xl border border-border p-3 flex items-center gap-3 flex-wrap">
         <div className="flex items-center gap-2 flex-1 min-w-44 bg-muted/60 rounded-lg px-3 py-2">
           <Search className="w-3.5 h-3.5 text-muted-foreground" />
-          <input value={search} onChange={e => setSearch(e.target.value)}
+          <input value={search} onChange={e => handleChapterFilterChange({ chapterSearch: e.target.value })}
             placeholder="Search chapter or school…"
             className="bg-transparent text-sm flex-1 outline-none placeholder:text-muted-foreground" />
-          {search && <button onClick={() => setSearch("")}><X className="w-3 h-3 text-muted-foreground" /></button>}
+          {search && <button onClick={() => handleChapterFilterChange({ chapterSearch: "" })}><X className="w-3 h-3 text-muted-foreground" /></button>}
         </div>
         <div className="relative">
-          <select value={regionFilter} onChange={e => setRegionFilter(e.target.value)}
+          <select value={regionFilter} onChange={e => handleChapterFilterChange({ chapterRegion: e.target.value })}
             className="bg-muted/60 text-sm px-3 py-2 rounded-lg pr-7 appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/20 font-medium text-foreground">
             <option value="all">All Regions</option>
             {REGIONS.map(r => <option key={r} value={r}>{r}</option>)}
@@ -728,7 +785,7 @@ function PortfolioOverview({ onSelectChapter }: { onSelectChapter: (c: Chapter) 
           <ChevronDown className="w-3.5 h-3.5 absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
         </div>
         <div className="relative">
-          <select value={coachFilter} onChange={e => setCoachFilter(e.target.value)}
+          <select value={coachFilter} onChange={e => handleChapterFilterChange({ chapterCoach: e.target.value })}
             className="bg-muted/60 text-sm px-3 py-2 rounded-lg pr-7 appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/20 font-medium text-foreground">
             <option value="all">All Coaches</option>
             {coaches.filter(o => o !== "all").map(o => <option key={o} value={o}>{o}</option>)}
@@ -736,14 +793,14 @@ function PortfolioOverview({ onSelectChapter }: { onSelectChapter: (c: Chapter) 
           <ChevronDown className="w-3.5 h-3.5 absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
         </div>
         <div className="relative">
-          <select value={chapterTypeFilter} onChange={e => setChapterTypeFilter(e.target.value as StaffLaunchChapterTypeFilter)}
+          <select value={chapterTypeFilter} onChange={e => handleChapterFilterChange({ chapterType: e.target.value })}
             className="bg-muted/60 text-sm px-3 py-2 rounded-lg pr-7 appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/20 font-medium text-foreground">
             {staffChapterTypeFilterOptions.map(type => <option key={type} value={type}>{getStaffChapterTypeFilterLabel(type)}</option>)}
           </select>
           <ChevronDown className="w-3.5 h-3.5 absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
         </div>
         <div className="relative">
-          <select value={sortBy} onChange={e => setSortBy(e.target.value as typeof sortBy)}
+          <select value={sortBy} onChange={e => handleChapterFilterChange({ chapterSort: e.target.value })}
             className="bg-muted/60 text-sm px-3 py-2 rounded-lg pr-7 appearance-none cursor-pointer focus:outline-none font-medium text-foreground">
             <option value="name">Sort: Name</option>
             <option value="nps">Sort: NPS ↓</option>
@@ -1352,30 +1409,64 @@ function PlatformBadge({ platform }: { platform: Platform }) {
 
 type ProofQueueStatusFilter = "all" | "pending" | "approved" | "rejected";
 
-function ProofUGCQueue() {
-  const [statusFilter, setStatusFilter] = useState<ProofQueueStatusFilter>("all");
-  const [platformFilter, setPlatformFilter] = useState("all");
-  const [selectedCard, setSelectedCard] = useState<ContentCard | null>(null);
+function ProofUGCQueue({
+  initialStatusFilter = "all",
+  initialPlatformFilter = "all",
+  initialSelectedCardId = null,
+  initialRouteSearch = "",
+}: {
+  initialStatusFilter?: ProofQueueStatusFilter;
+  initialPlatformFilter?: Platform | "all";
+  initialSelectedCardId?: string | null;
+  initialRouteSearch?: string;
+}) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [linkInput, setLinkInput] = useState("");
+  const currentSearch = searchParams.toString() || initialRouteSearch;
+  const statusFilter = resolveProofQueueStatusFilter(searchParams.get("proofStatus"), initialStatusFilter);
+  const platformFilter = resolveProofQueuePlatformFilter(searchParams.get("proofPlatform"), initialPlatformFilter);
+  const selectedCardId = searchParams.get("ugcCard") ?? initialSelectedCardId;
+  const selectedCard = selectedCardId
+    ? UGC_CARDS.find((card) => card.id === selectedCardId) ?? null
+    : null;
   const approvedCount = UGC_CARDS.filter(
     (c) => c.visibility === "chapter" || c.visibility === "selected",
   ).length;
 
   const filtered = UGC_CARDS.filter((c) => {
-    if (statusFilter === "pending" && c.visibility !== "pending") return false;
-    if (statusFilter === "rejected" && c.visibility !== "rejected") return false;
-    if (
-      statusFilter === "approved" &&
-      c.visibility !== "chapter" &&
-      c.visibility !== "selected"
-    ) {
-      return false;
-    }
-    if (platformFilter !== "all" && c.platform !== platformFilter) return false;
-    return true;
+    return matchesProofQueueFilters(c, statusFilter, platformFilter);
   });
 
   const pendingCount = UGC_CARDS.filter(c => c.visibility === "pending").length;
+  const genericProofQueueHref = buildStaffProofHref(pathname, currentSearch);
+  const genericProofAdminHref = buildStaffAdminProofHref(pathname, currentSearch);
+  const handleFilterChange = (
+    nextStatusFilter: ProofQueueStatusFilter,
+    nextPlatformFilter: Platform | "all",
+  ) => {
+    const params = new URLSearchParams(currentSearch);
+
+    if (nextStatusFilter === "all") {
+      params.delete("proofStatus");
+    } else {
+      params.set("proofStatus", nextStatusFilter);
+    }
+
+    if (nextPlatformFilter === "all") {
+      params.delete("proofPlatform");
+    } else {
+      params.set("proofPlatform", nextPlatformFilter);
+    }
+
+    if (selectedCard && !matchesProofQueueFilters(selectedCard, nextStatusFilter, nextPlatformFilter)) {
+      params.delete("ugcCard");
+    }
+
+    const query = params.toString();
+    router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
+  };
 
   return (
     <div className="flex gap-5 items-start">
@@ -1462,7 +1553,7 @@ function ProofUGCQueue() {
             ] as const).map(({ key, label }) => (
               <button
                 key={key}
-                onClick={() => setStatusFilter(key)}
+                onClick={() => handleFilterChange(key, platformFilter)}
                 className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-colors ${statusFilter === key ? "bg-primary text-white" : "text-muted-foreground hover:text-foreground hover:bg-muted"}`}
               >
                 {label}
@@ -1472,7 +1563,7 @@ function ProofUGCQueue() {
           <div className="relative">
             <select
               value={platformFilter}
-              onChange={(e) => setPlatformFilter(e.target.value)}
+              onChange={(e) => handleFilterChange(statusFilter, e.target.value as Platform | "all")}
               className="bg-white border border-border text-xs px-3 py-2 rounded-lg pr-7 appearance-none cursor-pointer focus:outline-none font-medium text-foreground"
             >
               <option value="all">All Platforms</option>
@@ -1493,7 +1584,12 @@ function ProofUGCQueue() {
             return (
               <div
                 key={card.id}
-                onClick={() => setSelectedCard(isSelected ? null : card)}
+                onClick={() =>
+                  router.replace(
+                    buildStaffProofHref(pathname, currentSearch, isSelected ? null : card.id),
+                    { scroll: false },
+                  )
+                }
                 className={`bg-white rounded-xl border overflow-hidden cursor-pointer transition-all hover:shadow-md group ${
                   isSelected ? "ring-2 ring-primary border-primary shadow-md" : "border-border hover:border-slate-300"
                 } ${card.visibility === "rejected" ? "opacity-60" : ""}`}
@@ -1623,13 +1719,18 @@ function ProofUGCQueue() {
               <div className="mt-1 text-[10px] leading-relaxed text-sky-700">Embedded Admin review keeps DS directory, audit logs, and blocked controls in the same command-center walkthrough.</div>
               <div className="mt-2 flex flex-wrap gap-2">
                 <a
-                  href="/staff?view=admin&adminView=audit&returnView=proof_ugc"
+                  href={buildStaffAdminProofHref(
+                    pathname,
+                    currentSearch,
+                    selectedCard.id,
+                    selectedCard.chapter,
+                  )}
                   className="inline-flex items-center gap-1 rounded-full border border-sky-200 bg-sky-50 px-2.5 py-1 text-[10px] font-semibold text-sky-700 hover:bg-sky-100"
                 >
                   <Shield className="w-3 h-3" /> Open Admin preview
                 </a>
                 <a
-                  href="/staff?view=proof_ugc"
+                  href={buildStaffProofHref(pathname, currentSearch, selectedCard.id)}
                   className="inline-flex items-center gap-1 rounded-full border border-border bg-slate-50 px-2.5 py-1 text-[10px] font-semibold text-slate-700 hover:bg-slate-100"
                 >
                   <ArrowLeft className="w-3 h-3" /> Return to Proof / UGC
@@ -1728,13 +1829,13 @@ function ProofUGCQueue() {
             <div className="text-xs text-muted-foreground leading-relaxed">Click any card to review consent and blocked actions, or open the Admin preview for DS audit readback without leaving the Staff Command Center.</div>
             <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
               <a
-                href="/staff?view=admin&adminView=audit&returnView=proof_ugc"
+                href={genericProofAdminHref}
                 className="inline-flex items-center gap-1 rounded-full border border-sky-200 bg-sky-50 px-2.5 py-1 text-[10px] font-semibold text-sky-700 hover:bg-sky-100"
               >
                 <Shield className="w-3 h-3" /> Open Admin preview
               </a>
               <a
-                href="/staff?view=proof_ugc"
+                href={genericProofQueueHref}
                 className="inline-flex items-center gap-1 rounded-full border border-border bg-slate-50 px-2.5 py-1 text-[10px] font-semibold text-slate-700 hover:bg-slate-100"
               >
                 <ArrowLeft className="w-3 h-3" /> Return to Proof / UGC
@@ -2022,7 +2123,19 @@ function AdminHealth() {
 
 type AdminRole = "ds-admin" | "super-admin";
 
-function AdminRouteBlocked({ onBack, backLabel }: { onBack: () => void; backLabel: string }) {
+function AdminRouteBlocked({
+  onBack,
+  backLabel,
+  chapterContext,
+  proofQueueContext,
+}: {
+  onBack: () => void;
+  backLabel: string;
+  chapterContext?: string | null;
+  proofQueueContext?: string | null;
+}) {
+  const contextLabel = getStaffAdminContextLabel(backLabel, chapterContext, proofQueueContext);
+  const returnLoopLabel = getStaffAdminReturnLoopLabel(backLabel, chapterContext, proofQueueContext);
   return (
     <div className="flex-1 flex items-center justify-center bg-[#0d1117]">
       <div className="w-full max-w-sm text-center space-y-6">
@@ -2045,13 +2158,21 @@ function AdminRouteBlocked({ onBack, backLabel }: { onBack: () => void; backLabe
         <div className="bg-[#161b22] border border-white/[0.08] rounded-xl p-5 text-left">
           <p className="text-[11px] text-slate-600 font-mono uppercase tracking-wider mb-2">Current posture</p>
           <p className="text-[12px] text-slate-400 leading-relaxed">Admin controls stay route-backed and visible for review, but this actor cannot open the embedded admin preview from the staff workspace.</p>
+          {contextLabel ? (
+            <div className="mt-3 rounded-lg border border-sky-500/15 bg-sky-500/10 px-3 py-2 text-[11px] text-sky-300">
+              {contextLabel}
+            </div>
+          ) : null}
+          <p className="mt-3 text-[11px] leading-relaxed text-slate-500">
+            {`When DS Admin access is available, return to ${returnLoopLabel} in the same Command Center review loop after the Admin readback closes.`}
+          </p>
         </div>
 
         <button
           onClick={onBack}
           className="w-full py-2.5 bg-slate-800 text-white rounded-lg text-sm font-semibold hover:bg-slate-700 transition-colors"
         >
-          {`Return to ${backLabel}`}
+          {`Return to ${returnLoopLabel}`}
         </button>
       </div>
     </div>
@@ -2062,12 +2183,18 @@ function AdminRoleGate({
   onGrant,
   onBack,
   backLabel,
+  chapterContext,
+  proofQueueContext,
 }: {
   onGrant: (role: AdminRole) => void;
   onBack: () => void;
   backLabel: string;
+  chapterContext?: string | null;
+  proofQueueContext?: string | null;
 }) {
   const [picked, setPicked] = useState<AdminRole>("ds-admin");
+  const contextLabel = getStaffAdminContextLabel(backLabel, chapterContext, proofQueueContext);
+  const returnLoopLabel = getStaffAdminReturnLoopLabel(backLabel, chapterContext, proofQueueContext);
 
   return (
     <div className="flex-1 flex items-center justify-center bg-[#0d1117]">
@@ -2086,6 +2213,11 @@ function AdminRoleGate({
             <span className="text-sky-400 font-semibold">Super Admin</span> roles only.
             All deeper admin actions stay logged, audited, and blocked or read-only unless the shell explicitly says otherwise.
           </p>
+          {contextLabel ? (
+            <div className="mt-3 inline-flex max-w-full items-center rounded-full border border-sky-500/15 bg-sky-500/10 px-3 py-1 text-[10px] font-mono text-sky-300">
+              {contextLabel}
+            </div>
+          ) : null}
         </div>
 
         {/* Role selector */}
@@ -2124,9 +2256,13 @@ function AdminRoleGate({
           Open Admin preview
         </button>
 
+        <p className="text-[11px] leading-relaxed text-slate-600">
+          {`After the Admin readback, return to ${returnLoopLabel} in the same Command Center review loop.`}
+        </p>
+
         <p className="text-[11px] text-slate-700">
           Not DS Admin or Super Admin?{" "}
-          <button onClick={onBack} className="text-slate-500 underline underline-offset-2">{`Return to ${backLabel}`}</button>
+          <button onClick={onBack} className="text-slate-500 underline underline-offset-2">{`Return to ${returnLoopLabel}`}</button>
         </p>
       </div>
     </div>
@@ -2165,27 +2301,57 @@ type FigmaStaffCommandCenterProps = {
   canAccessAdminPanel?: boolean;
   initialView?: string;
   initialCampaign?: string | null;
+  initialRouteParams?: Partial<
+    Record<
+      "view" | "campaign" | "chapter" | "ugcCard" | "adminView" | "returnView" | "chapterContext" | "proofStatus" | "proofPlatform" | "chapterSearch" | "chapterRegion" | "chapterCoach" | "chapterType" | "chapterSort",
+      string | null | undefined
+    >
+  >;
 };
 
 export function FigmaStaffCommandCenter({
   canAccessAdminPanel = false,
   initialView,
   initialCampaign = null,
+  initialRouteParams,
 }: FigmaStaffCommandCenterProps = {}) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const activeScreen = resolveStaffShellScreen(searchParams.get("view") ?? initialView ?? null);
-  const selectedChapterId = searchParams.get("chapter");
+  const getRouteParam = (
+    key: "view" | "campaign" | "chapter" | "ugcCard" | "adminView" | "returnView" | "chapterContext" | "proofStatus" | "proofPlatform" | "chapterSearch" | "chapterRegion" | "chapterCoach" | "chapterType" | "chapterSort",
+  ) =>
+    searchParams.get(key) ?? initialRouteParams?.[key] ?? null;
+  const activeScreen = resolveStaffShellScreen(getRouteParam("view") ?? initialView ?? null);
+  const selectedChapterId = getRouteParam("chapter");
   const selectedChapter =
     activeScreen === "chapters" && selectedChapterId
       ? CHAPTERS.find((chapter) => chapter.id === selectedChapterId) ?? null
       : null;
   const adminReturnScreen =
-    activeScreen === "admin" ? resolveStaffAdminReturnScreen(searchParams.get("returnView")) : "chapters";
+    activeScreen === "admin" ? resolveStaffAdminReturnScreen(getRouteParam("returnView")) : "chapters";
   const adminReturnChapterId =
-    activeScreen === "admin" && adminReturnScreen === "chapters" ? searchParams.get("chapter") : null;
+    activeScreen === "admin" && adminReturnScreen === "chapters" ? getRouteParam("chapter") : null;
+  const adminChapterContext = activeScreen === "admin" ? getRouteParam("chapterContext") : null;
+  const adminProofQueueContext =
+    activeScreen === "admin"
+      ? getEmbeddedProofQueueContext(getRouteParam("proofStatus"), getRouteParam("proofPlatform"))
+      : null;
+  const adminPreviewTitle =
+    activeScreen === "admin" ? getStaffAdminPreviewTitle(getRouteParam("adminView")) : null;
   const adminBackLabel = getStaffAdminReturnLabel(adminReturnScreen, adminReturnChapterId);
+  const adminHeaderSubtitle =
+    activeScreen === "admin"
+      ? getStaffAdminHeaderSubtitle(adminBackLabel, adminChapterContext, adminProofQueueContext)
+      : null;
+  const initialProofStatusFilter = resolveProofQueueStatusFilter(getRouteParam("proofStatus"));
+  const initialProofPlatformFilter = resolveProofQueuePlatformFilter(getRouteParam("proofPlatform"));
+  const initialChapterSearch = getRouteParam("chapterSearch") ?? "";
+  const initialChapterRegionFilter = getRouteParam("chapterRegion") ?? "all";
+  const initialChapterCoachFilter = getRouteParam("chapterCoach") ?? "all";
+  const initialChapterTypeFilter = resolveStaffChapterTypeFilter(getRouteParam("chapterType"));
+  const initialChapterSort = resolveStaffChapterSort(getRouteParam("chapterSort"));
+  const initialRouteSearch = buildStaffShellQueryFromInitialRouteParams(initialRouteParams);
 
   // SOP Builder sub-navigation
   const [sopView, setSopView] = useState<"library" | "builder">("library");
@@ -2193,6 +2359,7 @@ export function FigmaStaffCommandCenter({
 
   // Admin panel — DS Admin / Super Admin gate
   const [adminRole, setAdminRole] = useState<AdminRole | null>(null);
+  const isEmbeddedAdminOpen = activeScreen === "admin" && Boolean(adminRole) && canAccessAdminPanel;
 
   const handleSelectChapter = (ch: Chapter) => {
     router.replace(buildStaffChapterHref(ch.id, pathname, searchParams.toString()), { scroll: false });
@@ -2271,20 +2438,25 @@ export function FigmaStaffCommandCenter({
       </header>
 
       {/* Page Header */}
-      <div className={`flex flex-shrink-0 items-center justify-between border-b border-border bg-white px-6 py-3 ${STAFF_HEADER_ACCOUNT_CLEARANCE}`}>
-        <div className="min-w-0">
-          <h1 className="text-base font-bold text-foreground">{SCREEN_TITLES[activeScreen]}</h1>
-          <div className="mt-0.5 text-xs text-muted-foreground">
-            {activeScreen === "chapters" && `${CHAPTERS.length} chapters · Rush Month active · Last updated 2 min ago`}
-            {activeScreen === "campaigns" && "7 campaigns active across all regions"}
-            {activeScreen === "ugc" && `${UGC_CARDS.filter(c=>c.visibility==="pending").length} items pending review`}
-            {activeScreen === "best-practices" && `${BEST_PRACTICES.length} verified best practices ready to share`}
-            {activeScreen === "admin" && (adminRole ? `Previewing as ${adminRole === "super-admin" ? "Super Admin" : "DS Admin"} · blocked controls stay preview-only unless explicitly approved` : "Restricted to DS Admin and Super Admin only")}
-            {activeScreen === "sops" && (sopView === "builder" && sopCampaign ? `${sopCampaign.name} · ${sopCampaign.version}` : "Build, version, and publish campaign workflows — steps, roles, points, and comms")}
+      {!isEmbeddedAdminOpen && (
+        <div className={`flex flex-shrink-0 items-center justify-between border-b border-border bg-white px-6 py-3 ${STAFF_HEADER_ACCOUNT_CLEARANCE}`}>
+          <div className="min-w-0">
+            <h1 className="text-base font-bold text-foreground">{adminPreviewTitle ?? SCREEN_TITLES[activeScreen]}</h1>
+            <div className="mt-0.5 text-xs text-muted-foreground">
+              {activeScreen === "chapters" && `${CHAPTERS.length} chapters · Rush Month active · Last updated 2 min ago`}
+              {activeScreen === "campaigns" && "7 campaigns active across all regions"}
+              {activeScreen === "ugc" && `${UGC_CARDS.filter(c=>c.visibility==="pending").length} items pending review`}
+              {activeScreen === "best-practices" && `${BEST_PRACTICES.length} verified best practices ready to share`}
+              {activeScreen === "admin" &&
+                (adminRole
+                  ? `Previewing as ${adminRole === "super-admin" ? "Super Admin" : "DS Admin"} · blocked controls stay preview-only unless explicitly approved${adminHeaderSubtitle ? ` · ${adminHeaderSubtitle}` : ""}`
+                  : `Restricted to DS Admin and Super Admin only${adminHeaderSubtitle ? ` · ${adminHeaderSubtitle}` : ""}`)}
+              {activeScreen === "sops" && (sopView === "builder" && sopCampaign ? `${sopCampaign.name} · ${sopCampaign.version}` : "Build, version, and publish campaign workflows — steps, roles, points, and comms")}
+            </div>
           </div>
+          <div className="ml-4 hidden flex-shrink-0 text-xs font-mono text-muted-foreground xl:block">Jun 17, 2026 · 14:41 UTC</div>
         </div>
-        <div className="ml-4 hidden flex-shrink-0 text-xs font-mono text-muted-foreground xl:block">Jun 17, 2026 · 14:41 UTC</div>
-      </div>
+      )}
 
       {/* Content */}
       <main className={`flex-1 flex flex-col ${activeScreen === "sops" ? "overflow-hidden" : "overflow-auto"}`}>
@@ -2309,20 +2481,43 @@ export function FigmaStaffCommandCenter({
               onGrant={(role) => setAdminRole(role)}
               onBack={handleAdminBack}
               backLabel={adminBackLabel}
+              chapterContext={adminChapterContext}
+              proofQueueContext={adminProofQueueContext}
             />
           ) : (
-            <AdminRouteBlocked onBack={handleAdminBack} backLabel={adminBackLabel} />
+            <AdminRouteBlocked
+              onBack={handleAdminBack}
+              backLabel={adminBackLabel}
+              chapterContext={adminChapterContext}
+              proofQueueContext={adminProofQueueContext}
+            />
           )
         )}
 
         {/* All other non-admin, non-SOP screens */}
         {activeScreen !== "sops" && activeScreen !== "admin" && (
           <div className="px-6 py-5 max-w-[1600px] mx-auto w-full">
-            {activeScreen === "chapters" && <PortfolioOverview onSelectChapter={handleSelectChapter} />}
+            {activeScreen === "chapters" && (
+              <PortfolioOverview
+                onSelectChapter={handleSelectChapter}
+                initialSearch={initialChapterSearch}
+                initialRegionFilter={initialChapterRegionFilter}
+                initialCoachFilter={initialChapterCoachFilter}
+                initialChapterTypeFilter={initialChapterTypeFilter}
+                initialSortBy={initialChapterSort}
+              />
+            )}
             {activeScreen === "events" && <StaffLaunchEventsOperations chapters={CHAPTERS} />}
             {activeScreen === "reports" && <StaffLaunchOrganizationLeaderboard chapters={CHAPTERS} />}
             {activeScreen === "campaigns" && <CampaignOps initialCampaign={initialCampaign} />}
-            {activeScreen === "ugc" && <ProofUGCQueue />}
+            {activeScreen === "ugc" && (
+              <ProofUGCQueue
+                initialStatusFilter={initialProofStatusFilter}
+                initialPlatformFilter={initialProofPlatformFilter}
+                initialSelectedCardId={getRouteParam("ugcCard")}
+                initialRouteSearch={initialRouteSearch}
+              />
+            )}
             {activeScreen === "best-practices" && <BestPracticesLibrary />}
           </div>
         )}
@@ -2346,7 +2541,16 @@ export function FigmaStaffCommandCenter({
             onClick={handleCloseChapterDrawer}
           />
           <div className="relative z-50">
-            <ChapterDetailDrawer chapter={selectedChapter} onClose={handleCloseChapterDrawer} />
+            <ChapterDetailDrawer
+              chapter={selectedChapter}
+              onClose={handleCloseChapterDrawer}
+              adminPreviewHref={buildStaffChapterAdminHref(
+                selectedChapter.id,
+                selectedChapter.name,
+                pathname,
+                searchParams.toString() || initialRouteSearch,
+              )}
+            />
           </div>
         </>
       )}
@@ -2383,9 +2587,170 @@ function resolveStaffAdminReturnScreen(view: string | null): Extract<Screen, "ch
   return resolveStaffShellScreen(view) === "ugc" ? "ugc" : "chapters";
 }
 
+function resolveStaffChapterTypeFilter(
+  value: string | null | undefined,
+  fallback: StaffLaunchChapterTypeFilter = "all",
+): StaffLaunchChapterTypeFilter {
+  return staffChapterTypeFilterOptions.includes(value as StaffLaunchChapterTypeFilter)
+    ? (value as StaffLaunchChapterTypeFilter)
+    : fallback;
+}
+
+function resolveStaffChapterSort(
+  value: string | null | undefined,
+  fallback: "name" | "nps" | "events" | "leads" | "leadPct" | "points" = "name",
+) {
+  return value === "nps" || value === "events" || value === "leads" || value === "leadPct" || value === "points" || value === "name"
+    ? value
+    : fallback;
+}
+
+function resolveProofQueueStatusFilter(
+  value: string | null | undefined,
+  fallback: ProofQueueStatusFilter = "all",
+): ProofQueueStatusFilter {
+  if (value === "pending" || value === "approved" || value === "rejected") return value;
+  return fallback;
+}
+
+function resolveProofQueuePlatformFilter(
+  value: string | null | undefined,
+  fallback: Platform | "all" = "all",
+): Platform | "all" {
+  if (
+    value === "facebook" ||
+    value === "instagram" ||
+    value === "linkedin" ||
+    value === "loom" ||
+    value === "tiktok" ||
+    value === "upload" ||
+    value === "youtube"
+  ) {
+    return value;
+  }
+  return fallback;
+}
+
+function matchesProofQueueFilters(
+  card: ContentCard,
+  statusFilter: ProofQueueStatusFilter,
+  platformFilter: Platform | "all",
+) {
+  if (statusFilter === "pending" && card.visibility !== "pending") return false;
+  if (statusFilter === "rejected" && card.visibility !== "rejected") return false;
+  if (
+    statusFilter === "approved" &&
+    card.visibility !== "chapter" &&
+    card.visibility !== "selected"
+  ) {
+    return false;
+  }
+  if (platformFilter !== "all" && card.platform !== platformFilter) return false;
+  return true;
+}
+
 function getStaffAdminReturnLabel(screen: Extract<Screen, "chapters" | "ugc">, chapterId?: string | null) {
   if (screen === "ugc") return "Proof / UGC";
   return chapterId ? "this chapter" : "chapters";
+}
+
+function getStaffAdminContextLabel(
+  backLabel: string,
+  chapterContext?: string | null,
+  proofQueueContext?: string | null,
+) {
+  if (backLabel === "Proof / UGC") {
+    if (chapterContext && proofQueueContext) {
+      return `Proof review context: ${chapterContext} (${proofQueueContext})`;
+    }
+    if (chapterContext) {
+      return `Proof review context: ${chapterContext}`;
+    }
+    if (proofQueueContext) {
+      return `Proof review context: ${proofQueueContext}`;
+    }
+    return null;
+  }
+  if (!chapterContext) return null;
+  return `Chapter review context: ${chapterContext}`;
+}
+
+function getStaffAdminHeaderSubtitle(
+  backLabel: string,
+  chapterContext?: string | null,
+  proofQueueContext?: string | null,
+) {
+  if (backLabel === "Proof / UGC") {
+    if (chapterContext && proofQueueContext) {
+      return `Proof / UGC review for ${chapterContext} (${proofQueueContext})`;
+    }
+    if (chapterContext) {
+      return `Proof / UGC review for ${chapterContext}`;
+    }
+    if (proofQueueContext) {
+      return `Proof / UGC review for ${proofQueueContext}`;
+    }
+    return null;
+  }
+  if (backLabel === "this chapter" && chapterContext) {
+    return `Chapter review for ${chapterContext}`;
+  }
+  return null;
+}
+
+function getStaffAdminPreviewTitle(adminView: string | null) {
+  switch (adminView) {
+    case "users":
+      return "Users";
+    case "chapters":
+      return "Chapters";
+    case "modules":
+      return "Modules";
+    case "luma":
+      return "Luma Events";
+    case "points":
+      return "Points";
+    case "integrations":
+      return "Integrations";
+    case "audit":
+      return "Audit Logs";
+    case "health":
+      return "System Health";
+    case "apikeys":
+      return "API Keys";
+    case "mcp":
+      return "MCP Connections";
+    case "settings":
+      return "Settings";
+    case "overview":
+    default:
+      return "Overview";
+  }
+}
+
+function getStaffAdminReturnLoopLabel(
+  backLabel: string,
+  chapterContext?: string | null,
+  proofQueueContext?: string | null,
+) {
+  if (backLabel === "Proof / UGC") {
+    if (chapterContext && proofQueueContext) {
+      return `${chapterContext} in Proof / UGC (${proofQueueContext})`;
+    }
+    if (chapterContext) {
+      return `${chapterContext} in Proof / UGC`;
+    }
+    if (proofQueueContext) {
+      return `Proof / UGC (${proofQueueContext})`;
+    }
+    return "Proof / UGC";
+  }
+
+  if (backLabel === "this chapter") {
+    return chapterContext ?? "this chapter";
+  }
+
+  return backLabel;
 }
 
 function getStaffShellViewParam(screen: Screen): string {
@@ -2399,6 +2764,24 @@ function getStaffShellViewParam(screen: Screen): string {
     default:
       return screen;
   }
+}
+
+function buildStaffShellQueryFromInitialRouteParams(
+  initialRouteParams?: Partial<
+    Record<
+      "view" | "campaign" | "chapter" | "ugcCard" | "adminView" | "returnView" | "chapterContext" | "proofStatus" | "proofPlatform" | "chapterSearch" | "chapterRegion" | "chapterCoach" | "chapterType" | "chapterSort",
+      string | null | undefined
+    >
+  >,
+) {
+  if (!initialRouteParams) return "";
+  const params = new URLSearchParams();
+
+  for (const [key, value] of Object.entries(initialRouteParams)) {
+    if (value) params.set(key, value);
+  }
+
+  return params.toString();
 }
 
 function resolveStaffCampaignTab(campaign: string | null) {
@@ -2455,6 +2838,9 @@ function buildStaffShellHref(screen: Screen, pathname: string, search: string): 
   const params = new URLSearchParams(search);
   params.set("view", getStaffShellViewParam(screen));
   params.delete("chapter");
+  if (screen !== "ugc" && screen !== "admin") {
+    params.delete("ugcCard");
+  }
   if (screen !== "admin") {
     params.delete("adminView");
     params.delete("returnView");
@@ -2467,8 +2853,98 @@ function buildStaffChapterHref(chapterId: string, pathname: string, search: stri
   const params = new URLSearchParams(search);
   params.set("view", "chapters");
   params.set("chapter", chapterId);
+  params.delete("ugcCard");
   params.delete("adminView");
   params.delete("returnView");
   const query = params.toString();
   return query ? `${pathname}?${query}` : pathname;
+}
+
+function buildStaffChapterAdminHref(
+  chapterId: string,
+  chapterContext: string,
+  pathname: string,
+  search: string,
+): string {
+  const params = new URLSearchParams(search);
+  params.set("view", "admin");
+  params.set("adminView", "chapters");
+  params.set("returnView", "chapters");
+  params.set("chapter", chapterId);
+  params.set("chapterContext", chapterContext);
+  const query = params.toString();
+  return query ? `${pathname}?${query}` : pathname;
+}
+
+function buildStaffProofHref(pathname: string, search: string, cardId?: string | null): string {
+  const params = new URLSearchParams(search);
+  params.set("view", "proof_ugc");
+  params.delete("chapter");
+  params.delete("adminView");
+  params.delete("returnView");
+  if (cardId) {
+    params.set("ugcCard", cardId);
+  } else {
+    params.delete("ugcCard");
+  }
+  const query = params.toString();
+  return query ? `${pathname}?${query}` : pathname;
+}
+
+function buildStaffAdminProofHref(
+  pathname: string,
+  search: string,
+  cardId?: string | null,
+  chapterContext?: string | null,
+): string {
+  const params = new URLSearchParams(search);
+  params.set("view", "admin");
+  params.set("adminView", "audit");
+  params.set("returnView", "proof_ugc");
+  params.delete("chapter");
+  if (cardId) {
+    params.set("ugcCard", cardId);
+  } else {
+    params.delete("ugcCard");
+  }
+  if (chapterContext) {
+    params.set("chapterContext", chapterContext);
+  } else {
+    params.delete("chapterContext");
+  }
+  const query = params.toString();
+  return query ? `${pathname}?${query}` : pathname;
+}
+
+function getEmbeddedProofQueueContext(
+  proofStatus: string | null,
+  proofPlatform: string | null,
+) {
+  const statusLabel =
+    proofStatus === "pending"
+      ? "Pending"
+      : proofStatus === "approved"
+        ? "Approved"
+        : proofStatus === "rejected"
+          ? "Rejected"
+          : null;
+  const platformLabel =
+    proofPlatform === "facebook"
+      ? "Facebook"
+      : proofPlatform === "instagram"
+        ? "Instagram"
+        : proofPlatform === "linkedin"
+          ? "LinkedIn"
+          : proofPlatform === "loom"
+            ? "Loom"
+            : proofPlatform === "tiktok"
+              ? "TikTok"
+              : proofPlatform === "upload"
+                ? "Upload"
+                : proofPlatform === "youtube"
+                  ? "YouTube"
+                  : null;
+
+  if (statusLabel && platformLabel) return `${statusLabel} · ${platformLabel}`;
+  return statusLabel ?? platformLabel;
 }

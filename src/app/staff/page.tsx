@@ -53,6 +53,22 @@ export default async function StaffPage({ searchParams }: StaffPageProps) {
         canAccessAdminPanel={canAccessAdminWorkspace(actor)}
         initialView={resolvedSearchParams?.view}
         initialCampaign={resolvedSearchParams?.campaign}
+        initialRouteParams={{
+          view: resolvedSearchParams?.view,
+          campaign: resolvedSearchParams?.campaign,
+          chapter: resolvedSearchParams?.chapter,
+          ugcCard: resolvedSearchParams?.ugcCard,
+          adminView: resolvedSearchParams?.adminView,
+          returnView: resolvedSearchParams?.returnView,
+          chapterContext: resolvedSearchParams?.chapterContext,
+          proofStatus: resolvedSearchParams?.proofStatus,
+          proofPlatform: resolvedSearchParams?.proofPlatform,
+          chapterSearch: resolvedSearchParams?.chapterSearch,
+          chapterRegion: resolvedSearchParams?.chapterRegion,
+          chapterCoach: resolvedSearchParams?.chapterCoach,
+          chapterType: resolvedSearchParams?.chapterType,
+          chapterSort: resolvedSearchParams?.chapterSort,
+        }}
       />
     </>
   );

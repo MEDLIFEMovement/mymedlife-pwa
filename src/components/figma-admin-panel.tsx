@@ -233,14 +233,19 @@ function Sidebar({
   onNav,
   onBack,
   backLabel = "staff preview",
+  chapterContext,
+  proofQueueContext,
 }: {
   active: string;
   onNav: (id: string) => void;
   onBack?: () => void;
   backLabel?: string;
+  chapterContext?: string | null;
+  proofQueueContext?: string | null;
 }) {
   const isEmbeddedPreview = Boolean(onBack);
-  const embeddedReviewCopy = getEmbeddedAdminReviewCopy(backLabel);
+  const embeddedReviewCopy = getEmbeddedAdminReviewCopy(backLabel, chapterContext, proofQueueContext);
+  const displayBackLabel = getEmbeddedAdminDisplayBackLabel(backLabel, chapterContext, proofQueueContext);
 
   return (
     <aside className="fixed left-0 top-0 h-screen w-[220px] bg-[#090d12] border-r border-white/[0.05] flex flex-col z-40">
@@ -256,11 +261,21 @@ function Sidebar({
               Command Center
             </div>
             <div className="mt-0.5 text-[10px] leading-tight text-slate-500 group-hover:text-slate-300">
-              {`Return to ${backLabel}`}
+              {`Return to ${displayBackLabel}`}
             </div>
             <div className="mt-1 inline-flex items-center rounded-full border border-sky-500/15 bg-sky-500/10 px-1.5 py-0.5 text-[9px] font-mono uppercase tracking-[0.14em] text-sky-300">
               {embeddedReviewCopy.badge}
             </div>
+            {chapterContext ? (
+              <div className="mt-1 text-[10px] leading-tight text-slate-500 group-hover:text-slate-300">
+                {`Chapter context: ${chapterContext}`}
+              </div>
+            ) : null}
+            {proofQueueContext ? (
+              <div className="mt-1 text-[10px] leading-tight text-slate-500 group-hover:text-slate-300">
+                {`Queue context: ${proofQueueContext}`}
+              </div>
+            ) : null}
           </div>
         </button>
       )}
@@ -342,7 +357,11 @@ function Sidebar({
   );
 }
 
-function getEmbeddedAdminReviewCopy(backLabel: string) {
+function getEmbeddedAdminReviewCopy(
+  backLabel: string,
+  chapterContext?: string | null,
+  proofQueueContext?: string | null,
+) {
   const normalized = backLabel.trim().toLowerCase();
 
   if (normalized === "proof / ugc") {
@@ -350,7 +369,13 @@ function getEmbeddedAdminReviewCopy(backLabel: string) {
       badge: "Proof review handoff",
       label: "Embedded Proof Review",
       footer:
-        "Return with Command Center after this Proof / UGC review pass, or use the top-right menu to switch workspaces or log out.",
+        chapterContext && proofQueueContext
+          ? `Return with Command Center after this Proof / UGC review pass for ${chapterContext} (${proofQueueContext}), or use the top-right menu to switch workspaces or log out.`
+          : chapterContext
+            ? `Return with Command Center after this Proof / UGC review pass for ${chapterContext}, or use the top-right menu to switch workspaces or log out.`
+            : proofQueueContext
+              ? `Return with Command Center after this Proof / UGC review pass for ${proofQueueContext}, or use the top-right menu to switch workspaces or log out.`
+              : "Return with Command Center after this Proof / UGC review pass, or use the top-right menu to switch workspaces or log out.",
       tag: "Proof review",
     };
   }
@@ -360,7 +385,9 @@ function getEmbeddedAdminReviewCopy(backLabel: string) {
       badge: "Chapter review handoff",
       label: "Embedded Chapter Review",
       footer:
-        "Return with Command Center after this chapter review pass, or use the top-right menu to switch workspaces or log out.",
+        chapterContext
+          ? `Return with Command Center after this chapter review pass for ${chapterContext}, or use the top-right menu to switch workspaces or log out.`
+          : "Return with Command Center after this chapter review pass, or use the top-right menu to switch workspaces or log out.",
       tag: "Chapter review",
     };
   }
@@ -374,16 +401,71 @@ function getEmbeddedAdminReviewCopy(backLabel: string) {
   };
 }
 
-function Header({ title, subtitle, isEmbeddedPreview = false }: { title: string; subtitle?: string; isEmbeddedPreview?: boolean }) {
+function getEmbeddedAdminDisplayBackLabel(
+  backLabel: string,
+  chapterContext?: string | null,
+  proofQueueContext?: string | null,
+) {
+  const normalized = backLabel.trim().toLowerCase();
+
+  if (normalized === "proof / ugc") {
+    if (chapterContext) return `${chapterContext} in Proof / UGC`;
+    if (proofQueueContext) return `Proof / UGC (${proofQueueContext})`;
+    return "Proof / UGC";
+  }
+
+  if (normalized === "this chapter" || normalized === "chapters") {
+    return chapterContext ?? backLabel;
+  }
+
+  return backLabel;
+}
+
+function Header({
+  title,
+  subtitle,
+  isEmbeddedPreview = false,
+  embeddedBackLabel = "staff preview",
+  chapterContext,
+  proofQueueContext,
+}: {
+  title: string;
+  subtitle?: string;
+  isEmbeddedPreview?: boolean;
+  embeddedBackLabel?: string;
+  chapterContext?: string | null;
+  proofQueueContext?: string | null;
+}) {
+  const embeddedReviewCopy = getEmbeddedAdminReviewCopy(embeddedBackLabel, chapterContext, proofQueueContext);
+  const displayBackLabel = getEmbeddedAdminDisplayBackLabel(
+    embeddedBackLabel,
+    chapterContext,
+    proofQueueContext,
+  );
   return (
     <div className="h-[52px] flex items-center justify-between px-6 border-b border-white/[0.06] bg-[#0d1117]/90 backdrop-blur-sm sticky top-0 z-30 flex-shrink-0">
       <div className="flex items-center gap-3">
         <h1 className="text-[15px] font-semibold text-white">{title}</h1>
         {subtitle && <span className="text-[12px] text-slate-600 border-l border-white/[0.06] pl-3">{subtitle}</span>}
         {isEmbeddedPreview ? (
-          <span className="inline-flex items-center rounded-full border border-sky-500/15 bg-sky-500/10 px-2 py-0.5 text-[9px] font-mono uppercase tracking-[0.14em] text-sky-300">
-            Staff-linked review route
-          </span>
+          <div className="flex items-center gap-2">
+            <span className="inline-flex items-center rounded-full border border-sky-500/15 bg-sky-500/10 px-2 py-0.5 text-[9px] font-mono uppercase tracking-[0.14em] text-sky-300">
+              {embeddedReviewCopy.label}
+            </span>
+            <span className="inline-flex items-center rounded-full border border-white/[0.08] bg-white/[0.03] px-2 py-0.5 text-[9px] font-mono uppercase tracking-[0.14em] text-slate-400">
+              {`Return: ${displayBackLabel}`}
+            </span>
+            {chapterContext ? (
+              <span className="text-[10px] text-slate-500">
+                {`Context: ${chapterContext}`}
+              </span>
+            ) : null}
+            {proofQueueContext ? (
+              <span className="text-[10px] text-slate-500">
+                {`Queue: ${proofQueueContext}`}
+              </span>
+            ) : null}
+          </div>
         ) : null}
       </div>
       <div className="flex items-center gap-3">
@@ -3853,6 +3935,10 @@ export function FigmaAdminPanel({
     : searchParams.get("view");
   const routeActive = routeActiveParam ? resolveAdminShellView(routeActiveParam) : null;
   const active = routeActive ?? resolveAdminShellView(initialActive);
+  const embeddedChapterContext = pathname.startsWith("/staff") ? searchParams.get("chapterContext") : null;
+  const embeddedProofQueueContext = pathname.startsWith("/staff")
+    ? getEmbeddedProofQueueContext(searchParams.get("proofStatus"), searchParams.get("proofPlatform"))
+    : null;
   const page = PAGES[active] ?? PAGES.overview;
 
   const handleNav = (id: string) => {
@@ -3881,9 +3967,23 @@ export function FigmaAdminPanel({
 
   return (
     <div className="flex min-h-screen bg-[#0d1117] overflow-hidden" style={{ fontFamily: "'Manrope', system-ui, sans-serif" }}>
-      <Sidebar active={active} onNav={handleNav} onBack={onBack} backLabel={embeddedBackLabel} />
+      <Sidebar
+        active={active}
+        onNav={handleNav}
+        onBack={onBack}
+        backLabel={embeddedBackLabel}
+        chapterContext={embeddedChapterContext}
+        proofQueueContext={embeddedProofQueueContext}
+      />
       <div className="ml-[220px] flex-1 flex flex-col min-h-0 overflow-hidden">
-        <Header title={page.title} subtitle={page.subtitle} isEmbeddedPreview={Boolean(onBack)} />
+        <Header
+          title={page.title}
+          subtitle={page.subtitle}
+          isEmbeddedPreview={Boolean(onBack)}
+          embeddedBackLabel={embeddedBackLabel}
+          chapterContext={embeddedChapterContext}
+          proofQueueContext={embeddedProofQueueContext}
+        />
         <main className="flex-1 overflow-y-auto scrollbar-hide bg-[#0d1117]">
           {renderPage()}
         </main>
@@ -3895,6 +3995,39 @@ export function FigmaAdminPanel({
 function resolveAdminShellView(view: string | null | undefined): string {
   if (!view) return "overview";
   return Object.prototype.hasOwnProperty.call(PAGES, view) ? view : "overview";
+}
+
+function getEmbeddedProofQueueContext(
+  proofStatus: string | null,
+  proofPlatform: string | null,
+) {
+  const statusLabel =
+    proofStatus === "pending"
+      ? "Pending"
+      : proofStatus === "approved"
+        ? "Approved"
+        : proofStatus === "rejected"
+          ? "Rejected"
+          : null;
+  const platformLabel =
+    proofPlatform === "facebook"
+      ? "Facebook"
+      : proofPlatform === "instagram"
+        ? "Instagram"
+        : proofPlatform === "linkedin"
+          ? "LinkedIn"
+          : proofPlatform === "loom"
+            ? "Loom"
+            : proofPlatform === "tiktok"
+              ? "TikTok"
+              : proofPlatform === "upload"
+                ? "Upload"
+                : proofPlatform === "youtube"
+                  ? "YouTube"
+                  : null;
+
+  if (statusLabel && platformLabel) return `${statusLabel} · ${platformLabel}`;
+  return statusLabel ?? platformLabel;
 }
 
 function buildAdminShellHref(active: string, pathname: string, search: string): string {

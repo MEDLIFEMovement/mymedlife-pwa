@@ -192,17 +192,21 @@ describe("Figma missing route placeholders", () => {
     const { FigmaAdminPanel } = await import("@/components/figma-admin-panel");
 
     mockPathname = "/staff";
-    mockSearchParams = new URLSearchParams("view=admin&adminView=settings");
+    mockSearchParams = new URLSearchParams("view=admin&adminView=settings&chapter=chapter-test&chapterContext=TEST%20Boston%20College");
 
     const html = renderToStaticMarkup(
       <FigmaAdminPanel initialActive="settings" onBack={() => {}} embeddedBackLabel="chapters" />,
     );
 
     expect(html).toContain("Command Center");
-    expect(html).toContain("Return to chapters");
+    expect(html).toContain("Return to TEST Boston College");
     expect(html).toContain("Chapter review handoff");
     expect(html).toContain("Embedded Chapter Review");
+    expect(html).toContain("Return: TEST Boston College");
     expect(html).toContain("Chapter review");
+    expect(html).toContain("Chapter context: TEST Boston College");
+    expect(html).toContain("Context: TEST Boston College");
+    expect(html).toContain("Return with Command Center after this chapter review pass for TEST Boston College");
     expect(html).toContain("Return with Command Center after this chapter review pass");
     expect(html).toContain("Overview");
     expect(html).toContain("Users");
@@ -222,17 +226,23 @@ describe("Figma missing route placeholders", () => {
     const { FigmaAdminPanel } = await import("@/components/figma-admin-panel");
 
     mockPathname = "/staff";
-    mockSearchParams = new URLSearchParams("view=admin&adminView=audit&returnView=proof_ugc&story=bp3");
+    mockSearchParams = new URLSearchParams("view=admin&adminView=audit&returnView=proof_ugc&ugcCard=ugc4&chapterContext=TEST%20Stanford%20University&proofStatus=pending&proofPlatform=instagram");
 
     const html = renderToStaticMarkup(
       <FigmaAdminPanel initialActive="audit" onBack={() => {}} embeddedBackLabel="Proof / UGC" />,
     );
 
     expect(html).toContain("Command Center");
-    expect(html).toContain("Return to Proof / UGC");
+    expect(html).toContain("Return to TEST Stanford University in Proof / UGC");
     expect(html).toContain("Proof review handoff");
     expect(html).toContain("Embedded Proof Review");
+    expect(html).toContain("Return: TEST Stanford University in Proof / UGC");
+    expect(html).toContain("Context: TEST Stanford University");
+    expect(html).toContain("Queue: Pending · Instagram");
     expect(html).toContain("Proof review");
+    expect(html).toContain("Chapter context: TEST Stanford University");
+    expect(html).toContain("Queue context: Pending · Instagram");
+    expect(html).toContain("Return with Command Center after this Proof / UGC review pass for TEST Stanford University (Pending · Instagram)");
     expect(html).toContain("Return with Command Center after this Proof / UGC review pass");
     expect(html).toContain("Audit Logs");
     expect(html).toContain("MCP Connections");

@@ -289,8 +289,22 @@ describe("staff page", () => {
     expect(source).toContain("Next step: finish consent and coach context here, then open Admin preview for embedded DS audit readback and blocked-control posture before any publishing request.");
     expect(source).toContain("DS Admin audit handoff");
     expect(source).toContain("Review consent and blocked actions here, then open the Admin preview for DS audit readback before any publishing or coach-note approval request.");
-    expect(source).toContain('href="/staff?view=admin&adminView=audit&returnView=proof_ugc"');
-    expect(source).toContain('href="/staff?view=proof_ugc"');
+    expect(source).toContain("const selectedCardId = searchParams.get(\"ugcCard\") ?? initialSelectedCardId;");
+    expect(source).toContain("resolveProofQueueStatusFilter(searchParams.get(\"proofStatus\"), initialStatusFilter)");
+    expect(source).toContain("resolveProofQueuePlatformFilter(searchParams.get(\"proofPlatform\"), initialPlatformFilter)");
+    expect(source).toContain("handleFilterChange(");
+    expect(source).toContain('params.set("proofStatus", nextStatusFilter);');
+    expect(source).toContain('params.set("proofPlatform", nextPlatformFilter);');
+    expect(source).toContain('params.delete("ugcCard");');
+    expect(source).toContain("matchesProofQueueFilters(selectedCard, nextStatusFilter, nextPlatformFilter)");
+    expect(source).toContain("buildStaffAdminProofHref(");
+    expect(source).toContain("selectedCard.chapter");
+    expect(source).toContain("const currentSearch = searchParams.toString() || initialRouteSearch;");
+    expect(source).toContain("buildStaffProofHref(pathname, currentSearch, selectedCard.id)");
+    expect(source).toContain("const genericProofAdminHref = buildStaffAdminProofHref(pathname, currentSearch);");
+    expect(source).toContain("const genericProofQueueHref = buildStaffProofHref(pathname, currentSearch);");
+    expect(source).toContain("const adminProofQueueContext =");
+    expect(source).toContain('getEmbeddedProofQueueContext(getRouteParam("proofStatus"), getRouteParam("proofPlatform"))');
     expect(source).toContain("Open Admin preview");
     expect(source).toContain("Return to Proof / UGC");
     expect(source).toContain("Embedded Admin review keeps DS directory, audit logs, and blocked controls in the same command-center walkthrough.");
@@ -300,6 +314,29 @@ describe("staff page", () => {
     expect(source).toContain("Return to Proof / UGC after Admin readback to continue the same review loop in the staff shell.");
     expect(source).toContain("Return to Proof / UGC after the Admin readback to continue the same Command Center review loop.");
     expect(source).toContain("Next review step");
+  });
+
+  it("keeps Proof / UGC queue context route-backed for admin return loops", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("general.staff@mymedlife.test"),
+    );
+
+    const { default: StaffPage } = await import("@/app/staff/page");
+    const html = renderToStaticMarkup(
+      await StaffPage({
+        searchParams: Promise.resolve({
+          view: "proof_ugc",
+          proofStatus: "pending",
+          proofPlatform: "instagram",
+        }),
+      }),
+    );
+
+    expect(html).toContain("1 stories");
+    expect(html).toContain("TEST Rush Month tabling");
+    expect(html).not.toContain("TEST Bridge Video: Why I joined MEDLIFE");
   });
 
   it("keeps campaign SOP creation and publish controls visibly blocked inside the SOP surface", async () => {
@@ -361,14 +398,45 @@ describe("staff page", () => {
     expect(html).toContain("admin preview route");
     expect(html).toContain("Current posture");
     expect(html).toContain("embedded admin preview from the staff workspace");
+    expect(html).toContain("When DS Admin access is available, return to chapters in the same Command Center review loop after the Admin readback closes.");
     expect(html).toContain("Return to chapters");
     expect(html).not.toContain("Open Admin preview");
+  });
+
+  it("keeps chapter review context visible when admin access is blocked from a chapter-linked handoff", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("general.staff@mymedlife.test"),
+    );
+
+    const { default: StaffPage } = await import("@/app/staff/page");
+    const html = renderToStaticMarkup(
+      await StaffPage({
+        searchParams: Promise.resolve({
+          view: "admin",
+          adminView: "chapters",
+          returnView: "chapters",
+          chapter: "chapter-test",
+          chapterContext: "TEST Boston College",
+        }),
+      }),
+    );
+
+    expect(html).toContain("Chapter review context: TEST Boston College");
+    expect(html).toContain(">Chapters</h1>");
+    expect(html).toContain("When DS Admin access is available, return to TEST Boston College in the same Command Center review loop after the Admin readback closes.");
+    expect(html).toContain("Return to TEST Boston College");
   });
 
   it("keeps the proof review admin handoff wired to a Proof / UGC return target in source", () => {
     const source = readFileSync("src/components/figma-staff-command-center.tsx", "utf8");
 
-    expect(source).toContain('href="/staff?view=admin&adminView=audit&returnView=proof_ugc"');
+    expect(source).toContain("buildStaffAdminProofHref");
+    expect(source).toContain('params.set("returnView", "proof_ugc");');
+    expect(source).toContain('params.set("ugcCard", cardId);');
+    expect(source).toContain('params.set("chapterContext", chapterContext);');
+    expect(source).toContain('params.delete("ugcCard");');
     expect(source).toContain("resolveStaffAdminReturnScreen");
     expect(source).toContain('if (screen === "ugc") return "Proof / UGC";');
     expect(source).toContain('return chapterId ? "this chapter" : "chapters";');
@@ -428,7 +496,7 @@ describe("staff page", () => {
     expect(html).toContain("Coach notes stay preview-only in this chapter drawer");
     expect(html).toContain("Next step: open the Admin preview for DS directory readback, audit, and blocked-control follow-through before requesting any write path.");
     expect(html).toContain("Return to this chapter in the same Command Center loop after the Admin readback closes.");
-    expect(html).toContain('href="/staff?view=admin&amp;adminView=chapters&amp;returnView=chapters&amp;chapter=chapter-test"');
+    expect(html).toContain('href="/staff?view=admin&amp;adminView=chapters&amp;returnView=chapters&amp;chapter=chapter-test&amp;chapterContext=Boston+College"');
     expect(html).toContain("Open Admin preview");
     expect(html).toContain("Return to chapters");
     expect(html).toContain("Return to the chapters overview after this preview readback");
@@ -454,6 +522,7 @@ describe("staff page", () => {
     expect(html).toContain("Restricted Preview Access");
     expect(html).toContain("Preview as");
     expect(html).toContain("Open Admin preview");
+    expect(html).toContain("After the Admin readback, return to chapters in the same Command Center review loop.");
     expect(html).toContain("DS Admin");
     expect(html).toContain("Super Admin");
     const source = readFileSync("src/components/figma-staff-command-center.tsx", "utf8");
@@ -461,12 +530,165 @@ describe("staff page", () => {
     expect(source).toContain("Previewing as");
   });
 
+  it("keeps proof review context visible in the admin role gate before opening the embedded admin shell", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("super.admin@mymedlife.test"),
+    );
+
+    const { default: StaffPage } = await import("@/app/staff/page");
+    const html = renderToStaticMarkup(
+      await StaffPage({
+        searchParams: Promise.resolve({
+          view: "admin",
+          adminView: "audit",
+          returnView: "proof_ugc",
+          ugcCard: "ugc4",
+          chapterContext: "TEST Stanford University",
+          proofStatus: "pending",
+          proofPlatform: "instagram",
+        }),
+      }),
+    );
+
+    expect(html).toContain("Proof review context: TEST Stanford University (Pending · Instagram)");
+    expect(html).toContain(">Audit Logs</h1>");
+    expect(html).toContain("Restricted to DS Admin and Super Admin only · Proof / UGC review for TEST Stanford University (Pending · Instagram)");
+    expect(html).toContain("After the Admin readback, return to TEST Stanford University in Proof / UGC (Pending · Instagram) in the same Command Center review loop.");
+    expect(html).toContain("Return to TEST Stanford University in Proof / UGC (Pending · Instagram)");
+  });
+
+  it("keeps proof queue context visible when admin access is blocked from a proof-linked handoff", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("general.staff@mymedlife.test"),
+    );
+
+    const { default: StaffPage } = await import("@/app/staff/page");
+    const html = renderToStaticMarkup(
+      await StaffPage({
+        searchParams: Promise.resolve({
+          view: "admin",
+          adminView: "audit",
+          returnView: "proof_ugc",
+          ugcCard: "ugc4",
+          chapterContext: "TEST Stanford University",
+          proofStatus: "pending",
+          proofPlatform: "instagram",
+        }),
+      }),
+    );
+
+    expect(html).toContain("Admin access blocked");
+    expect(html).toContain("Proof review context: TEST Stanford University (Pending · Instagram)");
+    expect(html).toContain(">Audit Logs</h1>");
+    expect(html).toContain("Return to TEST Stanford University in Proof / UGC (Pending · Instagram)");
+    expect(html).toContain("Restricted to DS Admin and Super Admin only · Proof / UGC review for TEST Stanford University (Pending · Instagram)");
+    expect(html).toContain("When DS Admin access is available, return to TEST Stanford University in Proof / UGC (Pending · Instagram) in the same Command Center review loop after the Admin readback closes.");
+  });
+
+  it("keeps proof queue filter context on the proof-to-admin handoff from first render", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("general.staff@mymedlife.test"),
+    );
+
+    const { default: StaffPage } = await import("@/app/staff/page");
+    const html = renderToStaticMarkup(
+      await StaffPage({
+        searchParams: Promise.resolve({
+          view: "proof_ugc",
+          ugcCard: "ugc4",
+          proofStatus: "pending",
+          proofPlatform: "instagram",
+        }),
+      }),
+    );
+    const source = readFileSync("src/components/figma-staff-command-center.tsx", "utf8");
+
+    expect(html).toContain("TEST Stanford University");
+    expect(html).toContain("Return to Proof / UGC");
+    expect(html).toContain('href="/staff?view=admin&amp;ugcCard=ugc4&amp;proofStatus=pending&amp;proofPlatform=instagram&amp;adminView=audit&amp;returnView=proof_ugc&amp;chapterContext=TEST+Stanford+University"');
+    expect(source).toContain("const currentSearch = searchParams.toString() || initialRouteSearch;");
+    expect(source).toContain('initialSelectedCardId={getRouteParam("ugcCard")}');
+    expect(source).toContain("const selectedCardId = searchParams.get(\"ugcCard\") ?? initialSelectedCardId;");
+    expect(source).toContain("const adminHeaderSubtitle =");
+    expect(source).toContain("const adminPreviewTitle =");
+    expect(source).toContain("getStaffAdminPreviewTitle(getRouteParam(\"adminView\"))");
+    expect(source).toContain('const isEmbeddedAdminOpen = activeScreen === "admin" && Boolean(adminRole) && canAccessAdminPanel;');
+    expect(source).toContain("{!isEmbeddedAdminOpen && (");
+    expect(source).toContain("getStaffAdminHeaderSubtitle(adminBackLabel, adminChapterContext, adminProofQueueContext)");
+    expect(source).toContain("getStaffAdminReturnLoopLabel(backLabel, chapterContext, proofQueueContext)");
+  });
+
+  it("keeps chapter portfolio filter context route-backed for the chapter review loop", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("general.staff@mymedlife.test"),
+    );
+
+    const { default: StaffPage } = await import("@/app/staff/page");
+    const html = renderToStaticMarkup(
+      await StaffPage({
+        searchParams: Promise.resolve({
+          view: "chapters",
+          chapterRegion: "West",
+          chapterSort: "points",
+        }),
+      }),
+    );
+    const source = readFileSync("src/components/figma-staff-command-center.tsx", "utf8");
+
+    expect(html).toContain("2 chapters");
+    expect(html).toContain("filtered");
+    expect(html).toContain("TEST Stanford University");
+    expect(html).toContain("TEST UC Berkeley");
+    expect(html).not.toContain("TEST Yale University");
+    expect(source).toContain("searchParams.get(\"chapterSearch\") ?? initialSearch");
+    expect(source).toContain("searchParams.get(\"chapterRegion\") ?? initialRegionFilter");
+    expect(source).toContain("searchParams.get(\"chapterCoach\") ?? initialCoachFilter");
+    expect(source).toContain("resolveStaffChapterTypeFilter(searchParams.get(\"chapterType\"), initialChapterTypeFilter)");
+    expect(source).toContain("resolveStaffChapterSort(searchParams.get(\"chapterSort\"), initialSortBy)");
+    expect(source).toContain("handleChapterFilterChange");
+    expect(source).toContain('params.set(key, value);');
+  });
+
+  it("keeps chapter portfolio filter context on the chapter-to-admin handoff", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("general.staff@mymedlife.test"),
+    );
+
+    const { default: StaffPage } = await import("@/app/staff/page");
+    const html = renderToStaticMarkup(
+      await StaffPage({
+        searchParams: Promise.resolve({
+          view: "chapters",
+          chapter: "ch13",
+          chapterRegion: "West",
+          chapterSort: "points",
+        }),
+      }),
+    );
+    const source = readFileSync("src/components/figma-staff-command-center.tsx", "utf8");
+
+    expect(html).toContain('href="/staff?view=admin&amp;chapter=ch13&amp;chapterRegion=West&amp;chapterSort=points&amp;adminView=chapters&amp;returnView=chapters&amp;chapterContext=TEST+Stanford+University"');
+    expect(source).toContain("buildStaffChapterAdminHref(");
+    expect(source).toContain('params.set("chapterContext", chapterContext);');
+    expect(source).toContain('params.set("adminView", "chapters");');
+  });
+
   it("keeps the local staff shell close to the 2,095-line Figma export while allowing route wiring", () => {
     const source = readFileSync("src/components/figma-staff-command-center.tsx", "utf8");
     const lineCount = source.split("\n").length;
 
     expect(lineCount).toBeGreaterThanOrEqual(2170);
-    expect(lineCount).toBeLessThanOrEqual(2525);
+    expect(lineCount).toBeLessThanOrEqual(2960);
     expect(source).toContain("type Screen = \"chapters\" | \"campaigns\" | \"events\" | \"ugc\" | \"reports\" | \"admin\" | \"best-practices\" | \"sops\";");
     expect(source).toContain("const NAV_ITEMS");
     expect(source).toContain("function PortfolioOverview");
