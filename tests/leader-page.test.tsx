@@ -304,6 +304,42 @@ describe("leader page", () => {
     );
   });
 
+  it.each([
+    ["member_home"],
+    ["bridge_videos"],
+    ["feed_analytics"],
+    ["impact"],
+    ["leaderboard"],
+  ] as const)(
+    "preserves the supported %s review source when create_event redirects into the event shell",
+    async (source) => {
+      const actorModule = await import("@/services/local-actor-context");
+      const dataModule = await import("@/services/read-only-app-data");
+
+      vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+        getSignedInActor("leader.a@mymedlife.test"),
+      );
+      vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
+        getMockReadOnlyAppData("Testing leader create-event source continuity redirect."),
+      );
+
+      const { default: LeaderPage } = await import("@/app/leader/page");
+
+      await expect(
+        LeaderPage({
+          searchParams: Promise.resolve({
+            view: "create_event",
+            source,
+            member: "member-ivy",
+            eventCommittee: "events",
+          }),
+        }),
+      ).rejects.toThrow(
+        `NEXT_REDIRECT:/leader?view=events&source=${source}&member=member-ivy&eventCommittee=events&quickAction=create_event`,
+      );
+    },
+  );
+
   it("keeps blocked leader controls visibly honest inside the restored shell", async () => {
     const actorModule = await import("@/services/local-actor-context");
     const dataModule = await import("@/services/read-only-app-data");
