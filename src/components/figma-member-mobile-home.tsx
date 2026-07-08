@@ -3276,10 +3276,6 @@ function StoriesScreen({
   const activeFilter = resolveStoryFilter(initialFilter);
   const selectedStory = getStoryById(initialStoryId);
 
-  const selectFilter = (filter: StoryFilter) => {
-    window.location.assign(buildStoriesHref({ filter }));
-  };
-
   const toggleLike = (id: number) => {
     void id;
   };
@@ -3310,22 +3306,27 @@ function StoriesScreen({
           </div>
           <div className="flex gap-2 overflow-x-auto pb-2" style={{ scrollbarWidth: "none" }}>
             {STORY_FILTERS.map((f) => (
-              <button
-                type="button"
+              <form
                 key={f}
-                aria-label={`Apply story filter: ${f}`}
-                title={`Apply story filter: ${f}`}
-                aria-pressed={activeFilter === f}
-                onClick={() => selectFilter(f)}
-                className={cn(
-                  "flex-shrink-0 px-3.5 py-1 rounded-full text-xs font-semibold whitespace-nowrap border transition-all",
-                  activeFilter === f
-                    ? "bg-black text-white border-black"
-                    : "bg-white text-gray-500 border-gray-300"
-                )}
+                action="/app/stories"
+                className="flex-shrink-0"
               >
-                {f}
-              </button>
+                <input type="hidden" name="filter" value={f} />
+                <button
+                  type="submit"
+                  aria-label={`Apply story filter: ${f}`}
+                  title={`Apply story filter: ${f}`}
+                  aria-pressed={activeFilter === f}
+                  className={cn(
+                    "px-3.5 py-1 rounded-full text-xs font-semibold whitespace-nowrap border transition-all",
+                    activeFilter === f
+                      ? "bg-black text-white border-black"
+                      : "bg-white text-gray-500 border-gray-300"
+                  )}
+                >
+                  {f}
+                </button>
+              </form>
             ))}
           </div>
         </div>

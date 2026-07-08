@@ -74,8 +74,9 @@ describe("member stories and profile pages", () => {
     expect(html).toContain("TEST @uconn");
     expect(html).toContain('href="/app/stories?filter=For+You&amp;story=1"');
     expect(html).toContain('href="/app/stories?filter=For+You&amp;story=2"');
+    expect(html).toContain('action="/app/stories"');
+    expect(html).toContain('name="filter" value="Events"');
     expect(html).toContain('aria-label="Apply story filter: Events"');
-    expect(html).toContain('aria-pressed="false"');
     expect(html).toContain('aria-pressed="true"');
     expect(html).toContain("Preview-only reaction. Likes are not saved, synced, or counted as production proof.");
     expect(html).toContain("preview likes");
@@ -109,7 +110,7 @@ describe("member stories and profile pages", () => {
 
     expect(html).toContain("TEST UConn MEDLIFE chapter packed the room at their intro event");
     expect(html).toContain("TEST Over 90 students showed up to learn about MEDLIFE&#x27;s mission.");
-    expect(html).toContain('href="/app/stories?filter=Events"');
+    expect(html).toContain('name="filter" value="Events"');
     expect(html).toContain("External source links are blocked in this preview until feed-sharing approval is complete");
     expect(html).toContain("Story saving is blocked in this preview");
     expect(html).toContain("Save preview");
