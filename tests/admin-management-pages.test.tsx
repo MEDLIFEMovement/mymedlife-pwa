@@ -1,6 +1,8 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 
+import { AdminChaptersManagementPanel } from "@/components/admin-chapters-management-panel";
+import { AdminUsersManagementPanel } from "@/components/admin-users-management-panel";
 import { getMockLocalActorContext } from "@/services/local-actor-context";
 
 vi.mock("next/navigation", () => ({
@@ -54,15 +56,18 @@ describe("admin management pages", () => {
     expect(html).toContain("General Student App");
     expect(html).toContain("Promote / demote role");
     expect(html).toContain("Return to General Student App only");
-    expect(html).toContain("Deactivate user");
+    expect(html).toContain("Deactivate user blocked");
     expect(html).toContain("Delete user safeguard");
     expect(html).toContain("Audit record preview");
     expect(html).toContain("Server-backed access changes");
     expect(html).toContain("admin_change_user_access");
-    expect(html).toContain("Save chapter role");
-    expect(html).toContain("Assign staff role");
-    expect(html).toContain("Assign coach portfolio");
+    expect(html).toContain("Save chapter role blocked");
+    expect(html).toContain("Assign staff role blocked");
+    expect(html).toContain("Assign coach portfolio blocked");
     expect(html).toContain("Admin writes locked");
+    expect(html).toContain(
+      "This admin access change is blocked until audited local Supabase writes are approved.",
+    );
     expect(html).toContain("Historical event, attendance, and points records remain preserved.");
   });
 
@@ -116,18 +121,156 @@ describe("admin management pages", () => {
     expect(html).toContain("College / University Chapter");
     expect(html).toContain("Needs Review");
     expect(html).toContain("Edit chapter ownership and modules");
-    expect(html).toContain("Archive chapter");
+    expect(html).toContain("Archive chapter blocked");
     expect(html).toContain("Soft delete chapter");
     expect(html).toContain("Hard delete safeguard");
     expect(html).toContain("chapter_has_active_data");
     expect(html).toContain("Server-backed chapter changes");
     expect(html).toContain("admin_manage_chapter");
+    expect(html).toContain("Create chapter blocked");
+    expect(html).toContain("Save chapter profile blocked");
+    expect(html).toContain("Assign coach blocked");
+    expect(html).toContain("Assign student leader blocked");
+    expect(html).toContain("write_disabled");
+    expect(html).toContain(
+      "This chapter-management change is blocked until audited local Supabase writes are approved.",
+    );
+    expect(html).toContain("Historical events, attendance, and points records must be preserved.");
+  });
+
+  it("keeps admin access button labels clean when server-backed user writes are enabled", () => {
+    const actor = getSignedInActor("ds.admin@mymedlife.test");
+    const html = renderToStaticMarkup(
+      <AdminUsersManagementPanel
+        actor={actor}
+        chapters={[
+          {
+            id: "11111111-1111-4111-8111-111111111111",
+            name: "TEST UCLA MEDLIFE",
+            school: "TEST UCLA",
+            region: "West Coast",
+            chapterType: "college_university",
+            status: "active",
+            coachOwnerId: "33333333-3333-4333-8333-333333333333",
+            staffOwnerIds: [],
+            studentLeaderIds: [],
+            activeModules: ["Events", "Points"],
+            activeMemberCount: 12,
+            activeEventCount: 2,
+            historicalRecordCount: 24,
+          },
+        ]}
+        users={[
+          {
+            id: "22222222-2222-4222-8222-222222222222",
+            name: "TEST Sofia Alvarez",
+            email: "test.sofia.alvarez@mymedlife.test",
+            status: "active",
+            chapterMemberships: [
+              {
+                chapterId: "11111111-1111-4111-8111-111111111111",
+                roleKey: "General Member",
+              },
+            ],
+            staffRoles: [],
+            portfolioChapterIds: [],
+            inviteStatus: "accepted",
+          },
+        ]}
+        writeConfig={{
+          enabled: true,
+          isLocalOnly: true,
+          externalWritesEnabled: false,
+          reason: "Local DS Admin rehearsal.",
+        }}
+      />,
+    );
+
+    expect(html).toContain("Save chapter role");
+    expect(html).toContain("Remove chapter access");
+    expect(html).toContain("Assign staff role");
+    expect(html).toContain("Remove staff role");
+    expect(html).toContain("Assign coach portfolio");
+    expect(html).toContain("Deactivate user");
+    expect(html).not.toContain("Save chapter role blocked");
+    expect(html).not.toContain("Deactivate user blocked");
+    expect(html).not.toContain(
+      "This admin access change is blocked until audited local Supabase writes are approved.",
+    );
+    expect(html).not.toContain("mock-only, so the admin RPC cannot run");
+  });
+
+  it("keeps chapter management button labels clean when server-backed chapter writes are enabled", () => {
+    const actor = getSignedInActor("super.admin@mymedlife.test");
+    const html = renderToStaticMarkup(
+      <AdminChaptersManagementPanel
+        actor={actor}
+        chapterAction={() => undefined}
+        chapters={[
+          {
+            id: "11111111-1111-4111-8111-111111111111",
+            name: "TEST UCLA MEDLIFE",
+            school: "TEST UCLA",
+            region: "West Coast",
+            chapterType: "college_university",
+            status: "active",
+            coachOwnerId: "33333333-3333-4333-8333-333333333333",
+            staffOwnerIds: [],
+            studentLeaderIds: ["44444444-4444-4444-8444-444444444444"],
+            activeModules: ["Events", "Points"],
+            activeMemberCount: 12,
+            activeEventCount: 2,
+            historicalRecordCount: 24,
+          },
+        ]}
+        users={[
+          {
+            id: "33333333-3333-4333-8333-333333333333",
+            name: "TEST Cam Coach",
+            email: "test.cam.coach@mymedlife.test",
+            status: "active",
+            chapterMemberships: [],
+            staffRoles: ["Coach"],
+            portfolioChapterIds: ["11111111-1111-4111-8111-111111111111"],
+            inviteStatus: "accepted",
+          },
+          {
+            id: "44444444-4444-4444-8444-444444444444",
+            name: "TEST Priya President",
+            email: "test.priya.president@mymedlife.test",
+            status: "active",
+            chapterMemberships: [
+              {
+                chapterId: "11111111-1111-4111-8111-111111111111",
+                roleKey: "President / VP",
+              },
+            ],
+            staffRoles: [],
+            portfolioChapterIds: [],
+            inviteStatus: "accepted",
+          },
+        ]}
+        writeConfig={{
+          enabled: true,
+          isLocalOnly: true,
+          externalWritesEnabled: false,
+          reason: "Local DS Admin chapter rehearsal.",
+        }}
+      />,
+    );
+
     expect(html).toContain("Create chapter");
     expect(html).toContain("Save chapter profile");
     expect(html).toContain("Assign coach");
     expect(html).toContain("Assign student leader");
-    expect(html).toContain("write_disabled");
-    expect(html).toContain("Historical events, attendance, and points records must be preserved.");
+    expect(html).toContain("Remove student leader");
+    expect(html).toContain("Archive chapter");
+    expect(html).not.toContain("Create chapter blocked");
+    expect(html).not.toContain("Archive chapter blocked");
+    expect(html).not.toContain(
+      "This chapter-management change is blocked until audited local Supabase writes are approved.",
+    );
+    expect(html).toContain("writes-local-only");
   });
 
   it("renders the access matrix with managed users and audit posture", async () => {

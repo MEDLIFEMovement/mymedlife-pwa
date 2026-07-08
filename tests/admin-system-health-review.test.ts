@@ -1,4 +1,7 @@
+import React from "react";
+import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
+import { AdminSystemHealthReviewPanel } from "@/components/admin-system-health-review-panel";
 import { getAdminSystemHealthReview } from "@/services/admin-system-health-review";
 import { getMockLocalActorContext } from "@/services/local-actor-context";
 import { getMockReadOnlyAppData } from "@/services/read-only-app-data";
@@ -21,6 +24,7 @@ describe("admin system health review", () => {
     expect(review.canReadReview).toBe(true);
     expect(review.title).toBe("Admin system health review");
     expect(review.launchReady).toBe(false);
+    expect(review.summary).toContain("read-only");
     expect(review.browserWritesEnabled).toBe(0);
     expect(review.externalWritesEnabled).toBe(0);
     expect(review.secretsShown).toBe(0);
@@ -45,6 +49,9 @@ describe("admin system health review", () => {
     expect(
       review.checks.find((check) => check.key === "monitoring_backup")?.signal,
     ).toContain("operations runbook");
+    expect(
+      review.checks.find((check) => check.key === "outbox_safety")?.signal,
+    ).toContain("read-only review");
     expect(
       review.checks.find((check) => check.key === "monitoring_backup")
         ?.routeEvidence,
@@ -104,6 +111,10 @@ describe("admin system health review", () => {
     expect(
       review.checks.find((check) => check.key === "environment_flags")?.status,
     ).toBe("needs_review");
+    expect(
+      review.checks.find((check) => check.key === "external_integrations")
+        ?.signal,
+    ).toContain("blocked from this review surface");
   });
 
   it("hides system health from chapter and coach roles", () => {
@@ -115,6 +126,29 @@ describe("admin system health review", () => {
     expect(getAdminSystemHealthReview(member, data).canReadReview).toBe(false);
     expect(getAdminSystemHealthReview(leader, data).canReadReview).toBe(false);
     expect(getAdminSystemHealthReview(coach, data).canReadReview).toBe(false);
+  });
+
+  it("renders the read-only review copy in the system health panel", () => {
+    const actor = getMockLocalActorContext("admin@mymedlife.test");
+    const review = getAdminSystemHealthReview(
+      actor,
+      getMockReadOnlyAppData("Panel render test."),
+      {
+        MYMEDLIFE_DATA_SOURCE: "mock",
+        MYMEDLIFE_ALLOW_LOCAL_SUPABASE_READS: "false",
+        MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES: "false",
+      },
+    );
+
+    const html = renderToStaticMarkup(
+      React.createElement(AdminSystemHealthReviewPanel, { review }),
+    );
+
+    expect(html).toContain("This route stays read-only.");
+    expect(html).toContain(
+      "move into the linked follow-through routes only for approved runbook and evidence checks.",
+    );
+    expect(html).toContain("Next: Approve retry, idempotency, dead-letter, and manual recovery rules before any real external send.");
   });
 });
 
