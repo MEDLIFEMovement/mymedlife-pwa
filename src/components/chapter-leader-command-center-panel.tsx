@@ -1248,7 +1248,7 @@ function renderView(
           {commandCenter.activeQuickAction === "assign_action" ? (
             <SectionCard
               eyebrow="Confirm Attendance"
-              title="Start from RSVPs, then review who attended and what is ready for points."
+              title="Start from RSVPs, then review who attended and what is ready for point review."
             >
               <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
                 <p className="text-sm leading-6 text-slate-600">
@@ -1295,7 +1295,7 @@ function renderView(
                 })}
                 className="inline-flex rounded-full bg-[#2563eb] px-4 py-2.5 text-sm font-semibold text-white"
               >
-                Create Event
+                Create Event Preview
               </Link>
             </div>
 
@@ -1305,8 +1305,8 @@ function renderView(
               </p>
               <p className="mt-2 text-sm leading-6 text-slate-600">
                 This shell keeps TEST event posture visible while create-event staging, attendance
-                confirmation, proof follow-through, and points readback stay route-backed review
-                steps instead of live chapter writes.
+                readback, proof follow-through, and points review stay route-backed review steps
+                instead of live chapter writes.
               </p>
             </div>
 
@@ -1410,9 +1410,9 @@ function renderView(
                           value={
                             commandCenter.selectedEvent.followUpStatusLabel === "Done"
                               ? "Awarded"
-                              : "Ready to award"
+                              : "Ready for review"
                           }
-                          note="Attendance unlocks the point step"
+                          note="Attendance readback unlocks point review"
                         />
                       </div>
                     </div>

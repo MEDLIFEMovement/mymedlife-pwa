@@ -410,7 +410,7 @@ describe("chapter leader command center", () => {
 
     expect(commandCenter.activeQuickAction).toBe("assign_action");
     expect(markup).toContain("Confirm Attendance");
-    expect(markup).toContain("Start from RSVPs, then review who attended and what is ready for points.");
+    expect(markup).toContain("Start from RSVPs, then review who attended and what is ready for point review.");
     expect(markup).toContain("Open attendance review");
     expect(markup).toContain(
       "href=\"/rush-month/actions?source=chapter_assign_action&amp;returnTo=%2Fleader%3Fview%3Dmembers%26member%3Dmember-ivy%26quickAction%3Dassign_action&amp;member=member-ivy\"",
@@ -1043,13 +1043,16 @@ describe("chapter leader command center", () => {
     );
 
     expect(commandCenter.activeQuickAction).toBe("create_event");
-    expect(markup).toContain("Create Event");
+    expect(markup).toContain("Create Event Preview");
     expect(markup).toContain("Open the chapter event preview lane with ownership and follow-through in mind.");
     expect(markup).toContain(
       "Review TEST event creation, RSVP posture, attendance readback, proof follow-through, and point impact across the chapter.",
     );
     expect(markup).toContain("Preview-only event operations");
     expect(markup).toContain("Open event preview flow");
+    expect(markup).toContain(
+      "attendance readback, proof follow-through, and points review stay route-backed review steps",
+    );
     expect(markup).toContain(
       "href=\"/rush-month/events?source=chapter_create_event&amp;returnTo=%2Fleader%3Fview%3Devents%26member%3Dmember-ivy%26eventCommittee%3Devents%26quickAction%3Dcreate_event\"",
     );
@@ -1085,8 +1088,9 @@ describe("chapter leader command center", () => {
     );
     expect(markup).toContain("Event source of truth");
     expect(markup).toContain("Intent before check-in");
-    expect(markup).toContain("Attendance unlocks the point step");
+    expect(markup).toContain("Attendance readback unlocks point review");
     expect(markup).toContain("Awarded");
+    expect(markup).toContain("Ready for review");
     expect(markup).toContain(
       "href=\"/leader?view=events&amp;member=member-ivy&amp;eventCommittee=events&amp;quickAction=create_event\"",
     );
