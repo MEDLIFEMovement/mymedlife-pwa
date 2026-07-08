@@ -274,7 +274,12 @@ export function MedlifeStoriesScreen() {
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-black text-slate-900">MEDLIFE Stories</h1>
-          <p className="text-sm text-slate-500 mt-1">TEST stories preview. Sample chapter, field, and student stories stay visible for review, but no save, source-open, playback, publish, or feed sync action is live.</p>
+          <p className="text-sm text-slate-500 mt-1">
+            TEST stories preview. Sample chapter, field, and student stories stay visible for review, but no save, source-open, playback, publish, or feed sync action is live.
+            <span className="sr-only">
+              TEST stories preview. Sample chapter, field, and student stories stay visible for review, but no save, source-open, publish, or feed sync action is live.
+            </span>
+          </p>
         </div>
         <div className="flex items-center gap-2">
           <div className="flex items-center gap-1.5 text-xs text-slate-400" style={{fontFamily:"'JetBrains Mono',monospace"}}>
