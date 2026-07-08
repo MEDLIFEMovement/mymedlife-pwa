@@ -426,6 +426,9 @@ function Header({
             <span className="inline-flex items-center rounded-full border border-sky-500/15 bg-sky-500/10 px-2 py-0.5 text-[9px] font-mono uppercase tracking-[0.14em] text-sky-300">
               {embeddedReviewCopy.label}
             </span>
+            <span className="inline-flex items-center rounded-full border border-white/[0.08] bg-white/[0.03] px-2 py-0.5 text-[9px] font-mono uppercase tracking-[0.14em] text-slate-400">
+              {`Return: ${embeddedBackLabel}`}
+            </span>
             {chapterContext ? (
               <span className="text-[10px] text-slate-500">
                 {`Context: ${chapterContext}`}
