@@ -218,6 +218,9 @@ describe("member event detail route", () => {
 
     expect(html).toContain('href="/app/points?source=events"');
     expect(html).toContain('aria-label="Back to Points"');
+    expect(html).toContain("Opened from Points &amp; Recognition");
+    expect(html).toContain("Move from TEST points readback into the next event.");
+    expect(html).toContain("The member loop should not stop at the leaderboard.");
     expect(html).toContain('href="/app/events/chapter-event-ucla-kickoff?source=points&amp;step=rsvp"');
   });
 
@@ -242,6 +245,9 @@ describe("member event detail route", () => {
 
     expect(html).toContain('href="/profile"');
     expect(html).toContain('aria-label="Back to Profile"');
+    expect(html).toContain("Opened from your TEST profile");
+    expect(html).toContain("Keep profile, events, and points in one member loop.");
+    expect(html).toContain("the next chapter moment stays route-backed");
   });
 
   it("falls back to the member events list when the event detail source is unknown", async () => {
