@@ -79,11 +79,13 @@ export function ChapterLeaderCommandCenterPanel({
     searchQuery: preservedChapterState.searchQuery,
     quickAction: "create_event",
   });
-  const assignActionHref = buildChapterLeaderAssignmentFlowHref({
+  const assignActionHref = buildChapterLeaderCommandCenterHref("events", {
     source: preservedChapterState.source,
     memberId: preservedChapterState.memberId,
+    eventCommitteeFilter: commandCenter.selectedEventCommitteeFilter,
     pipelineFilter: preservedChapterState.pipelineFilter,
     searchQuery: preservedChapterState.searchQuery,
+    quickAction: "assign_action",
   });
   const heroActions: ChapterLeaderCommandCenterQuickAction[] = [
     {
@@ -1260,6 +1262,36 @@ function renderView(
                       Open Event Performance
                     </Link>
                     <Link
+                      href={buildChapterLeaderCommandCenterHref("events", {
+                        source: commandCenter.selectedSource,
+                        memberId: commandCenter.navigationMemberId,
+                        pipelineFilter: commandCenter.selectedPipelineFilter,
+                        searchQuery: commandCenter.pipelineSearchQuery,
+                        eventCommitteeFilter: getCommitteeEventFilterKey(
+                          commandCenter.selectedCommittee.id,
+                        ),
+                        quickAction: "assign_action",
+                      })}
+                      className="inline-flex rounded-full border border-[#bfdbfe] bg-white px-4 py-2 text-sm font-semibold text-[#1d4ed8]"
+                    >
+                      Confirm Attendance
+                    </Link>
+                    <Link
+                      href={buildChapterLeaderCommandCenterHref("events", {
+                        source: commandCenter.selectedSource,
+                        memberId: commandCenter.navigationMemberId,
+                        pipelineFilter: commandCenter.selectedPipelineFilter,
+                        searchQuery: commandCenter.pipelineSearchQuery,
+                        eventCommitteeFilter: getCommitteeEventFilterKey(
+                          commandCenter.selectedCommittee.id,
+                        ),
+                        quickAction: "create_event",
+                      })}
+                      className="inline-flex rounded-full border border-[#93c5fd] bg-white px-4 py-2 text-sm font-semibold text-[#0b5fc4]"
+                    >
+                      Create Event
+                    </Link>
+                    <Link
                       href={buildChapterLeaderCommandCenterHref("committees", {
                         source: commandCenter.selectedSource,
                         memberId: commandCenter.navigationMemberId,
@@ -1337,21 +1369,45 @@ function renderView(
               title="Start from RSVPs, then review who attended and what is ready for points."
             >
               <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
-                <p className="text-sm leading-6 text-slate-600">
-                  Keep the active event, RSVP posture, and chapter context visible while you
-                  review the attendance roster. Once the readback is clear, the points and
-                  leaderboard movement become much easier to trust.
-                </p>
+                <div className="grid gap-2">
+                  <p className="text-sm leading-6 text-slate-600">
+                    Keep the active event, RSVP posture, and chapter context visible while you
+                    review the attendance roster. Once the readback is clear, the points and
+                    leaderboard movement become much easier to trust.
+                  </p>
+                  {commandCenter.selectedEvent ? (
+                    <p className="text-sm font-semibold text-slate-950">
+                      Return to {commandCenter.selectedEvent.title} after the broader attendance
+                      review so this TEST event stays in view.
+                    </p>
+                  ) : null}
+                </div>
                 <Link
                   href={buildChapterLeaderAssignmentFlowHref({
                     source: commandCenter.selectedSource,
                     memberId: commandCenter.navigationMemberId,
                     pipelineFilter: commandCenter.selectedPipelineFilter,
                     searchQuery: commandCenter.pipelineSearchQuery,
+                    eventCommitteeFilter: commandCenter.selectedEventCommitteeFilter,
+                    eventId: commandCenter.selectedEventId,
                   })}
                   className="inline-flex rounded-full bg-[#2563eb] px-4 py-2 text-sm font-semibold text-white"
                 >
                   Open attendance review
+                </Link>
+                <Link
+                  href={buildChapterLeaderCommandCenterHref("leaderboard", {
+                    source: "events",
+                    memberId: commandCenter.navigationMemberId,
+                    pipelineFilter: commandCenter.selectedPipelineFilter,
+                    searchQuery: commandCenter.pipelineSearchQuery,
+                    eventCommitteeFilter: commandCenter.selectedEventCommitteeFilter,
+                    eventId: commandCenter.selectedEventId,
+                    leaderboardMetric: "attendance",
+                  })}
+                  className="inline-flex rounded-full border border-[#bfdbfe] bg-white px-4 py-2 text-sm font-semibold text-[#1d4ed8]"
+                >
+                  Open Leaderboard
                 </Link>
               </div>
             </SectionCard>
@@ -1543,6 +1599,34 @@ function renderView(
                       className="inline-flex rounded-full border border-[#bfdbfe] bg-white px-4 py-2 text-sm font-semibold text-[#1d4ed8]"
                     >
                       Back to Chapter Home
+                    </Link>
+                    <Link
+                      href={buildChapterLeaderCommandCenterHref("events", {
+                        source: commandCenter.selectedSource,
+                        memberId: commandCenter.navigationMemberId,
+                        pipelineFilter: commandCenter.selectedPipelineFilter,
+                        searchQuery: commandCenter.pipelineSearchQuery,
+                        eventCommitteeFilter: commandCenter.selectedEventCommitteeFilter,
+                        eventId: commandCenter.selectedEvent.id,
+                        quickAction: "assign_action",
+                      })}
+                      className="inline-flex rounded-full border border-[#bfdbfe] bg-white px-4 py-2 text-sm font-semibold text-[#1d4ed8]"
+                    >
+                      Confirm Attendance
+                    </Link>
+                    <Link
+                      href={buildChapterLeaderCommandCenterHref("leaderboard", {
+                        source: "events",
+                        memberId: commandCenter.navigationMemberId,
+                        pipelineFilter: commandCenter.selectedPipelineFilter,
+                        searchQuery: commandCenter.pipelineSearchQuery,
+                        eventCommitteeFilter: commandCenter.selectedEventCommitteeFilter,
+                        eventId: commandCenter.selectedEvent.id,
+                        leaderboardMetric: "attendance",
+                      })}
+                      className="inline-flex rounded-full border border-[#bfdbfe] bg-white px-4 py-2 text-sm font-semibold text-[#1d4ed8]"
+                    >
+                      Open Leaderboard
                     </Link>
                     <Link
                       href={buildChapterLeaderCommandCenterHref("committees", {
@@ -3550,7 +3634,7 @@ function renderMemberProfileQuickActionState(
         </SectionCard>
       );
     case "assign_leadership_action":
-      const memberEventFlowHref = buildChapterLeaderEventFlowHref({
+      const memberEventFlowHref = buildChapterLeaderCommandCenterHref("events", {
         source: commandCenter.selectedSource,
         memberId: member.id,
         pipelineFilter: commandCenter.selectedPipelineFilter,
@@ -3560,19 +3644,20 @@ function renderMemberProfileQuickActionState(
       return (
         <SectionCard
           eyebrow="Open Event Context"
-          title="Start from this member profile, then open the event and attendance lane."
+          title="Start from this member profile, then open the leader event shell."
         >
           <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
             <p className="text-sm leading-6 text-slate-600">
               Keep the person-level context visible while you confirm which events, RSVP follow-up,
-              and attendance signals actually explain this member&apos;s momentum. Then open the
-              broader event flow with the chapter context still anchored to a real student.
+              and attendance signals actually explain this member&apos;s momentum. Open the leader
+              event shell first so the chapter context stays anchored to a real student before any
+              broader event review flow takes over.
             </p>
             <Link
               href={memberEventFlowHref}
               className="inline-flex rounded-full bg-[#2563eb] px-4 py-2 text-sm font-semibold text-white"
             >
-              Open event flow
+              Open Event Performance
             </Link>
           </div>
         </SectionCard>

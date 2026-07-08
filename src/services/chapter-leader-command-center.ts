@@ -541,6 +541,7 @@ export type ChapterLeaderCommandCenterSourceContext = {
 
 export type ChapterLeaderCommandCenterSource =
   | "member_home"
+  | "events"
   | "bridge_videos"
   | "feed_analytics"
   | "impact"
@@ -1614,6 +1615,8 @@ export function getChapterLeaderCommandCenter(
     bestPracticeChapterId: selectedBestPracticeChapterId,
     leaderboardMetric: selectedLeaderboardMetric,
     leaderboardRegion: selectedLeaderboardRegion,
+    eventCommitteeFilter: selectedEventCommitteeFilter,
+    eventId: selectedEventId,
     memberId: navigationMemberId,
     pipelineFilter: selectedPipelineFilter,
     searchQuery: pipelineSearchQuery,
@@ -1836,6 +1839,8 @@ function getChapterLeaderSourceContext(
     bestPracticeChapterId?: string | null;
     leaderboardMetric: ChapterLeaderLeaderboardMetricKey;
     leaderboardRegion: ChapterLeaderLeaderboardRegionKey;
+    eventCommitteeFilter: ChapterLeaderEventCommitteeFilterKey;
+    eventId: string | null;
     memberId: string | null;
     pipelineFilter: ChapterLeaderPipelineFilter;
     searchQuery: string;
@@ -1946,6 +1951,39 @@ function getChapterLeaderSourceContext(
           {
             label: "Student view",
             href: buildStudentHomePreviewHref(),
+          },
+        ],
+      };
+    case "events":
+      return {
+        eyebrow: "Event review handoff",
+        title:
+          context.selectedView === "leaderboard"
+            ? "Opened from event review into leaderboard follow-through"
+            : "Opened from leader event review",
+        summary:
+          context.selectedView === "leaderboard"
+            ? "This leaderboard route was opened from the leader event shell so attendance-backed points can be compared without losing the active event and committee context. Keep the event loop visible instead of flattening this into a disconnected ranking view."
+            : "This route was opened from the leader event shell so attendance, follow-through, and leaderboard movement stay in one operating loop.",
+        actions: [
+          {
+            label: "Back to event performance",
+            href: buildChapterLeaderCommandCenterHref("events", {
+              source: "events",
+              memberId: context.memberId,
+              eventCommitteeFilter: context.eventCommitteeFilter,
+              eventId: context.eventId,
+            }),
+          },
+          {
+            label: "Confirm attendance",
+            href: buildChapterLeaderCommandCenterHref("events", {
+              source: "events",
+              memberId: context.memberId,
+              eventCommitteeFilter: context.eventCommitteeFilter,
+              eventId: context.eventId,
+              quickAction: "assign_action",
+            }),
           },
         ],
       };
@@ -2140,6 +2178,7 @@ function getChapterLeaderSourceContext(
 function parseChapterLeaderSource(value?: string): ChapterLeaderCommandCenterSource | null {
   switch (value) {
     case "member_home":
+    case "events":
     case "bridge_videos":
     case "feed_analytics":
     case "impact":
@@ -2175,6 +2214,8 @@ export function buildChapterLeaderCommandCenterHref(
     view === "leaderboard" ||
     options.source === "leaderboard" ||
     Boolean(options.bestPracticeChapterId);
+  const shouldPreserveEventContext =
+    view === "events" || options.source === "events";
   const shouldPreserveFeedPostContext =
     view === "feed_analytics" ||
     view === "bridge_videos" ||
@@ -2198,14 +2239,14 @@ export function buildChapterLeaderCommandCenterHref(
   }
 
   if (
-    view === "events" &&
+    shouldPreserveEventContext &&
     options.eventCommitteeFilter &&
     options.eventCommitteeFilter !== "all"
   ) {
     searchParams.set("eventCommittee", options.eventCommitteeFilter);
   }
 
-  if (view === "events" && options.eventId) {
+  if (shouldPreserveEventContext && options.eventId) {
     searchParams.set("event", options.eventId);
   }
 
@@ -2270,13 +2311,19 @@ export function buildChapterLeaderAssignmentFlowHref(options: {
   memberId?: string | null;
   pipelineFilter?: ChapterLeaderPipelineFilter;
   searchQuery?: string;
+  eventCommitteeFilter?: ChapterLeaderEventCommitteeFilterKey;
+  eventId?: string | null;
+  returnView?: "events" | "members";
 }) {
   const searchParams = new URLSearchParams();
-  const returnTo = buildChapterLeaderCommandCenterHref("members", {
+  const returnView = options.returnView ?? "events";
+  const returnTo = buildChapterLeaderCommandCenterHref(returnView, {
     source: options.source,
     memberId: options.memberId,
     pipelineFilter: options.pipelineFilter,
     searchQuery: options.searchQuery,
+    eventCommitteeFilter: returnView === "events" ? options.eventCommitteeFilter : undefined,
+    eventId: returnView === "events" ? options.eventId : undefined,
     quickAction: "assign_action",
   });
 
