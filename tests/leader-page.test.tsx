@@ -261,18 +261,21 @@ describe("leader page", () => {
       expect(html).toContain("Preview Interview Scheduling");
       expect(html).toContain("Preview Interview Form");
       expect(html).toContain("TEST values preview.");
+      expect(html).toContain("Values Alignment");
     }
 
     if (view === "training") {
       expect(html).toContain("Preview Resource Intake");
       expect(html).toContain("Preview Video");
       expect(html).toContain("Preview Deck");
+      expect(html).toContain("TEST Featured Resources");
     }
 
     if (view === "leaders") {
       expect(html).toContain("TEST leadership roster preview.");
       expect(html).toContain("Preview Succession Review");
       expect(html).toContain("Preview Values Review");
+      expect(html).toContain("Who visibly owns each lane right now?");
     }
   });
 

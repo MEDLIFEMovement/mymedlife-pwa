@@ -135,6 +135,10 @@ describe("chapter leader command center", () => {
     expect(markup).toContain("Operations");
     expect(markup).toContain("Impact &amp; Culture");
     expect(markup).toContain("Leadership");
+    expect(markup).toContain("Feed Analytics");
+    expect(markup).toContain("Current Leaders");
+    expect(markup).toContain("Values");
+    expect(markup).toContain("Leadership Training");
     expect(markup).toContain("Chapter Metrics — June 2025");
     expect(markup).toContain("E-Board roles");
     expect(markup).toContain("Health Score");
@@ -188,6 +192,9 @@ describe("chapter leader command center", () => {
     expect(markup).not.toContain(`Chapter health score ${commandCenter.healthScore} out of 100`);
     expect(markup).not.toContain("Chapter Pulse");
     expect(markup).not.toContain("Impact Snapshot");
+    expect(markup.match(/>Current Leaders</g)?.length).toBe(1);
+    expect(markup.match(/>Values</g)?.length).toBe(1);
+    expect(markup.match(/>Leadership Training</g)?.length).toBe(1);
   });
 
   it("falls back to zeroed progress bars and chapter-posture copy when overview labels are not sample-formatted", () => {
@@ -253,7 +260,45 @@ describe("chapter leader command center", () => {
     expect(commandCenter.viewOptions.find((item) => item.key === "member_profile")?.href).toBe(
       "/leader?view=member_profile&member=member-maya",
     );
+    expect(commandCenter.viewOptions.find((item) => item.key === "leaders")?.href).toBe(
+      "/leader?view=leaders&member=member-maya",
+    );
+    expect(commandCenter.viewOptions.find((item) => item.key === "values")?.href).toBe(
+      "/leader?view=values&member=member-maya",
+    );
+    expect(commandCenter.viewOptions.find((item) => item.key === "training")?.href).toBe(
+      "/leader?view=training&member=member-maya",
+    );
     expect(commandCenter.selectedMember?.displayName).toBe("Sofia Alvarez");
+  });
+
+  it("keeps leadership review views readable even when no member is currently selected", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const leadersCommandCenter = {
+      ...getChapterLeaderCommandCenter(actor, data, { view: "leaders" }),
+      selectedMember: null,
+      navigationMemberId: null,
+    };
+    const valuesCommandCenter = {
+      ...getChapterLeaderCommandCenter(actor, data, { view: "values" }),
+      selectedMember: null,
+      navigationMemberId: null,
+    };
+
+    const leadersMarkup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter: leadersCommandCenter }),
+    );
+    const valuesMarkup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter: valuesCommandCenter }),
+    );
+
+    expect(leadersMarkup).toContain("Current Leaders");
+    expect(leadersMarkup).not.toContain("Leader in focus");
+    expect(leadersMarkup).toContain("Preview Values Review");
+
+    expect(valuesMarkup).toContain("MEDLIFE Values");
+    expect(valuesMarkup).not.toContain("Values review in focus");
+    expect(valuesMarkup).toContain("Values follow-through stays human-reviewed");
   });
 
   it("keeps Review Members wired from the overview hero into the member-pipeline quick-action state", () => {
