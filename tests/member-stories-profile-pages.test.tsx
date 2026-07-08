@@ -154,11 +154,12 @@ describe("member stories and profile pages", () => {
     expect(html).toContain("Recent Activity");
     expect(html).toContain("View full history");
     expect(html).toContain("Your Designation");
-    expect(html).toContain("Switch designation to preview access");
+    expect(html).toContain("Designation preview");
     expect(html).toContain("Super Admin");
     expect(html).toContain("Settings");
-    expect(html).toContain("Preview Mode — read-only");
-    expect(html).toContain("profile writes stay blocked");
+    expect(html).toContain("Read-only profile");
+    expect(html).toContain("No profile save runs from this route.");
+    expect(html).toContain("No join request, role approval, membership change, or coach assignment runs from this route.");
     expect(html).toContain("Notification preference writes stay blocked");
     expect(html).toContain("Certificates stay blocked");
     expect(html).toContain("max-w-[430px]");
@@ -166,10 +167,8 @@ describe("member stories and profile pages", () => {
     expect(html).toContain('href="/app"');
     expect(html).toContain('aria-label="Member bottom navigation"');
     expect(html).toContain("Sign out");
-    expect(html).toContain("Sign-out and profile writes stay blocked in this preview shell.");
     expect(html).toContain("myMEDLIFE v1.0");
     expect(html).not.toContain("Profile Details");
-    expect(html).not.toContain("Read-only profile");
     expect(html).not.toContain("Next chapter moment");
     expect(html).toContain('href="/app/stories"');
     expect(html).toContain('href="/app/events"');
@@ -178,6 +177,30 @@ describe("member stories and profile pages", () => {
     expect(html).toContain('aria-current="page"');
 
     previewSpy.mockRestore();
+  });
+
+  it("keeps home-to-profile continuity inside the mobile member shell", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const dataModule = await import("@/services/read-only-app-data");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("member.a@mymedlife.test"),
+    );
+    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
+      getMockReadOnlyAppData("Testing member profile home continuity."),
+    );
+
+    const { default: ProfilePage } = await import("@/app/profile/page");
+    const html = renderToStaticMarkup(
+      await ProfilePage({
+        searchParams: Promise.resolve({ source: "home" }),
+      }),
+    );
+
+    expect(html).toContain("Opened from the TEST home walkthrough");
+    expect(html).toContain("This profile stays inside the student shell");
+    expect(html).toContain("Back to Home");
+    expect(html).toContain('href="/app"');
   });
 
   it("redirects signed-out actors to login before rendering the member profile shell", async () => {
@@ -286,8 +309,9 @@ describe("member stories and profile pages", () => {
     expect(html).toContain("Recent Activity");
     expect(html).toContain("Your Designation");
     expect(html).toContain("Settings");
-    expect(html).not.toContain("Opened from the TEST home walkthrough");
-    expect(html).not.toContain("Keep home, profile, and the next event in one member flow.");
+    expect(html).toContain("Opened from the TEST home walkthrough");
+    expect(html).toContain("This profile stays inside the student shell");
+    expect(html).toContain("Back to Home");
     expect(html).toContain('href="/app"');
     expect(html).toContain('aria-label="Member bottom navigation"');
     expect(html).toContain('href="/profile"');
@@ -395,7 +419,7 @@ describe("member stories and profile pages", () => {
     expect(html).toContain("TEST Member ID");
     expect(html).toContain("TEST Speaker");
     expect(html).toContain("TEST Season MVP");
-    expect(html).toContain("Switch designation to preview access");
+    expect(html).toContain("Designation preview");
     expect(html).toContain("View full history");
     expect(html).toContain("Sign out");
     expect(html).toContain("myMEDLIFE v1.0 · TEST UCLA MEDLIFE");
