@@ -3237,9 +3237,6 @@ function StoryCard({ story, liked, onToggleLike, onClick, featured }: {
 
 function StoryModal({ story, liked, onToggleLike, closeHref }: { story: Story; liked: boolean; onToggleLike: (id: number) => void; closeHref: string }) {
   const cfg = sourceConfig[story.source];
-  const previewSourceLabel = `${cfg.label} preview`;
-  const previewHandle = getStoryPreviewHandle(story.chapter);
-  const previewAvatarLabel = getStoryPreviewAvatarLabel(story.chapter);
   return (
     <div className="fixed inset-0 z-50 flex flex-col bg-card sm:items-center sm:justify-center sm:p-6 sm:bg-foreground/40 sm:backdrop-blur-sm">
       <Link href={closeHref} aria-label="Close story reader" className="absolute inset-0 hidden sm:block" />
@@ -3252,7 +3249,7 @@ function StoryModal({ story, liked, onToggleLike, closeHref }: { story: Story; l
             </Link>
           </div>
         ) : (
-          <div className="relative flex-shrink-0 bg-muted aspect-square sm:aspect-[16/9]">
+          <div className="relative flex-shrink-0 bg-muted aspect-[16/9]">
             <img src={story.image} alt={story.title} className="w-full h-full object-cover" />
             <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
             <Link href={closeHref} className="absolute top-4 left-4 w-10 h-10 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center text-white hover:bg-black/60 transition-colors">
@@ -3271,29 +3268,17 @@ function StoryModal({ story, liked, onToggleLike, closeHref }: { story: Story; l
         )}
         <div className="flex-1 overflow-y-auto" style={{ scrollbarWidth: "none" }}>
           <div className="px-5 pt-5 pb-4 space-y-4">
-            <div className="flex items-start justify-between gap-3">
-              <div className="flex items-center gap-3">
-                <div className="flex h-11 w-11 items-center justify-center rounded-full text-sm font-bold text-white" style={{ background: cfg.bg.startsWith("linear") ? "#e6683c" : cfg.bg }}>
-                  {previewAvatarLabel}
-                </div>
-                <div className="space-y-1 leading-tight">
-                  <p className="text-sm font-semibold text-foreground">{previewHandle}</p>
-                  <div className="flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground" style={{ fontFamily: "'DM Mono', monospace" }}>
-                    <span>{cfg.label}</span>
-                    <span className="opacity-30">·</span>
-                    <span>{story.chapter}</span>
-                    <span className="opacity-30">·</span>
-                    <span>{story.date}</span>
-                  </div>
-                </div>
-              </div>
-              <Pill label="Preview reader" variant="gray" />
-            </div>
             <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap" style={{ fontFamily: "'DM Mono', monospace" }}>
+              <span>{cfg.label}</span>
+              <span className="opacity-30">·</span>
               <span>{story.type}</span>
               <span className="opacity-30">·</span>
               <MapPin size={10} />
               <span>{story.country}</span>
+              <span className="opacity-30">·</span>
+              <span>{story.chapter}</span>
+              <span className="opacity-30">·</span>
+              <span>{story.date}</span>
             </div>
             <h2 className="text-[1.7rem] font-bold leading-snug text-foreground" style={{ fontFamily: "'Playfair Display', serif" }}>
               {story.title}
@@ -3325,10 +3310,10 @@ function StoryModal({ story, liked, onToggleLike, closeHref }: { story: Story; l
           <div className="flex items-center gap-2">
             <button type="button" disabled title="Story saving is blocked in this preview" className="flex cursor-not-allowed items-center gap-1.5 rounded-xl px-3 py-2.5 text-sm text-muted-foreground opacity-75">
               <Bookmark size={15} />
-              <span className="hidden sm:inline">Save preview</span>
+              <span className="hidden sm:inline">Save</span>
             </button>
             <button type="button" disabled title="External source links are blocked in this preview until feed-sharing approval is complete" className="flex items-center gap-1.5 text-sm font-semibold px-4 py-2.5 rounded-xl text-white opacity-75 cursor-not-allowed" style={{ background: cfg.bg }}>
-              <ExternalLink size={14} /> {previewSourceLabel}
+              <ExternalLink size={14} /> {cfg.label}
             </button>
           </div>
         </div>
