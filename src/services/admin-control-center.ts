@@ -133,11 +133,11 @@ export function getAdminControlCenterSummary(
       key: "users",
       title: "Users",
       status: "mock_only",
-      primaryMetric: `${actors.length} fake users`,
+      primaryMetric: `${actors.length} TEST users`,
       detail:
         "Local actor switching covers member, action committee, leader, coach, admin, DS admin, and super admin personas.",
       nextAction:
-        "Replace fake users with Supabase Auth profiles only after live auth approval.",
+        "Replace TEST users with Supabase Auth profiles only after live auth approval.",
     },
     {
       key: "roles",
@@ -153,8 +153,8 @@ export function getAdminControlCenterSummary(
       key: "chapters",
       title: "Chapters",
       status: "mock_only",
-      primaryMetric: "1 mock chapter",
-      detail: `${mockChapter.name} is the current local chapter scope.`,
+      primaryMetric: "1 TEST chapter",
+      detail: `${asTestLabel(mockChapter.name)} is the current local chapter scope.`,
       nextAction:
         "Add admin chapter management only after production auth and RLS policies are approved.",
     },
@@ -232,29 +232,29 @@ function getAdminMasterDataInventory(
   return {
     users: actors.map((actor) => ({
       email: actor.email,
-      displayName: actor.displayName,
+      displayName: asTestLabel(actor.displayName),
       audience: actor.audience,
       chapterRoles: actor.chapterRoles,
       staffRoles: actor.staffRoles,
-      chapterNames: actor.chapterNames,
-      coachPortfolioChapterNames: actor.coachPortfolioChapterNames,
+      chapterNames: actor.chapterNames.map(asTestLabel),
+      coachPortfolioChapterNames: actor.coachPortfolioChapterNames.map(asTestLabel),
       status: "mock_only",
       detail:
-        "Fake local review persona. Replace with Supabase Auth profile data only after production auth approval.",
+        "TEST local review persona. Replace with Supabase Auth profile data only after production auth approval.",
     })),
     roles: roleCoverage,
     chapters: [
       {
         id: data.chapter.id,
-        name: data.chapter.name,
-        campus: data.chapter.campus,
+        name: asTestLabel(data.chapter.name),
+        campus: asTestLabel(data.chapter.campus),
         region: data.chapter.region,
-        coachName: data.chapter.coachName,
+        coachName: asTestLabel(data.chapter.coachName),
         status: data.source.mode === "supabase" ? "ready_readonly" : "mock_only",
         detail:
           data.source.mode === "supabase"
             ? "Read from the local Supabase read-only data source."
-            : "Mock chapter scope used for local MVP review.",
+            : "TEST chapter scope used for local MVP review.",
       },
     ],
     campaignTemplates: campaignShells.map((shell) => ({
@@ -271,6 +271,10 @@ function getAdminMasterDataInventory(
     mutationControlsEnabled: 0,
     externalWritesExpected: 0,
   };
+}
+
+function asTestLabel(value: string): string {
+  return value.startsWith("TEST ") ? value : `TEST ${value}`;
 }
 
 function getAdminOperatingResponsibilities(
