@@ -57,9 +57,11 @@ describe("admin master data page", () => {
     expect(html).toContain("Fake users");
     expect(html).toContain("Chapters");
     expect(html).toContain("Campaign templates");
-    expect(html).toContain("Sofia Alvarez");
-    expect(html).toContain("Rush Month");
-    expect(html).toContain("UCLA MEDLIFE");
+    expect(html).toContain("TEST Sofia Alvarez");
+    expect(html).toContain("TEST Rush Month");
+    expect(html).toContain("TEST UCLA MEDLIFE");
+    expect(html).toContain("Coach: TEST Renato Coach.");
+    expect(html).toContain("TEST Priya President previews President / VP permissions locally.");
     expect(html.match(/>TEST</g)?.length ?? 0).toBeGreaterThanOrEqual(4);
   });
 
@@ -119,8 +121,13 @@ describe("admin master data page", () => {
 
     expect(html).toContain("Full master data inventory");
     expect(html).toContain("UCLA MEDLIFE");
-    expect(html).toContain("Rush Month");
-    expect(html).toContain("Sofia Alvarez");
+    expect(html).toContain("TEST Rush Month");
+    expect(html).toContain("TEST Sofia Alvarez");
     expect(html).toContain(">ready readonly<");
+    expect(html).toContain("UCLA MEDLIFE");
+    expect(html).not.toContain("TEST UCLA MEDLIFE");
+    expect(html).toContain("Coach: Renato Coach.");
+    expect(html).not.toContain("Coach: TEST Renato Coach.");
+    expect(html).toContain("TEST Priya President previews President / VP permissions locally.");
   });
 });
