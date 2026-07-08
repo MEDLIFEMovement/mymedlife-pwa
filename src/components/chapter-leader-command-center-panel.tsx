@@ -553,6 +553,19 @@ function renderView(
   );
   const leadershipReviewMemberId =
     commandCenter.selectedMember?.id ?? commandCenter.navigationMemberId;
+  const buildLeadershipReviewHref = (
+    view: ChapterLeaderCommandCenterView,
+    options?: {
+      quickAction?: ChapterLeaderCommandCenter["activeQuickAction"];
+    },
+  ) =>
+    buildChapterLeaderCommandCenterHref(view, {
+      source: commandCenter.selectedSource,
+      memberId: leadershipReviewMemberId,
+      pipelineFilter: commandCenter.selectedPipelineFilter,
+      searchQuery: commandCenter.pipelineSearchQuery,
+      quickAction: options?.quickAction ?? undefined,
+    });
 
   switch (commandCenter.selectedView) {
     case "leaderboard":
@@ -2202,6 +2215,27 @@ function renderView(
               </div>
             ) : null}
 
+            {commandCenter.selectedMember ? (
+              <LeadershipReviewLoopCard
+                title={`Keep ${toVisibleTestLabel(commandCenter.selectedMember.displayName)} anchored across the leadership loop.`}
+                summary="Move between current leaders, succession, values, and training without dropping the selected person or making preview-only leadership decisions sound live."
+                actions={[
+                  {
+                    label: "Current Leaders",
+                    href: buildLeadershipReviewHref("leaders"),
+                  },
+                  {
+                    label: "Values Review",
+                    href: buildLeadershipReviewHref("values"),
+                  },
+                  {
+                    label: "Leadership Training",
+                    href: buildLeadershipReviewHref("training"),
+                  },
+                ]}
+              />
+            ) : null}
+
             <div className="grid gap-3 sm:grid-cols-2 2xl:grid-cols-4">
               <EventOpsStat
                 label="E-Board Roles Filled"
@@ -2339,6 +2373,31 @@ function renderView(
             />
           ) : null}
 
+          {commandCenter.selectedMember ? (
+            <LeadershipReviewLoopCard
+              title={`Carry ${toVisibleTestLabel(commandCenter.selectedMember.displayName)} through the leadership-review loop.`}
+              summary="Use the same member lens across roster coverage, succession, values, and training so this command center feels like one operating system instead of separate preview panels."
+              actions={[
+                {
+                  label: "Member Profile",
+                  href: buildLeadershipReviewHref("member_profile"),
+                },
+                {
+                  label: "Succession",
+                  href: buildLeadershipReviewHref("succession"),
+                },
+                {
+                  label: "Values",
+                  href: buildLeadershipReviewHref("values"),
+                },
+                {
+                  label: "Training",
+                  href: buildLeadershipReviewHref("training"),
+                },
+              ]}
+            />
+          ) : null}
+
           <section className="grid gap-4 xl:grid-cols-[1.02fr_0.98fr]">
             <SectionCard eyebrow="Leadership Coverage" title="Who visibly owns each lane right now?">
               <div className="grid gap-3 sm:grid-cols-2">
@@ -2434,6 +2493,27 @@ function renderView(
             />
           ) : null}
 
+          {commandCenter.selectedMember ? (
+            <LeadershipReviewLoopCard
+              title={`Keep ${toVisibleTestLabel(commandCenter.selectedMember.displayName)} in the loop while values review stays preview-only.`}
+              summary="Move back to the roster, succession, and training views without losing the selected member or implying that interviews, approvals, or promotions are live."
+              actions={[
+                {
+                  label: "Current Leaders",
+                  href: buildLeadershipReviewHref("leaders"),
+                },
+                {
+                  label: "Succession",
+                  href: buildLeadershipReviewHref("succession"),
+                },
+                {
+                  label: "Leadership Training",
+                  href: buildLeadershipReviewHref("training"),
+                },
+              ]}
+            />
+          ) : null}
+
           <section className="grid gap-4 xl:grid-cols-2">
             <SectionCard eyebrow="Values Alignment" title="Values Alignment">
               <div className="grid gap-3">
@@ -2497,6 +2577,40 @@ function renderView(
               </p>
             </div>
           </section>
+
+          {commandCenter.selectedMember ? (
+            <SelectedMemberContextBanner
+              eyebrow="Training review in focus"
+              title={`Keeping ${toVisibleTestLabel(commandCenter.selectedMember.displayName)} visible while training stays preview-only`}
+              summary="Use the same member context across development resources, succession planning, and values review so leadership follow-through stays connected even while every action remains blocked or staged."
+              member={commandCenter.selectedMember}
+            />
+          ) : null}
+
+          {commandCenter.selectedMember ? (
+            <LeadershipReviewLoopCard
+              title={`Leadership development stays tied to ${toVisibleTestLabel(commandCenter.selectedMember.displayName)}.`}
+              summary="Return to current leaders, succession, or values without losing the same selected member, and keep all training actions visibly preview-only."
+              actions={[
+                {
+                  label: "Current Leaders",
+                  href: buildLeadershipReviewHref("leaders"),
+                },
+                {
+                  label: "Succession",
+                  href: buildLeadershipReviewHref("succession"),
+                },
+                {
+                  label: "Values",
+                  href: buildLeadershipReviewHref("values"),
+                },
+                {
+                  label: "Member Profile",
+                  href: buildLeadershipReviewHref("member_profile"),
+                },
+              ]}
+            />
+          ) : null}
 
           <SectionCard eyebrow="TEST Featured Resources" title="Leadership Development Resources">
             <div className="grid gap-3">
@@ -4215,6 +4329,44 @@ function SelectedMemberContextBanner({
         >
           Open member profile
         </Link>
+      </div>
+    </div>
+  );
+}
+
+function LeadershipReviewLoopCard({
+  title,
+  summary,
+  actions,
+}: {
+  title: string;
+  summary: string;
+  actions: Array<{
+    label: string;
+    href: string;
+  }>;
+}) {
+  return (
+    <div className="rounded-[1.2rem] border border-[#dbeafe] bg-white p-4 shadow-[0_12px_30px_rgba(37,99,235,0.08)]">
+      <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+        <div className="max-w-3xl">
+          <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-[#1d4ed8]">
+            Leadership review loop
+          </p>
+          <h3 className="mt-2 text-lg font-semibold text-slate-950">{title}</h3>
+          <p className="mt-3 text-sm leading-6 text-slate-600">{summary}</p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {actions.map((action) => (
+            <Link
+              key={action.label}
+              href={action.href}
+              className="inline-flex rounded-full border border-[#bfdbfe] bg-[#eef5ff] px-4 py-2 text-sm font-semibold text-[#1d4ed8] transition hover:border-[#93c5fd] hover:bg-[#dbeafe]"
+            >
+              {action.label}
+            </Link>
+          ))}
+        </div>
       </div>
     </div>
   );

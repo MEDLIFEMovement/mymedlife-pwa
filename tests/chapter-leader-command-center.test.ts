@@ -301,6 +301,81 @@ describe("chapter leader command center", () => {
     expect(valuesMarkup).toContain("Values follow-through stays human-reviewed");
   });
 
+  it("keeps selected-member leadership routes connected across leaders, values, succession, and training", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const leadersCommandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "leaders",
+      memberId: "member-ivy",
+      pipeline: "follow_up",
+      search: "Ivy",
+    });
+    const valuesCommandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "values",
+      memberId: "member-ivy",
+      pipeline: "follow_up",
+      search: "Ivy",
+    });
+    const successionCommandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "succession",
+      memberId: "member-ivy",
+      pipeline: "follow_up",
+      search: "Ivy",
+    });
+    const trainingCommandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "training",
+      memberId: "member-ivy",
+      pipeline: "follow_up",
+      search: "Ivy",
+    });
+
+    const leadersMarkup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter: leadersCommandCenter }),
+    );
+    const valuesMarkup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter: valuesCommandCenter }),
+    );
+    const successionMarkup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter: successionCommandCenter }),
+    );
+    const trainingMarkup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter: trainingCommandCenter }),
+    );
+
+    expect(leadersMarkup).toContain("Leadership review loop");
+    expect(leadersMarkup).toContain("Carry TEST Ivy Invite through the leadership-review loop.");
+    expect(leadersMarkup).toContain(
+      'href="/leader?view=member_profile&amp;member=member-ivy&amp;pipeline=follow_up&amp;q=Ivy"',
+    );
+    expect(leadersMarkup).toContain(
+      'href="/leader?view=training&amp;member=member-ivy&amp;pipeline=follow_up&amp;q=Ivy"',
+    );
+
+    expect(valuesMarkup).toContain(
+      "Keep TEST Ivy Invite in the loop while values review stays preview-only.",
+    );
+    expect(valuesMarkup).toContain(
+      'href="/leader?view=succession&amp;member=member-ivy&amp;pipeline=follow_up&amp;q=Ivy"',
+    );
+    expect(valuesMarkup).toContain(
+      'href="/leader?view=training&amp;member=member-ivy&amp;pipeline=follow_up&amp;q=Ivy"',
+    );
+
+    expect(successionMarkup).toContain(
+      "Keep TEST Ivy Invite anchored across the leadership loop.",
+    );
+    expect(successionMarkup).toContain(
+      'href="/leader?view=leaders&amp;member=member-ivy&amp;pipeline=follow_up&amp;q=Ivy"',
+    );
+
+    expect(trainingMarkup).toContain("Training review in focus");
+    expect(trainingMarkup).toContain(
+      "Leadership development stays tied to TEST Ivy Invite.",
+    );
+    expect(trainingMarkup).toContain(
+      'href="/leader?view=values&amp;member=member-ivy&amp;pipeline=follow_up&amp;q=Ivy"',
+    );
+  });
+
   it("keeps Review Members wired from the overview hero into the member-pipeline quick-action state", () => {
     const actor = getMockLocalActorContext("leader.a@mymedlife.test");
     const commandCenter = getChapterLeaderCommandCenter(actor, data);
