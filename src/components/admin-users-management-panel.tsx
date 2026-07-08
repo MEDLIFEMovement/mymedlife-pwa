@@ -325,7 +325,7 @@ export function AdminUsersManagementPanel({
               </select>
             </label>
             <button className="self-end rounded bg-sky-500 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-400">
-              Apply filters
+              Apply preview filters
             </button>
           </div>
         </form>
@@ -355,7 +355,7 @@ export function AdminUsersManagementPanel({
                     return (
                       <tr key={user.id}>
                         <td className="px-5 py-4">
-                          <div className="font-semibold text-white">{user.name}</div>
+                          <div className="font-semibold text-white">{getVisibleUserName(user)}</div>
                           <div className="mt-1 text-xs text-slate-500">{user.email}</div>
                         </td>
                         <td className="px-5 py-4">
@@ -413,7 +413,7 @@ export function AdminUsersManagementPanel({
               User Detail
             </h2>
             <div className="mt-4">
-              <h3 className="text-xl font-bold text-white">{selectedUser.name}</h3>
+              <h3 className="text-xl font-bold text-white">{getVisibleUserName(selectedUser)}</h3>
               <p className="mt-1 text-sm text-slate-500">{selectedUser.email}</p>
             </div>
             <dl className="mt-4 grid gap-3 text-sm">
@@ -509,6 +509,10 @@ function AdminAccessServerForms({
           These forms submit to the audited `admin_change_user_access` RPC. They stay locked
           for mock IDs or when local Supabase write flags are off.
         </p>
+        <p className="mt-2 text-xs leading-5 text-sky-200/80">
+          This review shell keeps every write verb visibly blocked until the audited local
+          write path is available.
+        </p>
       </div>
 
       {!hasRealIds ? (
@@ -600,7 +604,7 @@ function AdminAccessFormShell({
   returnTo: string;
   selectedUser: ManagedUser;
 }) {
-  const renderedButtonLabel = disabled ? `${buttonLabel} blocked` : buttonLabel;
+  const renderedButtonLabel = disabled ? `${buttonLabel} (blocked)` : buttonLabel;
 
   return (
     <form action={submitAdminUserAccessAction} className="rounded border border-white/10 bg-[#0d1117] p-3">
@@ -680,7 +684,7 @@ function SelectField({
 
 function chapterOptions(chapters: ManagedChapter[]) {
   return chapters.map((chapter) => ({
-    label: chapter.name,
+    label: getVisibleChapterName(chapter),
     value: chapter.id,
   }));
 }
@@ -918,5 +922,26 @@ function getSingleParam(value: string | string[] | undefined): string {
 }
 
 function getChapterName(chapters: ManagedChapter[], chapterId: string) {
-  return chapters.find((chapter) => chapter.id === chapterId)?.name ?? chapterId;
+  const chapter = chapters.find((item) => item.id === chapterId);
+  return chapter ? getVisibleChapterName(chapter) : chapterId;
+}
+
+function getVisibleUserName(user: ManagedUser) {
+  return isFixtureUser(user) ? prefixTestLabel(user.name) : user.name;
+}
+
+function getVisibleChapterName(chapter: ManagedChapter) {
+  return isFixtureChapter(chapter) ? prefixTestLabel(chapter.name) : chapter.name;
+}
+
+function isFixtureUser(user: ManagedUser) {
+  return managedUserFixtures.some((fixture) => fixture.id === user.id);
+}
+
+function isFixtureChapter(chapter: ManagedChapter) {
+  return managedChapterFixtures.some((fixture) => fixture.id === chapter.id);
+}
+
+function prefixTestLabel(value: string) {
+  return value.startsWith("TEST ") ? value : `TEST ${value}`;
 }
