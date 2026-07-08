@@ -856,10 +856,10 @@ function renderView(
             <section className="grid gap-2 px-1">
               <p className="app-eyebrow">Member Profile</p>
               <Link
-                href={commandCenter.selectedMember.backToPipelineHref}
+                href={commandCenter.selectedMember.backToContextHref}
                 className="inline-flex w-fit text-sm font-semibold text-slate-600 hover:text-slate-950"
               >
-                Back to Member Pipeline
+                {commandCenter.selectedMember.backToContextLabel}
               </Link>
             </section>
 
@@ -3649,6 +3649,14 @@ function renderMemberProfileQuickActionState(
   const baseProfileHref = buildChapterLeaderCommandCenterHref("member_profile", {
     source: commandCenter.selectedSource,
     memberId: member.id,
+    bestPracticeChapterId:
+      commandCenter.selectedSource === "leaderboard"
+        ? commandCenter.selectedBestPracticeChapterId
+        : null,
+    eventCommitteeFilter: commandCenter.selectedEventCommitteeFilter,
+    eventId: commandCenter.selectedEventId,
+    leaderboardMetric: commandCenter.selectedLeaderboardMetric,
+    leaderboardRegion: commandCenter.selectedLeaderboardRegion,
     pipelineFilter: commandCenter.selectedPipelineFilter,
     searchQuery: commandCenter.pipelineSearchQuery,
   });
@@ -3656,6 +3664,14 @@ function renderMemberProfileQuickActionState(
   const successionHref = buildChapterLeaderCommandCenterHref("succession", {
     source: commandCenter.selectedSource,
     memberId: member.id,
+    bestPracticeChapterId:
+      commandCenter.selectedSource === "leaderboard"
+        ? commandCenter.selectedBestPracticeChapterId
+        : null,
+    eventCommitteeFilter: commandCenter.selectedEventCommitteeFilter,
+    eventId: commandCenter.selectedEventId,
+    leaderboardMetric: commandCenter.selectedLeaderboardMetric,
+    leaderboardRegion: commandCenter.selectedLeaderboardRegion,
     pipelineFilter: commandCenter.selectedPipelineFilter,
     searchQuery: commandCenter.pipelineSearchQuery,
   });
@@ -3707,6 +3723,14 @@ function renderMemberProfileQuickActionState(
       const memberEventFlowHref = buildChapterLeaderCommandCenterHref("events", {
         source: commandCenter.selectedSource,
         memberId: member.id,
+        bestPracticeChapterId:
+          commandCenter.selectedSource === "leaderboard"
+            ? commandCenter.selectedBestPracticeChapterId
+            : null,
+        eventCommitteeFilter: commandCenter.selectedEventCommitteeFilter,
+        eventId: commandCenter.selectedEventId,
+        leaderboardMetric: commandCenter.selectedLeaderboardMetric,
+        leaderboardRegion: commandCenter.selectedLeaderboardRegion,
         pipelineFilter: commandCenter.selectedPipelineFilter,
         searchQuery: commandCenter.pipelineSearchQuery,
         quickAction: "assign_action",
