@@ -1623,16 +1623,16 @@ function ProofUGCQueue() {
               <div className="mt-1 text-[10px] leading-relaxed text-sky-700">Embedded Admin review keeps DS directory, audit logs, and blocked controls in the same command-center walkthrough.</div>
               <div className="mt-2 flex flex-wrap gap-2">
                 <a
-                  href="/staff?view=admin&adminView=audit"
+                  href="/staff?view=admin&adminView=audit&returnView=proof_ugc"
                   className="inline-flex items-center gap-1 rounded-full border border-sky-200 bg-sky-50 px-2.5 py-1 text-[10px] font-semibold text-sky-700 hover:bg-sky-100"
                 >
                   <Shield className="w-3 h-3" /> Open Admin preview
                 </a>
                 <a
-                  href="/staff?view=chapters"
+                  href="/staff?view=proof_ugc"
                   className="inline-flex items-center gap-1 rounded-full border border-border bg-slate-50 px-2.5 py-1 text-[10px] font-semibold text-slate-700 hover:bg-slate-100"
                 >
-                  <ArrowLeft className="w-3 h-3" /> Return to chapters
+                  <ArrowLeft className="w-3 h-3" /> Return to Proof / UGC
                 </a>
               </div>
             </div>
@@ -1714,7 +1714,7 @@ function ProofUGCQueue() {
                   rows={3}
                 />
                 <p className="mt-1.5 text-[10px] leading-relaxed text-amber-700">
-                  Context drafting stays visible for review, but no coach note, moderation note, or caption save runs from this queue until Admin review approves the next step in the same command-center flow. Return to chapters after Admin readback to confirm the chapter follow-through in the same staff shell.
+                  Context drafting stays visible for review, but no coach note, moderation note, or caption save runs from this queue until Admin review approves the next step in the same command-center flow. Return to Proof / UGC after Admin readback to continue the same review loop in the staff shell.
                 </p>
               </div>
             </div>
@@ -1728,16 +1728,16 @@ function ProofUGCQueue() {
             <div className="text-xs text-muted-foreground leading-relaxed">Click any card to review consent and blocked actions, or open the Admin preview for DS audit readback without leaving the Staff Command Center.</div>
             <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
               <a
-                href="/staff?view=admin&adminView=audit"
+                href="/staff?view=admin&adminView=audit&returnView=proof_ugc"
                 className="inline-flex items-center gap-1 rounded-full border border-sky-200 bg-sky-50 px-2.5 py-1 text-[10px] font-semibold text-sky-700 hover:bg-sky-100"
               >
                 <Shield className="w-3 h-3" /> Open Admin preview
               </a>
               <a
-                href="/staff?view=chapters"
+                href="/staff?view=proof_ugc"
                 className="inline-flex items-center gap-1 rounded-full border border-border bg-slate-50 px-2.5 py-1 text-[10px] font-semibold text-slate-700 hover:bg-slate-100"
               >
-                <ArrowLeft className="w-3 h-3" /> Return to chapters
+                <ArrowLeft className="w-3 h-3" /> Return to Proof / UGC
               </a>
             </div>
           </div>
@@ -1765,7 +1765,7 @@ function ProofUGCQueue() {
               Review consent and blocked actions here, then open the Admin preview for DS audit readback before any publishing or coach-note approval request.
             </p>
             <p className="mt-1 text-[10px] leading-relaxed text-muted-foreground">
-              Return to chapters after the Admin readback to confirm the chapter follow-through in the same Command Center loop.
+              Return to Proof / UGC after the Admin readback to continue the same Command Center review loop.
             </p>
           </div>
         </div>
@@ -2022,7 +2022,7 @@ function AdminHealth() {
 
 type AdminRole = "ds-admin" | "super-admin";
 
-function AdminRouteBlocked({ onBack }: { onBack: () => void }) {
+function AdminRouteBlocked({ onBack, backLabel }: { onBack: () => void; backLabel: string }) {
   return (
     <div className="flex-1 flex items-center justify-center bg-[#0d1117]">
       <div className="w-full max-w-sm text-center space-y-6">
@@ -2051,14 +2051,22 @@ function AdminRouteBlocked({ onBack }: { onBack: () => void }) {
           onClick={onBack}
           className="w-full py-2.5 bg-slate-800 text-white rounded-lg text-sm font-semibold hover:bg-slate-700 transition-colors"
         >
-          Return to chapters
+          {`Return to ${backLabel}`}
         </button>
       </div>
     </div>
   );
 }
 
-function AdminRoleGate({ onGrant, onBack }: { onGrant: (role: AdminRole) => void; onBack: () => void }) {
+function AdminRoleGate({
+  onGrant,
+  onBack,
+  backLabel,
+}: {
+  onGrant: (role: AdminRole) => void;
+  onBack: () => void;
+  backLabel: string;
+}) {
   const [picked, setPicked] = useState<AdminRole>("ds-admin");
 
   return (
@@ -2118,7 +2126,7 @@ function AdminRoleGate({ onGrant, onBack }: { onGrant: (role: AdminRole) => void
 
         <p className="text-[11px] text-slate-700">
           Not DS Admin or Super Admin?{" "}
-          <button onClick={onBack} className="text-slate-500 underline underline-offset-2">Return to chapters</button>
+          <button onClick={onBack} className="text-slate-500 underline underline-offset-2">{`Return to ${backLabel}`}</button>
         </p>
       </div>
     </div>
@@ -2168,6 +2176,9 @@ export function FigmaStaffCommandCenter({
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const activeScreen = resolveStaffShellScreen(searchParams.get("view") ?? initialView ?? null);
+  const adminReturnScreen =
+    activeScreen === "admin" ? resolveStaffAdminReturnScreen(searchParams.get("returnView")) : "chapters";
+  const adminBackLabel = getStaffAdminReturnLabel(adminReturnScreen);
   const [selectedChapter, setSelectedChapter] = useState<Chapter | null>(null);
 
   // SOP Builder sub-navigation
@@ -2276,9 +2287,13 @@ export function FigmaStaffCommandCenter({
         {/* Admin — role gate (shown before access granted) */}
         {activeScreen === "admin" && !adminRole && (
           canAccessAdminPanel ? (
-            <AdminRoleGate onGrant={(role) => setAdminRole(role)} onBack={() => handleNavChange("chapters")} />
+            <AdminRoleGate
+              onGrant={(role) => setAdminRole(role)}
+              onBack={() => handleNavChange(adminReturnScreen)}
+              backLabel={adminBackLabel}
+            />
           ) : (
-            <AdminRouteBlocked onBack={() => handleNavChange("chapters")} />
+            <AdminRouteBlocked onBack={() => handleNavChange(adminReturnScreen)} backLabel={adminBackLabel} />
           )
         )}
 
@@ -2299,8 +2314,8 @@ export function FigmaStaffCommandCenter({
       {activeScreen === "admin" && adminRole && canAccessAdminPanel && (
         <div className="fixed inset-0 z-[60] flex flex-col">
           <AdminPanel
-            onBack={() => { setAdminRole(null); handleNavChange("chapters"); }}
-            embeddedBackLabel="chapters"
+            onBack={() => { setAdminRole(null); handleNavChange(adminReturnScreen); }}
+            embeddedBackLabel={adminBackLabel}
           />
         </div>
       )}
@@ -2344,6 +2359,14 @@ function resolveStaffShellScreen(view: string | null): Screen {
     default:
       return "chapters";
   }
+}
+
+function resolveStaffAdminReturnScreen(view: string | null): Extract<Screen, "chapters" | "ugc"> {
+  return resolveStaffShellScreen(view) === "ugc" ? "ugc" : "chapters";
+}
+
+function getStaffAdminReturnLabel(screen: Extract<Screen, "chapters" | "ugc">) {
+  return screen === "ugc" ? "Proof / UGC" : "chapters";
 }
 
 function getStaffShellViewParam(screen: Screen): string {
@@ -2414,6 +2437,7 @@ function buildStaffShellHref(screen: Screen, pathname: string, search: string): 
   params.set("view", getStaffShellViewParam(screen));
   if (screen !== "admin") {
     params.delete("adminView");
+    params.delete("returnView");
   }
   const query = params.toString();
   return query ? `${pathname}?${query}` : pathname;
