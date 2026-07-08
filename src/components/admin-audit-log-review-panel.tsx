@@ -49,6 +49,12 @@ export function AdminAuditLogReviewPanel({
         </span>
       </div>
 
+      <p className="mt-4 rounded-2xl border border-white/10 bg-[#071d1a]/70 p-3 text-xs leading-5 text-white/58">
+        This review route shows audit posture and readback evidence only. Audit
+        edits, exports, retention changes, secret reveals, and production write
+        approvals remain blocked from the browser.
+      </p>
+
       <div className="mt-5 rounded-2xl border border-white/10 bg-[#071d1a]/70 p-4">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
           <div>
@@ -87,14 +93,14 @@ export function AdminAuditLogReviewPanel({
         </div>
         <div className="mt-4 flex flex-wrap gap-2">
           {review.auditPreflight.blockedControls.map((control) => (
-            <span
-              key={control}
-              className="rounded-full border border-white/10 bg-black/20 px-3 py-1 text-xs font-semibold text-white/64"
-            >
-              Locked {control}
-            </span>
-          ))}
-        </div>
+              <span
+                key={control}
+                className="rounded-full border border-white/10 bg-black/20 px-3 py-1 text-xs font-semibold text-white/64"
+              >
+                Blocked {control}
+              </span>
+            ))}
+          </div>
       </div>
 
       {review.canReadRows ? (
