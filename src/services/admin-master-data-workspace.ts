@@ -154,7 +154,9 @@ function getChapterInventory(
       name: isReadOnlyLiveShape ? data.chapter.name : asTestLabel(data.chapter.name),
       campus: isReadOnlyLiveShape ? data.chapter.campus : asTestLabel(data.chapter.campus),
       region: isReadOnlyLiveShape ? data.chapter.region : asTestLabel(data.chapter.region),
-      coachName: data.chapter.coachName,
+      coachName: isReadOnlyLiveShape
+        ? data.chapter.coachName
+        : asTestLabel(data.chapter.coachName),
       status: isReadOnlyLiveShape ? "ready_readonly" : "mock_only",
       detail:
         isReadOnlyLiveShape

@@ -43,6 +43,7 @@ describe("admin master data workspace", () => {
     );
     expect(workspace.campaignTemplates[0]?.name).toContain("TEST ");
     expect(workspace.chapters[0]?.name).toContain("TEST ");
+    expect(workspace.chapters[0]?.coachName).toContain("TEST ");
   });
 
   it("keeps DS Admin eligible but routed back to safety review", () => {
@@ -97,6 +98,7 @@ describe("admin master data workspace", () => {
 
     expect(workspace.chapters[0]?.name).toBe("UCLA MEDLIFE");
     expect(workspace.chapters[0]?.campus).toBe("UCLA");
+    expect(workspace.chapters[0]?.coachName).toBe("Renato Coach");
     expect(workspace.users[0]?.displayName).toContain("TEST ");
     expect(workspace.campaignTemplates[0]?.name).toContain("TEST ");
   });
