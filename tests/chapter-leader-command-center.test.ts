@@ -197,6 +197,25 @@ describe("chapter leader command center", () => {
     expect(markup.match(/>Leadership Training</g)?.length).toBe(1);
   });
 
+  it("keeps chapter-home attendance follow-through inside the leader events shell before broader review", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "overview",
+      memberId: "member-ivy",
+      pipeline: "follow_up",
+      search: "Ivy",
+      eventCommittee: "events",
+    });
+    const markup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
+    );
+
+    expect(markup).toContain(
+      'href="/leader?view=events&amp;member=member-ivy&amp;eventCommittee=events&amp;pipeline=follow_up&amp;q=Ivy&amp;quickAction=assign_action"',
+    );
+    expect(markup).not.toContain("/rush-month/actions?source=chapter_assign_action");
+  });
+
   it("falls back to zeroed progress bars and chapter-posture copy when overview labels are not sample-formatted", () => {
     const actor = getMockLocalActorContext("leader.a@mymedlife.test");
     const commandCenter = getChapterLeaderCommandCenter(actor, data);
@@ -522,6 +541,7 @@ describe("chapter leader command center", () => {
     const commandCenter = getChapterLeaderCommandCenter(actor, data, {
       view: "events",
       memberId: "member-ivy",
+      eventCommittee: "events",
       quickAction: "assign_action",
     });
     const markup = renderToStaticMarkup(
@@ -533,7 +553,61 @@ describe("chapter leader command center", () => {
     expect(markup).toContain("Start from RSVPs, then review who attended and what is ready for points.");
     expect(markup).toContain("Open attendance review");
     expect(markup).toContain(
-      "href=\"/rush-month/actions?source=chapter_assign_action&amp;returnTo=%2Fleader%3Fview%3Dmembers%26member%3Dmember-ivy%26quickAction%3Dassign_action&amp;member=member-ivy\"",
+      "href=\"/rush-month/actions?source=chapter_assign_action&amp;returnTo=%2Fleader%3Fview%3Devents%26member%3Dmember-ivy%26eventCommittee%3Devents%26quickAction%3Dassign_action&amp;member=member-ivy\"",
+    );
+  });
+
+  it("keeps the selected event attached when attendance review starts from event detail", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "events",
+      memberId: "member-ivy",
+      eventCommittee: "events",
+      eventId: "bc-event-moving-mountains-kickoff",
+      quickAction: "assign_action",
+    });
+    const markup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
+    );
+
+    expect(commandCenter.activeQuickAction).toBe("assign_action");
+    expect(commandCenter.selectedEventId).toBe("bc-event-moving-mountains-kickoff");
+    expect(markup).toContain(
+      "Return to Moving Mountains Kickoff after the broader attendance review so this TEST event stays in view.",
+    );
+    expect(markup).toContain(
+      "href=\"/rush-month/actions?source=chapter_assign_action&amp;returnTo=%2Fleader%3Fview%3Devents%26member%3Dmember-ivy%26eventCommittee%3Devents%26event%3Dbc-event-moving-mountains-kickoff%26quickAction%3Dassign_action&amp;member=member-ivy\"",
+    );
+    expect(markup).toContain(
+      "href=\"/leader?view=leaderboard&amp;source=events&amp;member=member-ivy&amp;eventCommittee=events&amp;event=bc-event-moving-mountains-kickoff&amp;leaderboardMetric=attendance\"",
+    );
+  });
+
+  it("keeps the events-to-leaderboard loop inside the leader shell", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "leaderboard",
+      source: "events",
+      memberId: "member-ivy",
+      eventCommittee: "events",
+      eventId: "bc-event-moving-mountains-kickoff",
+      leaderboardMetric: "attendance",
+    });
+    const markup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
+    );
+
+    expect(commandCenter.selectedSource).toBe("events");
+    expect(commandCenter.selectedView).toBe("leaderboard");
+    expect(markup).toContain("Event review handoff");
+    expect(markup).toContain("Opened from event review into leaderboard follow-through");
+    expect(markup).toContain("Back to event performance");
+    expect(markup).toContain("Confirm attendance");
+    expect(markup).toContain(
+      "href=\"/leader?view=events&amp;source=events&amp;member=member-ivy&amp;eventCommittee=events&amp;event=bc-event-moving-mountains-kickoff\"",
+    );
+    expect(markup).toContain(
+      "href=\"/leader?view=events&amp;source=events&amp;member=member-ivy&amp;eventCommittee=events&amp;event=bc-event-moving-mountains-kickoff&amp;quickAction=assign_action\"",
     );
   });
 
@@ -819,7 +893,7 @@ describe("chapter leader command center", () => {
     expect(markup).toContain("Return to profile");
   });
 
-  it("hands assign-leadership-action off to the broader event flow with member context preserved", () => {
+  it("hands assign-leadership-action into the leader event shell with member context preserved", () => {
     const actor = getMockLocalActorContext("leader.a@mymedlife.test");
     const commandCenter = getChapterLeaderCommandCenter(actor, data, {
       view: "member_profile",
@@ -835,11 +909,11 @@ describe("chapter leader command center", () => {
     expect(commandCenter.activeQuickAction).toBe("assign_leadership_action");
     expect(markup).toContain("Open Event Context");
     expect(markup).toContain(
-      "Start from this member profile, then open the event and attendance lane.",
+      "Start from this member profile, then open the leader event shell.",
     );
-    expect(markup).toContain("Open event flow");
+    expect(markup).toContain("Open Event Performance");
     expect(markup).toContain(
-      "href=\"/rush-month/events?source=chapter_create_event&amp;returnTo=%2Fleader%3Fview%3Devents%26member%3Dmember-ivy%26pipeline%3Dfollow_up%26q%3DIvy%26quickAction%3Dassign_action\"",
+      "href=\"/leader?view=events&amp;member=member-ivy&amp;pipeline=follow_up&amp;q=Ivy&amp;quickAction=assign_action\"",
     );
   });
 
@@ -1032,6 +1106,7 @@ describe("chapter leader command center", () => {
     const actor = getMockLocalActorContext("leader.a@mymedlife.test");
     const commandCenter = getChapterLeaderCommandCenter(actor, data, {
       view: "committees",
+      memberId: "member-ivy",
       committeeId: "committee-events",
     });
     const markup = renderToStaticMarkup(
@@ -1049,19 +1124,86 @@ describe("chapter leader command center", () => {
     expect(markup).toContain("11 events linked to this lane");
     expect(markup).toContain("Next committee move");
     expect(markup).toContain("Keep the lane reusable for the next owner");
+    expect(markup).toContain("Committee review in focus");
+    expect(markup).toContain("Reviewing TEST Ivy Invite across committee ownership");
     expect(markup).toContain("Committee lane");
+    expect(markup).toContain("Back to Chapter Home");
     expect(markup).toContain("Add another committee");
+    expect(markup).toContain("Open Event Performance");
+    expect(markup).toContain("Confirm Attendance");
+    expect(markup).toContain("Create Event");
     expect(markup).toContain("Open committee lane");
     expect(markup).toContain(
-      "/leader?view=committees&amp;committee=committee-events",
+      "/leader?view=committees&amp;member=member-ivy&amp;committee=committee-events",
     );
     expect(markup).toContain(
-      "/leader?view=committees&amp;committee=committee-events&amp;quickAction=add_committee",
+      "/leader?view=committees&amp;member=member-ivy&amp;committee=committee-events&amp;quickAction=add_committee",
+    );
+    expect(markup).toContain("href=\"/leader?view=overview&amp;member=member-ivy\"");
+    expect(markup).toContain(
+      "href=\"/leader?view=events&amp;member=member-ivy&amp;eventCommittee=events\"",
     );
     expect(markup).toContain(
-      "href=\"/leader?view=committees&amp;committee=committee-events\"",
+      "href=\"/leader?view=events&amp;member=member-ivy&amp;eventCommittee=events&amp;quickAction=assign_action\"",
+    );
+    expect(markup).toContain(
+      "href=\"/leader?view=events&amp;member=member-ivy&amp;eventCommittee=events&amp;quickAction=create_event\"",
+    );
+    expect(markup).toContain(
+      "href=\"/leader?view=committees&amp;member=member-ivy&amp;committee=committee-events\"",
     );
     expect(markup).toContain("Selected");
+  });
+
+  it("maps every selected committee lane into the matching event follow-through filter", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const baseCommandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "committees",
+      memberId: "member-ivy",
+      committeeId: "committee-events",
+    });
+
+    expect(baseCommandCenter.selectedCommittee).not.toBeNull();
+
+    const cases = [
+      { committeeId: "committee-events", expectedHref: "/leader?view=events&amp;member=member-ivy&amp;eventCommittee=events" },
+      {
+        committeeId: "committee-slt-promotion",
+        expectedHref: "/leader?view=events&amp;member=member-ivy&amp;eventCommittee=slt_promotion",
+      },
+      {
+        committeeId: "committee-recruitment",
+        expectedHref: "/leader?view=events&amp;member=member-ivy&amp;eventCommittee=recruitment",
+      },
+      {
+        committeeId: "committee-fundraising",
+        expectedHref: "/leader?view=events&amp;member=member-ivy&amp;eventCommittee=fundraising",
+      },
+      { committeeId: "committee-service", expectedHref: "/leader?view=events&amp;member=member-ivy&amp;eventCommittee=service" },
+      {
+        committeeId: "committee-communications",
+        expectedHref: "/leader?view=events&amp;member=member-ivy&amp;eventCommittee=comms",
+      },
+      { committeeId: "committee-unknown", expectedHref: "/leader?view=events&amp;member=member-ivy" },
+    ] as const;
+
+    for (const { committeeId, expectedHref } of cases) {
+      const commandCenter = {
+        ...baseCommandCenter,
+        selectedCommitteeId: committeeId,
+        selectedCommittee: baseCommandCenter.selectedCommittee
+          ? {
+              ...baseCommandCenter.selectedCommittee,
+              id: committeeId,
+            }
+          : baseCommandCenter.selectedCommittee,
+      };
+      const markup = renderToStaticMarkup(
+        createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
+      );
+
+      expect(markup).toContain(`href="${expectedHref}"`);
+    }
   });
 
   it("keeps selected committee owner copy honest when a chair is still unassigned", () => {
@@ -1224,6 +1366,8 @@ describe("chapter leader command center", () => {
     );
     expect(markup).toContain(">Event Performance</h1>");
     expect(markup).toContain("Event Detail");
+    expect(markup).toContain("Event review in focus");
+    expect(markup).toContain("Reviewing TEST Ivy Invite through event follow-through");
     expect(markup).toContain(
       "Keep the selected event in chapter context before you leave this surface.",
     );
@@ -1234,6 +1378,16 @@ describe("chapter leader command center", () => {
     expect(markup).toContain("Intent before check-in");
     expect(markup).toContain("Attendance unlocks the point step");
     expect(markup).toContain("Awarded");
+    expect(markup).toContain("Back to Chapter Home");
+    expect(markup).toContain("Open Event Committees");
+    expect(markup).toContain("Confirm Attendance");
+    expect(markup).toContain("href=\"/leader?view=overview&amp;member=member-ivy\"");
+    expect(markup).toContain(
+      "href=\"/leader?view=committees&amp;member=member-ivy&amp;committee=committee-events\"",
+    );
+    expect(markup).toContain(
+      "href=\"/leader?view=events&amp;member=member-ivy&amp;eventCommittee=events&amp;event=bc-event-moving-mountains-kickoff&amp;quickAction=assign_action\"",
+    );
     expect(markup).toContain(
       "href=\"/leader?view=events&amp;member=member-ivy&amp;eventCommittee=events&amp;quickAction=create_event\"",
     );
@@ -1260,6 +1414,44 @@ describe("chapter leader command center", () => {
       markup.indexOf("Events This Month"),
     );
     expect(markup.indexOf("Event Detail")).toBeLessThan(markup.indexOf("RSVP vs. Actual Attendance Readback"));
+  });
+
+  it("maps every event follow-through filter back into the matching committee review lane", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const baseCommandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "events",
+      memberId: "member-ivy",
+      eventCommittee: "events",
+      eventId: "bc-event-moving-mountains-kickoff",
+    });
+
+    const cases = [
+      { eventCommitteeFilter: "events", expectedCommitteeId: "committee-events" },
+      { eventCommitteeFilter: "slt_promotion", expectedCommitteeId: "committee-slt-promotion" },
+      { eventCommitteeFilter: "recruitment", expectedCommitteeId: "committee-recruitment" },
+      { eventCommitteeFilter: "fundraising", expectedCommitteeId: "committee-fundraising" },
+      { eventCommitteeFilter: "service", expectedCommitteeId: "committee-service" },
+      { eventCommitteeFilter: "comms", expectedCommitteeId: "committee-communications" },
+      { eventCommitteeFilter: "all", expectedCommitteeId: null },
+    ] as const;
+
+    for (const { eventCommitteeFilter, expectedCommitteeId } of cases) {
+      const commandCenter = {
+        ...baseCommandCenter,
+        selectedEventCommitteeFilter: eventCommitteeFilter,
+      };
+      const markup = renderToStaticMarkup(
+        createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
+      );
+
+      if (expectedCommitteeId) {
+        expect(markup).toContain(
+          `href="/leader?view=committees&amp;member=member-ivy&amp;committee=${expectedCommitteeId}"`,
+        );
+      } else {
+        expect(markup).toContain("href=\"/leader?view=committees&amp;member=member-ivy\"");
+      }
+    }
   });
 
   it("maps the leaderboard view to the cross-chapter comparison layout from the mockup", () => {
@@ -1419,6 +1611,20 @@ describe("chapter leader command center", () => {
     );
     expect(commandCenter.viewOptions.find((item) => item.key === "overview")?.href).toBe(
       "/leader?view=overview&source=leaderboard&leaderboardMetric=attendance&region=canada&benchmark=leaderboard-mcgill",
+    );
+  });
+
+  it("preserves event review context when the leaderboard is opened from event follow-through", () => {
+    expect(
+      buildChapterLeaderCommandCenterHref("leaderboard", {
+        source: "events",
+        memberId: "member-ivy",
+        eventCommitteeFilter: "events",
+        eventId: "bc-event-moving-mountains-kickoff",
+        leaderboardMetric: "attendance",
+      }),
+    ).toBe(
+      "/leader?view=leaderboard&source=events&member=member-ivy&eventCommittee=events&event=bc-event-moving-mountains-kickoff&leaderboardMetric=attendance",
     );
   });
 
@@ -2670,8 +2876,20 @@ describe("chapter leader command center href", () => {
     expect(
       buildChapterLeaderAssignmentFlowHref({
         memberId: "member-zara",
+        eventCommitteeFilter: "events",
+        eventId: "bc-event-moving-mountains-kickoff",
         pipelineFilter: "follow_up",
         searchQuery: "Ivy",
+      }),
+    ).toBe(
+      "/rush-month/actions?source=chapter_assign_action&returnTo=%2Fleader%3Fview%3Devents%26member%3Dmember-zara%26eventCommittee%3Devents%26event%3Dbc-event-moving-mountains-kickoff%26pipeline%3Dfollow_up%26q%3DIvy%26quickAction%3Dassign_action&member=member-zara",
+    );
+    expect(
+      buildChapterLeaderAssignmentFlowHref({
+        memberId: "member-zara",
+        pipelineFilter: "follow_up",
+        searchQuery: "Ivy",
+        returnView: "members",
       }),
     ).toBe(
       "/rush-month/actions?source=chapter_assign_action&returnTo=%2Fleader%3Fview%3Dmembers%26member%3Dmember-zara%26pipeline%3Dfollow_up%26q%3DIvy%26quickAction%3Dassign_action&member=member-zara",
