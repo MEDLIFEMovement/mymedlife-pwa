@@ -2309,7 +2309,7 @@ function renderView(
       return (
         <LeaderPreviewRouteSurface
           eyebrow="Leadership Training"
-          title="Leadership Training"
+          title="Leadership & Resources Hub"
           summary="Keep coaching, development, and next-step training visible as chapter support context before assignments, approvals, or completion language feels operationally live."
           primaryAction={{
             label: "Open full leader shell",

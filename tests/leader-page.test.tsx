@@ -236,7 +236,7 @@ describe("leader page", () => {
     ["impact", "Impact Dashboard"],
     ["bridge_videos", "Bridge Video Hub"],
     ["feed_analytics", "Feed &amp; Engagement Analytics"],
-    ["training", "Leadership Training"],
+    ["training", "Leadership &amp; Resources Hub"],
     ["values", "MEDLIFE Values"],
     ["leaders", "Current Leaders"],
     ["create_event", "Create Event Preview"],
