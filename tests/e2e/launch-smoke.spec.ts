@@ -204,7 +204,7 @@ test.describe("myMEDLIFE launch route smoke", () => {
       { label: "Current Leaders", view: "leaders", heading: "Current Leaders" },
       { label: "Succession", view: "succession", heading: "Leadership Succession" },
       { label: "Values", view: "values", heading: "MEDLIFE Values" },
-      { label: "Leadership Training", view: "training", heading: "Leadership & Resources Hub" },
+      { label: "Leadership Training", view: "training", heading: "Leadership Training" },
     ] as const;
 
     for (const item of menuItems) {

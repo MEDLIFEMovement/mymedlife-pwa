@@ -143,18 +143,6 @@ export function ChapterLeaderCommandCenterPanel({
       label: "MEDLIFE Stories",
       href: buildLeaderCommandCenterHrefForScreen("stories"),
     },
-    {
-      label: "Current Leaders",
-      href: buildLeaderCommandCenterHrefForScreen("leaders"),
-    },
-    {
-      label: "Values",
-      href: buildLeaderCommandCenterHrefForScreen("values"),
-    },
-    {
-      label: "Leadership Training",
-      href: buildLeaderCommandCenterHrefForScreen("training"),
-    },
   ];
   const dashboardHeading = getDashboardHeading(commandCenter.eventsOverview.monthLabel);
   const healthRankingLabel = getHealthRankingLabel(commandCenter);
@@ -563,6 +551,8 @@ function renderView(
   const selectedMemberAddNoteAction = commandCenter.selectedMember?.leadershipActions.find(
     (action) => action.label === "Add Note",
   );
+  const leadershipReviewMemberId =
+    commandCenter.selectedMember?.id ?? commandCenter.navigationMemberId;
 
   switch (commandCenter.selectedView) {
     case "leaderboard":
@@ -2294,7 +2284,7 @@ function renderView(
                 <Link
                   href={buildChapterLeaderCommandCenterHref("succession", {
                     source: commandCenter.selectedSource,
-                    memberId: commandCenter.selectedMember?.id ?? commandCenter.navigationMemberId,
+                    memberId: leadershipReviewMemberId,
                     pipelineFilter: commandCenter.selectedPipelineFilter,
                     searchQuery: commandCenter.pipelineSearchQuery,
                   })}
@@ -2305,7 +2295,7 @@ function renderView(
                 <Link
                   href={buildChapterLeaderCommandCenterHref("values", {
                     source: commandCenter.selectedSource,
-                    memberId: commandCenter.selectedMember?.id ?? commandCenter.navigationMemberId,
+                    memberId: leadershipReviewMemberId,
                     pipelineFilter: commandCenter.selectedPipelineFilter,
                     searchQuery: commandCenter.pipelineSearchQuery,
                   })}
@@ -2389,7 +2379,7 @@ function renderView(
                 <Link
                   href={buildChapterLeaderCommandCenterHref("member_profile", {
                     source: commandCenter.selectedSource,
-                    memberId: commandCenter.selectedMember?.id ?? commandCenter.navigationMemberId,
+                    memberId: leadershipReviewMemberId,
                     pipelineFilter: commandCenter.selectedPipelineFilter,
                     searchQuery: commandCenter.pipelineSearchQuery,
                     quickAction: "schedule_values_interview",
@@ -2401,7 +2391,7 @@ function renderView(
                 <Link
                   href={buildChapterLeaderCommandCenterHref("values", {
                     source: commandCenter.selectedSource,
-                    memberId: commandCenter.selectedMember?.id ?? commandCenter.navigationMemberId,
+                    memberId: leadershipReviewMemberId,
                     pipelineFilter: commandCenter.selectedPipelineFilter,
                     searchQuery: commandCenter.pipelineSearchQuery,
                     quickAction: "schedule_values_interview",
@@ -2413,7 +2403,7 @@ function renderView(
                 <Link
                   href={buildChapterLeaderCommandCenterHref("values", {
                     source: commandCenter.selectedSource,
-                    memberId: commandCenter.selectedMember?.id ?? commandCenter.navigationMemberId,
+                    memberId: leadershipReviewMemberId,
                     pipelineFilter: commandCenter.selectedPipelineFilter,
                     searchQuery: commandCenter.pipelineSearchQuery,
                   })}

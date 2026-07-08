@@ -192,6 +192,9 @@ describe("chapter leader command center", () => {
     expect(markup).not.toContain(`Chapter health score ${commandCenter.healthScore} out of 100`);
     expect(markup).not.toContain("Chapter Pulse");
     expect(markup).not.toContain("Impact Snapshot");
+    expect(markup.match(/>Current Leaders</g)?.length).toBe(1);
+    expect(markup.match(/>Values</g)?.length).toBe(1);
+    expect(markup.match(/>Leadership Training</g)?.length).toBe(1);
   });
 
   it("falls back to zeroed progress bars and chapter-posture copy when overview labels are not sample-formatted", () => {
@@ -267,6 +270,35 @@ describe("chapter leader command center", () => {
       "/leader?view=training&member=member-maya",
     );
     expect(commandCenter.selectedMember?.displayName).toBe("Sofia Alvarez");
+  });
+
+  it("keeps leadership review views readable even when no member is currently selected", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const leadersCommandCenter = {
+      ...getChapterLeaderCommandCenter(actor, data, { view: "leaders" }),
+      selectedMember: null,
+      navigationMemberId: null,
+    };
+    const valuesCommandCenter = {
+      ...getChapterLeaderCommandCenter(actor, data, { view: "values" }),
+      selectedMember: null,
+      navigationMemberId: null,
+    };
+
+    const leadersMarkup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter: leadersCommandCenter }),
+    );
+    const valuesMarkup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter: valuesCommandCenter }),
+    );
+
+    expect(leadersMarkup).toContain("Current Leaders");
+    expect(leadersMarkup).not.toContain("Leader in focus");
+    expect(leadersMarkup).toContain("Preview Values Review");
+
+    expect(valuesMarkup).toContain("MEDLIFE Values");
+    expect(valuesMarkup).not.toContain("Values review in focus");
+    expect(valuesMarkup).toContain("Values follow-through stays human-reviewed");
   });
 
   it("keeps Review Members wired from the overview hero into the member-pipeline quick-action state", () => {
