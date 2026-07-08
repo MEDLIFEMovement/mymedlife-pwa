@@ -568,13 +568,21 @@ function renderView(
   );
   const leadershipReviewMemberId =
     commandCenter.selectedMember?.id ?? commandCenter.navigationMemberId;
-  const chapterHomeSource =
-    commandCenter.selectedSource ??
-    (["member_profile", "leaders", "succession", "values", "training"].includes(
-      commandCenter.selectedView,
-    )
-      ? commandCenter.selectedView
-      : null);
+  let chapterHomeSource = commandCenter.selectedSource;
+
+  if (!chapterHomeSource) {
+    switch (commandCenter.selectedView) {
+      case "member_profile":
+      case "leaders":
+      case "succession":
+      case "values":
+      case "training":
+        chapterHomeSource = commandCenter.selectedView;
+        break;
+      default:
+        chapterHomeSource = null;
+    }
+  }
   const chapterHomeHref = buildChapterLeaderCommandCenterHref("overview", {
     source: chapterHomeSource,
     memberId: leadershipReviewMemberId,
