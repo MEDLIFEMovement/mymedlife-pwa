@@ -86,6 +86,48 @@ const screenViews: Record<LeaderCommandCenterScreen, string> = {
   stories: "stories",
 };
 
+const leaderReviewContinuityKeys = [
+  "source",
+  "member",
+  "pipeline",
+  "q",
+  "feedPost",
+  "leaderboardMetric",
+  "leaderboardRegion",
+  "region",
+  "benchmark",
+] as const;
+
+const preservedQueryKeysByScreen: Record<LeaderCommandCenterScreen, readonly string[]> = {
+  home: leaderReviewContinuityKeys,
+  leaderboard: ["leaderboardMetric", "leaderboardRegion", "region", "benchmark"],
+  members: leaderReviewContinuityKeys,
+  profile: leaderReviewContinuityKeys,
+  committees: ["eventCommittee"],
+  events: ["event", "eventCommittee"],
+  impact: ["source", "member", "impactStory"],
+  bridge: ["source", "member", "feedPost", "bridge", "bridgeVideo", "impactStory"],
+  succession: leaderReviewContinuityKeys,
+  feed: [
+    "source",
+    "member",
+    "pipeline",
+    "q",
+    "feedPost",
+    "leaderboardMetric",
+    "leaderboardRegion",
+    "region",
+    "benchmark",
+    "bridge",
+    "impactStory",
+  ],
+  training: leaderReviewContinuityKeys,
+  values: leaderReviewContinuityKeys,
+  leaders: leaderReviewContinuityKeys,
+  "create-event": [],
+  stories: [],
+};
+
 export function resolveLeaderCommandCenterScreen(
   view: string | null | undefined,
 ): LeaderCommandCenterScreen {
@@ -112,7 +154,16 @@ export function buildLeaderCommandCenterHrefForScreen(
   } = {},
 ): string {
   const pathname = options.pathname || "/leader";
-  const params = new URLSearchParams(options.search ?? "");
+  const currentParams = new URLSearchParams(options.search ?? "");
+  const params = new URLSearchParams();
+
+  for (const key of preservedQueryKeysByScreen[screen]) {
+    const value = currentParams.get(key);
+
+    if (value) {
+      params.set(key, value);
+    }
+  }
 
   params.set("view", getLeaderCommandCenterViewForScreen(screen));
 

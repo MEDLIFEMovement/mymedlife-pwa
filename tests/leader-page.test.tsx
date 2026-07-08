@@ -394,7 +394,9 @@ describe("leader page", () => {
     expect(lineCount).toBeLessThanOrEqual(4325);
     expect(source).toContain('initialScreen = "home"');
     expect(source).toContain("const [screen, setScreen] = useState<Screen>(initialScreen);");
-    expect(source).toContain("<Sidebar active={screen} onNav={navigateToScreen}/>");
+    expect(source).toContain("<Sidebar");
+    expect(source).toContain("active={screen}");
+    expect(source).toContain("onNav={navigateToScreen}");
     expect(source).toContain("buildLeaderCommandCenterHrefForScreen");
     expect(source).toContain("Ranked Chapter Leaderboard");
     expect(source).toContain('aria-label="Ranked chapter leaderboard"');
