@@ -88,11 +88,14 @@ describe("copied Figma shell CTA safety", () => {
 
   it("keeps the member Stories tab and admin Command Center back control in the copied source", () => {
     const memberSource = readProjectFile("src/components/figma-member-mobile-home.tsx");
+    const memberNavSource = readProjectFile("src/components/member-bottom-nav.tsx");
     const adminSource = readProjectFile("src/components/figma-admin-panel.tsx");
     const staffSource = readProjectFile("src/components/figma-staff-command-center.tsx");
 
-    expect(memberSource).toContain('{ id: "stories", label: "Stories"');
-    expect(memberSource).toContain('label: "Stories"');
+    expect(memberSource).toContain("MemberBottomNav");
+    expect(memberNavSource).toContain('{ id: "stories", label: "Stories"');
+    expect(memberNavSource).toContain('label: "Stories"');
+    expect(memberNavSource).toContain('label: "Profile"');
     expect(adminSource).toContain("Command Center");
     expect(adminSource).toContain("onBack?: () => void");
     expect(staffSource).toContain("<AdminPanel");
