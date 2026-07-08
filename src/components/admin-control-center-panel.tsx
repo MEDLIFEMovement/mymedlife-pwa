@@ -36,7 +36,7 @@ export function AdminControlCenterPanel({ summary }: AdminControlCenterPanelProp
       </div>
 
       <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-6">
-        <Metric label="Fake users" value={`${summary.userCount}`} />
+        <Metric label="TEST users" value={`${summary.userCount}`} />
         <Metric label="Role audiences" value={`${summary.roleAudienceCount}`} />
         <Metric
           label="Named roles"
@@ -63,7 +63,7 @@ export function AdminControlCenterPanel({ summary }: AdminControlCenterPanelProp
               Master data inventory
             </p>
             <p className="mt-1 text-xs leading-5 text-white/56">
-              Read-only admin view of fake users, role coverage, chapter scope,
+              Read-only admin view of TEST users, role coverage, TEST chapter scope,
               and campaign templates.
             </p>
           </div>
