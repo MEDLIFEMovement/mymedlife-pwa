@@ -2023,6 +2023,56 @@ function getChapterLeaderSourceContext(
         ],
       };
     case "member_home":
+      const memberHomeActions = [
+        ...(context.selectedView === "overview"
+          ? []
+          : [
+              {
+                label: "Back to chapter home",
+                href: buildChapterLeaderCommandCenterHref("overview", {
+                  source: "member_home",
+                  memberId: context.memberId,
+                  pipelineFilter: context.pipelineFilter,
+                  searchQuery: context.searchQuery,
+                }),
+              },
+            ]),
+        {
+          label: "Review members",
+          href: buildChapterLeaderCommandCenterHref("members", {
+            source: "member_home",
+            memberId: context.memberId,
+            pipelineFilter: context.pipelineFilter,
+            searchQuery: context.searchQuery,
+            quickAction: "review_members",
+          }),
+        },
+        {
+          label: "Confirm attendance",
+          href: buildChapterLeaderCommandCenterHref("events", {
+            source: "member_home",
+            memberId: context.memberId,
+            pipelineFilter: context.pipelineFilter,
+            searchQuery: context.searchQuery,
+            quickAction: "assign_action",
+          }),
+        },
+        {
+          label: "Open leaderboard",
+          href: buildChapterLeaderCommandCenterHref("leaderboard", {
+            source: "member_home",
+            memberId: context.memberId,
+            pipelineFilter: context.pipelineFilter,
+            searchQuery: context.searchQuery,
+            leaderboardMetric: "attendance",
+          }),
+        },
+        {
+          label: "Student view",
+          href: buildStudentHomePreviewHref(),
+        },
+      ];
+
       return {
         eyebrow: "Member app handoff",
         title: `Opened from ${context.originChapterName} into Leader Hub`,
@@ -2091,33 +2141,7 @@ function getChapterLeaderSourceContext(
             },
           ],
         },
-        actions: [
-          {
-            label: "Review members",
-            href: buildChapterLeaderCommandCenterHref("members", {
-              source: "member_home",
-              quickAction: "review_members",
-            }),
-          },
-          {
-            label: "Confirm attendance",
-            href: buildChapterLeaderCommandCenterHref("events", {
-              source: "member_home",
-              quickAction: "assign_action",
-            }),
-          },
-          {
-            label: "Open leaderboard",
-            href: buildChapterLeaderCommandCenterHref("leaderboard", {
-              source: "member_home",
-              leaderboardMetric: "attendance",
-            }),
-          },
-          {
-            label: "Student view",
-            href: buildStudentHomePreviewHref(),
-          },
-        ],
+        actions: memberHomeActions,
       };
     case "overview":
       return {
