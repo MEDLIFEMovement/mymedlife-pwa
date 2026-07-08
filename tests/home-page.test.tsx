@@ -66,6 +66,7 @@ describe("home page", () => {
     expect(html).toContain("Active Campaign");
     expect(html).toContain("Rush Month");
     expect(html).toContain("Chapter Leaderboard");
+    expect(html).toContain("Open TEST profile &amp; chapter scope");
     expect(html).toContain("Profile");
     expect(html).toContain("Stories");
     expect(html).toContain("Events");
@@ -74,6 +75,7 @@ describe("home page", () => {
     expect(html).toContain('href="/app/events/chapter-event-lakeside-welcome?source=home"');
     expect(html).toContain('href="/app/points?source=home"');
     expect(html).toContain('href="/app/stories"');
+    expect(html).toContain('href="/profile"');
     expect(html).not.toContain("Local preview tools");
     expect(html).not.toContain('href="/slt-prep"');
     expect(html).not.toContain('href="/app/slt-prep?source=home"');
