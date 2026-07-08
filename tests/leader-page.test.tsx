@@ -342,9 +342,9 @@ describe("leader page", () => {
       }),
     );
     expect(valuesHtml).toContain("TEST values preview.");
-    expect(valuesHtml).toContain("Values interview scheduling is blocked in this preview until the approved leadership-review workflow exists.");
-    expect(valuesHtml).toContain("Interview scheduling is blocked in this preview until the approved leadership-review workflow exists.");
-    expect(valuesHtml).toContain("The Values Alignment Interview form is blocked in this preview until the approved leadership-review workflow exists.");
+    expect(valuesHtml).toContain(
+      "Values interview scheduling and the Values Alignment Interview form are blocked in this preview until the approved leadership-review workflow exists.",
+    );
 
     const successionHtml = renderToStaticMarkup(
       await LeaderPage({

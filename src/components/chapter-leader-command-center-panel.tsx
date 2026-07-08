@@ -553,6 +553,10 @@ function renderView(
   );
   const leadershipReviewMemberId =
     commandCenter.selectedMember?.id ?? commandCenter.navigationMemberId;
+  const leadershipReviewLoop =
+    leadershipReviewMemberId || commandCenter.selectedMember
+      ? buildLeadershipReviewLoop(commandCenter, leadershipReviewMemberId)
+      : null;
 
   switch (commandCenter.selectedView) {
     case "leaderboard":
@@ -2226,6 +2230,13 @@ function renderView(
             </div>
           </section>
 
+          {leadershipReviewLoop ? (
+            <LeadershipReviewLoopCard
+              loop={leadershipReviewLoop}
+              activeView="succession"
+            />
+          ) : null}
+
           <div className="grid gap-4 xl:grid-cols-[1.02fr_0.98fr]">
             <SectionCard eyebrow="Leadership Gaps" title="Leadership Gaps">
               <div className="grid gap-3">
@@ -2339,6 +2350,13 @@ function renderView(
             />
           ) : null}
 
+          {leadershipReviewLoop ? (
+            <LeadershipReviewLoopCard
+              loop={leadershipReviewLoop}
+              activeView="leaders"
+            />
+          ) : null}
+
           <section className="grid gap-4 xl:grid-cols-[1.02fr_0.98fr]">
             <SectionCard eyebrow="Leadership Coverage" title="Who visibly owns each lane right now?">
               <div className="grid gap-3 sm:grid-cols-2">
@@ -2416,11 +2434,8 @@ function renderView(
 
             <div className="rounded-[1.2rem] border border-[#bfdbfe] bg-[#f8fbff] p-4">
               <p className="text-sm leading-6 text-slate-700">
-                Values interview scheduling is blocked in this preview until the approved
-                leadership-review workflow exists. Interview scheduling is blocked in this preview
-                until the approved leadership-review workflow exists. The Values Alignment
-                Interview form is blocked in this preview until the approved leadership-review
-                workflow exists.
+                Values interview scheduling and the Values Alignment Interview form are blocked in
+                this preview until the approved leadership-review workflow exists.
               </p>
             </div>
           </section>
@@ -2431,6 +2446,13 @@ function renderView(
               title={`Reviewing ${toVisibleTestLabel(commandCenter.selectedMember.displayName)} for values alignment`}
               summary="Keep this review tied to a real chapter member and their visible leadership context. No interview invite, provider handoff, or approval write becomes live from this shell."
               member={commandCenter.selectedMember}
+            />
+          ) : null}
+
+          {leadershipReviewLoop ? (
+            <LeadershipReviewLoopCard
+              loop={leadershipReviewLoop}
+              activeView="values"
             />
           ) : null}
 
@@ -2497,6 +2519,22 @@ function renderView(
               </p>
             </div>
           </section>
+
+          {commandCenter.selectedMember ? (
+            <SelectedMemberContextBanner
+              eyebrow="Training review in focus"
+              title={`Reviewing ${toVisibleTestLabel(commandCenter.selectedMember.displayName)} through training, values, and succession context`}
+              summary="Keep this leader review tied to one visible person while you compare readiness, values posture, and training follow-through. No publish, share, or assignment write becomes live from this shell."
+              member={commandCenter.selectedMember}
+            />
+          ) : null}
+
+          {leadershipReviewLoop ? (
+            <LeadershipReviewLoopCard
+              loop={leadershipReviewLoop}
+              activeView="training"
+            />
+          ) : null}
 
           <SectionCard eyebrow="TEST Featured Resources" title="Leadership Development Resources">
             <div className="grid gap-3">
@@ -2774,6 +2812,104 @@ function renderView(
     default:
       return null;
   }
+}
+
+type LeadershipReviewLoop = {
+  title: string;
+  summary: string;
+  links: Array<{
+    key: ChapterLeaderCommandCenterView;
+    label: string;
+    href: string;
+  }>;
+};
+
+function buildLeadershipReviewLoop(
+  commandCenter: ChapterLeaderCommandCenter,
+  memberId: string | null,
+): LeadershipReviewLoop {
+  const memberLabel = commandCenter.selectedMember
+    ? toVisibleTestLabel(commandCenter.selectedMember.displayName)
+    : "the selected leader";
+  const buildHref = (view: ChapterLeaderCommandCenterView) =>
+    buildChapterLeaderCommandCenterHref(view, {
+      source: commandCenter.selectedSource,
+      memberId,
+      pipelineFilter: commandCenter.selectedPipelineFilter,
+      searchQuery: commandCenter.pipelineSearchQuery,
+      feedPostId: commandCenter.selectedFeedPostId,
+    });
+
+  return {
+    title: `Keep ${memberLabel} anchored across every leadership handoff.`,
+    summary:
+      "Move through member review, current leaders, succession, values, and training without dropping the person in focus or turning preview actions into live writes.",
+    links: [
+      {
+        key: "member_profile",
+        label: "Member Profile",
+        href: buildHref("member_profile"),
+      },
+      {
+        key: "leaders",
+        label: "Current Leaders",
+        href: buildHref("leaders"),
+      },
+      {
+        key: "succession",
+        label: "Succession",
+        href: buildHref("succession"),
+      },
+      {
+        key: "values",
+        label: "Values",
+        href: buildHref("values"),
+      },
+      {
+        key: "training",
+        label: "Leadership Training",
+        href: buildHref("training"),
+      },
+    ],
+  };
+}
+
+function LeadershipReviewLoopCard({
+  loop,
+  activeView,
+}: {
+  loop: LeadershipReviewLoop;
+  activeView: ChapterLeaderCommandCenterView;
+}) {
+  return (
+    <section className="rounded-[1.2rem] border border-[#bfdbfe] bg-[#f8fbff] p-4">
+      <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-[#1d4ed8]">
+        Leadership review loop
+      </p>
+      <h2 className="mt-2 text-lg font-semibold text-slate-950">{loop.title}</h2>
+      <p className="mt-2 text-sm leading-6 text-slate-600">{loop.summary}</p>
+      <div className="mt-4 flex flex-wrap gap-2">
+        {loop.links.map((link) =>
+          link.key === activeView ? (
+            <span
+              key={link.key}
+              className="inline-flex rounded-full border border-[#2563eb]/35 bg-[#dbeafe] px-4 py-2 text-sm font-semibold text-[#1d4ed8]"
+            >
+              {link.label}
+            </span>
+          ) : (
+            <Link
+              key={link.key}
+              href={link.href}
+              className="inline-flex rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700"
+            >
+              {link.label}
+            </Link>
+          ),
+        )}
+      </div>
+    </section>
+  );
 }
 
 function ChapterNavIcon({ view }: { view: ChapterLeaderCommandCenterView }) {
