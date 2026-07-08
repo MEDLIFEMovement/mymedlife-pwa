@@ -2426,6 +2426,14 @@ export function FigmaStaffCommandCenter({
   const initialChapterSort = resolveStaffChapterSort(getRouteParam("chapterSort"));
   const initialRouteSearch = buildStaffShellQueryFromInitialRouteParams(initialRouteParams);
   const currentRouteSearch = searchParams.toString() || initialRouteSearch;
+  const adminReturnHref =
+    activeScreen === "admin"
+      ? adminReturnScreen === "chapters"
+        ? adminReturnChapterId
+          ? buildStaffChapterHref(adminReturnChapterId, pathname, currentRouteSearch)
+          : buildStaffShellHref("chapters", pathname, currentRouteSearch)
+        : null
+      : null;
   const chapterDrawerProofQueueContext =
     activeScreen === "chapters"
       ? getEmbeddedProofQueueContext(getRouteParam("proofStatus"), getRouteParam("proofPlatform"))
@@ -2607,6 +2615,7 @@ export function FigmaStaffCommandCenter({
           <AdminPanel
             onBack={handleAdminBack}
             embeddedBackLabel={adminBackLabel}
+            embeddedBackHref={adminReturnHref ?? undefined}
           />
         </div>
       )}
