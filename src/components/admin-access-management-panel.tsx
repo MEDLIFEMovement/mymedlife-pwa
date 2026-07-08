@@ -43,6 +43,10 @@ export function AdminAccessManagementPanel({ actor }: AdminAccessManagementPanel
               and the audit events expected for denied access or sensitive
               preview access.
             </p>
+            <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-amber-400/30 bg-amber-300/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-amber-100">
+              <PreviewBadge />
+              Mock users and chapters stay visibly labeled in this review surface.
+            </div>
           </div>
           <a
             href="/admin"
@@ -94,7 +98,10 @@ export function AdminAccessManagementPanel({ actor }: AdminAccessManagementPanel
                   return (
                     <tr key={user.id}>
                       <td className="px-5 py-4">
-                        <div className="font-semibold text-white">{user.name}</div>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <div className="font-semibold text-white">{user.name}</div>
+                          <PreviewBadge />
+                        </div>
                         <div className="mt-1 text-xs text-slate-500">{user.email}</div>
                       </td>
                       <td className="px-5 py-4 text-xs leading-5 text-slate-400">
@@ -119,6 +126,34 @@ export function AdminAccessManagementPanel({ actor }: AdminAccessManagementPanel
                 })}
               </tbody>
             </table>
+          </div>
+        </section>
+
+        <section className="overflow-hidden rounded-lg border border-white/10 bg-[#161b22]">
+          <div className="border-b border-white/10 px-5 py-4">
+            <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-slate-300">
+              Managed Chapter Scope
+            </h2>
+          </div>
+          <div className="grid gap-3 p-5 md:grid-cols-2">
+            {managedChapterFixtures.map((chapter) => (
+              <article
+                key={chapter.id}
+                className="rounded-lg border border-white/10 bg-[#0d1117] p-4"
+              >
+                <div className="flex flex-wrap items-center gap-2">
+                  <h3 className="text-sm font-semibold text-white">{chapter.name}</h3>
+                  <PreviewBadge />
+                </div>
+                <p className="mt-1 text-xs text-slate-500">
+                  {chapter.school} / {chapter.region}
+                </p>
+                <p className="mt-3 text-xs leading-5 text-slate-400">
+                  Active modules: {chapter.activeModules.join(", ")}. Members:{" "}
+                  {chapter.activeMemberCount}. Events: {chapter.activeEventCount}.
+                </p>
+              </article>
+            ))}
           </div>
         </section>
 
@@ -175,5 +210,13 @@ function DetailRow({ label, value }: { label: string; value: string }) {
       </dt>
       <dd className="mt-1 text-slate-200">{value}</dd>
     </div>
+  );
+}
+
+function PreviewBadge() {
+  return (
+    <span className="rounded-full border border-amber-300/30 bg-amber-300/10 px-2 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.12em] text-amber-100">
+      TEST
+    </span>
   );
 }
