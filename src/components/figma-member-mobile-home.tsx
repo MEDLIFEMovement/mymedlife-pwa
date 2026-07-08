@@ -84,7 +84,7 @@ function getMemberEventHomeDetailHref(eventId: number) {
   return getMemberEventDetailHref(eventId).replace("source=events", "source=home");
 }
 
-type PointsSource = "events" | "profile" | "points";
+type MemberLoopSource = "events" | "profile" | "points";
 
 // ─── Primitives ────────────────────────────────────────────────────────────
 
@@ -1899,7 +1899,7 @@ function AdminDashboard({ navigate }: { navigate: (s: Screen) => void }) {
 
 // ─── SCREEN 10 · Points + Leaderboard ────────────────────────────────────────
 
-function PointsLeaderboard({ source }: { source: PointsSource }) {
+function PointsLeaderboard({ source }: { source: MemberLoopSource }) {
   const badges = [
     { name: "TEST Rush Starter", desc: "Complete your first TEST Rush Month action", earned: true },
     { name: "TEST Connector", desc: "Invite 10+ TEST members to a TEST chapter event", earned: true },
@@ -2205,32 +2205,27 @@ const ALL_EVENTS: ChapterEvent[] = [
   { id: 10, title: "TEST First Aid Training",           date: "Sat Nov 30 · 10 AM",   loc: "Bunche Hall 1209A",         pts: 30, status: "RSVP Open",  campaign: "General",               eventType: "Skills Session"        },
   { id: 11, title: "TEST Member Orientation",           date: "Wed Nov 22 · 5:30 PM", loc: "Engineering VI 289",        pts: 25, status: "Upcoming",   campaign: "General",               eventType: "Growing the Movement"  },
 ];
-
-function EventsScreen({ navigate }: { navigate: (s: Screen) => void }) {
+function EventsScreen({ navigate, source }: { navigate: (s: Screen) => void; source: MemberLoopSource }) {
   const [activeCampaign, setActiveCampaign] = useState<CampaignTag | "All">("All");
   const rsvpdIds = [2];
-
-  const visibleEvents = activeCampaign === "All"
-    ? ALL_EVENTS
-    : ALL_EVENTS.filter((e) => e.campaign === activeCampaign);
-
+  const visibleEvents = activeCampaign === "All" ? ALL_EVENTS : ALL_EVENTS.filter((e) => e.campaign === activeCampaign);
   const featuredEvent = visibleEvents.find((e) => e.featured);
   const listEvents = visibleEvents.filter((e) => !e.featured);
-
-  const activeCampaignData = activeCampaign !== "All"
-    ? CAMPAIGNS.find((c) => c.name === activeCampaign)
-    : null;
+  const activeCampaignData = activeCampaign !== "All" ? CAMPAIGNS.find((c) => c.name === activeCampaign) : null;
+  const eventsReturnCard =
+    source === "profile"
+      ? { eyebrow: "Opened from your TEST profile", title: "Keep profile, events, and points in one member loop.", body: "Your TEST profile sent you here so the next chapter moment stays route-backed. Open an event, preview RSVP or attendance, then step back into points when you are ready.", href: "/profile", cta: "Back to Profile" }
+      : source === "points"
+        ? { eyebrow: "Opened from Points & Recognition", title: "Move from TEST points readback into the next event.", body: "The member loop should not stop at the leaderboard. Use this route-backed return path to find the next event, preview RSVP or check-in, and come back to points when the chapter moment is done.", href: "/app/points?source=events", cta: "Back to Points" }
+        : null;
 
   return (
     <div className="pb-28">
-      {/* Header */}
       <div className="bg-primary px-5 pt-12 pb-5">
         <p className="text-blue-200 text-xs font-bold uppercase tracking-wide">TEST UCLA MEDLIFE</p>
         <h1 className="text-white text-2xl font-extrabold mt-1">Events</h1>
         <p className="text-blue-200 text-sm mt-0.5">Show up. Check in. Earn points.</p>
       </div>
-
-      {/* Campaign filter chips */}
       <div className="bg-primary px-4 pb-4">
         <div className="flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
           <button
@@ -2262,16 +2257,23 @@ function EventsScreen({ navigate }: { navigate: (s: Screen) => void }) {
       </div>
 
       <div className="px-4 pt-4 space-y-4">
-        {/* Campaign context card — shown when a campaign is selected */}
+        {eventsReturnCard ? (
+          <Card>
+            <p className="text-[0.68rem] font-bold uppercase tracking-[0.18em] text-primary">{eventsReturnCard.eyebrow}</p>
+            <h2 className="mt-2 text-base font-extrabold text-foreground">{eventsReturnCard.title}</h2>
+            <p className="mt-2 text-sm leading-6 text-muted-foreground">{eventsReturnCard.body}</p>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <Link href={eventsReturnCard.href} className="inline-flex items-center justify-center rounded-xl bg-secondary px-3.5 py-2 text-sm font-bold text-primary transition-colors hover:bg-muted">{eventsReturnCard.cta}</Link>
+            </div>
+          </Card>
+        ) : null}
         {activeCampaignData && (
           <div className={`bg-gradient-to-r ${activeCampaignData.color} rounded-2xl p-4`}>
             <div className="flex items-start justify-between gap-2 mb-2">
               <div>
                 <p className="text-white/70 text-xs font-semibold">{activeCampaignData.phase}</p>
                 <h2 className="text-white text-lg font-extrabold mt-0.5">{activeCampaignData.name}</h2>
-                <p className="text-white/80 text-xs mt-1 leading-relaxed max-w-[220px]">
-                  {activeCampaignData.description}
-                </p>
+                <p className="text-white/80 text-xs mt-1 leading-relaxed max-w-[220px]">{activeCampaignData.description}</p>
               </div>
               <div className="flex-shrink-0 text-right">
                 <p className="text-white text-2xl font-extrabold">{activeCampaignData.progress}%</p>
@@ -2281,13 +2283,9 @@ function EventsScreen({ navigate }: { navigate: (s: Screen) => void }) {
             <div className="h-1.5 bg-white/20 rounded-full overflow-hidden mt-3">
               <div className="h-full bg-white/80 rounded-full" style={{ width: `${activeCampaignData.progress}%` }} />
             </div>
-            <p className="text-white/60 text-xs mt-2">
-              {visibleEvents.length} event{visibleEvents.length !== 1 ? "s" : ""} in this campaign
-            </p>
+            <p className="text-white/60 text-xs mt-2">{visibleEvents.length} event{visibleEvents.length !== 1 ? "s" : ""} in this campaign</p>
           </div>
         )}
-
-        {/* Empty state */}
         {visibleEvents.length === 0 && (
           <div className="flex flex-col items-center justify-center py-16 text-center gap-3">
             <div className="w-12 h-12 bg-muted rounded-2xl flex items-center justify-center">
@@ -3561,12 +3559,14 @@ export function FigmaMemberMobileHome({
   initialStoriesFilter = null,
   initialStoryId = null,
   pointsSource = "points",
+  eventsSource = "events",
 }: {
   initialScreen?: MemberMobileLaunchScreen;
   sltPrepEntry?: MemberSltPrepEntry | null;
   initialStoriesFilter?: string | null;
   initialStoryId?: string | null;
-  pointsSource?: PointsSource;
+  pointsSource?: MemberLoopSource;
+  eventsSource?: MemberLoopSource;
 }) {
   const [screen, setScreen] = useState<Screen>(initialScreen);
   const [role, setRole] = useState<Role>("student");
@@ -3586,7 +3586,7 @@ export function FigmaMemberMobileHome({
       case "evidence": return <EvidenceSubmission navigate={navigate} />;
       case "confirm": return <Confirmation navigate={navigate} />;
       case "points": return <PointsLeaderboard source={pointsSource} />;
-      case "events": return <EventsScreen navigate={navigate} />;
+      case "events": return <EventsScreen navigate={navigate} source={eventsSource} />;
       case "event-detail": return <EventDetailScreen navigate={navigate} />;
       case "rsvp-confirm": return <RsvpConfirmScreen navigate={navigate} />;
       case "checkin": return <CheckInScreen navigate={navigate} />;

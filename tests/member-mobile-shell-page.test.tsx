@@ -86,7 +86,7 @@ describe("member mobile shell routes", () => {
     );
 
     const { default: EventsPage } = await import("@/app/app/events/page");
-    const html = renderToStaticMarkup(await EventsPage());
+    const html = renderToStaticMarkup(await EventsPage({}));
 
     expect(html).toContain(">Events<");
     expect(html).toContain("Show up. Check in. Earn points.");
@@ -94,6 +94,46 @@ describe("member mobile shell routes", () => {
     expect(html).toContain('href="/app/events/chapter-event-ucla-kickoff?source=events&amp;step=rsvp"');
     expect(html).toContain('href="/app/events/chapter-event-ucla-kickoff?source=events"');
     expect(html).toContain('href="/app/events/chapter-event-lakeside-welcome?source=events"');
+  });
+
+  it("keeps the events route tied to the member points handoff when opened from points", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("member.a@mymedlife.test"),
+    );
+
+    const { default: EventsPage } = await import("@/app/app/events/page");
+    const html = renderToStaticMarkup(
+      await EventsPage({
+        searchParams: Promise.resolve({ source: "points" }),
+      }),
+    );
+
+    expect(html).toContain("Opened from Points &amp; Recognition");
+    expect(html).toContain("Move from TEST points readback into the next event.");
+    expect(html).toContain('href="/app/points?source=events"');
+    expect(html).toContain("Back to Points");
+  });
+
+  it("keeps the events route tied to the profile walkthrough when opened from profile", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("member.a@mymedlife.test"),
+    );
+
+    const { default: EventsPage } = await import("@/app/app/events/page");
+    const html = renderToStaticMarkup(
+      await EventsPage({
+        searchParams: Promise.resolve({ source: "profile" }),
+      }),
+    );
+
+    expect(html).toContain("Opened from your TEST profile");
+    expect(html).toContain("Keep profile, events, and points in one member loop.");
+    expect(html).toContain('href="/profile"');
+    expect(html).toContain("Back to Profile");
   });
 
   it("renders the Points route through the shared Figma member shell", async () => {
