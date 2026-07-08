@@ -117,6 +117,8 @@ describe("member event detail route", () => {
     expect(html).toContain("Go to Check-In");
     expect(html).toContain("Route-backed preview only");
     expect(html).toContain('href="/app/events/chapter-event-ucla-kickoff?source=home&amp;step=checkin"');
+    expect(html).toContain('href="/app"');
+    expect(html).toContain("Back to Home");
   });
 
   it("renders the check-in step with TEST-labeled preview event content", async () => {
@@ -169,5 +171,29 @@ describe("member event detail route", () => {
     expect(html).toContain("View leaderboard impact");
     expect(html).toContain("Local preview of the post-check-in state");
     expect(html).toContain('href="/app/points?source=events"');
+  });
+
+  it("preserves the home walkthrough when event points impact starts from home", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const dataModule = await import("@/services/read-only-app-data");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("member.a@mymedlife.test"),
+    );
+    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
+      getMockReadOnlyAppData("Testing member points impact home continuity."),
+    );
+
+    const { default: EventDetailPage } = await import("@/app/app/events/[eventId]/page");
+    const html = renderToStaticMarkup(
+      await EventDetailPage({
+        params: Promise.resolve({ eventId: "chapter-event-ucla-kickoff" }),
+        searchParams: Promise.resolve({ source: "home", step: "points" }),
+      }),
+    );
+
+    expect(html).toContain('href="/app/points?source=home"');
+    expect(html).toContain('href="/app"');
+    expect(html).toContain("Back to Home");
   });
 });

@@ -78,7 +78,7 @@ export default async function AppEventDetailPage({
   const step = getEventDetailStep(resolvedSearchParams.step);
   const backHref =
     step === "detail"
-      ? "/app/events"
+      ? getEventReturnHref(resolvedSearchParams.source)
       : step === "rsvp"
         ? buildEventStepHref(eventId, "detail", resolvedSearchParams.source)
         : step === "checkin"
@@ -144,6 +144,8 @@ function EventDetailView({
   const rsvpHref = buildEventStepHref(event.id, "rsvp", source);
   const checkInHref = buildEventStepHref(event.id, "checkin", source);
   const pointsHref = buildEventStepHref(event.id, "points", source);
+  const returnHref = getEventReturnHref(source);
+  const returnLabel = getEventReturnLabel(source);
   const visibleEventTitle = ensureVisibleTestLabel(event.title);
   const visibleChapterName = ensureVisibleTestLabel(snapshot.chapterName);
   const visibleLocationLabel = ensureVisibleTestLabel(snapshot.memberLocationLabel);
@@ -153,9 +155,9 @@ function EventDetailView({
       <div className="bg-gradient-to-br from-[#1b4b8e] to-[#2563eb] px-5 pb-8 pt-12">
         <div className="mb-6 flex items-center justify-between">
           <Link
-            href="/app/events"
+            href={returnHref}
             className="rounded-full bg-white/15 p-2.5 text-white backdrop-blur-sm transition-colors hover:bg-white/25"
-            aria-label="Back to events"
+            aria-label={returnLabel}
           >
             <ChevronLeft size={18} />
           </Link>
@@ -343,6 +345,8 @@ function EventRsvpConfirmView({
   source?: string;
 }) {
   const visibleLocationLabel = ensureVisibleTestLabel(snapshot.memberLocationLabel);
+  const returnHref = getEventReturnHref(source);
+  const returnLabel = getEventReturnLabel(source);
   return (
     <StepShell backHref={backHref} title="">
       <div className="flex flex-1 flex-col items-center justify-center px-6 py-8 text-center">
@@ -391,7 +395,7 @@ function EventRsvpConfirmView({
             label="Go to Check-In"
             icon={<QrCode size={16} />}
           />
-          <SecondaryLink href="/app/events" label="Back to Events" />
+          <SecondaryLink href={returnHref} label={returnLabel} />
         </div>
       </div>
     </StepShell>
@@ -466,6 +470,8 @@ function EventPointsImpactView({
   source?: string;
 }) {
   const visibleChapterName = ensureVisibleTestLabel(snapshot.chapterName);
+  const returnHref = getEventReturnHref(source);
+  const returnLabel = getEventReturnLabel(source);
   const chapterRows = [
     { rank: "🥇", name: "TEST Aisha N.", points: 220 },
     { rank: "🥈", name: "TEST Marcus T.", points: 185 },
@@ -517,11 +523,11 @@ function EventPointsImpactView({
 
         <div className="mt-6 w-full space-y-2.5">
           <PrimaryLink
-            href={getLaunchLaneMemberPointsHref(source === "profile" ? "profile" : "events")}
+            href={getLaunchLaneMemberPointsHref(getEventPointsSource(source))}
             label="View leaderboard impact"
             icon={<Star size={15} />}
           />
-          <SecondaryLink href="/app/events" label="Back to Events" />
+          <SecondaryLink href={returnHref} label={returnLabel} />
         </div>
       </div>
     </StepShell>
@@ -701,6 +707,18 @@ function buildEventStepHref(
   }
 
   return `${url.pathname}${url.search}`;
+}
+
+function getEventReturnHref(source?: string) {
+  return source === "home" ? "/app" : source === "profile" ? "/profile" : "/app/events";
+}
+
+function getEventReturnLabel(source?: string) {
+  return source === "home" ? "Back to Home" : source === "profile" ? "Back to Profile" : "Back to Events";
+}
+
+function getEventPointsSource(source?: string) {
+  return source === "home" || source === "profile" ? source : "events";
 }
 
 function getDurationLabel(startsAt: string | null, endsAt: string | null) {
