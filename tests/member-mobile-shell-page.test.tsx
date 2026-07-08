@@ -29,6 +29,10 @@ function getSignedInActor(email: string) {
   );
 }
 
+function getBottomNavHtml(html: string) {
+  return html.match(/<nav aria-label="Member bottom navigation"[\s\S]*?<\/nav>/)?.[0] ?? "";
+}
+
 describe("member mobile shell routes", () => {
   it("renders the Home route with route-backed event and points links", async () => {
     const actorModule = await import("@/services/local-actor-context");
@@ -114,6 +118,32 @@ describe("member mobile shell routes", () => {
     expect(html).toContain("Move from TEST points readback into the next event.");
     expect(html).toContain('href="/app/points?source=events"');
     expect(html).toContain("Back to Points");
+    expect(getBottomNavHtml(html)).toContain('href="/app/points?source=events"');
+    expect(html).toContain('href="/app/events/chapter-event-ucla-kickoff?source=points&amp;step=rsvp"');
+    expect(html).toContain('href="/app/events/chapter-event-ucla-kickoff?source=points"');
+  });
+
+  it("keeps the events route tied to the home walkthrough when opened from home", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("member.a@mymedlife.test"),
+    );
+
+    const { default: EventsPage } = await import("@/app/app/events/page");
+    const html = renderToStaticMarkup(
+      await EventsPage({
+        searchParams: Promise.resolve({ source: "home" }),
+      }),
+    );
+
+    expect(html).toContain("Opened from the TEST home walkthrough");
+    expect(html).toContain("Keep home, events, and points in one member loop.");
+    expect(html).toContain('href="/app"');
+    expect(html).toContain("Back to Home");
+    expect(getBottomNavHtml(html)).toContain('href="/app/points?source=home"');
+    expect(html).toContain('href="/app/events/chapter-event-ucla-kickoff?source=home&amp;step=rsvp"');
+    expect(html).toContain('href="/app/events/chapter-event-ucla-kickoff?source=home"');
   });
 
   it("keeps the events route tied to the profile walkthrough when opened from profile", async () => {
@@ -134,6 +164,9 @@ describe("member mobile shell routes", () => {
     expect(html).toContain("Keep profile, events, and points in one member loop.");
     expect(html).toContain('href="/profile"');
     expect(html).toContain("Back to Profile");
+    expect(getBottomNavHtml(html)).toContain('href="/app/points?source=profile"');
+    expect(html).toContain('href="/app/events/chapter-event-ucla-kickoff?source=profile&amp;step=rsvp"');
+    expect(html).toContain('href="/app/events/chapter-event-ucla-kickoff?source=profile"');
   });
 
   it("renders the Points route through the shared Figma member shell", async () => {
@@ -198,6 +231,9 @@ describe("member mobile shell routes", () => {
     expect(html).toContain("Back to the TEST event detail");
     expect(html).toContain('href="/app/events/chapter-event-ucla-kickoff?source=points"');
     expect(html).toContain("without claiming a live award sync");
+    expect(getBottomNavHtml(html)).toContain(
+      'href="/app/events/chapter-event-ucla-kickoff?source=points"',
+    );
   });
 
   it("keeps the member points route connected to the profile walkthrough when opened from profile", async () => {
@@ -217,6 +253,55 @@ describe("member mobile shell routes", () => {
     expect(html).toContain("Back to your TEST profile");
     expect(html).toContain('href="/profile"');
     expect(html).toContain("pretending profile writes are live");
+    expect(getBottomNavHtml(html)).toContain('href="/app/events?source=profile"');
+  });
+
+  it("returns the member points route to the exact TEST event detail when the home walkthrough opens a specific event", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("member.a@mymedlife.test"),
+    );
+
+    const { default: PointsPage } = await import("@/app/app/points/page");
+    const html = renderToStaticMarkup(
+      await PointsPage({
+        searchParams: Promise.resolve({
+          source: "home",
+          event: "chapter-event-ucla-kickoff",
+        }),
+      }),
+    );
+
+    expect(html).toContain("Back to the TEST event detail");
+    expect(html).toContain('href="/app/events/chapter-event-ucla-kickoff?source=home"');
+    expect(getBottomNavHtml(html)).toContain(
+      'href="/app/events/chapter-event-ucla-kickoff?source=home"',
+    );
+  });
+
+  it("returns the member points route to the exact TEST event detail when the profile walkthrough opens a specific event", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("member.a@mymedlife.test"),
+    );
+
+    const { default: PointsPage } = await import("@/app/app/points/page");
+    const html = renderToStaticMarkup(
+      await PointsPage({
+        searchParams: Promise.resolve({
+          source: "profile",
+          event: "chapter-event-ucla-kickoff",
+        }),
+      }),
+    );
+
+    expect(html).toContain("Back to the TEST event detail");
+    expect(html).toContain('href="/app/events/chapter-event-ucla-kickoff?source=profile"');
+    expect(getBottomNavHtml(html)).toContain(
+      'href="/app/events/chapter-event-ucla-kickoff?source=profile"',
+    );
   });
 
   it("keeps the member points route connected to the home walkthrough when opened from home", async () => {
@@ -236,6 +321,7 @@ describe("member mobile shell routes", () => {
     expect(html).toContain("Opened from the TEST home walkthrough");
     expect(html).toContain("Continue from home into events");
     expect(html).toContain('href="/app/events?source=home"');
+    expect(getBottomNavHtml(html)).toContain('href="/app/events?source=home"');
   });
 
   it("keeps internal member preview states visibly marked as TEST content", () => {

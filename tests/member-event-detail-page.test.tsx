@@ -93,7 +93,7 @@ describe("member event detail route", () => {
     expect(html).toContain('href="/app"');
     expect(html).toContain('href="/app/stories"');
     expect(html).toContain('href="/app/events"');
-    expect(html).toContain('href="/app/points?source=events&amp;event=chapter-event-ucla-kickoff"');
+    expect(html).toContain('href="/app/points?source=events"');
     expect(html).toContain('href="/profile"');
     expect(html).toContain('aria-current="page"');
     expect(html).toContain('href="/app/events/chapter-event-ucla-kickoff?source=events&amp;step=rsvp"');
@@ -201,7 +201,7 @@ describe("member event detail route", () => {
       }),
     );
 
-    expect(html).toContain('href="/app/points?source=home"');
+    expect(html).toContain('href="/app/points?source=home&amp;event=chapter-event-ucla-kickoff"');
     expect(html).toContain('href="/app"');
     expect(html).toContain("Back to Home");
   });
@@ -254,11 +254,33 @@ describe("member event detail route", () => {
 
     expect(html).toContain('href="/profile"');
     expect(html).toContain('href="/app/events?source=profile"');
-    expect(html).toContain('href="/app/points?source=profile"');
+    expect(html).toContain('href="/app/points?source=profile&amp;event=chapter-event-ucla-kickoff"');
     expect(html).toContain('aria-label="Back to Profile"');
     expect(html).toContain("Opened from your TEST profile");
     expect(html).toContain("Keep profile, events, and points in one member loop.");
     expect(html).toContain("the next chapter moment stays route-backed");
+  });
+
+  it("preserves the exact event handoff when profile opens event points impact", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const dataModule = await import("@/services/read-only-app-data");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("member.a@mymedlife.test"),
+    );
+    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
+      getMockReadOnlyAppData("Testing member event detail profile points continuity."),
+    );
+
+    const { default: EventDetailPage } = await import("@/app/app/events/[eventId]/page");
+    const html = renderToStaticMarkup(
+      await EventDetailPage({
+        params: Promise.resolve({ eventId: "chapter-event-ucla-kickoff" }),
+        searchParams: Promise.resolve({ source: "profile", step: "points" }),
+      }),
+    );
+
+    expect(html).toContain('href="/app/points?source=profile&amp;event=chapter-event-ucla-kickoff"');
   });
 
   it("falls back to the member events list when the event detail source is unknown", async () => {

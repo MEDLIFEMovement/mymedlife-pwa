@@ -826,7 +826,7 @@ function getLaunchLaneEventPointsHref(eventId: string, source?: string) {
     `https://mymedlife.local${getLaunchLaneMemberPointsHref(getEventPointsSource(source))}`,
   );
 
-  if (getEventPointsSource(source) === "events") {
+  if (source === "events" || source === "home" || source === "profile") {
     url.searchParams.set("event", eventId);
   }
 

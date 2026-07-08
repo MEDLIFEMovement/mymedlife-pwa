@@ -28,7 +28,7 @@ export async function renderMemberMobileShellPage({
   initialStoryId?: string | null;
   pointsSource?: "events" | "home" | "profile" | "points";
   pointsReturnEventId?: string | null;
-  eventsSource?: "events" | "profile" | "points";
+  eventsSource?: "events" | "home" | "profile" | "points";
 }) {
   const actor = await getLocalActorContext();
   const landingRoute = getLandingRouteForActor(actor);
