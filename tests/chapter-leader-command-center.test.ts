@@ -1039,6 +1039,33 @@ describe("chapter leader command center", () => {
     );
   });
 
+  it("keeps inactive committee next-step guidance visible when a quiet lane is selected", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const baseCommandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "committees",
+      committeeId: "committee-member-engagement",
+    });
+    const commandCenter = {
+      ...baseCommandCenter,
+      selectedCommittee: baseCommandCenter.selectedCommittee
+        ? {
+            ...baseCommandCenter.selectedCommittee,
+            ownerLabel: "TEST Nadia",
+            operatingStatusLabel: "Inactive",
+          }
+        : baseCommandCenter.selectedCommittee,
+    };
+    const markup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
+    );
+
+    expect(commandCenter.selectedCommittee?.operatingStatusLabel).toBe("Inactive");
+    expect(markup).toContain("Reopen one concrete operating lane");
+    expect(markup).toContain(
+      "Choose one short-term committee commitment so the lane becomes visible again instead of staying theoretical.",
+    );
+  });
+
   it("renders the committees route as the compact operating board from the mockup", () => {
     const actor = getMockLocalActorContext("leader.a@mymedlife.test");
     const commandCenter = getChapterLeaderCommandCenter(actor, data, {
@@ -1222,6 +1249,37 @@ describe("chapter leader command center", () => {
     expect(markup).toContain("Tabling: Quad Recruitment");
     expect(markup).not.toContain("Moving Mountains Kickoff");
     expect(markup).not.toContain(">Apply<");
+  });
+
+  it("falls back to neutral event pills when service-backed event statuses are unfamiliar", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "events",
+    });
+    const unknownStatusMarkup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, {
+        commandCenter: {
+          ...commandCenter,
+          events: commandCenter.events.map((event, index) =>
+            index === 0
+              ? {
+                  ...event,
+                  eventStatusLabel: "Rescheduled",
+                  proofStatusLabel: "Awaiting review",
+                  followUpStatusLabel: "Queued",
+                }
+              : event,
+          ),
+        },
+      }),
+    );
+
+    expect(unknownStatusMarkup).toContain("Rescheduled");
+    expect(unknownStatusMarkup).toContain("Awaiting review");
+    expect(unknownStatusMarkup).toContain("Queued");
+    expect(
+      unknownStatusMarkup.match(/border-slate-200 bg-\[#dbeafe\] text-slate-600/g)?.length,
+    ).toBeGreaterThanOrEqual(3);
   });
 
   it("opens create event as a chapter-owned events state before the broader event flow", () => {
