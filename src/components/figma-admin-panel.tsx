@@ -259,6 +259,7 @@ function Sidebar({
             event.preventDefault();
             onBack();
           }}
+          role="button"
           aria-label="Command Center"
           className="flex w-full items-start gap-2 border-b border-white/[0.05] px-4 py-3 text-left text-slate-300 transition-colors hover:bg-white/[0.02] hover:text-white group"
         >

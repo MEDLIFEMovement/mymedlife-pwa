@@ -466,6 +466,7 @@ describe("staff page", () => {
     const adminSource = readFileSync("src/components/figma-admin-panel.tsx", "utf8");
 
     expect(html).toContain("Command Center");
+    expect(html).toContain('role="button"');
     expect(html).toContain("Return to TEST Stanford University");
     expect(html).toContain("Chapter context: TEST Stanford University");
     expect(html).toContain("Embedded Chapter Review");
@@ -476,6 +477,7 @@ describe("staff page", () => {
     expect(staffSource).toContain('embeddedBackHref={adminReturnHref ?? undefined}');
     expect(adminSource).toContain("embeddedBackHref");
     expect(adminSource).toContain("href={backHref ?? \"#\"}");
+    expect(adminSource).toContain('role="button"');
   });
 
   it("keeps a route-backed proof queue return visible inside the embedded admin review surface", async () => {
