@@ -63,7 +63,7 @@ test.describe("myMEDLIFE launch route smoke", () => {
     await page.goto("/app");
     await page.getByRole("link", { name: "Profile", exact: true }).click();
     await expect(page).toHaveURL(/\/profile\?source=home$/);
-    await expect(page.getByRole("heading", { name: "Hi, TEST Sofia" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "TEST Sofia Alvarez" })).toBeVisible();
 
     await page.goto("/app/events");
     await expect(page.getByRole("heading", { name: "Events" })).toBeVisible();
@@ -89,7 +89,7 @@ test.describe("myMEDLIFE launch route smoke", () => {
     await page.goto("/app/points");
     await page.getByRole("link", { name: "Profile", exact: true }).click();
     await expect(page).toHaveURL(/\/profile$/);
-    await expect(page.getByRole("heading", { name: "Hi, TEST Sofia" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "TEST Sofia Alvarez" })).toBeVisible();
   });
 
   test("clicks the member event RSVP, check-in, and points path inside the mobile shell", async ({
