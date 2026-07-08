@@ -225,7 +225,7 @@ describe("member event detail route", () => {
       }),
     );
 
-    expect(html).toContain('href="/app/points?source=events"');
+    expect(html).toContain('href="/app/points?source=events&amp;event=chapter-event-ucla-kickoff"');
     expect(html).toContain('aria-label="Back to Points"');
     expect(html).toContain("Opened from Points &amp; Recognition");
     expect(html).toContain("Move from TEST points readback into the next event.");
