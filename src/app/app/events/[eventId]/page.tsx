@@ -90,7 +90,7 @@ export default async function AppEventDetailPage({
   const step = getEventDetailStep(resolvedSearchParams.step);
   const backHref =
     step === "detail"
-        ? getEventReturnHref(
+      ? getEventReturnHref(
           eventId,
           resolvedSearchParams.source,
           resolvedSearchParams.profileSource,
