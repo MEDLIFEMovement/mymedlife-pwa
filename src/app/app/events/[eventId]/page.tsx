@@ -146,6 +146,7 @@ function EventDetailView({
   const pointsHref = buildEventStepHref(event.id, "points", source);
   const returnHref = getEventReturnHref(source);
   const returnLabel = getEventReturnLabel(source);
+  const sourceContext = getEventSourceContext(source);
   const visibleEventTitle = ensureVisibleTestLabel(event.title);
   const visibleChapterName = ensureVisibleTestLabel(snapshot.chapterName);
   const visibleLocationLabel = ensureVisibleTestLabel(snapshot.memberLocationLabel);
@@ -219,6 +220,28 @@ function EventDetailView({
       </div>
 
       <div className="space-y-4 px-4 pt-5">
+        {sourceContext ? (
+          <Card className="border-[#bfdbfe] bg-[#eff6ff]">
+            <p className="text-xs font-bold uppercase tracking-wide text-[#1b4b8e]">
+              {sourceContext.eyebrow}
+            </p>
+            <h2 className="mt-2 text-lg font-extrabold text-slate-950">
+              {sourceContext.title}
+            </h2>
+            <p className="mt-2 text-sm leading-6 text-slate-700">
+              {sourceContext.body}
+            </p>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <Link
+                href={sourceContext.href}
+                className="rounded-xl border border-[#bfdbfe] bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+              >
+                {sourceContext.cta}
+              </Link>
+            </div>
+          </Card>
+        ) : null}
+
         <Card>
           <div className="mb-3 flex items-center justify-between">
             <span className="text-sm font-bold text-slate-950">Who&apos;s going</span>
@@ -731,6 +754,43 @@ function getEventReturnLabel(source?: string) {
 
 function getEventPointsSource(source?: string) {
   return source === "home" || source === "profile" ? source : "events";
+}
+
+function getEventSourceContext(source?: string) {
+  if (source === "home") {
+    return {
+      eyebrow: "Opened from the TEST home walkthrough",
+      title: "Keep home, events, and points in one member loop.",
+      body:
+        "Home sent you into this TEST event detail so you can preview RSVP, check-in, and the next points move without leaving the student shell.",
+      href: "/app",
+      cta: "Back to Home",
+    };
+  }
+
+  if (source === "profile") {
+    return {
+      eyebrow: "Opened from your TEST profile",
+      title: "Keep profile, events, and points in one member loop.",
+      body:
+        "Your TEST profile sent you here so the next chapter moment stays route-backed. Open the event flow, preview RSVP or attendance, then step back into points when you are ready.",
+      href: "/profile",
+      cta: "Back to Profile",
+    };
+  }
+
+  if (source === "points") {
+    return {
+      eyebrow: "Opened from Points & Recognition",
+      title: "Move from TEST points readback into the next event.",
+      body:
+        "The member loop should not stop at the leaderboard. Use this route-backed return path to preview RSVP or attendance here, then come back to points when the chapter moment is done.",
+      href: "/app/points?source=events",
+      cta: "Back to Points",
+    };
+  }
+
+  return null;
 }
 
 function getLaunchLaneEventPointsHref(eventId: string, source?: string) {
