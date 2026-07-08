@@ -3,7 +3,7 @@
 /* eslint-disable @next/next/no-img-element */
 
 import React, { useState, useEffect } from "react";
-import { Heart, ExternalLink, Play, MapPin, X, ArrowLeft, Bookmark, Sparkles, TrendingUp, Star } from "lucide-react";
+import { Heart, ExternalLink, Play, MapPin, X, ArrowLeft, Bookmark, Sparkles, TrendingUp, Star, Ban } from "lucide-react";
 
 function Btn({ children, variant="primary", onClick, className="", blockedTitle }: {
   children: React.ReactNode; variant?: "primary"|"secondary"|"ghost"|"danger";
@@ -180,27 +180,30 @@ function MStoryModal({ story, onClose }: { story:MStory; onClose:()=>void }) {
     return ()=>document.removeEventListener("keydown",h);
   },[onClose]);
   const cfg = STORY_SOURCE_CFG[story.source];
-  const [playing,setPlaying] = useState(false);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-6" style={{background:"rgba(7,25,46,0.6)",backdropFilter:"blur(6px)"}}>
       <div className="absolute inset-0" onClick={onClose}/>
       <div className="relative w-full max-w-2xl bg-white rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col z-10">
         {/* Media */}
-        {story.isVideo&&!playing ? (
+        {story.isVideo ? (
           <div className="relative flex-shrink-0" style={{aspectRatio:"16/9"}}>
             <img src={story.image} alt={story.title} className="w-full h-full object-cover opacity-80"/>
             <div className="absolute inset-0 bg-black/30"/>
-            <button onClick={()=>setPlaying(true)} className="absolute inset-0 flex items-center justify-center">
-              <div className="w-16 h-16 rounded-full bg-white/90 flex items-center justify-center shadow-xl hover:scale-110 transition-transform"><Play size={26} className="text-blue-600 ml-1.5"/></div>
-            </button>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <button
+                type="button"
+                disabled
+                title="Video playback is blocked in this preview until story-source approval is complete."
+                className="flex flex-col items-center gap-2 rounded-2xl bg-white/90 px-5 py-4 text-slate-700 shadow-xl cursor-not-allowed opacity-90"
+              >
+                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-slate-100">
+                  <Ban size={22} className="text-slate-500"/>
+                </div>
+                <span className="text-xs font-bold uppercase tracking-wide text-slate-700">Playback blocked</span>
+              </button>
+            </div>
             <button onClick={onClose} className="absolute top-3 left-3 w-9 h-9 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center text-white hover:bg-black/70 transition-colors cursor-pointer"><ArrowLeft size={15}/></button>
-          </div>
-        ) : story.isVideo&&playing ? (
-          <div className="relative flex-shrink-0 bg-black" style={{aspectRatio:"16/9"}}>
-            {story.embedUrl
-              ? <iframe src={`${story.embedUrl}?autoplay=1`} className="w-full h-full" allow="autoplay; fullscreen" allowFullScreen title={story.title}/>
-              : <div className="w-full h-full flex items-center justify-center text-white/60 text-sm">Video unavailable</div>}
           </div>
         ) : (
           <div className="relative h-64 flex-shrink-0 overflow-hidden bg-slate-200">
@@ -234,16 +237,16 @@ function MStoryModal({ story, onClose }: { story:MStory; onClose:()=>void }) {
         <div className="flex-shrink-0 p-5 border-t border-slate-100 flex items-center justify-between gap-3">
           <div className="flex items-center gap-4">
             <StoryHeartBtn count={story.likes}/>
-            <span className="text-xs text-slate-400">Reactions are preview-only in this leadership shell.</span>
+            <span className="text-xs text-slate-400">Reactions and media playback are preview-only in this leadership shell.</span>
           </div>
           <div className="flex items-center gap-2">
-            <button disabled title="Story saving is blocked in this preview" className="flex items-center gap-1.5 text-xs text-slate-500 hover:text-slate-800 transition-colors px-3 py-2 rounded-lg hover:bg-slate-100 cursor-pointer">
-              <Bookmark size={13}/>Preview Save
+            <button disabled title="Story saving is blocked in this preview" className="flex items-center gap-1.5 text-xs text-slate-500 px-3 py-2 rounded-lg cursor-not-allowed opacity-70">
+              <Bookmark size={13}/>Save Preview Blocked
             </button>
             <button type="button" disabled title="External story sources are blocked in this preview until feed-sharing approval is complete"
               className="flex items-center gap-1.5 text-sm font-semibold px-4 py-2 rounded-lg text-white opacity-75 cursor-not-allowed"
               style={{background:cfg.bg}}>
-              <ExternalLink size={13}/>Preview Source on {cfg.label}
+              <ExternalLink size={13}/>Source Preview Blocked on {cfg.label}
             </button>
           </div>
         </div>
@@ -269,13 +272,13 @@ export function MedlifeStoriesScreen() {
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-black text-slate-900">MEDLIFE Stories</h1>
-          <p className="text-sm text-slate-500 mt-1">TEST stories preview. Sample chapter, field, and student stories stay visible for review, but no save, source-open, publish, or feed sync action is live.</p>
+          <p className="text-sm text-slate-500 mt-1">TEST stories preview. Sample chapter, field, and student stories stay visible for review, but no save, source-open, playback, publish, or feed sync action is live.</p>
         </div>
         <div className="flex items-center gap-2">
           <div className="flex items-center gap-1.5 text-xs text-slate-400" style={{fontFamily:"'JetBrains Mono',monospace"}}>
             <span className="w-2 h-2 rounded-full bg-[#3D7A5A] inline-block"/>TEST live from the field preview
           </div>
-          <Btn variant="primary" blockedTitle="Story publishing is blocked in this preview until proof and feed approvals are complete."><Sparkles size={11}/>Preview Story Intake</Btn>
+          <Btn variant="primary" blockedTitle="Story publishing is blocked in this preview until proof and feed approvals are complete."><Sparkles size={11}/>Preview Story Review</Btn>
         </div>
       </div>
 
@@ -307,8 +310,8 @@ export function MedlifeStoriesScreen() {
 
       {/* Footer */}
       <div className="pt-6 border-t border-slate-200 flex items-center justify-between text-xs text-slate-400" style={{fontFamily:"'JetBrains Mono',monospace"}}>
-        <span>TEST MEDLIFE Stories preview — curated by staff · requires approval before publishing</span>
-        <span>{MSTORIES.length} TEST stories published</span>
+        <span>TEST MEDLIFE Stories preview — curated by staff · requires approval before publishing or playback</span>
+        <span>{MSTORIES.length} TEST stories in preview library</span>
       </div>
     </div>
   );
