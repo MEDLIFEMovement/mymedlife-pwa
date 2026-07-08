@@ -1,3 +1,5 @@
+"use client";
+
 import {
   Award,
   Bell,
@@ -12,12 +14,13 @@ import type { MvpMemberHome } from "@/services/mvp-event-tracking-workspace";
 import type { ProfileWorkspace } from "@/services/profile-workspace";
 import type { MemberRecognitionSummary } from "@/services/member-recognition";
 import { StatusPill, SurfacePanel } from "@/components/visual-primitives";
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 
 type MemberProfilePanelProps = {
   chapterName: string;
   displayName: string;
   entrySource?: "home" | null;
+  isPreviewMode?: boolean;
   workspace: ProfileWorkspace;
   studentHome: MvpMemberHome;
   recognition: MemberRecognitionSummary;
@@ -26,6 +29,7 @@ type MemberProfilePanelProps = {
 export function MemberProfilePanel({
   chapterName,
   displayName,
+  isPreviewMode = false,
   workspace,
   studentHome,
   recognition,
@@ -44,6 +48,9 @@ export function MemberProfilePanel({
   const taskCount =
     recognition.selectedMember?.completedActions ?? recognition.recentApprovedActions.length;
   const recentActivity = getRecentActivity(recognition, studentHome);
+  const [showQr, setShowQr] = useState(false);
+  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+  const [designation, setDesignation] = useState(profileLabel);
 
   return (
     <section className="bg-white pb-5">
@@ -51,33 +58,41 @@ export function MemberProfilePanel({
         <div className="bg-[#1d4ed8] px-5 pb-6 pt-12 text-white">
           <div className="flex items-start justify-between gap-3">
             <div className="flex items-center gap-3">
-              <div className="flex h-16 w-16 items-center justify-center rounded-[1.35rem] bg-white/18 text-2xl font-extrabold shadow-lg">
+              <div className="flex h-16 w-16 items-center justify-center rounded-[1.35rem] bg-[#facc15] text-2xl font-extrabold text-slate-900 shadow-lg">
                 {avatarMonogram}
               </div>
               <div>
                 <h1 className="text-xl font-extrabold leading-tight">{testDisplayName}</h1>
                 <p className="mt-0.5 text-xs text-blue-100">{testChapterName}</p>
                 <span className="mt-1.5 inline-flex items-center rounded-full bg-white/18 px-2.5 py-0.5 text-[11px] font-semibold">
-                  {profileLabel}
+                  {designation}
                 </span>
               </div>
             </div>
-            <details className="group">
-              <summary className="list-none">
-                <span className="flex cursor-pointer flex-col items-center gap-1 rounded-[1.15rem] border border-white/18 bg-white/10 p-3 text-[10px] font-semibold text-white transition group-open:bg-white/16">
-                  <QrCode size={20} />
-                  ID Card
-                </span>
-              </summary>
-              <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60">
-                <div className="w-full max-w-[430px] rounded-t-[1.8rem] bg-white p-6 pb-10 text-center text-slate-900 shadow-2xl">
+            <button
+              type="button"
+              onClick={() => setShowQr(true)}
+              className="flex flex-col items-center gap-1 rounded-[1.15rem] border border-white/18 bg-white/10 p-3 text-[10px] font-semibold text-white transition hover:bg-white/16"
+            >
+              <QrCode size={20} />
+              ID Card
+            </button>
+            {showQr ? (
+              <div
+                className="fixed inset-0 z-50 flex items-end justify-center bg-black/60"
+                onClick={() => setShowQr(false)}
+              >
+                <div
+                  className="w-full max-w-[430px] rounded-t-[1.8rem] bg-white p-6 pb-10 text-center text-slate-900 shadow-2xl"
+                  onClick={(event) => event.stopPropagation()}
+                >
                   <div className="mx-auto mb-6 h-1 w-10 rounded-full bg-slate-200" />
                   <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-500">
                     TEST Member ID
                   </p>
                   <h2 className="mt-1 text-xl font-extrabold text-slate-950">{testDisplayName}</h2>
                   <p className="mt-1 text-sm text-slate-500">
-                    {testChapterName} · {profileLabel}
+                    {testChapterName} · {designation}
                   </p>
                   <div className="my-5 flex justify-center">
                     <div className="rounded-[1.35rem] bg-[#eef3fa] p-4 shadow-inner">
@@ -99,9 +114,16 @@ export function MemberProfilePanel({
                   <p className="text-xs leading-5 text-slate-500">
                     QR and ID are preview-only. No check-in, credential issue, or profile write runs from this card.
                   </p>
+                  <button
+                    type="button"
+                    onClick={() => setShowQr(false)}
+                    className="mt-5 w-full rounded-[1.2rem] bg-[#1d4ed8] px-4 py-3 text-sm font-bold text-white"
+                  >
+                    Close
+                  </button>
                 </div>
               </div>
-            </details>
+            ) : null}
           </div>
 
           <div className="mt-5 grid grid-cols-3 gap-3">
@@ -177,13 +199,12 @@ export function MemberProfilePanel({
               </div>
               <div className="mt-3 flex flex-wrap gap-2">
                 {designationOptions.map((option) => {
-                  const isActive = option === profileLabel;
+                  const isActive = option === designation;
                   return (
                     <button
                       key={option}
                       type="button"
-                      disabled
-                      aria-disabled="true"
+                      onClick={() => setDesignation(option)}
                       className={
                         isActive
                           ? "rounded-xl bg-[#2563eb] px-3 py-1.5 text-xs font-semibold text-white"
@@ -204,12 +225,33 @@ export function MemberProfilePanel({
           <section>
             <ProfileSectionLabel>Settings</ProfileSectionLabel>
             <SurfacePanel className="overflow-hidden rounded-[1.6rem] p-0">
-              <ProfileSettingRow
-                icon={<Bell size={16} className="text-[#2563eb]" />}
-                label="Push Notifications"
-                detail="Preview-only toggle. Notification preference writes stay blocked here."
-                status="Preview only"
-              />
+              <div className="border-b border-slate-200 px-4 py-3.5">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <Bell size={16} className="text-[#2563eb]" />
+                    <div>
+                      <p className="text-sm font-semibold text-slate-950">Push Notifications</p>
+                      <p className="mt-1 text-xs leading-5 text-slate-500">
+                        Preview-only toggle. Notification preference writes stay blocked here.
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setNotificationsEnabled((value) => !value)}
+                    className={`relative h-6 w-11 rounded-full transition-colors ${
+                      notificationsEnabled ? "bg-[#2563eb]" : "bg-slate-300"
+                    }`}
+                    aria-pressed={notificationsEnabled}
+                  >
+                    <span
+                      className={`absolute top-1 h-4 w-4 rounded-full bg-white shadow transition-all ${
+                        notificationsEnabled ? "left-6" : "left-1"
+                      }`}
+                    />
+                  </button>
+                </div>
+              </div>
               <ProfileSettingRow
                 icon={<Award size={16} className="text-[#2563eb]" />}
                 label="My Certificates"
@@ -225,12 +267,23 @@ export function MemberProfilePanel({
               <ProfileSettingRow
                 icon={<Settings size={16} className="text-[#2563eb]" />}
                 label="Account Settings"
-                detail="Read-only account context stays available in the account menu."
+                detail="Read-only account context stays visible from this profile route."
                 status="Read-only"
                 isLast
               />
             </SurfacePanel>
           </section>
+
+          {isPreviewMode ? (
+            <div className="rounded-[1.35rem] border border-blue-200 bg-blue-50 px-4 py-3">
+              <p className="text-sm font-semibold text-[#1d4ed8]">Preview Mode — read-only</p>
+              <div className="mt-2 space-y-1.5 text-xs leading-5 text-slate-600">
+                <p>No profile save runs from this route, and profile writes stay blocked.</p>
+                <p>No join request, role approval, membership change, or coach assignment runs from this route.</p>
+                <p>Certificates stay blocked, and TEST content remains preview-only until launch cleanup.</p>
+              </div>
+            </div>
+          ) : null}
 
           <button
             type="button"

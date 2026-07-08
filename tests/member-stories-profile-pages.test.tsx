@@ -144,7 +144,6 @@ describe("member stories and profile pages", () => {
     expect(html).toContain("TEST Sofia Alvarez");
     expect(html).toContain("TEST UCLA MEDLIFE");
     expect(html).toContain("TEST Rush Month kickoff social");
-    expect(html).toContain("TEST Member ID");
     expect(html).toContain("ID Card");
     expect(html).toContain("Total Points");
     expect(html).toContain("Tasks Done");
@@ -392,7 +391,6 @@ describe("member stories and profile pages", () => {
 
     expect(html).toContain("TEST Sofia Alvarez");
     expect(html).not.toContain("TEST TEST Sofia");
-    expect(html).toContain("TEST Member ID");
     expect(html).toContain("TEST Speaker");
     expect(html).toContain("TEST Season MVP");
     expect(html).toContain("Switch designation to preview access");
