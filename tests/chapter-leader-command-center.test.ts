@@ -410,8 +410,8 @@ describe("chapter leader command center", () => {
 
     expect(commandCenter.activeQuickAction).toBe("assign_action");
     expect(markup).toContain("Confirm Attendance");
-    expect(markup).toContain("Start from RSVPs, then confirm who attended and earned points.");
-    expect(markup).toContain("Open attendance flow");
+    expect(markup).toContain("Start from RSVPs, then review who attended and what is ready for points.");
+    expect(markup).toContain("Open attendance review");
     expect(markup).toContain(
       "href=\"/rush-month/actions?source=chapter_assign_action&amp;returnTo=%2Fleader%3Fview%3Dmembers%26member%3Dmember-ivy%26quickAction%3Dassign_action&amp;member=member-ivy\"",
     );
@@ -1044,11 +1044,12 @@ describe("chapter leader command center", () => {
 
     expect(commandCenter.activeQuickAction).toBe("create_event");
     expect(markup).toContain("Create Event");
-    expect(markup).toContain("Open the chapter event lane with ownership and follow-up in mind.");
+    expect(markup).toContain("Open the chapter event preview lane with ownership and follow-through in mind.");
     expect(markup).toContain(
-      "Track event creation, RSVP, attendance, proof, and point impact across the chapter.",
+      "Review TEST event creation, RSVP posture, attendance readback, proof follow-through, and point impact across the chapter.",
     );
-    expect(markup).toContain("Open event flow");
+    expect(markup).toContain("Preview-only event operations");
+    expect(markup).toContain("Open event preview flow");
     expect(markup).toContain(
       "href=\"/rush-month/events?source=chapter_create_event&amp;returnTo=%2Fleader%3Fview%3Devents%26member%3Dmember-ivy%26eventCommittee%3Devents%26quickAction%3Dcreate_event\"",
     );
@@ -1080,7 +1081,7 @@ describe("chapter leader command center", () => {
       "Keep the selected event in chapter context before you leave this surface.",
     );
     expect(markup).toContain(
-      "Luma keeps the source of truth, RSVP tells you who intends to come, attendance confirms who actually showed, and points follow the reviewed check-in path.",
+      "Luma stays the source of truth, RSVP shows intent, attendance readback shows reviewed check-in posture, and points remain a follow-through step until the next approved route takes over.",
     );
     expect(markup).toContain("Event source of truth");
     expect(markup).toContain("Intent before check-in");
@@ -1089,12 +1090,12 @@ describe("chapter leader command center", () => {
     expect(markup).toContain(
       "href=\"/leader?view=events&amp;member=member-ivy&amp;eventCommittee=events&amp;quickAction=create_event\"",
     );
-    expect(markup).toContain("Open broader event flow");
+    expect(markup).toContain("Open event review flow");
     expect(markup).toContain(
       "href=\"/rush-month/events/bc-event-moving-mountains-kickoff?source=chapter_event_review&amp;returnTo=%2Fleader%3Fview%3Devents%26member%3Dmember-ivy%26eventCommittee%3Devents%26event%3Dbc-event-moving-mountains-kickoff\"",
     );
     expect(markup).toContain("Events This Month");
-    expect(markup).toContain("RSVP vs. Actual Attendance");
+    expect(markup).toContain("RSVP vs. Actual Attendance Readback");
     expect(markup).toContain("Social Recruiting Data");
     expect(markup).toContain("Manual update");
     expect(markup).toContain(
@@ -1111,7 +1112,7 @@ describe("chapter leader command center", () => {
     expect(markup.indexOf("Event Detail")).toBeGreaterThan(
       markup.indexOf("Events This Month"),
     );
-    expect(markup.indexOf("Event Detail")).toBeLessThan(markup.indexOf("RSVP vs. Actual Attendance"));
+    expect(markup.indexOf("Event Detail")).toBeLessThan(markup.indexOf("RSVP vs. Actual Attendance Readback"));
   });
 
   it("maps the leaderboard view to the cross-chapter comparison layout from the mockup", () => {
@@ -1806,12 +1807,12 @@ describe("chapter leader command center", () => {
     expect(markup).toContain(">Events</h1>");
     expect(markup).toContain("All Events — June 2025");
     expect(markup).toContain("Events This Month");
-    expect(markup).toContain("RSVP vs. Actual Attendance");
+    expect(markup).toContain("RSVP vs. Actual Attendance Readback");
     expect(markup.indexOf("Events This Month")).toBeLessThan(
       markup.indexOf("All Events — June 2025"),
     );
     expect(markup.indexOf("All Events — June 2025")).toBeLessThan(
-      markup.indexOf("RSVP vs. Actual Attendance"),
+      markup.indexOf("RSVP vs. Actual Attendance Readback"),
     );
   });
 
@@ -2330,8 +2331,11 @@ describe("chapter leader command center", () => {
     expect(markup).toContain("Succession Planning");
     expect(markup).not.toContain("Selected candidate");
     expect(markup).not.toContain("Selected now");
-    expect(markup).toContain("Nominate Candidate");
-    expect(markup).toContain("Start Transition Plan");
+    expect(markup).toContain("Open Candidate Review");
+    expect(markup).toContain("Preview Transition Review");
+    expect(markup).toContain(
+      "before any nomination, promotion, or notify flow turns into a live write path.",
+    );
     expect(markup).toContain("href=\"/leader?view=members\"");
   });
 
@@ -2349,11 +2353,11 @@ describe("chapter leader command center", () => {
     expect(markup).toContain("Succession Planning");
     expect(markup).toContain("Ensure the chapter can survive and grow beyond any single leader.");
     expect(markup).toContain("Selected candidate");
-    expect(markup).toContain("Reviewing Ivy Invite for succession");
+    expect(markup).toContain("Reviewing Ivy Invite for succession readiness");
     expect(markup).toContain("Open member profile");
     expect(markup).toContain("Selected now");
-    expect(markup).toContain("Nominate Candidate");
-    expect(markup).toContain("Start Transition Plan");
+    expect(markup).toContain("Open Candidate Review");
+    expect(markup).toContain("Preview Transition Review");
     expect(markup).toContain("href=\"/leader?view=members\"");
     expect(markup).toContain("href=\"/leader?view=succession&amp;member=member-ivy\"");
     expect(markup.indexOf("Selected candidate")).toBeLessThan(
@@ -2377,7 +2381,7 @@ describe("chapter leader command center", () => {
 
     expect(commandCenter.activeQuickAction).toBe("promote_emerging_leader");
     expect(markup).toContain("Promote Emerging Leader");
-    expect(markup).toContain("Start from succession planning, then open the candidate lane.");
+    expect(markup).toContain("Start from succession planning, then open the candidate review lane.");
     expect(markup).toContain("Open candidate review");
     expect(markup).toContain("href=\"/leader?view=succession&amp;member=member-ivy\"");
   });
