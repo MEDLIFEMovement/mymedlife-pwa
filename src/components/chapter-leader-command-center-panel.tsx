@@ -13,6 +13,7 @@ import {
   buildChapterLeaderProofUploadHref,
   type ChapterLeaderCommandCenter,
   type ChapterLeaderCommandCenterCommitteeCard,
+  type ChapterLeaderEventCommitteeFilterKey,
   type ChapterLeaderCommandCenterEventCard,
   type ChapterLeaderCommandCenterLeadershipRole,
   type ChapterLeaderCommandCenterMemberProfile,
