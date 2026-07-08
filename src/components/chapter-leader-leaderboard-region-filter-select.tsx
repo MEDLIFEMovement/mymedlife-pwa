@@ -4,7 +4,10 @@ import type { ChangeEvent } from "react";
 import { useRouter } from "next/navigation";
 
 import type { ChapterLeaderCommandCenter } from "@/services/chapter-leader-command-center";
-import { navigateToSelectedChapterLeaderFilter } from "@/components/chapter-leader-filter-routing";
+import {
+  createChapterLeaderFilterNavigate,
+  navigateToSelectedChapterLeaderFilter,
+} from "@/components/chapter-leader-filter-routing";
 
 type ChapterLeaderLeaderboardRegionFilterSelectProps = {
   options: ChapterLeaderCommandCenter["leaderboardRegionOptions"];
@@ -15,14 +18,10 @@ export function ChapterLeaderLeaderboardRegionFilterSelect({
   options,
   selectedKey,
 }: ChapterLeaderLeaderboardRegionFilterSelectProps) {
-  const router = useRouter();
+  const navigate = createChapterLeaderFilterNavigate(useRouter());
 
   function handleChange(event: ChangeEvent<HTMLSelectElement>) {
-    navigateToSelectedChapterLeaderFilter(
-      options,
-      event.target.value,
-      (href) => router.replace(href, { scroll: false }),
-    );
+    navigateToSelectedChapterLeaderFilter(options, event.target.value, navigate);
   }
 
   return (

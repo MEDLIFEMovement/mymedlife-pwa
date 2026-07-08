@@ -3,6 +3,10 @@ type ChapterLeaderFilterOption = {
   href: string;
 };
 
+type ChapterLeaderFilterRouter = {
+  replace: (href: string, options: { scroll: boolean }) => void;
+};
+
 export function navigateToSelectedChapterLeaderFilter<T extends ChapterLeaderFilterOption>(
   options: T[],
   selectedKey: string,
@@ -17,4 +21,10 @@ export function navigateToSelectedChapterLeaderFilter<T extends ChapterLeaderFil
   navigate(nextOption.href);
 
   return nextOption.href;
+}
+
+export function createChapterLeaderFilterNavigate(
+  router: ChapterLeaderFilterRouter,
+) {
+  return (href: string) => router.replace(href, { scroll: false });
 }
