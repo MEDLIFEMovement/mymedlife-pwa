@@ -348,6 +348,34 @@ describe("chapter leader command center", () => {
     expect(valuesMarkup).toContain("Values follow-through stays human-reviewed");
   });
 
+  it("keeps succession and training readable when no member is currently selected", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const successionCommandCenter = {
+      ...getChapterLeaderCommandCenter(actor, data, { view: "succession" }),
+      selectedMember: null,
+      navigationMemberId: null,
+    };
+    const trainingCommandCenter = {
+      ...getChapterLeaderCommandCenter(actor, data, { view: "training" }),
+      selectedMember: null,
+      navigationMemberId: null,
+    };
+
+    const successionMarkup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter: successionCommandCenter }),
+    );
+    const trainingMarkup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter: trainingCommandCenter }),
+    );
+
+    expect(successionMarkup).toContain("Succession");
+    expect(successionMarkup).not.toContain("Leadership review loop");
+
+    expect(trainingMarkup).toContain("Leadership Development Resources");
+    expect(trainingMarkup).not.toContain("Training review in focus");
+    expect(trainingMarkup).not.toContain("Leadership review loop");
+  });
+
   it("keeps Review Members wired from the overview hero into the member-pipeline quick-action state", () => {
     const actor = getMockLocalActorContext("leader.a@mymedlife.test");
     const commandCenter = getChapterLeaderCommandCenter(actor, data);
@@ -2729,6 +2757,33 @@ describe("chapter leader command center", () => {
     );
     expect(trainingMarkup).toContain(
       'href="/leader?view=values&amp;member=member-ivy&amp;pipeline=follow_up&amp;q=Ivy"',
+    );
+  });
+
+  it("keeps the leadership review loop usable when only the navigation member id survives", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = {
+      ...getChapterLeaderCommandCenter(actor, data, {
+        view: "leaders",
+        memberId: "member-ivy",
+        pipeline: "follow_up",
+        search: "Ivy",
+      }),
+      selectedMember: null,
+      navigationMemberId: "member-ivy",
+    };
+
+    const markup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
+    );
+
+    expect(markup).toContain("Leadership review loop");
+    expect(markup).toContain("Keep the selected leader anchored across every leadership handoff.");
+    expect(markup).toContain(
+      'href="/leader?view=member_profile&amp;member=member-ivy&amp;pipeline=follow_up&amp;q=Ivy"',
+    );
+    expect(markup).toContain(
+      'href="/leader?view=training&amp;member=member-ivy&amp;pipeline=follow_up&amp;q=Ivy"',
     );
   });
 
