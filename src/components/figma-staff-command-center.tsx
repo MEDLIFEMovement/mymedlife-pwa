@@ -454,6 +454,8 @@ export function ChapterDetailDrawer({
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [showSurvey, setShowSurvey] = useState(false);
+  const chapterReturnLabel = `Return to ${chapter.name}`;
+  const chapterReturnTitle = `Return to ${chapter.name} in the same chapters review loop after this preview readback`;
   const resolvedAdminPreviewHref =
     adminPreviewHref ??
     buildStaffChapterAdminHref(
@@ -675,11 +677,11 @@ export function ChapterDetailDrawer({
           </a>
           <button
             onClick={onClose}
-            title="Return to the chapters overview after this preview readback"
+            title={chapterReturnTitle}
             className="flex items-center gap-1.5 rounded-lg border border-border bg-white px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted/40"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
-            <span>Return to chapters</span>
+            <span className="max-w-[10rem] truncate">{chapterReturnLabel}</span>
           </button>
         </div>
       </div>

@@ -498,8 +498,8 @@ describe("staff page", () => {
     expect(html).toContain("Return to this chapter in the same Command Center loop after the Admin readback closes.");
     expect(html).toContain('href="/staff?view=admin&amp;adminView=chapters&amp;returnView=chapters&amp;chapter=chapter-test&amp;chapterContext=Boston+College"');
     expect(html).toContain("Open Admin preview");
-    expect(html).toContain("Return to chapters");
-    expect(html).toContain("Return to the chapters overview after this preview readback");
+    expect(html).toContain("Return to Boston College");
+    expect(html).toContain("Return to Boston College in the same chapters review loop after this preview readback");
     expect(html).toContain("No note save, intervention status write, or follow-up task write runs for Boston College from this surface.");
     expect(html).toContain("disabled:cursor-not-allowed");
     expect(html).not.toContain(">Send NPS Survey<");
