@@ -543,10 +543,15 @@ export type ChapterLeaderCommandCenterSource =
   | "overview"
   | "member_home"
   | "events"
+  | "member_profile"
   | "bridge_videos"
   | "feed_analytics"
   | "impact"
-  | "leaderboard";
+  | "leaderboard"
+  | "leaders"
+  | "succession"
+  | "values"
+  | "training";
 
 export type ChapterLeaderCommandCenter = {
   canReadCommandCenter: boolean;
@@ -2226,10 +2231,15 @@ function parseChapterLeaderSource(value?: string): ChapterLeaderCommandCenterSou
     case "overview":
     case "member_home":
     case "events":
+    case "member_profile":
     case "bridge_videos":
     case "feed_analytics":
     case "impact":
     case "leaderboard":
+    case "leaders":
+    case "succession":
+    case "values":
+    case "training":
       return value;
     default:
       return null;
