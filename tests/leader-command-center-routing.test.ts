@@ -28,19 +28,34 @@ describe("leader command center routing", () => {
     expect(getLeaderCommandCenterViewForScreen("create-event")).toBe("create_event");
   });
 
-  it("preserves unrelated query state while replacing the active view", () => {
+  it("keeps only leaderboard continuity state when switching into the leaderboard view", () => {
     expect(
       buildLeaderCommandCenterHrefForScreen("leaderboard", {
         pathname: "/leader",
-        search: "source=staff&view=events",
+        search: "source=feed_analytics&view=events&leaderboardMetric=attendance&region=canada&member=member-ivy&quickAction=promote_to_chair",
       }),
-    ).toBe("/leader?source=staff&view=leaderboard");
+    ).toBe("/leader?leaderboardMetric=attendance&region=canada&view=leaderboard");
+  });
 
+  it("preserves member-review continuity without carrying quick-action noise into member profile", () => {
+    expect(
+      buildLeaderCommandCenterHrefForScreen("profile", {
+        pathname: "/leader",
+        search:
+          "source=feed_analytics&view=succession&member=member-maya&pipeline=follow_up&q=Sofia&feedPost=feed-post-slt-recap&quickAction=promote_to_chair&leaderboardMetric=attendance&region=canada",
+      }),
+    ).toBe(
+      "/leader?source=feed_analytics&member=member-maya&pipeline=follow_up&q=Sofia&feedPost=feed-post-slt-recap&leaderboardMetric=attendance&region=canada&view=member_profile",
+    );
+  });
+
+  it("keeps event-ops continuity focused on committee and selected event state", () => {
     expect(
       buildLeaderCommandCenterHrefForScreen("events", {
         pathname: "/leader",
-        search: "eventCommittee=events",
+        search:
+          "source=feed_analytics&view=member_profile&member=member-ivy&eventCommittee=recruitment&event=bc-event-quad-tabling&quickAction=assign_action",
       }),
-    ).toBe("/leader?eventCommittee=events&view=events");
+    ).toBe("/leader?event=bc-event-quad-tabling&eventCommittee=recruitment&view=events");
   });
 });
