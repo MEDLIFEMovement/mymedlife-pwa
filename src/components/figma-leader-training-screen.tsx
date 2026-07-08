@@ -52,6 +52,9 @@ const ROLE_TAGS   = ["All Roles", "President", "VP / E-Board", "Committee Chair"
 const TRAINING_PREVIEW_COPY =
   "TEST training preview. Sample leadership-development resources stay visible for review, but no publishing, playback, deck viewing, external opens, or chapter sharing is live.";
 
+const TRAINING_HANDOFF_COPY =
+  "Use this TEST library to prepare values interviews, succession coaching, committee follow-through, and leader onboarding. Completion tracking, certificates, assignments, and chapter-wide sends stay blocked in this preview.";
+
 type ResourceType = "video" | "deck" | "link";
 
 interface TrainingResource {
@@ -269,7 +272,7 @@ export function TrainingScreen() {
         <div>
           <h1 className="text-2xl font-black text-slate-900">Leadership & Resources Hub</h1>
           <p className="text-sm text-slate-500 mt-1">
-            Videos, presentations, and external resources to develop MEDLIFE leaders.
+            TEST videos, presentations, and external resources for leadership development, succession review, and values coaching.
           </p>
         </div>
         <Btn variant="primary" blockedTitle="Resource publishing is blocked in this preview until leadership-content approval is complete."><Plus size={11}/>Preview Resource Intake</Btn>
@@ -277,6 +280,13 @@ export function TrainingScreen() {
 
       <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3">
         <p className="text-sm text-amber-900">{TRAINING_PREVIEW_COPY}</p>
+      </div>
+
+      <div className="rounded-2xl border border-[#bfdbfe] bg-[#eef5ff] px-4 py-3">
+        <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-[#1d4ed8]">
+          Leadership handoff posture
+        </p>
+        <p className="mt-2 text-sm leading-6 text-slate-600">{TRAINING_HANDOFF_COPY}</p>
       </div>
 
       {/* Filters row */}
@@ -430,7 +440,7 @@ function ResourceCard({ resource: r, expanded, onToggle }: { resource: TrainingR
         {/* Expanded: share options */}
         {expanded && (
           <div className="mt-3 pt-3 border-t border-slate-100 space-y-2">
-            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Share this resource</div>
+            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Preview share paths</div>
             <Btn variant="secondary" className="w-full justify-start" blockedTitle="Leadership resource sharing is blocked in this preview until feed approval is complete."><Bell size={10}/>Preview Chapter Feed Share</Btn>
             <Btn variant="secondary" className="w-full justify-start" blockedTitle="Committee sends are blocked in this preview until messaging approval is complete."><Users size={10}/>Preview Committee Send</Btn>
             <Btn variant="secondary" className="w-full justify-start" blockedTitle="Leadership reading-list saves are blocked in this preview until write approval is complete."><Star size={10}/>Preview Reading List Add</Btn>
