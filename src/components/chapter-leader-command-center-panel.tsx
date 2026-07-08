@@ -568,6 +568,23 @@ function renderView(
   );
   const leadershipReviewMemberId =
     commandCenter.selectedMember?.id ?? commandCenter.navigationMemberId;
+  const chapterHomeSource =
+    commandCenter.selectedSource ??
+    (["member_profile", "leaders", "succession", "values", "training"].includes(
+      commandCenter.selectedView,
+    )
+      ? commandCenter.selectedView
+      : null);
+  const chapterHomeHref = buildChapterLeaderCommandCenterHref("overview", {
+    source: chapterHomeSource,
+    memberId: leadershipReviewMemberId,
+    bestPracticeChapterId: preservedChapterState.bestPracticeChapterId,
+    leaderboardMetric: preservedChapterState.leaderboardMetric,
+    leaderboardRegion: preservedChapterState.leaderboardRegion,
+    pipelineFilter: preservedChapterState.pipelineFilter,
+    searchQuery: preservedChapterState.searchQuery,
+    feedPostId: preservedChapterState.feedPostId,
+  });
 
   switch (commandCenter.selectedView) {
     case "leaderboard":
@@ -736,6 +753,7 @@ function renderView(
               </div>
             </SectionCard>
           ) : null}
+          <ChapterHomeReturnCard href={chapterHomeHref} />
           <section className="grid gap-3 rounded-[1.75rem] border border-slate-200 bg-white p-4 shadow-[0_14px_38px_rgba(15,23,42,0.06)] sm:p-5">
             <div className="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
               <div className="max-w-3xl">
@@ -919,6 +937,8 @@ function renderView(
                 </div>
               </div>
             ) : null}
+
+            <ChapterHomeReturnCard href={chapterHomeHref} />
 
             <section className="rounded-[1.2rem] border border-[#bfdbfe] bg-[#f8fbff] px-4 py-4">
               <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
@@ -2291,6 +2311,7 @@ function renderView(
     case "succession":
       return (
         <section className="grid gap-4">
+          <ChapterHomeReturnCard href={chapterHomeHref} />
           {commandCenter.activeQuickAction === "promote_emerging_leader" ? (
             <SectionCard
               eyebrow="Promote Emerging Leader"
@@ -2430,6 +2451,7 @@ function renderView(
     case "leaders":
       return (
         <section className="grid gap-4">
+          <ChapterHomeReturnCard href={chapterHomeHref} />
           <section className="grid gap-4 rounded-[1.75rem] border border-slate-200 bg-white p-4 shadow-[0_14px_38px_rgba(15,23,42,0.06)] sm:p-5">
             <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
               <div>
@@ -2526,6 +2548,7 @@ function renderView(
     case "values":
       return (
         <section className="grid gap-4">
+          <ChapterHomeReturnCard href={chapterHomeHref} />
           <section className="grid gap-4 rounded-[1.75rem] border border-slate-200 bg-white p-4 shadow-[0_14px_38px_rgba(15,23,42,0.06)] sm:p-5">
             <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
               <div>
@@ -2627,6 +2650,7 @@ function renderView(
     case "training":
       return (
         <section className="grid gap-4">
+          <ChapterHomeReturnCard href={chapterHomeHref} />
           <section className="grid gap-4 rounded-[1.75rem] border border-slate-200 bg-white p-4 shadow-[0_14px_38px_rgba(15,23,42,0.06)] sm:p-5">
             <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
               <div>
@@ -3202,6 +3226,32 @@ function SectionCard({
         {title}
       </h2>
       <div className="mt-4">{children}</div>
+    </section>
+  );
+}
+
+function ChapterHomeReturnCard({ href }: { href: string }) {
+  return (
+    <section className="rounded-[1.2rem] border border-[#bfdbfe] bg-[#f8fbff] p-4">
+      <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+        <div>
+          <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-[#1d4ed8]">
+            Chapter Home
+          </p>
+          <h2 className="mt-2 text-lg font-semibold text-slate-950">
+            Back to Chapter Home
+          </h2>
+          <p className="mt-2 text-sm leading-6 text-slate-600">
+            Return to the chapter-wide operating view without dropping the active leadership review context.
+          </p>
+        </div>
+        <Link
+          href={href}
+          className="inline-flex rounded-full border border-[#bfdbfe] bg-white px-4 py-2 text-sm font-semibold text-[#1d4ed8] transition hover:border-[#93c5fd] hover:bg-[#eef5ff]"
+        >
+          Open Chapter Home
+        </Link>
+      </div>
     </section>
   );
 }

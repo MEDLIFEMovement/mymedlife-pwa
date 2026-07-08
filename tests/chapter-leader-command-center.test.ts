@@ -931,6 +931,31 @@ describe("chapter leader command center", () => {
     );
   });
 
+  it("keeps a chapter-home return path visible from member profile with the active review context preserved", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "member_profile",
+      memberId: "member-ivy",
+      pipeline: "follow_up",
+      search: "Ivy",
+    });
+    const markup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
+    );
+
+    expect(markup).toContain("Back to Chapter Home");
+    expect(markup).toContain("Open Chapter Home");
+    expect(markup).toContain(
+      "href=\"/leader?view=overview&amp;source=member_profile&amp;member=member-ivy&amp;pipeline=follow_up&amp;q=Ivy\"",
+    );
+    expect(markup.indexOf("Back to Member Pipeline")).toBeLessThan(
+      markup.indexOf("Back to Chapter Home"),
+    );
+    expect(markup.indexOf("Back to Chapter Home")).toBeLessThan(
+      markup.indexOf("Leadership Actions"),
+    );
+  });
+
   it("keeps the Sofia profile aligned with the command-center Figma sample data", () => {
     const actor = getMockLocalActorContext("leader.a@mymedlife.test");
     const commandCenter = getChapterLeaderCommandCenter(actor, data, {
@@ -2858,6 +2883,28 @@ describe("chapter leader command center", () => {
     expect(markup).toContain("Leadership Gaps");
     expect(markup).toContain("Candidate Pipeline");
     expect(markup).toContain("Succession Timeline");
+  });
+
+  it("keeps chapter-home return links anchored to the active leadership review source", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "values",
+      source: "leaders",
+      memberId: "member-ivy",
+      pipeline: "follow_up",
+      search: "Ivy",
+    });
+    const markup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
+    );
+
+    expect(markup).toContain("Back to Chapter Home");
+    expect(markup).toContain(
+      "href=\"/leader?view=overview&amp;source=leaders&amp;member=member-ivy&amp;pipeline=follow_up&amp;q=Ivy\"",
+    );
+    expect(markup.indexOf("Back to Chapter Home")).toBeLessThan(
+      markup.indexOf("MEDLIFE Values"),
+    );
   });
 
   it("opens promote emerging leader as a succession-owned quick-action state before nomination decisions", () => {
