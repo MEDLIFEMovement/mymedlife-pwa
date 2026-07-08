@@ -93,14 +93,18 @@ export function AdminAuditLogReviewPanel({
         </div>
         <div className="mt-4 flex flex-wrap gap-2">
           {review.auditPreflight.blockedControls.map((control) => (
-              <span
-                key={control}
-                className="rounded-full border border-white/10 bg-black/20 px-3 py-1 text-xs font-semibold text-white/64"
-              >
-                Blocked {control}
-              </span>
-            ))}
-          </div>
+            <span
+              key={control}
+              className="rounded-full border border-white/10 bg-black/20 px-3 py-1 text-xs font-semibold text-white/64"
+            >
+              Blocked here {control}
+            </span>
+          ))}
+        </div>
+        <p className="mt-3 text-xs leading-5 text-white/54">
+          This review stays read-only. No audit export, retention change, secret
+          reveal, or production-write approval runs from this surface.
+        </p>
       </div>
 
       {review.canReadRows ? (

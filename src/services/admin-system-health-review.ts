@@ -39,6 +39,7 @@ export type AdminSystemHealthReview = {
     blockedBeforeLive: number;
   };
   checks: AdminSystemHealthCheck[];
+  blockedControls: string[];
   finalPrompt: string;
 };
 
@@ -64,6 +65,7 @@ export function getAdminSystemHealthReview(
       secretsShown: 0,
       counts: emptyCounts(),
       checks: [],
+      blockedControls: [],
       finalPrompt: "",
     };
   }
@@ -83,6 +85,15 @@ export function getAdminSystemHealthReview(
     secretsShown: environmentSafety.counts.secretsShown,
     counts: countChecks(checks),
     checks,
+    blockedControls: [
+      "restart incidents",
+      "rerun provider syncs",
+      "export health logs",
+      "reveal secrets",
+      "rotate credentials",
+      "approve live launch",
+      "trigger rollback from the browser",
+    ],
     finalPrompt:
       "Keep this route read-only and do not approve live launch until blocked production health checks have owners, the production operations runbook is approved, smoke evidence is current, and rollback or incident response plans are named.",
   };
