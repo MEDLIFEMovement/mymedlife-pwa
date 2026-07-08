@@ -23,6 +23,13 @@ export function AdminControlCenterPanel({ summary }: AdminControlCenterPanelProp
         read-only and mock-safe until auth, RLS, audit, and rollback are approved.
       </p>
 
+      <div className="mt-4 flex flex-wrap gap-2">
+        <PreviewToken>Read-only preview</PreviewToken>
+        <PreviewToken>Blocked production writes</PreviewToken>
+        <PreviewToken>Blocked external sends</PreviewToken>
+        <PreviewToken>Source-backed handoff routes</PreviewToken>
+      </div>
+
       <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-6">
         <Metric label="Fake users" value={`${summary.userCount}`} />
         <Metric label="Role audiences" value={`${summary.roleAudienceCount}`} />
@@ -62,7 +69,7 @@ export function AdminControlCenterPanel({ summary }: AdminControlCenterPanelProp
             href="/admin/master-data"
             className="rounded-full bg-emerald-300 px-3 py-1 text-xs font-semibold text-[#06211d]"
           >
-            Open inventory
+            Open inventory review
           </Link>
         </div>
 
@@ -321,21 +328,21 @@ export function AdminControlCenterPanel({ summary }: AdminControlCenterPanelProp
                 href="/admin/system-health"
                 className="mt-3 inline-flex rounded-full bg-lime-300 px-3 py-1 text-xs font-semibold text-[#13230b]"
               >
-                Open health
+                Open system health review
               </Link>
             ) : area.key === "audit_logs" ? (
               <Link
                 href="/admin/audit-log"
                 className="mt-3 inline-flex rounded-full bg-violet-300 px-3 py-1 text-xs font-semibold text-[#170d29]"
               >
-                Open audit log
+                Open audit log review
               </Link>
             ) : area.key === "integration_outbox" ? (
               <Link
                 href="/admin/integration-outbox"
                 className="mt-3 inline-flex rounded-full bg-cyan-300 px-3 py-1 text-xs font-semibold text-[#05242a]"
               >
-                Open outbox
+                Open outbox review
               </Link>
             ) : null}
           </article>
@@ -376,6 +383,14 @@ function Metric({ label, value }: { label: string; value: string }) {
       </p>
       <p className="mt-2 text-2xl font-semibold text-white">{value}</p>
     </div>
+  );
+}
+
+function PreviewToken({ children }: { children: string }) {
+  return (
+    <span className="rounded-full border border-white/10 bg-black/20 px-2.5 py-1 text-xs font-semibold text-white/62">
+      {children}
+    </span>
   );
 }
 

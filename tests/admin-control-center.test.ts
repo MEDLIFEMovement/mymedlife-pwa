@@ -1,4 +1,7 @@
+import React from "react";
+import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
+import { AdminControlCenterPanel } from "@/components/admin-control-center-panel";
 import { campaignShells } from "@/data/mock-campaigns";
 import {
   getAdminControlCenterSummary,
@@ -224,6 +227,30 @@ describe("admin control center", () => {
         primaryMetric: "1 visible rows",
         detail: expect.stringContaining("persisted local audit rows"),
       }),
+    );
+  });
+
+  it("renders route-backed review handoffs with blocked preview cues", () => {
+    const summary = getAdminControlCenterSummary(
+      getMockReadOnlyAppData("Testing admin control center review handoffs."),
+    );
+
+    const html = renderToStaticMarkup(
+      React.createElement(AdminControlCenterPanel, { summary }),
+    );
+
+    expect(html).toContain("Read-only preview");
+    expect(html).toContain("Blocked production writes");
+    expect(html).toContain("Blocked external sends");
+    expect(html).toContain("Open inventory review");
+    expect(html).toContain("Open outbox review");
+    expect(html).toContain("Open audit log review");
+    expect(html).toContain("Open system health review");
+    expect(html).toContain(
+      "Open the outbox review route for contract and zero-send checks",
+    );
+    expect(html).toContain(
+      "Open the system health review route for runbook follow-through",
     );
   });
 });
