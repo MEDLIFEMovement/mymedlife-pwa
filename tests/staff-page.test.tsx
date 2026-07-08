@@ -290,6 +290,13 @@ describe("staff page", () => {
     expect(source).toContain("DS Admin audit handoff");
     expect(source).toContain("Review consent and blocked actions here, then open the Admin preview for DS audit readback before any publishing or coach-note approval request.");
     expect(source).toContain("const selectedCardId = searchParams.get(\"ugcCard\");");
+    expect(source).toContain("resolveProofQueueStatusFilter(searchParams.get(\"proofStatus\"), initialStatusFilter)");
+    expect(source).toContain("resolveProofQueuePlatformFilter(searchParams.get(\"proofPlatform\"), initialPlatformFilter)");
+    expect(source).toContain("handleFilterChange(");
+    expect(source).toContain('params.set("proofStatus", nextStatusFilter);');
+    expect(source).toContain('params.set("proofPlatform", nextPlatformFilter);');
+    expect(source).toContain('params.delete("ugcCard");');
+    expect(source).toContain("matchesProofQueueFilters(selectedCard, nextStatusFilter, nextPlatformFilter)");
     expect(source).toContain("buildStaffAdminProofHref(");
     expect(source).toContain("selectedCard.chapter");
     expect(source).toContain("buildStaffProofHref(pathname, searchParams.toString(), selectedCard.id)");
@@ -304,6 +311,29 @@ describe("staff page", () => {
     expect(source).toContain("Return to Proof / UGC after Admin readback to continue the same review loop in the staff shell.");
     expect(source).toContain("Return to Proof / UGC after the Admin readback to continue the same Command Center review loop.");
     expect(source).toContain("Next review step");
+  });
+
+  it("keeps Proof / UGC queue context route-backed for admin return loops", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("general.staff@mymedlife.test"),
+    );
+
+    const { default: StaffPage } = await import("@/app/staff/page");
+    const html = renderToStaticMarkup(
+      await StaffPage({
+        searchParams: Promise.resolve({
+          view: "proof_ugc",
+          proofStatus: "pending",
+          proofPlatform: "instagram",
+        }),
+      }),
+    );
+
+    expect(html).toContain("1 stories");
+    expect(html).toContain("TEST Rush Month tabling");
+    expect(html).not.toContain("TEST Bridge Video: Why I joined MEDLIFE");
   });
 
   it("keeps campaign SOP creation and publish controls visibly blocked inside the SOP surface", async () => {
@@ -522,7 +552,7 @@ describe("staff page", () => {
     const lineCount = source.split("\n").length;
 
     expect(lineCount).toBeGreaterThanOrEqual(2170);
-    expect(lineCount).toBeLessThanOrEqual(2605);
+    expect(lineCount).toBeLessThanOrEqual(2675);
     expect(source).toContain("type Screen = \"chapters\" | \"campaigns\" | \"events\" | \"ugc\" | \"reports\" | \"admin\" | \"best-practices\" | \"sops\";");
     expect(source).toContain("const NAV_ITEMS");
     expect(source).toContain("function PortfolioOverview");

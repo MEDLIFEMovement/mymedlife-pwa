@@ -1352,13 +1352,19 @@ function PlatformBadge({ platform }: { platform: Platform }) {
 
 type ProofQueueStatusFilter = "all" | "pending" | "approved" | "rejected";
 
-function ProofUGCQueue() {
+function ProofUGCQueue({
+  initialStatusFilter = "all",
+  initialPlatformFilter = "all",
+}: {
+  initialStatusFilter?: ProofQueueStatusFilter;
+  initialPlatformFilter?: Platform | "all";
+}) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const [statusFilter, setStatusFilter] = useState<ProofQueueStatusFilter>("all");
-  const [platformFilter, setPlatformFilter] = useState("all");
   const [linkInput, setLinkInput] = useState("");
+  const statusFilter = resolveProofQueueStatusFilter(searchParams.get("proofStatus"), initialStatusFilter);
+  const platformFilter = resolveProofQueuePlatformFilter(searchParams.get("proofPlatform"), initialPlatformFilter);
   const selectedCardId = searchParams.get("ugcCard");
   const selectedCard = selectedCardId
     ? UGC_CARDS.find((card) => card.id === selectedCardId) ?? null
@@ -1368,22 +1374,37 @@ function ProofUGCQueue() {
   ).length;
 
   const filtered = UGC_CARDS.filter((c) => {
-    if (statusFilter === "pending" && c.visibility !== "pending") return false;
-    if (statusFilter === "rejected" && c.visibility !== "rejected") return false;
-    if (
-      statusFilter === "approved" &&
-      c.visibility !== "chapter" &&
-      c.visibility !== "selected"
-    ) {
-      return false;
-    }
-    if (platformFilter !== "all" && c.platform !== platformFilter) return false;
-    return true;
+    return matchesProofQueueFilters(c, statusFilter, platformFilter);
   });
 
   const pendingCount = UGC_CARDS.filter(c => c.visibility === "pending").length;
   const genericProofQueueHref = buildStaffProofHref(pathname, searchParams.toString());
   const genericProofAdminHref = buildStaffAdminProofHref(pathname, searchParams.toString());
+  const handleFilterChange = (
+    nextStatusFilter: ProofQueueStatusFilter,
+    nextPlatformFilter: Platform | "all",
+  ) => {
+    const params = new URLSearchParams(searchParams.toString());
+
+    if (nextStatusFilter === "all") {
+      params.delete("proofStatus");
+    } else {
+      params.set("proofStatus", nextStatusFilter);
+    }
+
+    if (nextPlatformFilter === "all") {
+      params.delete("proofPlatform");
+    } else {
+      params.set("proofPlatform", nextPlatformFilter);
+    }
+
+    if (selectedCard && !matchesProofQueueFilters(selectedCard, nextStatusFilter, nextPlatformFilter)) {
+      params.delete("ugcCard");
+    }
+
+    const query = params.toString();
+    router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
+  };
 
   return (
     <div className="flex gap-5 items-start">
@@ -1470,7 +1491,7 @@ function ProofUGCQueue() {
             ] as const).map(({ key, label }) => (
               <button
                 key={key}
-                onClick={() => setStatusFilter(key)}
+                onClick={() => handleFilterChange(key, platformFilter)}
                 className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-colors ${statusFilter === key ? "bg-primary text-white" : "text-muted-foreground hover:text-foreground hover:bg-muted"}`}
               >
                 {label}
@@ -1480,7 +1501,7 @@ function ProofUGCQueue() {
           <div className="relative">
             <select
               value={platformFilter}
-              onChange={(e) => setPlatformFilter(e.target.value)}
+              onChange={(e) => handleFilterChange(statusFilter, e.target.value as Platform | "all")}
               className="bg-white border border-border text-xs px-3 py-2 rounded-lg pr-7 appearance-none cursor-pointer focus:outline-none font-medium text-foreground"
             >
               <option value="all">All Platforms</option>
@@ -2206,7 +2227,10 @@ type FigmaStaffCommandCenterProps = {
   initialView?: string;
   initialCampaign?: string | null;
   initialRouteParams?: Partial<
-    Record<"view" | "campaign" | "chapter" | "ugcCard" | "returnView" | "chapterContext", string | null | undefined>
+    Record<
+      "view" | "campaign" | "chapter" | "ugcCard" | "returnView" | "chapterContext" | "proofStatus" | "proofPlatform",
+      string | null | undefined
+    >
   >;
 };
 
@@ -2219,7 +2243,9 @@ export function FigmaStaffCommandCenter({
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const getRouteParam = (key: "view" | "campaign" | "chapter" | "ugcCard" | "returnView" | "chapterContext") =>
+  const getRouteParam = (
+    key: "view" | "campaign" | "chapter" | "ugcCard" | "returnView" | "chapterContext" | "proofStatus" | "proofPlatform",
+  ) =>
     searchParams.get(key) ?? initialRouteParams?.[key] ?? null;
   const activeScreen = resolveStaffShellScreen(getRouteParam("view") ?? initialView ?? null);
   const selectedChapterId = getRouteParam("chapter");
@@ -2233,6 +2259,8 @@ export function FigmaStaffCommandCenter({
     activeScreen === "admin" && adminReturnScreen === "chapters" ? getRouteParam("chapter") : null;
   const adminChapterContext = activeScreen === "admin" ? getRouteParam("chapterContext") : null;
   const adminBackLabel = getStaffAdminReturnLabel(adminReturnScreen, adminReturnChapterId);
+  const initialProofStatusFilter = resolveProofQueueStatusFilter(getRouteParam("proofStatus"));
+  const initialProofPlatformFilter = resolveProofQueuePlatformFilter(getRouteParam("proofPlatform"));
 
   // SOP Builder sub-navigation
   const [sopView, setSopView] = useState<"library" | "builder">("library");
@@ -2370,7 +2398,12 @@ export function FigmaStaffCommandCenter({
             {activeScreen === "events" && <StaffLaunchEventsOperations chapters={CHAPTERS} />}
             {activeScreen === "reports" && <StaffLaunchOrganizationLeaderboard chapters={CHAPTERS} />}
             {activeScreen === "campaigns" && <CampaignOps initialCampaign={initialCampaign} />}
-            {activeScreen === "ugc" && <ProofUGCQueue />}
+            {activeScreen === "ugc" && (
+              <ProofUGCQueue
+                initialStatusFilter={initialProofStatusFilter}
+                initialPlatformFilter={initialProofPlatformFilter}
+              />
+            )}
             {activeScreen === "best-practices" && <BestPracticesLibrary />}
           </div>
         )}
@@ -2429,6 +2462,50 @@ function resolveStaffShellScreen(view: string | null): Screen {
 
 function resolveStaffAdminReturnScreen(view: string | null): Extract<Screen, "chapters" | "ugc"> {
   return resolveStaffShellScreen(view) === "ugc" ? "ugc" : "chapters";
+}
+
+function resolveProofQueueStatusFilter(
+  value: string | null | undefined,
+  fallback: ProofQueueStatusFilter = "all",
+): ProofQueueStatusFilter {
+  if (value === "pending" || value === "approved" || value === "rejected") return value;
+  return fallback;
+}
+
+function resolveProofQueuePlatformFilter(
+  value: string | null | undefined,
+  fallback: Platform | "all" = "all",
+): Platform | "all" {
+  if (
+    value === "facebook" ||
+    value === "instagram" ||
+    value === "linkedin" ||
+    value === "loom" ||
+    value === "tiktok" ||
+    value === "upload" ||
+    value === "youtube"
+  ) {
+    return value;
+  }
+  return fallback;
+}
+
+function matchesProofQueueFilters(
+  card: ContentCard,
+  statusFilter: ProofQueueStatusFilter,
+  platformFilter: Platform | "all",
+) {
+  if (statusFilter === "pending" && card.visibility !== "pending") return false;
+  if (statusFilter === "rejected" && card.visibility !== "rejected") return false;
+  if (
+    statusFilter === "approved" &&
+    card.visibility !== "chapter" &&
+    card.visibility !== "selected"
+  ) {
+    return false;
+  }
+  if (platformFilter !== "all" && card.platform !== platformFilter) return false;
+  return true;
 }
 
 function getStaffAdminReturnLabel(screen: Extract<Screen, "chapters" | "ugc">, chapterId?: string | null) {

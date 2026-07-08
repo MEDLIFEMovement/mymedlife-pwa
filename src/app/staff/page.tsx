@@ -60,6 +60,8 @@ export default async function StaffPage({ searchParams }: StaffPageProps) {
           ugcCard: resolvedSearchParams?.ugcCard,
           returnView: resolvedSearchParams?.returnView,
           chapterContext: resolvedSearchParams?.chapterContext,
+          proofStatus: resolvedSearchParams?.proofStatus,
+          proofPlatform: resolvedSearchParams?.proofPlatform,
         }}
       />
     </>
