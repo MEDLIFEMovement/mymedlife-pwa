@@ -523,7 +523,7 @@ function EventPointsImpactView({
 
         <div className="mt-6 w-full space-y-2.5">
           <PrimaryLink
-            href={getLaunchLaneMemberPointsHref(getEventPointsSource(source))}
+            href={getLaunchLaneEventPointsHref(event.id, source)}
             label="View leaderboard impact"
             icon={<Star size={15} />}
           />
@@ -719,6 +719,18 @@ function getEventReturnLabel(source?: string) {
 
 function getEventPointsSource(source?: string) {
   return source === "home" || source === "profile" ? source : "events";
+}
+
+function getLaunchLaneEventPointsHref(eventId: string, source?: string) {
+  const url = new URL(
+    `https://mymedlife.local${getLaunchLaneMemberPointsHref(getEventPointsSource(source))}`,
+  );
+
+  if (getEventPointsSource(source) === "events") {
+    url.searchParams.set("event", eventId);
+  }
+
+  return `${url.pathname}${url.search}`;
 }
 
 function getDurationLabel(startsAt: string | null, endsAt: string | null) {

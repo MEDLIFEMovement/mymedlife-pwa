@@ -1899,7 +1899,13 @@ function AdminDashboard({ navigate }: { navigate: (s: Screen) => void }) {
 
 // ─── SCREEN 10 · Points + Leaderboard ────────────────────────────────────────
 
-function PointsLeaderboard({ source }: { source: MemberLoopSource }) {
+function PointsLeaderboard({
+  source,
+  returnEventId,
+}: {
+  source: MemberLoopSource;
+  returnEventId?: string | null;
+}) {
   const badges = [
     { name: "TEST Rush Starter", desc: "Complete your first TEST Rush Month action", earned: true },
     { name: "TEST Connector", desc: "Invite 10+ TEST members to a TEST chapter event", earned: true },
@@ -1913,7 +1919,11 @@ function PointsLeaderboard({ source }: { source: MemberLoopSource }) {
     points: { title: "Preview-only recognition readback", detail: "This route shows TEST leaderboard and approved-action readback only. No live points awards, reward claims, or share sends run from this screen." },
   };
   const continuityMap: Record<MemberLoopSource, readonly [string, string, string]> = {
-    events: ["TEST points stay preview-only here, and this route keeps the event RSVP, check-in, and leaderboard handoff visible without claiming a live award sync.", "/app/events?source=points", "Back to the TEST event loop"],
+    events: [
+      "TEST points stay preview-only here, and this route keeps the event RSVP, check-in, and leaderboard handoff visible without claiming a live award sync.",
+      returnEventId ? `/app/events/${returnEventId}?source=points` : "/app/events?source=points",
+      returnEventId ? "Back to the TEST event detail" : "Back to the TEST event loop",
+    ],
     home: ["TEST points stay preview-only here, but this route keeps the home-to-events walkthrough intact for the student shell.", "/app/events?source=home", "Continue from home into events"],
     profile: ["TEST points stay preview-only here, and this route keeps the profile-to-recognition walkthrough read-only instead of pretending profile writes are live.", "/profile", "Back to your TEST profile"],
     points: ["TEST points in this member shell are a read-only preview of the event, RSVP, attendance, and action loop. They do not write to a live leaderboard, rewards system, or provider integration.", "/app/events?source=points", "See how to earn more points"],
@@ -3553,6 +3563,7 @@ export function FigmaMemberMobileHome({
   initialStoriesFilter = null,
   initialStoryId = null,
   pointsSource = "points",
+  pointsReturnEventId = null,
   eventsSource = "events",
 }: {
   initialScreen?: MemberMobileLaunchScreen;
@@ -3560,6 +3571,7 @@ export function FigmaMemberMobileHome({
   initialStoriesFilter?: string | null;
   initialStoryId?: string | null;
   pointsSource?: MemberLoopSource;
+  pointsReturnEventId?: string | null;
   eventsSource?: MemberLoopSource;
 }) {
   const [screen, setScreen] = useState<Screen>(initialScreen);
@@ -3576,7 +3588,7 @@ export function FigmaMemberMobileHome({
       case "action": return <ActionDetail navigate={navigate} />;
       case "evidence": return <EvidenceSubmission navigate={navigate} />;
       case "confirm": return <Confirmation navigate={navigate} />;
-      case "points": return <PointsLeaderboard source={pointsSource} />;
+      case "points": return <PointsLeaderboard source={pointsSource} returnEventId={pointsReturnEventId} />;
       case "events": return <EventsScreen navigate={navigate} source={eventsSource} />;
       case "event-detail": return <EventDetailScreen navigate={navigate} />;
       case "rsvp-confirm": return <RsvpConfirmScreen navigate={navigate} />;
