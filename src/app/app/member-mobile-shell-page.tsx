@@ -18,11 +18,13 @@ export async function renderMemberMobileShellPage({
   redirectPath,
   initialStoriesFilter,
   initialStoryId,
+  pointsSource,
 }: {
   initialScreen?: MemberMobileLaunchScreen;
   redirectPath: string;
   initialStoriesFilter?: string | null;
   initialStoryId?: string | null;
+  pointsSource?: "events" | "profile" | "points";
 }) {
   const actor = await getLocalActorContext();
   const landingRoute = getLandingRouteForActor(actor);
@@ -58,6 +60,7 @@ export async function renderMemberMobileShellPage({
         sltPrepEntry={sltPrepEntry}
         initialStoriesFilter={initialStoriesFilter}
         initialStoryId={initialStoryId}
+        pointsSource={pointsSource}
       />
     </>
   );

@@ -113,9 +113,48 @@ describe("member mobile shell routes", () => {
     expect(html).toContain("TEST Aisha N.");
     expect(html).toContain("Recent Approved Actions");
     expect(html).toContain("Add 5 TEST leads to the TEST chapter spreadsheet");
+    expect(html).toContain("Preview-only recognition readback");
     expect(html).toContain("TEST points in this member shell are a read-only preview");
     expect(html).toContain('href="/app/events?source=points"');
     expect(html).toContain("See how to earn more points");
+  });
+
+  it("keeps the points route honest about event-loop handoff context", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("member.a@mymedlife.test"),
+    );
+
+    const { default: PointsPage } = await import("@/app/app/points/page");
+    const html = renderToStaticMarkup(
+      await PointsPage({
+        searchParams: Promise.resolve({ source: "events" }),
+      }),
+    );
+
+    expect(html).toContain("Opened from the TEST event loop");
+    expect(html).toContain("RSVP, attendance, and points loop visible");
+    expect(html).toContain('href="/app/events?source=points"');
+  });
+
+  it("keeps the points route tied to the profile walkthrough when opened from profile", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("member.a@mymedlife.test"),
+    );
+
+    const { default: PointsPage } = await import("@/app/app/points/page");
+    const html = renderToStaticMarkup(
+      await PointsPage({
+        searchParams: Promise.resolve({ source: "profile" }),
+      }),
+    );
+
+    expect(html).toContain("Opened from your TEST profile");
+    expect(html).toContain("profile-to-points handoff stays route-backed and read-only");
+    expect(html).toContain('href="/app/events?source=profile"');
   });
 
   it("keeps internal member preview states visibly marked as TEST content", () => {
