@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { AppShell } from "@/components/app-shell";
 import { DataSourceNotice } from "@/components/data-source-notice";
+import { MemberBottomNav } from "@/components/member-bottom-nav";
 import { StudentAppShell } from "@/components/student-app-shell";
 import {
   ensureVisibleTestLabel,
@@ -25,13 +26,16 @@ export const metadata = getStaticRouteMetadata("sltPrep");
 export const dynamic = "force-dynamic";
 
 type SltPrepShellMode = "standalone" | "member";
+type MemberSltPrepSource = "home" | null;
 
 export async function renderSltPrepPage(
   redirectPath = "/slt-prep",
   shellMode: SltPrepShellMode = "standalone",
+  memberSource: MemberSltPrepSource = null,
 ) {
   const { actor, data } = await getSltPrepPageContext(redirectPath);
   const workspace = getSltTripPrepWorkspace(actor);
+  const profileHref = memberSource === "home" ? "/profile?source=home" : "/profile";
   const content = (
     <>
       <DataSourceNotice source={data.source} />
@@ -58,11 +62,33 @@ export async function renderSltPrepPage(
         showMobileQuickItemHelpers={false}
         showDebugTools={false}
       >
-        <WorkspaceAccountMenu actor={actor} currentWorkspace="student_app" />
-        {isPreviewWorkspaceAccess(actor, "student_app") ? (
-          <WorkspacePreviewBanner workspaceLabel="the General Student App" />
-        ) : null}
-        {content}
+        <div className="pb-24">
+          <WorkspaceAccountMenu actor={actor} currentWorkspace="student_app" />
+          {isPreviewWorkspaceAccess(actor, "student_app") ? (
+            <WorkspacePreviewBanner workspaceLabel="the General Student App" />
+          ) : null}
+          {memberSource === "home" ? (
+            <section className="mb-4 rounded-[1.4rem] border border-slate-200 bg-white px-4 py-4 shadow-[0_12px_30px_rgba(15,23,42,0.06)]">
+              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-[#2563eb]">
+                Opened from the TEST member home
+              </p>
+              <div className="mt-2 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <p className="text-sm leading-6 text-slate-600">
+                  Keep the SLT handoff inside the same student shell, then step back into
+                  home when you want the next event, points, or profile move.
+                </p>
+                <Link
+                  href="/app"
+                  className="inline-flex items-center justify-center rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50"
+                >
+                  Back to Home
+                </Link>
+              </div>
+            </section>
+          ) : null}
+          {content}
+        </div>
+        <MemberBottomNav activeTab={null} profileHref={profileHref} />
       </StudentAppShell>
     );
   }

@@ -100,6 +100,23 @@ describe("SLT Prep routes", () => {
     expect(html).not.toContain('href="/rush-month/events"');
   });
 
+  it("keeps the member SLT home handoff inside the bottom-nav shell with a route back home", async () => {
+    mockPathname = "/app/slt-prep";
+    await primeSignedInActor("traveler.a@mymedlife.test");
+
+    const { default: AppSltPrepPage } = await import("@/app/app/slt-prep/page");
+    const html = renderToStaticMarkup(
+      await AppSltPrepPage({
+        searchParams: Promise.resolve({ source: "home" }),
+      }),
+    );
+
+    expect(html).toContain("Opened from the TEST member home");
+    expect(html).toContain('href="/app"');
+    expect(html).toContain('href="/profile?source=home"');
+    expect(html).toContain('aria-label="Member bottom navigation"');
+  });
+
   it("renders the checklist detail preview packet with the admin handoff still blocked from writes", async () => {
     mockPathname = "/slt-prep/checklist/second-installment";
     await primeSignedInActor("admin@mymedlife.test");
@@ -200,7 +217,11 @@ describe("SLT Prep routes", () => {
     await primeSignedInActor("traveler.a@mymedlife.test");
 
     const { default: AppSltPrepPage } = await import("@/app/app/slt-prep/page");
-    const html = renderToStaticMarkup(await AppSltPrepPage());
+    const html = renderToStaticMarkup(
+      await AppSltPrepPage({
+        searchParams: Promise.resolve({ source: "home" }),
+      }),
+    );
 
     expect(html).toContain("TEST Peru SLT");
     expect(html).toContain("TEST Lima and Cusco, Peru");
