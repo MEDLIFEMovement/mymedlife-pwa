@@ -200,9 +200,11 @@ describe("Figma missing route placeholders", () => {
 
     expect(html).toContain("Command Center");
     expect(html).toContain("Return to staff preview");
-    expect(html).toContain("Embedded Preview");
-    expect(html).toContain("Staff embed");
-    expect(html).toContain("Return with Command Center");
+    expect(html).toContain("Staff review handoff");
+    expect(html).toContain("Embedded Admin Review");
+    expect(html).toContain("Staff review");
+    expect(html).toContain("Staff-linked review route");
+    expect(html).toContain("Return with Command Center after this review pass");
     expect(html).toContain("Overview");
     expect(html).toContain("Users");
     expect(html).toContain("Chapters");
