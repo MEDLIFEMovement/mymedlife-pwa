@@ -50,7 +50,7 @@ export default async function AdminReviewPathPage() {
                 href="/admin/nick-review"
                 className="w-fit rounded-full bg-amber-300 px-4 py-2 text-sm font-semibold text-[#211704]"
               >
-                Open Nick review
+                Open Nick review packet
               </Link>
             </div>
           </section>

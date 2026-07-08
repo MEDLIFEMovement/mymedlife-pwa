@@ -78,13 +78,13 @@ export default async function AdminSystemHealthPage() {
 function getNextStep(actor: LocalActorContext) {
   if (actor.audience === "ds_admin") {
     return {
-      label: "Open integration outbox",
+      label: "Open integration outbox review",
       href: "/admin/integration-outbox",
     };
   }
 
   return {
-    label: "Open operations runbook",
+    label: "Open operations runbook review",
     href: "/admin",
   };
 }

@@ -99,6 +99,16 @@ describe("admin review handoff pages", () => {
     expect(html).not.toContain("Open Nick review</a>");
   });
 
+  it("keeps the review path button aligned with the Nick review packet wording", async () => {
+    await primeActor("admin@mymedlife.test", "Testing stakeholder review path.");
+
+    const { default: AdminReviewPathPage } = await import("@/app/admin/review-path/page");
+    const html = renderToStaticMarkup(await AdminReviewPathPage());
+
+    expect(html).toContain("Open Nick review packet");
+    expect(html).not.toContain("Open Nick review</a>");
+  });
+
   it("routes DS Admin release readiness into database security review", async () => {
     await primeActor("ds.admin@mymedlife.test", "Testing DS Admin release handoff.");
 
@@ -109,5 +119,42 @@ describe("admin review handoff pages", () => {
 
     expect(html).toContain("Open database security review");
     expect(html).not.toContain("Open database security</a>");
+  });
+
+  it("keeps database security next steps framed as review-only follow-through", async () => {
+    await primeActor("admin@mymedlife.test", "Testing database security review.");
+
+    const { default: AdminDatabaseSecurityPage } = await import(
+      "@/app/admin/database-security/page"
+    );
+    const html = renderToStaticMarkup(await AdminDatabaseSecurityPage());
+
+    expect(html).toContain("Open system health review");
+    expect(html).not.toContain("Open system health</a>");
+  });
+
+  it("keeps system health and audit next steps in review language for admin and DS", async () => {
+    await primeActor("admin@mymedlife.test", "Testing admin review next steps.");
+
+    const { default: AdminSystemHealthPage } = await import("@/app/admin/system-health/page");
+    const { default: AdminAuditLogPage } = await import("@/app/admin/audit-log/page");
+
+    const systemHealthHtml = renderToStaticMarkup(await AdminSystemHealthPage());
+    const auditLogHtml = renderToStaticMarkup(await AdminAuditLogPage());
+
+    expect(systemHealthHtml).toContain("Open operations runbook review");
+    expect(systemHealthHtml).not.toContain("Open operations runbook</a>");
+    expect(auditLogHtml).toContain("Open write sequence review");
+    expect(auditLogHtml).not.toContain("Review write sequence</a>");
+
+    await primeActor("ds.admin@mymedlife.test", "Testing DS Admin review next steps.");
+
+    const dsSystemHealthHtml = renderToStaticMarkup(await AdminSystemHealthPage());
+    const dsAuditLogHtml = renderToStaticMarkup(await AdminAuditLogPage());
+
+    expect(dsSystemHealthHtml).toContain("Open integration outbox review");
+    expect(dsSystemHealthHtml).not.toContain("Open integration outbox</a>");
+    expect(dsAuditLogHtml).toContain("Open integration outbox review");
+    expect(dsAuditLogHtml).not.toContain("Open integration outbox</a>");
   });
 });

@@ -84,13 +84,13 @@ export default async function AdminDatabaseSecurityPage() {
 function getNextStep(actor: LocalActorContext) {
   if (actor.audience === "ds_admin") {
     return {
-      label: "Open operations runbook",
+      label: "Open operations runbook review",
       href: "/admin/operations",
     };
   }
 
   return {
-    label: "Open system health",
+    label: "Open system health review",
     href: "/admin/system-health",
   };
 }
