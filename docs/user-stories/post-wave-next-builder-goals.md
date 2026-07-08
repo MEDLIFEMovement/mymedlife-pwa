@@ -13,8 +13,9 @@ instead.
 
 ## #1 General Member App
 
-**Start after:** `#518` lands or Coordinator confirms it will not touch the same
-member files.
+**Start after:** `#518` and `#523` land, or Coordinator confirms the next #1
+slice will not touch the same member shell, bottom-nav, profile, or
+`/app/slt-prep` files.
 
 **Next slice:** member cross-route continuity sweep for `/app`, `/app/events`,
 event detail, `/app/points`, `/app/stories`, `/profile`, and `/app/slt-prep`.
@@ -53,17 +54,18 @@ evidence, live counts, or production signed-in proof.
 
 ## #2 Student Leadership / Chapter Command Center
 
-**Start after:** `#512` is already merged; wait only if a new leader PR opens
-against the same `/leader?view=*` files.
+**Start after:** `#524` lands or Coordinator confirms it will not touch the same
+leader review-loop, member/profile, or support/culture files.
 
 **Next slice:** leader cross-route continuity across Member Profile, Current
 Leaders, Succession, Values, Leadership Training, and directly related
 support/culture handoffs.
 
-**Why now:** service-backed leader continuity is now base truth. The next risk is
-that adjacent leadership-development surfaces look route-backed but still imply
-role changes, succession writes, member updates, or training assignment writes
-that are not live.
+**Why now:** service-backed leader continuity is now base truth, and `#524`
+covers the immediate review-loop follow-through. The next risk is that adjacent
+leadership-development surfaces look route-backed but still imply role changes,
+succession writes, member updates, or training assignment writes that are not
+live.
 
 **Likely file families:**
 
@@ -94,16 +96,17 @@ or rollout proof.
 
 ## #3 Staff / DS Admin Shell
 
-**Start after:** `#516`, `#519`, and `#521` settle or Coordinator confirms the
-next #3 slice is non-overlapping.
+**Start after:** `#516`, `#519`, `#521`, and `#522` settle or Coordinator
+confirms the next #3 slice is non-overlapping.
 
-**Next slice:** staff chapter drawer -> embedded Admin -> Chapters loop
-coherence, then Proof/UGC review queue -> embedded Admin handoff follow-through.
+**Next slice:** final staff/admin walkthrough continuity after the current
+embedded Admin, admin-label, and Proof/UGC chapter-loop branches settle.
 
-**Why now:** `#503`, `#515`, and the open admin follow-ons make admin return and
-review posture stronger. The next value is making the staff walkthrough feel
-coherent: chapter context, review posture, embedded Admin, and dark Admin menu
-should all agree without implying live moderation or launch-gate authority.
+**Why now:** `#503`, `#515`, `#516`, `#519`, `#521`, and `#522` together form a
+staff/admin walkthrough family. Once they settle, the next value is a narrow
+continuity pass that checks chapter context, review posture, embedded Admin, and
+dark Admin menu language agree without implying live moderation or launch-gate
+authority.
 
 **Likely file families:**
 
@@ -137,7 +140,8 @@ audit mutation, or user/role/chapter production writes.
 
 ## #4 Release / QA Watch
 
-**Current watch set:** `#520`, `#518`, `#516`, `#519`, `#521`.
+**Current watch set:** `#520`, `#518`, `#523`, `#524`, `#516`, `#519`, `#521`,
+`#522`.
 
 **Next task:** classify each PR as merged, behind-only, failing, blocked, or
 ready for Coordinator action. After the product-code wave lands, run public

@@ -10,10 +10,10 @@ the whole story package.
 
 | Lane | Current PRs | Main overlap risk | Recommended guardrail |
 | --- | --- | --- | --- |
-| `#1` Member | `#518` | Starting another member profile/bottom-nav or cross-route sweep before #518 lands. | Hold new member code touching `/app`, `/profile`, bottom nav, or member shell until #518 settles. |
-| `#2` Leader | `#512` merged | Older leaderboard-first steering could distract from broader `/leader?view=*` continuity. | Use #512 as base; next leader work should stay in Member Profile / Current Leaders / Succession / Values / Leadership Training continuity. |
-| `#3` Staff/Admin | `#516`, `#519`, `#521` plus merged `#503/#515` | Admin label/copy work can collide with embedded Admin review posture if merged out of order. | Prefer #516 -> #519 -> #521 unless #3 confirms no shared files/copy. |
-| `#4` Watch | current PR board | Treating behind-only PRs as blockers or treating smoke/screenshots as rollout proof. | Separate merge hygiene from product failure; classify evidence category explicitly. |
+| `#1` Member | `#518`, `#523` | Member profile/bottom-nav and SLT shell continuity can collide if both touch shared member shell files. | Prefer #518 before #523 unless #1 confirms file separation. Hold new member continuity work until both settle. |
+| `#2` Leader | `#524` plus merged `#512` base | Older leaderboard-first steering could distract from leader review-loop and `/leader?view=*` continuity. | Use #512 as base; finish #524 before launching a new leader support/culture slice. |
+| `#3` Staff/Admin | `#516`, `#519`, `#521`, `#522` plus merged `#503/#515` | Admin label/copy work can collide with embedded Admin and Proof/UGC chapter follow-through if merged out of order. | Prefer #516 -> #519 -> #521 -> #522 unless #3 confirms no shared files/copy. |
+| `#4` Watch | current PR board | Treating behind-only or rerunning PRs as product blockers, or treating smoke/screenshots as rollout proof. | Separate merge hygiene from product failure; classify evidence category explicitly. |
 | `#5` Planning | `#520` | Letting docs-only #520 block product-code repairs, or letting stale docs steer the next wave. | Refresh/merge #520 when convenient; do not let docs outrank red product checks. |
 
 ## Highest-Risk Drift Patterns
@@ -40,10 +40,13 @@ the whole story package.
 
 | Risk | Why it matters | Coordinator action |
 | --- | --- | --- |
-| `#518` vs future #1 member continuity PR | Same member shell, profile, bottom-nav, or `/app` route family can collide. | Wait for #518 or assign only planning/QA. |
+| `#518` vs `#523` | Member profile/bottom-nav and SLT shell continuity may touch shared member shell route families. | Merge/refresh #518 first unless #1 confirms no same-file overlap. |
+| `#518/#523` vs future #1 member continuity PR | Same member shell, profile, bottom-nav, `/app`, or `/app/slt-prep` route family can collide. | Wait for both or assign only planning/QA. |
+| `#524` vs future #2 leader support/culture PR | Same leader review-loop, member/profile, succession, values, or training surfaces can collide. | Wait for #524 to go green/merge before new leader code. |
 | `#516` vs `#519` | Both are admin review/launch-gate label work. | Merge #516 first if both are ready; then refresh #519. |
 | `#519` vs `#521` | Embedded Admin review posture may reference launch-gate or review labels. | If shared copy/files appear, settle #519 first. |
-| `#521` vs future #3 Proof/UGC follow-up | Same staff/admin review posture and embedded Admin route family can collide. | Do not launch the next staff/admin slice until #521 lands or is explicitly paused. |
+| `#521` vs `#522` | Embedded Admin review posture and Proof/UGC chapter follow-through may share review copy and chapter context. | Prefer #521 before #522 unless #3 confirms independence. |
+| `#521/#522` vs future #3 Proof/UGC follow-up | Same staff/admin review posture, chapter loop, and embedded Admin route family can collide. | Do not launch the next staff/admin slice until both land or are explicitly paused. |
 | `#520` vs future planning docs | Story package refresh is docs-only but can make later planning branches behind. | Merge/refresh #520 before opening another broad story docs PR when possible. |
 
 ## What Counts As Real Progress
