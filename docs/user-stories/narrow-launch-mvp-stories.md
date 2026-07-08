@@ -6,6 +6,10 @@ Linear planning reference: MED-512
 Purpose: provide a cleaned, MVP-ready story set for the narrow launch lane,
 without overstating production readiness.
 
+Repo-truth checkpoint: derived from the refreshed master inventory compared
+against `/Users/codex/Documents/Codex/2026-07-06/new-chat/mymedlife-staff-admin`
+on `origin/main` commit `12dd983` (`Add MED-512 staff admin review packet (#461)`).
+
 ## MVP Scope Frame
 
 The narrow launch lane is:
