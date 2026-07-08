@@ -72,6 +72,7 @@ describe("home page", () => {
     expect(html).toContain("Points");
     expect(html).toContain('href="/app/events/chapter-event-ucla-kickoff?source=home"');
     expect(html).toContain('href="/app/events/chapter-event-lakeside-welcome?source=home"');
+    expect(html).toContain('href="/app/points?source=home"');
     expect(html).toContain('href="/app/stories"');
     expect(html).not.toContain("Local preview tools");
     expect(html).not.toContain('href="/slt-prep"');
