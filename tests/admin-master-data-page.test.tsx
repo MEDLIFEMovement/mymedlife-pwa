@@ -98,7 +98,7 @@ describe("admin master data page", () => {
       getMockLocalActorContext(
         "super.admin@mymedlife.test",
         "Using Super Admin test actor.",
-        "local_supabase",
+        "supabase_ready",
         "local_auth_session",
         "signed_in",
       ),
@@ -107,6 +107,7 @@ describe("admin master data page", () => {
       ...getMockReadOnlyAppData("Testing read-only chapter inventory."),
       source: {
         mode: "supabase",
+        status: "supabase_ready",
         message: "Local Supabase read-only data.",
       },
     });
