@@ -32,6 +32,13 @@ export function Phase2EnvironmentSetupPanel({
         </div>
       </div>
 
+      <div className="mt-4 flex flex-wrap gap-2">
+        <ReviewBadge label="Read-only preview" />
+        <ReviewBadge label="Blocked production writes" />
+        <ReviewBadge label="Blocked external sends" />
+        <ReviewBadge label="Source-backed setup review" />
+      </div>
+
       <div className="mt-5 grid gap-3 xl:grid-cols-2">
         <section className="rounded-2xl border border-white/10 bg-black/20 p-4">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-100/70">
@@ -256,6 +263,14 @@ function OwnerFollowUpCard({ item }: { item: Phase2EnvironmentOwnerFollowUp }) {
       </div>
       <p className="mt-2 text-sm leading-6 text-white/62">{item.nextAction}</p>
     </article>
+  );
+}
+
+function ReviewBadge({ label }: { label: string }) {
+  return (
+    <span className="rounded-full border border-white/10 bg-black/20 px-3 py-1 text-xs font-semibold text-cyan-100/78">
+      {label}
+    </span>
   );
 }
 

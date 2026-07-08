@@ -62,6 +62,13 @@ export function DesignQaReadinessPanel({
         </div>
       </div>
 
+      <div className="mt-4 flex flex-wrap gap-2">
+        <ReviewBadge label="Read-only preview" />
+        <ReviewBadge label="Blocked production writes" />
+        <ReviewBadge label="Blocked external sends" />
+        <ReviewBadge label="Source-backed QA routes" />
+      </div>
+
       <div className="mt-5 grid gap-3 lg:grid-cols-2">
         {readiness.items.map((item) => (
           <article
@@ -328,6 +335,14 @@ function StatusPill({ status }: { status: DesignQaStatus }) {
   return (
     <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${className}`}>
       {status.replaceAll("_", " ")}
+    </span>
+  );
+}
+
+function ReviewBadge({ label }: { label: string }) {
+  return (
+    <span className="rounded-full border border-white/10 bg-black/20 px-3 py-1 text-xs font-semibold text-lime-100/78">
+      {label}
     </span>
   );
 }
