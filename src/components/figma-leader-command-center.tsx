@@ -938,7 +938,7 @@ function ProfileScreen({
       <div>
         <h1 className="text-2xl font-black text-slate-900">Member Profile</h1>
         <p className="text-sm text-slate-500 mt-1">
-          Review this TEST member's points, event follow-through, preview actions, blocked notes, and succession handoff posture.
+          Review this TEST member's points, event follow-through, review handoffs, blocked notes, and succession posture without turning on live leadership changes.
         </p>
       </div>
 
@@ -987,10 +987,10 @@ function ProfileScreen({
             </div>
           </div>
           <div className="bg-white rounded-xl border border-slate-200 p-4 space-y-2">
-            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Preview Review Actions</div>
-            <Btn variant="primary"   className="w-full justify-start" onClick={() => onPromote(m.id)}><Star size={11}/>Preview Promotion</Btn>
-            <Btn variant="secondary" className="w-full justify-start" onClick={() => onAssignAction(m.id)}><Zap size={11}/>Preview Leadership Follow-through</Btn>
-            <Btn variant="ghost"     className="w-full justify-start" onClick={() => onOpenSuccession(m.id)}><Flag size={11}/>Preview E-Board Succession</Btn>
+            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Preview Review &amp; Handoff</div>
+            <Btn variant="primary"   className="w-full justify-start" onClick={() => onPromote(m.id)}><Star size={11}/>Preview Role Review</Btn>
+            <Btn variant="secondary" className="w-full justify-start" onClick={() => onAssignAction(m.id)}><Zap size={11}/>Preview Member Review Handoff</Btn>
+            <Btn variant="ghost"     className="w-full justify-start" onClick={() => onOpenSuccession(m.id)}><Flag size={11}/>Preview Succession Review</Btn>
             <Btn
               variant="secondary"
               className="w-full justify-start"
@@ -998,6 +998,9 @@ function ProfileScreen({
             >
               <Edit size={11}/>Preview Note
             </Btn>
+            <p className="pt-1 text-[11px] text-slate-500 leading-relaxed">
+              TEST member review preview only. These controls do not publish role changes, chair ownership updates, transition notices, or saved notes from this shell.
+            </p>
           </div>
         </div>
 
@@ -2847,7 +2850,7 @@ function SuccessionScreen({ onNavigate, onSelectMember }: { onNavigate:(s:Screen
           <p className="text-sm text-slate-500 mt-1">TEST succession preview. Candidate planning stays route-backed for review, but no nomination, transition, promotion, or notify flow goes live from this shell.</p>
         </div>
         <div className="flex gap-2">
-          <Btn variant="secondary" onClick={() => setShowTransition(true)}><Flag size={11}/>Preview Candidate Nomination</Btn>
+          <Btn variant="secondary" onClick={() => setShowTransition(true)}><Flag size={11}/>Preview Candidate Review</Btn>
           <Btn variant="primary"    onClick={() => setShowTransition(true)}><ArrowRight size={11}/>Preview Transition Plan</Btn>
         </div>
       </div>
@@ -2885,6 +2888,9 @@ function SuccessionScreen({ onNavigate, onSelectMember }: { onNavigate:(s:Screen
                 Full table <ExternalLink size={10}/>
               </button>
             </div>
+            <p className="mb-3 text-[11px] text-slate-500 leading-relaxed">
+              TEST candidate review only. Pipeline status helps leadership review readiness, but it does not appoint chairs, confirm nominees, or trigger transition outreach from this shell.
+            </p>
             <div className="space-y-1">
               {pipeline.map((m, idx)=>(
                 <div key={m.id} className="flex items-center justify-between py-2 border-b border-slate-100 last:border-0">
@@ -3237,7 +3243,7 @@ function LeadersScreen({
         </div>
         <div className="flex gap-2">
           <Btn variant="secondary" onClick={() => onNavigate("succession")}><GitBranch size={11}/>Preview Succession Review</Btn>
-          <Btn variant="secondary" onClick={() => onNavigate("values")}><Star size={11}/>Preview Values Review</Btn>
+          <Btn variant="secondary" onClick={() => onNavigate("values")}><Star size={11}/>Preview Values Readiness</Btn>
         </div>
       </div>
 
@@ -3286,6 +3292,9 @@ function LeadersScreen({
           <Layers size={16} className="text-indigo-600"/>
           <h2 className="text-base font-black text-slate-900">Event Committee Chairs</h2>
         </div>
+        <p className="mb-3 text-[11px] text-slate-500 leading-relaxed">
+          TEST committee ownership preview. Chair coverage and vacancy posture stay visible for leadership review here, but they do not reassign live committee ownership or outreach.
+        </p>
         <div className="space-y-2">
           {committeeChairs.map(c => {
             const hasChairs = c.chairs.length > 0;
