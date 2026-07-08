@@ -424,6 +424,7 @@ describe("staff page", () => {
     );
 
     expect(html).toContain("Chapter review context: TEST Boston College");
+    expect(html).toContain(">Chapters</h1>");
     expect(html).toContain("When DS Admin access is available, return to TEST Boston College in the same Command Center review loop after the Admin readback closes.");
     expect(html).toContain("Return to this chapter");
   });
@@ -552,6 +553,7 @@ describe("staff page", () => {
     );
 
     expect(html).toContain("Proof review context: TEST Stanford University (Pending · Instagram)");
+    expect(html).toContain(">Audit Logs</h1>");
     expect(html).toContain("Restricted to DS Admin and Super Admin only · Proof / UGC review for TEST Stanford University (Pending · Instagram)");
     expect(html).toContain("After the Admin readback, return to TEST Stanford University in Proof / UGC (Pending · Instagram) in the same Command Center review loop.");
     expect(html).toContain("Return to Proof / UGC");
@@ -581,6 +583,7 @@ describe("staff page", () => {
 
     expect(html).toContain("Admin access blocked");
     expect(html).toContain("Proof review context: TEST Stanford University (Pending · Instagram)");
+    expect(html).toContain(">Audit Logs</h1>");
     expect(html).toContain("Return to Proof / UGC");
     expect(html).toContain("Restricted to DS Admin and Super Admin only · Proof / UGC review for TEST Stanford University (Pending · Instagram)");
     expect(html).toContain("When DS Admin access is available, return to TEST Stanford University in Proof / UGC (Pending · Instagram) in the same Command Center review loop after the Admin readback closes.");
@@ -613,6 +616,8 @@ describe("staff page", () => {
     expect(source).toContain('initialSelectedCardId={getRouteParam("ugcCard")}');
     expect(source).toContain("const selectedCardId = searchParams.get(\"ugcCard\") ?? initialSelectedCardId;");
     expect(source).toContain("const adminHeaderSubtitle =");
+    expect(source).toContain("const adminPreviewTitle =");
+    expect(source).toContain("getStaffAdminPreviewTitle(getRouteParam(\"adminView\"))");
     expect(source).toContain("getStaffAdminHeaderSubtitle(adminBackLabel, adminChapterContext, adminProofQueueContext)");
     expect(source).toContain("getStaffAdminReturnLoopLabel(backLabel, chapterContext, proofQueueContext)");
   });
@@ -681,7 +686,7 @@ describe("staff page", () => {
     const lineCount = source.split("\n").length;
 
     expect(lineCount).toBeGreaterThanOrEqual(2170);
-    expect(lineCount).toBeLessThanOrEqual(2940);
+    expect(lineCount).toBeLessThanOrEqual(2960);
     expect(source).toContain("type Screen = \"chapters\" | \"campaigns\" | \"events\" | \"ugc\" | \"reports\" | \"admin\" | \"best-practices\" | \"sops\";");
     expect(source).toContain("const NAV_ITEMS");
     expect(source).toContain("function PortfolioOverview");

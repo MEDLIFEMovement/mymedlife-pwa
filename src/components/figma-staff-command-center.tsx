@@ -2303,7 +2303,7 @@ type FigmaStaffCommandCenterProps = {
   initialCampaign?: string | null;
   initialRouteParams?: Partial<
     Record<
-      "view" | "campaign" | "chapter" | "ugcCard" | "returnView" | "chapterContext" | "proofStatus" | "proofPlatform" | "chapterSearch" | "chapterRegion" | "chapterCoach" | "chapterType" | "chapterSort",
+      "view" | "campaign" | "chapter" | "ugcCard" | "adminView" | "returnView" | "chapterContext" | "proofStatus" | "proofPlatform" | "chapterSearch" | "chapterRegion" | "chapterCoach" | "chapterType" | "chapterSort",
       string | null | undefined
     >
   >;
@@ -2319,7 +2319,7 @@ export function FigmaStaffCommandCenter({
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const getRouteParam = (
-    key: "view" | "campaign" | "chapter" | "ugcCard" | "returnView" | "chapterContext" | "proofStatus" | "proofPlatform" | "chapterSearch" | "chapterRegion" | "chapterCoach" | "chapterType" | "chapterSort",
+    key: "view" | "campaign" | "chapter" | "ugcCard" | "adminView" | "returnView" | "chapterContext" | "proofStatus" | "proofPlatform" | "chapterSearch" | "chapterRegion" | "chapterCoach" | "chapterType" | "chapterSort",
   ) =>
     searchParams.get(key) ?? initialRouteParams?.[key] ?? null;
   const activeScreen = resolveStaffShellScreen(getRouteParam("view") ?? initialView ?? null);
@@ -2337,6 +2337,8 @@ export function FigmaStaffCommandCenter({
     activeScreen === "admin"
       ? getEmbeddedProofQueueContext(getRouteParam("proofStatus"), getRouteParam("proofPlatform"))
       : null;
+  const adminPreviewTitle =
+    activeScreen === "admin" ? getStaffAdminPreviewTitle(getRouteParam("adminView")) : null;
   const adminBackLabel = getStaffAdminReturnLabel(adminReturnScreen, adminReturnChapterId);
   const adminHeaderSubtitle =
     activeScreen === "admin"
@@ -2437,7 +2439,7 @@ export function FigmaStaffCommandCenter({
       {/* Page Header */}
       <div className={`flex flex-shrink-0 items-center justify-between border-b border-border bg-white px-6 py-3 ${STAFF_HEADER_ACCOUNT_CLEARANCE}`}>
         <div className="min-w-0">
-          <h1 className="text-base font-bold text-foreground">{SCREEN_TITLES[activeScreen]}</h1>
+          <h1 className="text-base font-bold text-foreground">{adminPreviewTitle ?? SCREEN_TITLES[activeScreen]}</h1>
           <div className="mt-0.5 text-xs text-muted-foreground">
             {activeScreen === "chapters" && `${CHAPTERS.length} chapters · Rush Month active · Last updated 2 min ago`}
             {activeScreen === "campaigns" && "7 campaigns active across all regions"}
@@ -2693,6 +2695,36 @@ function getStaffAdminHeaderSubtitle(
   return null;
 }
 
+function getStaffAdminPreviewTitle(adminView: string | null) {
+  switch (adminView) {
+    case "users":
+      return "Users";
+    case "chapters":
+      return "Chapters";
+    case "modules":
+      return "Modules";
+    case "luma":
+      return "Luma Events";
+    case "points":
+      return "Points";
+    case "integrations":
+      return "Integrations";
+    case "audit":
+      return "Audit Logs";
+    case "health":
+      return "System Health";
+    case "apikeys":
+      return "API Keys";
+    case "mcp":
+      return "MCP Connections";
+    case "settings":
+      return "Settings";
+    case "overview":
+    default:
+      return "Overview";
+  }
+}
+
 function getStaffAdminReturnLoopLabel(
   backLabel: string,
   chapterContext?: string | null,
@@ -2734,7 +2766,7 @@ function getStaffShellViewParam(screen: Screen): string {
 function buildStaffShellQueryFromInitialRouteParams(
   initialRouteParams?: Partial<
     Record<
-      "view" | "campaign" | "chapter" | "ugcCard" | "returnView" | "chapterContext" | "proofStatus" | "proofPlatform" | "chapterSearch" | "chapterRegion" | "chapterCoach" | "chapterType" | "chapterSort",
+      "view" | "campaign" | "chapter" | "ugcCard" | "adminView" | "returnView" | "chapterContext" | "proofStatus" | "proofPlatform" | "chapterSearch" | "chapterRegion" | "chapterCoach" | "chapterType" | "chapterSort",
       string | null | undefined
     >
   >,

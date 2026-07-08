@@ -58,6 +58,7 @@ export default async function StaffPage({ searchParams }: StaffPageProps) {
           campaign: resolvedSearchParams?.campaign,
           chapter: resolvedSearchParams?.chapter,
           ugcCard: resolvedSearchParams?.ugcCard,
+          adminView: resolvedSearchParams?.adminView,
           returnView: resolvedSearchParams?.returnView,
           chapterContext: resolvedSearchParams?.chapterContext,
           proofStatus: resolvedSearchParams?.proofStatus,
