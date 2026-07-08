@@ -83,6 +83,7 @@ export default async function LeaderPage({ searchParams }: LeaderPageProps) {
   const requestedView = resolvedSearchParams?.view ?? "overview";
   const requestedSource = (() => {
     switch (resolvedSearchParams?.source) {
+      case "overview":
       case "member_home":
       case "bridge_videos":
       case "feed_analytics":

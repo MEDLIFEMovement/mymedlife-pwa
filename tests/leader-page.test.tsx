@@ -305,6 +305,7 @@ describe("leader page", () => {
   });
 
   it.each([
+    ["overview"],
     ["member_home"],
     ["bridge_videos"],
     ["feed_analytics"],
