@@ -51,7 +51,20 @@ describe("admin management pages", () => {
     );
 
     expect(html).toContain("User Access Management");
+    expect(html).toContain("myMEDLIFE DS Admin shell");
     expect(html).toContain("Return to Command Center");
+    expect(html).toContain(">Overview<");
+    expect(html).toContain(">Users<");
+    expect(html).toContain(">Chapters<");
+    expect(html).toContain(">Modules<");
+    expect(html).toContain(">Luma Events<");
+    expect(html).toContain(">Points<");
+    expect(html).toContain(">Integrations<");
+    expect(html).toContain(">Audit Logs<");
+    expect(html).toContain(">System Health<");
+    expect(html).toContain(">API Keys<");
+    expect(html).toContain(">MCP Connections<");
+    expect(html).toContain(">Settings<");
     expect(html).toContain("Search name or email");
     expect(html).toContain("TEST Sofia Alvarez");
     expect(html).toContain("TEST Sofia, TEST coach, medlife.test");
@@ -123,7 +136,20 @@ describe("admin management pages", () => {
     );
 
     expect(html).toContain("Chapter Management");
+    expect(html).toContain("myMEDLIFE DS Admin shell");
     expect(html).toContain("Return to Command Center");
+    expect(html).toContain(">Overview<");
+    expect(html).toContain(">Users<");
+    expect(html).toContain(">Chapters<");
+    expect(html).toContain(">Modules<");
+    expect(html).toContain(">Luma Events<");
+    expect(html).toContain(">Points<");
+    expect(html).toContain(">Integrations<");
+    expect(html).toContain(">Audit Logs<");
+    expect(html).toContain(">System Health<");
+    expect(html).toContain(">API Keys<");
+    expect(html).toContain(">MCP Connections<");
+    expect(html).toContain(">Settings<");
     expect(html).toContain("TEST UCLA MEDLIFE");
     expect(html).toContain("TEST UCLA");
     expect(html).toContain("TEST West Coast");

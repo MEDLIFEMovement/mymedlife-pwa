@@ -20,6 +20,7 @@ import {
   getChapterTypeLabel,
   type ChapterTypeFilter,
 } from "@/services/chapter-type";
+import { AdminReviewShellHeader } from "@/components/admin-review-shell-header";
 import type { AdminAccessWriteConfig } from "@/services/admin-management-write";
 import type { LocalActorContext } from "@/services/local-actor-context";
 import type { ChapterType } from "@/shared/types/persistence";
@@ -123,29 +124,12 @@ export function AdminChaptersManagementPanel({
   return (
     <main className="min-h-screen bg-[#0d1117] px-6 py-8 text-slate-100">
       <div className="mx-auto max-w-7xl space-y-6">
-        <header className="flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-sky-400">
-              DS / Super Admin
-            </p>
-            <h1 className="mt-2 text-3xl font-bold tracking-tight">
-              Chapter Management
-            </h1>
-            <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-400">
-              Manage chapter records, coach ownership, staff scope, student
-              leaders, enabled launch modules, and archive/delete safeguards.
-              Events, attendance, and points history are preserved by default.
-              Return to the Command Center after this chapter review pass to
-              keep the embedded DS Admin walkthrough coherent.
-            </p>
-          </div>
-          <a
-            href="/admin"
-            className="rounded-md border border-white/10 px-4 py-2 text-sm font-semibold text-slate-200 hover:bg-white/5"
-          >
-            Return to Command Center
-          </a>
-        </header>
+        <AdminReviewShellHeader
+          activeView="chapters"
+          eyebrow="DS / Super Admin"
+          title="Chapter Management"
+          description="Manage chapter records, coach ownership, staff scope, student leaders, enabled launch modules, and archive/delete safeguards. Events, attendance, and points history are preserved by default. Return to the Command Center after this chapter review pass to keep the embedded DS Admin walkthrough coherent."
+        />
 
         <section className="grid gap-3 md:grid-cols-4">
           <SummaryCard label="Managed chapters" value={String(chapters.length)} />
