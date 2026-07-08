@@ -1221,13 +1221,13 @@ function renderView(
           {commandCenter.activeQuickAction === "create_event" ? (
             <SectionCard
               eyebrow="Create Event"
-              title="Open the chapter event lane with ownership and follow-up in mind."
+              title="Open the chapter event preview lane with ownership and follow-through in mind."
             >
               <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
                 <p className="text-sm leading-6 text-slate-600">
-                  Use the chapter events view first so the new event stays attached to the same
-                  chapter health, proof posture, and follow-up expectations visible in the command
-                  center before you move into the broader event flow.
+                  Use the chapter events view first so this TEST event preview stays attached to
+                  the same chapter health, proof posture, and follow-through expectations visible
+                  in the command center before you move into the broader event review lane.
                 </p>
                 <Link
                   href={buildChapterLeaderEventFlowHref({
@@ -1240,7 +1240,7 @@ function renderView(
                   })}
                   className="inline-flex rounded-full bg-[#2563eb] px-4 py-2 text-sm font-semibold text-white"
                 >
-                  Open event flow
+                  Open event preview flow
                 </Link>
               </div>
             </SectionCard>
@@ -1248,12 +1248,12 @@ function renderView(
           {commandCenter.activeQuickAction === "assign_action" ? (
             <SectionCard
               eyebrow="Confirm Attendance"
-              title="Start from RSVPs, then confirm who attended and earned points."
+              title="Start from RSVPs, then review who attended and what is ready for points."
             >
               <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
                 <p className="text-sm leading-6 text-slate-600">
                   Keep the active event, RSVP posture, and chapter context visible while you
-                  confirm the attendance roster. Once attendance is clear, the points and
+                  review the attendance roster. Once the readback is clear, the points and
                   leaderboard movement become much easier to trust.
                 </p>
                 <Link
@@ -1265,7 +1265,7 @@ function renderView(
                   })}
                   className="inline-flex rounded-full bg-[#2563eb] px-4 py-2 text-sm font-semibold text-white"
                 >
-                  Open attendance flow
+                  Open attendance review
                 </Link>
               </div>
             </SectionCard>
@@ -1280,7 +1280,8 @@ function renderView(
                   Events
                 </h1>
                 <p className="mt-2 text-sm leading-6 text-slate-600">
-                  Track event creation, RSVP, attendance, proof, and point impact across the chapter.
+                  Review TEST event creation, RSVP posture, attendance readback, proof follow-through,
+                  and point impact across the chapter.
                 </p>
               </div>
               <Link
@@ -1296,6 +1297,17 @@ function renderView(
               >
                 Create Event
               </Link>
+            </div>
+
+            <div className="rounded-[1.2rem] border border-[#bfdbfe] bg-[#eef5ff] p-4">
+              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-[#1d4ed8]">
+                Preview-only event operations
+              </p>
+              <p className="mt-2 text-sm leading-6 text-slate-600">
+                This shell keeps TEST event posture visible while create-event staging, attendance
+                confirmation, proof follow-through, and points readback stay route-backed review
+                steps instead of live chapter writes.
+              </p>
             </div>
 
             <div className="grid gap-3 sm:grid-cols-2 2xl:grid-cols-5">
@@ -1364,9 +1376,9 @@ function renderView(
                           </p>
                         </div>
                         <p className="text-sm leading-6 text-slate-600">
-                          Luma keeps the source of truth, RSVP tells you who intends to come,
-                          attendance confirms who actually showed, and points follow the reviewed
-                          check-in path.
+                          Luma stays the source of truth, RSVP shows intent, attendance readback
+                          shows reviewed check-in posture, and points remain a follow-through step
+                          until the next approved route takes over.
                         </p>
                       </div>
                       <div className="grid gap-2 sm:grid-cols-2 xl:w-[28rem]">
@@ -1437,14 +1449,14 @@ function renderView(
                       })}
                       className="inline-flex rounded-full bg-[#2563eb] px-4 py-2 text-sm font-semibold text-white"
                     >
-                      Open broader event flow
+                      Open event review flow
                     </Link>
                   </div>
                 </div>
               </SectionCard>
             ) : null}
 
-            <SectionCard eyebrow="Attendance Signal" title="RSVP vs. Actual Attendance">
+            <SectionCard eyebrow="Attendance Readback" title="RSVP vs. Actual Attendance Readback">
               <EventAttendanceComparisonChart rows={commandCenter.events} />
             </SectionCard>
 
@@ -2066,7 +2078,7 @@ function renderView(
           {commandCenter.activeQuickAction === "promote_emerging_leader" ? (
             <SectionCard
               eyebrow="Promote Emerging Leader"
-              title="Start from succession planning, then open the candidate lane."
+              title="Start from succession planning, then open the candidate review lane."
             >
               <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
                 <p className="text-sm leading-6 text-slate-600">
@@ -2093,7 +2105,9 @@ function renderView(
                   Leadership Succession
                 </h1>
                 <p className="mt-4 text-sm leading-6 text-slate-600">
-                  Ensure the chapter can survive and grow beyond any single leader.
+                  Ensure the chapter can survive and grow beyond any single leader. Keep candidate
+                  review, transition timing, and committee coverage visible here before any
+                  nomination, promotion, or notify flow turns into a live write path.
                 </p>
               </div>
               <div className="flex flex-wrap gap-2">
@@ -2101,13 +2115,13 @@ function renderView(
                   href={buildNominateCandidateHref(commandCenter)}
                   className="inline-flex rounded-full border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700"
                 >
-                  Nominate Candidate
+                  Open Candidate Review
                 </Link>
                 <Link
                   href={buildTransitionPlanHref(commandCenter)}
                   className="inline-flex rounded-full bg-[#2563eb] px-4 py-2.5 text-sm font-semibold text-white"
                 >
-                  Start Transition Plan
+                  Preview Transition Review
                 </Link>
               </div>
             </div>
@@ -2120,7 +2134,7 @@ function renderView(
                       Selected candidate
                     </p>
                     <h3 className="mt-2 text-lg font-semibold text-slate-950">
-                      Reviewing {commandCenter.selectedMember.displayName} for succession
+                      Reviewing {commandCenter.selectedMember.displayName} for succession readiness
                     </h3>
                     <p className="mt-2 text-sm leading-6 text-slate-600">
                       Keep this person anchored while reviewing leadership gaps, candidate readiness,
