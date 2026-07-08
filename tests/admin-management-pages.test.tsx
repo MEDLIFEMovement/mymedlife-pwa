@@ -301,7 +301,12 @@ describe("admin management pages", () => {
     const html = renderToStaticMarkup(await AdminAccessPage());
 
     expect(html).toContain("Access Matrix");
-    expect(html).toContain("Managed Directory Access");
+    expect(html).toContain("Every person, chapter, and access row in this matrix is TEST inventory for shell review only.");
+    expect(html).toContain("TEST managed users");
+    expect(html).toContain("TEST managed chapters");
+    expect(html).toContain("TEST preview users");
+    expect(html).toContain("TEST audit event types");
+    expect(html).toContain("TEST Directory Access");
     expect(html).toContain("General Student App");
     expect(html).toContain("Student Command Center");
     expect(html).toContain("Return to Command Center");

@@ -44,6 +44,11 @@ export function AdminAccessManagementPanel({ actor }: AdminAccessManagementPanel
               preview access. Return to the Command Center after this readback
               pass to continue the DS Admin walkthrough.
             </p>
+            <p className="mt-2 max-w-3xl text-xs leading-5 text-slate-500">
+              Every person, chapter, and access row in this matrix is TEST
+              inventory for shell review only. No production role write, invite
+              send, or workspace access change runs from this route.
+            </p>
           </div>
           <a
             href="/admin"
@@ -54,23 +59,29 @@ export function AdminAccessManagementPanel({ actor }: AdminAccessManagementPanel
         </header>
 
         <section className="grid gap-3 md:grid-cols-4">
-          <SummaryCard label="Managed users" value={String(managedUserFixtures.length)} />
-          <SummaryCard label="Managed chapters" value={String(managedChapterFixtures.length)} />
           <SummaryCard
-            label="Preview users"
+            label="TEST managed users"
+            value={String(managedUserFixtures.length)}
+          />
+          <SummaryCard
+            label="TEST managed chapters"
+            value={String(managedChapterFixtures.length)}
+          />
+          <SummaryCard
+            label="TEST preview users"
             value={String(
               managedUserFixtures.filter(
                 (user) => getManagedUserAccess(user).previewWorkspaces.length > 0,
               ).length,
             )}
           />
-          <SummaryCard label="Audit event types" value="2" />
+          <SummaryCard label="TEST audit event types" value="2" />
         </section>
 
         <section className="overflow-hidden rounded-lg border border-white/10 bg-[#161b22]">
           <div className="border-b border-white/10 px-5 py-4">
             <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-slate-300">
-              Managed Directory Access
+              TEST Directory Access
             </h2>
           </div>
           <div className="overflow-x-auto">
