@@ -1,5 +1,3 @@
-"use client";
-
 import {
   Award,
   Bell,
@@ -13,7 +11,7 @@ import type { MvpMemberHome } from "@/services/mvp-event-tracking-workspace";
 import type { ProfileWorkspace } from "@/services/profile-workspace";
 import type { MemberRecognitionSummary } from "@/services/member-recognition";
 import { StatusPill, SurfacePanel } from "@/components/visual-primitives";
-import { useState, type ReactNode } from "react";
+import type { ReactNode } from "react";
 
 type MemberProfilePanelProps = {
   chapterName: string;
@@ -47,9 +45,6 @@ export function MemberProfilePanel({
   const taskCount =
     recognition.selectedMember?.completedActions ?? recognition.recentApprovedActions.length;
   const recentActivity = getRecentActivity(recognition, studentHome);
-  const [showQr, setShowQr] = useState(false);
-  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
-  const [designation, setDesignation] = useState(profileLabel);
 
   return (
     <section className="bg-white pb-5">
@@ -64,34 +59,26 @@ export function MemberProfilePanel({
                 <h1 className="text-xl font-extrabold leading-tight">{testDisplayName}</h1>
                 <p className="mt-0.5 text-xs text-blue-100">{testChapterName}</p>
                 <span className="mt-1.5 inline-flex items-center rounded-full bg-white/18 px-2.5 py-0.5 text-[11px] font-semibold">
-                  {designation}
+                  {profileLabel}
                 </span>
               </div>
             </div>
-            <button
-              type="button"
-              onClick={() => setShowQr(true)}
-              className="flex flex-col items-center gap-1 rounded-[1.15rem] border border-white/18 bg-white/10 p-3 text-[10px] font-semibold text-white transition hover:bg-white/16"
-            >
-              <QrCode size={20} />
-              ID Card
-            </button>
-            {showQr ? (
-              <div
-                className="fixed inset-0 z-50 flex items-end justify-center bg-black/60"
-                onClick={() => setShowQr(false)}
-              >
-                <div
-                  className="w-full max-w-[430px] rounded-t-[1.8rem] bg-white p-6 pb-10 text-center text-slate-900 shadow-2xl"
-                  onClick={(event) => event.stopPropagation()}
-                >
+            <details className="group">
+              <summary className="list-none">
+                <span className="flex cursor-pointer flex-col items-center gap-1 rounded-[1.15rem] border border-white/18 bg-white/10 p-3 text-[10px] font-semibold text-white transition group-open:bg-white/16">
+                  <QrCode size={20} />
+                  ID Card
+                </span>
+              </summary>
+              <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60">
+                <div className="w-full max-w-[430px] rounded-t-[1.8rem] bg-white p-6 pb-10 text-center text-slate-900 shadow-2xl">
                   <div className="mx-auto mb-6 h-1 w-10 rounded-full bg-slate-200" />
                   <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-500">
                     TEST Member ID
                   </p>
                   <h2 className="mt-1 text-xl font-extrabold text-slate-950">{testDisplayName}</h2>
                   <p className="mt-1 text-sm text-slate-500">
-                    {testChapterName} · {designation}
+                    {testChapterName} · {profileLabel}
                   </p>
                   <div className="my-5 flex justify-center">
                     <div className="rounded-[1.35rem] bg-[#eef3fa] p-4 shadow-inner">
@@ -113,16 +100,9 @@ export function MemberProfilePanel({
                   <p className="text-xs leading-5 text-slate-500">
                     QR and ID are preview-only. No check-in, credential issue, or profile write runs from this card.
                   </p>
-                  <button
-                    type="button"
-                    onClick={() => setShowQr(false)}
-                    className="mt-5 w-full rounded-[1.2rem] bg-[#1d4ed8] px-4 py-3 text-sm font-bold text-white"
-                  >
-                    Close
-                  </button>
                 </div>
               </div>
-            ) : null}
+            </details>
           </div>
 
           <div className="mt-5 grid grid-cols-3 gap-3">
@@ -198,12 +178,13 @@ export function MemberProfilePanel({
               </div>
               <div className="mt-3 flex flex-wrap gap-2">
                 {designationOptions.map((option) => {
-                  const isActive = option === designation;
+                  const isActive = option === profileLabel;
                   return (
                     <button
                       key={option}
                       type="button"
-                      onClick={() => setDesignation(option)}
+                      disabled
+                      aria-disabled="true"
                       className={
                         isActive
                           ? "rounded-xl bg-[#2563eb] px-3 py-1.5 text-xs font-semibold text-white"
@@ -237,17 +218,12 @@ export function MemberProfilePanel({
                   </div>
                   <button
                     type="button"
-                    onClick={() => setNotificationsEnabled((value) => !value)}
-                    className={`relative h-6 w-11 rounded-full transition-colors ${
-                      notificationsEnabled ? "bg-[#2563eb]" : "bg-slate-300"
-                    }`}
-                    aria-pressed={notificationsEnabled}
+                    disabled
+                    aria-disabled="true"
+                    aria-pressed="true"
+                    className="relative h-6 w-11 rounded-full bg-[#2563eb] opacity-80"
                   >
-                    <span
-                      className={`absolute top-1 h-4 w-4 rounded-full bg-white shadow transition-all ${
-                        notificationsEnabled ? "left-6" : "left-1"
-                      }`}
-                    />
+                    <span className="absolute left-6 top-1 h-4 w-4 rounded-full bg-white shadow" />
                   </button>
                 </div>
               </div>
@@ -410,14 +386,6 @@ function getRecentActivity(
 
   if (combinedActivity.length > 0) {
     return combinedActivity;
-  }
-
-  if (recognition.recentApprovedActions.length > 0) {
-    return recognition.recentApprovedActions.slice(0, 5).map((action) => ({
-      title: ensureVisibleTestLabel(action.title),
-      detail: action.detail,
-      pointsLabel: action.pointsLabel,
-    }));
   }
 
   return studentHome.recentHistory.slice(0, 5).map((entry) => ({
