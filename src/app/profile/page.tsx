@@ -1,5 +1,4 @@
 import { MemberBottomNav } from "@/components/member-bottom-nav";
-import { StudentAppShell } from "@/components/student-app-shell";
 import { MemberProfilePanel } from "@/components/member-profile-panel";
 import { WorkspaceAccountMenu } from "@/components/workspace-account-menu";
 import { WorkspacePreviewBanner } from "@/components/workspace-preview-banner";
@@ -54,29 +53,28 @@ export default async function ProfilePage(props: ProfilePageProps) {
   }
 
   return (
-    <StudentAppShell
-      actor={actor}
-      hideTopHeader
-      showMobileQuickItemHelpers={false}
-      showDebugTools={false}
-    >
-      <div className="pb-24">
-        <WorkspaceAccountMenu actor={actor} currentWorkspace="student_app" />
-        {isPreviewWorkspaceAccess(actor, "student_app") ? (
-          <WorkspacePreviewBanner workspaceLabel="the General Student App" />
-        ) : null}
-        {studentHome && recognition ? (
-          <MemberProfilePanel
-            chapterName={studentHome.chapterName}
-            displayName={actor.user.displayName}
-            entrySource={getProfileSource(resolvedSearchParams.source)}
-            workspace={workspace}
-            studentHome={studentHome}
-            recognition={recognition}
-          />
-        ) : null}
-      </div>
-      <MemberBottomNav activeTab="profile" />
-    </StudentAppShell>
+    <>
+      <WorkspaceAccountMenu actor={actor} currentWorkspace="student_app" />
+      {isPreviewWorkspaceAccess(actor, "student_app") ? (
+        <WorkspacePreviewBanner workspaceLabel="the General Student App" />
+      ) : null}
+      <main className="min-h-screen bg-[#d6e0f0] px-0 py-0 text-[#10223f] md:px-4 md:py-8">
+        <div className="mx-auto flex min-h-screen w-full max-w-[430px] flex-col overflow-hidden bg-white md:min-h-0 md:rounded-[44px] md:border-4 md:border-white/40 md:shadow-2xl">
+          <div className="flex-1 overflow-y-auto pb-24">
+            {studentHome && recognition ? (
+              <MemberProfilePanel
+                chapterName={studentHome.chapterName}
+                displayName={actor.user.displayName}
+                entrySource={getProfileSource(resolvedSearchParams.source)}
+                workspace={workspace}
+                studentHome={studentHome}
+                recognition={recognition}
+              />
+            ) : null}
+          </div>
+          <MemberBottomNav activeTab="profile" />
+        </div>
+      </main>
+    </>
   );
 }

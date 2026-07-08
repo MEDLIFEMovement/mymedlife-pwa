@@ -134,6 +134,8 @@ describe("member stories and profile pages", () => {
     expect(html).toContain("Read-only profile");
     expect(html).toContain("No profile save runs from this route.");
     expect(html).toContain("No join request, role approval, membership change, or coach assignment runs from this route.");
+    expect(html).toContain("max-w-[430px]");
+    expect(html).toContain("bg-[#d6e0f0]");
     expect(html).toContain('href="/app"');
     expect(html).toContain('aria-label="Member bottom navigation"');
     expect(html).toContain("Back to Home");
