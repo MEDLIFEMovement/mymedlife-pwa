@@ -68,21 +68,25 @@ const MEMBER_EVENT_DETAIL_HREFS: Record<number, string> = {
   5: "/app/events/chapter-event-mcgill-coffee-chat?source=events",
 };
 
-function getMemberEventDetailHref(eventId: number) {
-  return MEMBER_EVENT_DETAIL_HREFS[eventId] ?? "/app/events";
+function getMemberEventDetailHref(eventId: number, source: MemberLoopSource = "events") {
+  const detailHref = MEMBER_EVENT_DETAIL_HREFS[eventId] ?? "/app/events";
+
+  return source === "events"
+    ? detailHref
+    : detailHref.replace("source=events", `source=${source}`);
 }
 
-function getMemberEventRsvpHref(eventId: number) {
-  const detailHref = getMemberEventDetailHref(eventId);
+function getMemberEventRsvpHref(eventId: number, source: MemberLoopSource = "events") {
+  const detailHref = getMemberEventDetailHref(eventId, source);
   return detailHref.includes("?") ? `${detailHref}&step=rsvp` : `${detailHref}?step=rsvp`;
 }
 
 function getMemberEventHomeRsvpHref(eventId: number) {
-  return getMemberEventRsvpHref(eventId).replace("source=events", "source=home");
+  return getMemberEventRsvpHref(eventId, "home");
 }
 
 function getMemberEventHomeDetailHref(eventId: number) {
-  return getMemberEventDetailHref(eventId).replace("source=events", "source=home");
+  return getMemberEventDetailHref(eventId, "home");
 }
 
 type MemberLoopSource = "events" | "home" | "profile" | "points";
@@ -1861,8 +1865,16 @@ function PointsLeaderboard({
       returnEventId ? `/app/events/${returnEventId}?source=points` : "/app/events?source=points",
       returnEventId ? "Back to the TEST event detail" : "Back to the TEST event loop",
     ],
-    home: ["TEST points stay preview-only here, but this route keeps the home-to-events walkthrough intact for the student shell.", "/app/events?source=home", "Continue from home into events"],
-    profile: ["TEST points stay preview-only here, and this route keeps the profile-to-recognition walkthrough read-only instead of pretending profile writes are live.", "/profile", "Back to your TEST profile"],
+    home: [
+      "TEST points stay preview-only here, but this route keeps the home-to-events walkthrough intact for the student shell.",
+      returnEventId ? `/app/events/${returnEventId}?source=home` : "/app/events?source=home",
+      returnEventId ? "Back to the TEST event detail" : "Continue from home into events",
+    ],
+    profile: [
+      "TEST points stay preview-only here, and this route keeps the profile-to-recognition walkthrough read-only instead of pretending profile writes are live.",
+      returnEventId ? `/app/events/${returnEventId}?source=profile` : "/profile",
+      returnEventId ? "Back to the TEST event detail" : "Back to your TEST profile",
+    ],
     points: ["TEST points in this member shell are a read-only preview of the event, RSVP, attendance, and action loop. They do not write to a live leaderboard, rewards system, or provider integration.", "/app/events?source=points", "See how to earn more points"],
   };
   const preview = previewReadback[source];
@@ -2154,7 +2166,9 @@ function EventsScreen({ navigate, source }: { navigate: (s: Screen) => void; sou
   const listEvents = visibleEvents.filter((e) => !e.featured);
   const activeCampaignData = activeCampaign !== "All" ? CAMPAIGNS.find((c) => c.name === activeCampaign) : null;
   const eventsReturnCard =
-    source === "profile"
+    source === "home"
+      ? { eyebrow: "Opened from the TEST home walkthrough", title: "Keep home, events, and points in one member loop.", body: "Home sent you into this TEST event list so you can open the next chapter moment, preview RSVP or attendance, and return to points without leaving the student shell.", href: "/app", cta: "Back to Home" }
+      : source === "profile"
       ? { eyebrow: "Opened from your TEST profile", title: "Keep profile, events, and points in one member loop.", body: "Your TEST profile sent you here so the next chapter moment stays route-backed. Open an event, preview RSVP or attendance, then step back into points when you are ready.", href: "/profile", cta: "Back to Profile" }
       : source === "points"
         ? { eyebrow: "Opened from Points & Recognition", title: "Move from TEST points readback into the next event.", body: "The member loop should not stop at the leaderboard. Use this route-backed return path to find the next event, preview RSVP or check-in, and come back to points when the chapter moment is done.", href: "/app/points?source=events", cta: "Back to Points" }
@@ -2268,13 +2282,13 @@ function EventsScreen({ navigate, source }: { navigate: (s: Screen) => void; sou
               </div>
               <div className="flex gap-2">
                 <Link
-                  href={getMemberEventRsvpHref(featuredEvent.id)}
+                  href={getMemberEventRsvpHref(featuredEvent.id, source)}
                   className="flex flex-1 items-center justify-center rounded-xl bg-primary py-2.5 text-sm font-bold text-white transition-opacity hover:opacity-90"
                 >
                   RSVP
                 </Link>
                 <Link
-                  href={getMemberEventDetailHref(featuredEvent.id)}
+                  href={getMemberEventDetailHref(featuredEvent.id, source)}
                   className="flex flex-1 items-center justify-center rounded-xl bg-secondary py-2.5 text-sm font-bold text-primary transition-colors hover:bg-muted"
                 >
                   View Details
@@ -2300,7 +2314,7 @@ function EventsScreen({ navigate, source }: { navigate: (s: Screen) => void; sou
                   >
                     <div className="flex items-start gap-3 p-4">
                       {/* Color-matched icon */}
-                      <Link href={getMemberEventDetailHref(ev.id)} className="flex min-w-0 flex-1 items-start gap-3">
+                      <Link href={getMemberEventDetailHref(ev.id, source)} className="flex min-w-0 flex-1 items-start gap-3">
                         <div
                           className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5"
                           style={{ background: typeCfg.bg }}
@@ -2325,7 +2339,7 @@ function EventsScreen({ navigate, source }: { navigate: (s: Screen) => void; sou
                           <Pill label="RSVP'd" variant="green" />
                         ) : ev.status === "RSVP Open" ? (
                           <Link
-                            href={getMemberEventRsvpHref(ev.id)}
+                            href={getMemberEventRsvpHref(ev.id, source)}
                             className="text-[10px] font-bold px-2.5 py-1 rounded-full border hover:opacity-80"
                             style={{ color: typeCfg.text, borderColor: `${typeCfg.color}50`, background: typeCfg.bg }}
                           >
@@ -3505,6 +3519,12 @@ export function FigmaMemberMobileHome({
           ? "events"
           : "home";
   const profileHref = screen === "home" ? "/profile?source=home" : "/profile";
+  const bottomNavHrefOverrides = getMemberBottomNavHrefOverrides({
+    screen,
+    pointsSource,
+    pointsReturnEventId,
+    eventsSource,
+  });
   const content = () => {
     switch (screen) {
       case "home": return <StudentHome navigate={navigate} setRole={setRole} sltPrepEntry={sltPrepEntry} />;
@@ -3545,7 +3565,11 @@ export function FigmaMemberMobileHome({
             {content()}
           </div>
           {!["confirm", "event-detail", "rsvp-confirm", "checkin"].includes(screen) && (
-            <MemberBottomNav activeTab={activeBottomTab} profileHref={profileHref} />
+            <MemberBottomNav
+              activeTab={activeBottomTab}
+              profileHref={profileHref}
+              hrefOverrides={bottomNavHrefOverrides}
+            />
           )}
         </div>
       ) : (
@@ -3563,4 +3587,73 @@ export function FigmaMemberMobileHome({
       `}</style>
     </div>
   );
+}
+
+function getMemberBottomNavHrefOverrides({
+  screen,
+  pointsSource,
+  pointsReturnEventId,
+  eventsSource,
+}: {
+  screen: Screen;
+  pointsSource: MemberLoopSource;
+  pointsReturnEventId: string | null;
+  eventsSource: MemberLoopSource;
+}): Partial<Record<MemberBottomNavTab, string>> | undefined {
+  const overrides: Partial<Record<MemberBottomNavTab, string>> = {};
+
+  if (screen === "points") {
+    overrides.events = getPointsBottomNavEventsHref(pointsSource, pointsReturnEventId);
+  }
+
+  if (screen === "events") {
+    const pointsHref = getEventsBottomNavPointsHref(eventsSource);
+
+    if (pointsHref) {
+      overrides.points = pointsHref;
+    }
+  }
+
+  return Object.keys(overrides).length > 0 ? overrides : undefined;
+}
+
+function getPointsBottomNavEventsHref(
+  source: MemberLoopSource,
+  returnEventId: string | null,
+) {
+  if (source === "events") {
+    return returnEventId
+      ? `/app/events/${returnEventId}?source=points`
+      : "/app/events?source=points";
+  }
+
+  if (source === "home") {
+    return returnEventId
+      ? `/app/events/${returnEventId}?source=home`
+      : "/app/events?source=home";
+  }
+
+  if (source === "profile") {
+    return returnEventId
+      ? `/app/events/${returnEventId}?source=profile`
+      : "/app/events?source=profile";
+  }
+
+  return "/app/events";
+}
+
+function getEventsBottomNavPointsHref(source: MemberLoopSource) {
+  if (source === "points") {
+    return "/app/points?source=events";
+  }
+
+  if (source === "home") {
+    return "/app/points?source=home";
+  }
+
+  if (source === "profile") {
+    return "/app/points?source=profile";
+  }
+
+  return undefined;
 }
