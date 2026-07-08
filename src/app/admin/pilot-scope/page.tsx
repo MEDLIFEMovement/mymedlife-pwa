@@ -1,4 +1,5 @@
 import { AppShell } from "@/components/app-shell";
+import { AdminReviewRouteBanner } from "@/components/admin-review-route-banner";
 import { DataSourceNotice } from "@/components/data-source-notice";
 import { PilotScopePlannerPanel } from "@/components/pilot-scope-planner-panel";
 import { RestrictedState } from "@/components/restricted-state";
@@ -21,7 +22,13 @@ export default async function PilotScopePage() {
     <AppShell actor={actor}>
       <DataSourceNotice source={data.source} />
       {planner.canReadPlanner ? (
-        <PilotScopePlannerPanel planner={planner} />
+        <>
+          <AdminReviewRouteBanner
+            activeLabel="Overview"
+            summary="Keep the DS Admin shell and Command Center return path visible while pilot-scope decisions stay review-only and route into the next safe walkthrough steps."
+          />
+          <PilotScopePlannerPanel planner={planner} />
+        </>
       ) : (
         <RestrictedState
           title="Pilot scope planning is hidden for this role."

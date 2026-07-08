@@ -63,6 +63,21 @@ describe("admin review handoff pages", () => {
     );
     const html = renderToStaticMarkup(await AdminEnvironmentSetupPage());
 
+    expect(html).toContain("myMEDLIFE DS Admin shell");
+    expect(html).toContain("Command Center review route");
+    expect(html).toContain("Return to Command Center");
+    expect(html).toContain(">Overview<");
+    expect(html).toContain(">Users<");
+    expect(html).toContain(">Chapters<");
+    expect(html).toContain(">Modules<");
+    expect(html).toContain(">Luma Events<");
+    expect(html).toContain(">Points<");
+    expect(html).toContain(">Integrations<");
+    expect(html).toContain(">Audit Logs<");
+    expect(html).toContain(">System Health<");
+    expect(html).toContain(">API Keys<");
+    expect(html).toContain(">MCP Connections<");
+    expect(html).toContain(">Settings<");
     expect(html).toContain("Read-only preview");
     expect(html).toContain("Blocked production writes");
     expect(html).toContain("Blocked external sends");
@@ -75,6 +90,21 @@ describe("admin review handoff pages", () => {
     const { default: AdminDesignQaPage } = await import("@/app/admin/design-qa/page");
     const html = renderToStaticMarkup(await AdminDesignQaPage());
 
+    expect(html).toContain("myMEDLIFE DS Admin shell");
+    expect(html).toContain("Command Center review route");
+    expect(html).toContain("Return to Command Center");
+    expect(html).toContain(">Overview<");
+    expect(html).toContain(">Users<");
+    expect(html).toContain(">Chapters<");
+    expect(html).toContain(">Modules<");
+    expect(html).toContain(">Luma Events<");
+    expect(html).toContain(">Points<");
+    expect(html).toContain(">Integrations<");
+    expect(html).toContain(">Audit Logs<");
+    expect(html).toContain(">System Health<");
+    expect(html).toContain(">API Keys<");
+    expect(html).toContain(">MCP Connections<");
+    expect(html).toContain(">Settings<");
     expect(html).toContain("Read-only preview");
     expect(html).toContain("Blocked production writes");
     expect(html).toContain("Blocked external sends");
@@ -91,6 +121,21 @@ describe("admin review handoff pages", () => {
     );
     const html = renderToStaticMarkup(await AdminReleaseReadinessPage());
 
+    expect(html).toContain("myMEDLIFE DS Admin shell");
+    expect(html).toContain("Command Center review route");
+    expect(html).toContain("Return to Command Center");
+    expect(html).toContain(">Overview<");
+    expect(html).toContain(">Users<");
+    expect(html).toContain(">Chapters<");
+    expect(html).toContain(">Modules<");
+    expect(html).toContain(">Luma Events<");
+    expect(html).toContain(">Points<");
+    expect(html).toContain(">Integrations<");
+    expect(html).toContain(">Audit Logs<");
+    expect(html).toContain(">System Health<");
+    expect(html).toContain(">API Keys<");
+    expect(html).toContain(">MCP Connections<");
+    expect(html).toContain(">Settings<");
     expect(html).toContain("Read-only preview");
     expect(html).toContain("Blocked production writes");
     expect(html).toContain("Blocked external sends");
@@ -109,5 +154,55 @@ describe("admin review handoff pages", () => {
 
     expect(html).toContain("Open database security review");
     expect(html).not.toContain("Open database security</a>");
+  });
+
+  it("keeps pilot scope inside the visible DS Admin shell family", async () => {
+    await primeActor("ds.admin@mymedlife.test", "Testing pilot scope shell continuity.");
+
+    const { default: PilotScopePage } = await import("@/app/admin/pilot-scope/page");
+    const html = renderToStaticMarkup(await PilotScopePage());
+
+    expect(html).toContain("myMEDLIFE DS Admin shell");
+    expect(html).toContain("Command Center review route");
+    expect(html).toContain("Return to Command Center");
+    expect(html).toContain(">Overview<");
+    expect(html).toContain(">Users<");
+    expect(html).toContain(">Chapters<");
+    expect(html).toContain(">Modules<");
+    expect(html).toContain(">Luma Events<");
+    expect(html).toContain(">Points<");
+    expect(html).toContain(">Integrations<");
+    expect(html).toContain(">Audit Logs<");
+    expect(html).toContain(">System Health<");
+    expect(html).toContain(">API Keys<");
+    expect(html).toContain(">MCP Connections<");
+    expect(html).toContain(">Settings<");
+    expect(html).toContain("DS Admin pilot safety planner");
+    expect(html).toContain("Open staff dry run");
+  });
+
+  it("keeps staff dry run inside the visible DS Admin shell family", async () => {
+    await primeActor("admin@mymedlife.test", "Testing staff dry run shell continuity.");
+
+    const { default: StaffDryRunPage } = await import("@/app/admin/staff-dry-run/page");
+    const html = renderToStaticMarkup(await StaffDryRunPage());
+
+    expect(html).toContain("myMEDLIFE DS Admin shell");
+    expect(html).toContain("Command Center review route");
+    expect(html).toContain("Return to Command Center");
+    expect(html).toContain(">Overview<");
+    expect(html).toContain(">Users<");
+    expect(html).toContain(">Chapters<");
+    expect(html).toContain(">Modules<");
+    expect(html).toContain(">Luma Events<");
+    expect(html).toContain(">Points<");
+    expect(html).toContain(">Integrations<");
+    expect(html).toContain(">Audit Logs<");
+    expect(html).toContain(">System Health<");
+    expect(html).toContain(">API Keys<");
+    expect(html).toContain(">MCP Connections<");
+    expect(html).toContain(">Settings<");
+    expect(html).toContain("Admin staff dry-run guide");
+    expect(html).toContain("Local write rehearsal");
   });
 });

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AdminReviewRouteBanner } from "@/components/admin-review-route-banner";
 import { AppShell } from "@/components/app-shell";
 import { DataSourceNotice } from "@/components/data-source-notice";
 import { PilotSupportPacketPanel } from "@/components/pilot-support-packet-panel";
@@ -36,6 +37,11 @@ export default async function AdminOperationsPage() {
         />
       ) : (
         <>
+          <AdminReviewRouteBanner
+            activeLabel="Overview"
+            summary="Keep the DS Admin shell recognizable while operations runbooks, pilot support, and provider-looking controls remain visibly blocked or review-only."
+          />
+
           <section className="rounded-[2rem] border border-white/12 bg-[#071d1a]/90 p-5">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
               <div>

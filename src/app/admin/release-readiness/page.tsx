@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { AppShell } from "@/components/app-shell";
+import { AdminReviewRouteBanner } from "@/components/admin-review-route-banner";
 import { DataSourceNotice } from "@/components/data-source-notice";
 import { DiscourseBakeoffPanel } from "@/components/discourse-bakeoff-panel";
 import { MvpReleaseReadinessPanel } from "@/components/mvp-release-readiness-panel";
@@ -36,6 +37,11 @@ export default async function AdminReleaseReadinessPage() {
         />
       ) : (
         <>
+          <AdminReviewRouteBanner
+            activeLabel="Overview"
+            summary="Keep the Command Center and DS Admin menu depth visible while release posture, blocked writes, and next review handoffs stay plain and honest."
+          />
+
           <section className="rounded-[2rem] border border-white/12 bg-[#071d1a]/90 p-5">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
               <div>

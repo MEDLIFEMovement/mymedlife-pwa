@@ -1,3 +1,4 @@
+import { AdminReviewRouteBanner } from "@/components/admin-review-route-banner";
 import {
   buildPreviewWorkspaceAccessAudit,
   buildUnauthorizedAdminAttemptAudit,
@@ -29,28 +30,25 @@ export function AdminAccessManagementPanel({ actor }: AdminAccessManagementPanel
   return (
     <main className="min-h-screen bg-[#0d1117] px-6 py-8 text-slate-100">
       <div className="mx-auto max-w-7xl space-y-6">
-        <header className="flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-sky-400">
-              DS / Super Admin
-            </p>
-            <h1 className="mt-2 text-3xl font-bold tracking-tight">
-              Access Matrix
-            </h1>
-            <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-400">
-              This page shows user roles, chapter membership, allowed
-              workspaces, default routing, module access, preview permissions,
-              and the audit events expected for denied access or sensitive
-              preview access. Return to the Command Center after this readback
-              pass to continue the DS Admin walkthrough.
-            </p>
-          </div>
-          <a
-            href="/admin"
-            className="rounded-md border border-white/10 px-4 py-2 text-sm font-semibold text-slate-200 hover:bg-white/5"
-          >
-            Return to Command Center
-          </a>
+        <AdminReviewRouteBanner
+          activeLabel="Users"
+          summary="Keep the DS Admin shell and Command Center return path visible while access scope, preview permissions, and blocked workspace mutations stay review-only."
+        />
+
+        <header>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-sky-400">
+            DS / Super Admin
+          </p>
+          <h1 className="mt-2 text-3xl font-bold tracking-tight">
+            Access Matrix
+          </h1>
+          <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-400">
+            This page shows user roles, chapter membership, allowed
+            workspaces, default routing, module access, preview permissions,
+            and the audit events expected for denied access or sensitive
+            preview access. Return to the Command Center after this readback
+            pass to continue the DS Admin walkthrough.
+          </p>
         </header>
 
         <section className="grid gap-3 md:grid-cols-4">

@@ -1,4 +1,5 @@
 import { AppShell } from "@/components/app-shell";
+import { AdminReviewRouteBanner } from "@/components/admin-review-route-banner";
 import { DataSourceNotice } from "@/components/data-source-notice";
 import { RestrictedState } from "@/components/restricted-state";
 import { StaffDryRunGuidePanel } from "@/components/staff-dry-run-guide-panel";
@@ -21,7 +22,13 @@ export default async function StaffDryRunPage() {
     <AppShell actor={actor}>
       <DataSourceNotice source={data.source} />
       {guide.canReadGuide ? (
-        <StaffDryRunGuidePanel guide={guide} />
+        <>
+          <AdminReviewRouteBanner
+            activeLabel="Overview"
+            summary="Keep the DS Admin shell visible while the staff dry-run guide stays an honest rehearsal route with blocked writes, blocked sends, and explicit stop conditions."
+          />
+          <StaffDryRunGuidePanel guide={guide} />
+        </>
       ) : (
         <RestrictedState
           title="Staff dry run is hidden for this role."

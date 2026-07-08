@@ -1,4 +1,5 @@
 import { AppShell } from "@/components/app-shell";
+import { AdminReviewRouteBanner } from "@/components/admin-review-route-banner";
 import { DataSourceNotice } from "@/components/data-source-notice";
 import { Phase2EnvironmentSetupPanel } from "@/components/phase-2-environment-setup-panel";
 import { RestrictedState } from "@/components/restricted-state";
@@ -28,7 +29,13 @@ export default async function AdminEnvironmentSetupPage() {
           nextLabel="Back to Phase 2"
         />
       ) : (
-        <Phase2EnvironmentSetupPanel packet={getPhase2EnvironmentSetupPacket()} />
+        <>
+          <AdminReviewRouteBanner
+            activeLabel="Settings"
+            summary="Keep DS Admin shell continuity visible while environment setup stays a source-backed, review-only handoff instead of a hidden foundation page."
+          />
+          <Phase2EnvironmentSetupPanel packet={getPhase2EnvironmentSetupPacket()} />
+        </>
       )}
     </AppShell>
   );

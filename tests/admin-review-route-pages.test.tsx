@@ -5,7 +5,7 @@ import { getMockLocalActorContext } from "@/services/local-actor-context";
 import { getMockReadOnlyAppData } from "@/services/read-only-app-data";
 
 vi.mock("next/navigation", () => ({
-  usePathname: () => "/admin/operations",
+  usePathname: () => "/admin/system-health",
   useSearchParams: () => new URLSearchParams(),
   redirect: vi.fn((href: string) => {
     throw new Error(`NEXT_REDIRECT:${href}`);
@@ -54,12 +54,14 @@ async function primeActor(email: string, sourceNote: string) {
   );
 }
 
-describe("admin operations page", () => {
-  it("keeps DS Admin operations handoffs review-only", async () => {
-    await primeActor("ds.admin@mymedlife.test", "Testing DS Admin operations review.");
+describe("admin review route pages", () => {
+  it("keeps system health inside the visible DS Admin shell family", async () => {
+    await primeActor("ds.admin@mymedlife.test", "Testing system health shell continuity.");
 
-    const { default: AdminOperationsPage } = await import("@/app/admin/operations/page");
-    const html = renderToStaticMarkup(await AdminOperationsPage());
+    const { default: AdminSystemHealthPage } = await import(
+      "@/app/admin/system-health/page"
+    );
+    const html = renderToStaticMarkup(await AdminSystemHealthPage());
 
     expect(html).toContain("myMEDLIFE DS Admin shell");
     expect(html).toContain("Command Center review route");
@@ -76,35 +78,28 @@ describe("admin operations page", () => {
     expect(html).toContain(">API Keys<");
     expect(html).toContain(">MCP Connections<");
     expect(html).toContain(">Settings<");
-    expect(html).toContain("Open integration outbox review");
-    expect(html).toContain("Read-only preview");
-    expect(html).toContain("Blocked production writes");
-    expect(html).toContain("Blocked external sends");
-    expect(html).toContain("Source-backed review routes");
-    expect(html).toContain("Source-backed owner handoffs");
-    expect(html).toContain("Open staff dry run review");
-    expect(html).toContain("Open pilot scope review");
-    expect(html).toContain("Open launch gate review");
   });
 
-  it("routes admin reviewers into the pilot scope review handoff", async () => {
-    await primeActor("admin@mymedlife.test", "Testing admin pilot support review.");
+  it("keeps audit log review inside the visible DS Admin shell family", async () => {
+    await primeActor("admin@mymedlife.test", "Testing audit log shell continuity.");
 
-    const { default: AdminOperationsPage } = await import("@/app/admin/operations/page");
-    const html = renderToStaticMarkup(await AdminOperationsPage());
+    const { default: AdminAuditLogPage } = await import("@/app/admin/audit-log/page");
+    const html = renderToStaticMarkup(await AdminAuditLogPage());
 
-    expect(html).toContain("Admin production operations runbook");
-    expect(html).toContain("Open pilot scope review");
-    expect(html).not.toContain("Choose pilot scope");
-  });
-
-  it("keeps the route restricted for non-admin readers", async () => {
-    await primeActor("member.a@mymedlife.test", "Testing restricted admin operations.");
-
-    const { default: AdminOperationsPage } = await import("@/app/admin/operations/page");
-    const html = renderToStaticMarkup(await AdminOperationsPage());
-
-    expect(html).toContain("Production operations runbook hidden for this role");
-    expect(html).toContain("Back to Rush Month");
+    expect(html).toContain("myMEDLIFE DS Admin shell");
+    expect(html).toContain("Command Center review route");
+    expect(html).toContain("Return to Command Center");
+    expect(html).toContain(">Overview<");
+    expect(html).toContain(">Users<");
+    expect(html).toContain(">Chapters<");
+    expect(html).toContain(">Modules<");
+    expect(html).toContain(">Luma Events<");
+    expect(html).toContain(">Points<");
+    expect(html).toContain(">Integrations<");
+    expect(html).toContain(">Audit Logs<");
+    expect(html).toContain(">System Health<");
+    expect(html).toContain(">API Keys<");
+    expect(html).toContain(">MCP Connections<");
+    expect(html).toContain(">Settings<");
   });
 });

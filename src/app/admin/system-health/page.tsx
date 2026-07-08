@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AdminReviewRouteBanner } from "@/components/admin-review-route-banner";
 import { AdminSystemHealthReviewPanel } from "@/components/admin-system-health-review-panel";
 import { AppShell } from "@/components/app-shell";
 import { DataSourceNotice } from "@/components/data-source-notice";
@@ -33,6 +34,11 @@ export default async function AdminSystemHealthPage() {
         />
       ) : (
         <>
+          <AdminReviewRouteBanner
+            activeLabel="System Health"
+            summary="Keep the DS Admin menu family and Command Center return path visible while health posture, blocked controls, and review-only follow-through stay honest."
+          />
+
           <section className="rounded-[2rem] border border-white/12 bg-[#071d1a]/90 p-5">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
               <div>

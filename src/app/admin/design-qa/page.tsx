@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { AppShell } from "@/components/app-shell";
+import { AdminReviewRouteBanner } from "@/components/admin-review-route-banner";
 import { DataSourceNotice } from "@/components/data-source-notice";
 import { DesignQaReadinessPanel } from "@/components/design-qa-readiness-panel";
 import { RestrictedState } from "@/components/restricted-state";
@@ -31,6 +32,11 @@ export default async function AdminDesignQaPage() {
         />
       ) : (
         <>
+          <AdminReviewRouteBanner
+            activeLabel="System Health"
+            summary="Keep the DS Admin menu family and Command Center return cue visible while Figma, mobile, and accessibility QA stay framed as review-only follow-through."
+          />
+
           <section className="rounded-[2rem] border border-white/12 bg-[#071d1a]/90 p-5">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
               <div>
