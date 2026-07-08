@@ -80,9 +80,12 @@ export default async function AdminMasterDataPage() {
                 >
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <div>
-                      <h2 className="text-lg font-semibold text-white">
-                        {user.displayName}
-                      </h2>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h2 className="text-lg font-semibold text-white">
+                          {user.displayName}
+                        </h2>
+                        <PreviewBadge />
+                      </div>
                       <p className="mt-1 break-words font-mono text-xs text-emerald-100/70">
                         {user.email}
                       </p>
@@ -139,9 +142,12 @@ export default async function AdminMasterDataPage() {
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div>
-                      <h2 className="text-lg font-semibold text-white">
-                        {chapter.name}
-                      </h2>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h2 className="text-lg font-semibold text-white">
+                          {chapter.name}
+                        </h2>
+                        {chapter.status === "mock_only" ? <PreviewBadge /> : null}
+                      </div>
                       <p className="mt-1 text-sm text-white/58">
                         {chapter.campus} / {chapter.region}
                       </p>
@@ -168,9 +174,12 @@ export default async function AdminMasterDataPage() {
                 >
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <div>
-                      <h2 className="text-lg font-semibold text-white">
-                        {template.name}
-                      </h2>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h2 className="text-lg font-semibold text-white">
+                          {template.name}
+                        </h2>
+                        <PreviewBadge />
+                      </div>
                       <p className="mt-1 font-mono text-xs text-white/44">
                         {template.slug}
                       </p>
@@ -259,6 +268,14 @@ function Pill({ children }: { children: string }) {
   return (
     <span className="shrink-0 rounded-full border border-emerald-300/20 bg-emerald-300/10 px-3 py-1 text-xs font-semibold text-emerald-100">
       {children}
+    </span>
+  );
+}
+
+function PreviewBadge() {
+  return (
+    <span className="rounded-full border border-amber-300/30 bg-amber-300/10 px-2 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.12em] text-amber-100">
+      TEST
     </span>
   );
 }
