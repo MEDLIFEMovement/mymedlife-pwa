@@ -211,6 +211,17 @@ describe("admin audit log review", () => {
     );
   });
 
+  it("renders nothing when the review surface is hidden for the current role", () => {
+    const actor = getMockLocalActorContext("coach@mymedlife.test");
+    const review = getAdminAuditLogReview(actor, dataWithAuditLogs([]));
+
+    const html = renderToStaticMarkup(
+      React.createElement(AdminAuditLogReviewPanel, { review }),
+    );
+
+    expect(html).toBe("");
+  });
+
   it("does not double-prefix already labeled audit row values", () => {
     const actor = getMockLocalActorContext("admin@mymedlife.test");
     const review = getAdminAuditLogReview(
@@ -235,6 +246,34 @@ describe("admin audit log review", () => {
       expect.objectContaining({
         actorUserId: "TEST member-1",
         chapterId: "TEST chapter-1",
+      }),
+    );
+  });
+
+  it("keeps deliberate system and none audit fallback values unprefixed", () => {
+    const actor = getMockLocalActorContext("admin@mymedlife.test");
+    const review = getAdminAuditLogReview(
+      actor,
+      dataWithAuditLogs([
+        {
+          id: "audit-fallbacks",
+          actor_user_id: null,
+          chapter_id: null,
+          action: "proof_reviewed",
+          target_table: "proof_items",
+          target_id: "proof-3",
+          before_value: { status: "queued" },
+          after_value: { status: "approved" },
+          reason: "Fallback coverage.",
+          created_at: "2026-06-15T00:10:00Z",
+        },
+      ]),
+    );
+
+    expect(review.rows[0]).toEqual(
+      expect.objectContaining({
+        actorUserId: "system",
+        chapterId: "none",
       }),
     );
   });
