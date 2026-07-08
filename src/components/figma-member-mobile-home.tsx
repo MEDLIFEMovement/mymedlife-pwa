@@ -634,6 +634,9 @@ function StudentHome({
               <p className="text-sm text-foreground leading-relaxed">
                 "TEST great energy this week, TEST UCLA! Focus on TEST Intro GBM follow-ups — this is where we convert interest into TEST members. Keep it up."
               </p>
+              <Link href="/profile" className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-primary">
+                Open TEST profile & chapter scope <ChevronRight size={12} />
+              </Link>
             </div>
           </div>
         </Card>
