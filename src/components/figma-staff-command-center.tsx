@@ -2916,6 +2916,9 @@ function buildStaffChapterAdminHref(
   params.set("returnView", "chapters");
   params.set("chapter", chapterId);
   params.set("chapterContext", chapterContext);
+  params.delete("ugcCard");
+  params.delete("proofStatus");
+  params.delete("proofPlatform");
   const query = params.toString();
   return query ? `${pathname}?${query}` : pathname;
 }
