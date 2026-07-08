@@ -84,13 +84,13 @@ export default async function AdminOperationsPage() {
 function getNextStep(actor: LocalActorContext) {
   if (actor.audience === "ds_admin") {
     return {
-      label: "Open integration outbox",
+      label: "Open integration outbox review",
       href: "/admin/integration-outbox",
     };
   }
 
   return {
-    label: "Choose pilot scope",
+    label: "Open pilot scope review",
     href: "/admin/pilot-scope",
   };
 }

@@ -38,6 +38,10 @@ export function ProductionOperationsRunbookPanel({
       </div>
 
       <div className="mt-4 flex flex-wrap gap-2">
+        <PreviewToken>Read-only preview</PreviewToken>
+        <PreviewToken>Blocked production writes</PreviewToken>
+        <PreviewToken>Blocked external sends</PreviewToken>
+        <PreviewToken>Source-backed review routes</PreviewToken>
         <MiniToken label="Launch" value={runbook.launchReady ? "yes" : "no"} />
         <MiniToken label="Writes" value={`${runbook.browserWritesExpected}`} />
         <MiniToken label="Sends" value={`${runbook.externalWritesExpected}`} />
@@ -140,6 +144,14 @@ function MiniToken({ label, value }: { label: string; value: string }) {
   return (
     <span className="rounded-full border border-white/10 bg-white/[0.06] px-2.5 py-1 text-xs font-semibold text-white/58">
       {label} {value}
+    </span>
+  );
+}
+
+function PreviewToken({ children }: { children: string }) {
+  return (
+    <span className="rounded-full border border-teal-300/25 bg-teal-300/10 px-2.5 py-1 text-xs font-semibold text-teal-100/80">
+      {children}
     </span>
   );
 }
