@@ -454,6 +454,8 @@ export function ChapterDetailDrawer({
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [showSurvey, setShowSurvey] = useState(false);
+  const chapterReturnLabel = `Return to ${chapter.name}`;
+  const chapterReturnTitle = `Return to ${chapter.name} in the same chapters review loop after this preview readback`;
   const resolvedAdminPreviewHref =
     adminPreviewHref ??
     buildStaffChapterAdminHref(
@@ -675,11 +677,11 @@ export function ChapterDetailDrawer({
           </a>
           <button
             onClick={onClose}
-            title="Return to the chapters overview after this preview readback"
+            title={chapterReturnTitle}
             className="flex items-center gap-1.5 rounded-lg border border-border bg-white px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted/40"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
-            <span>Return to chapters</span>
+            <span className="max-w-[10rem] truncate">{chapterReturnLabel}</span>
           </button>
         </div>
       </div>
@@ -1433,6 +1435,16 @@ function ProofUGCQueue({
   const selectedCard = selectedCardId
     ? UGC_CARDS.find((card) => card.id === selectedCardId) ?? null
     : null;
+  const selectedCardReturnLoopLabel = selectedCard
+    ? getStaffAdminReturnLoopLabel(
+        "Proof / UGC",
+        selectedCard.chapter,
+        getEmbeddedProofQueueContext(
+          statusFilter === "all" ? null : statusFilter,
+          platformFilter === "all" ? null : platformFilter,
+        ),
+      )
+    : "Proof / UGC";
   const approvedCount = UGC_CARDS.filter(
     (c) => c.visibility === "chapter" || c.visibility === "selected",
   ).length;
@@ -1444,6 +1456,14 @@ function ProofUGCQueue({
   const pendingCount = UGC_CARDS.filter(c => c.visibility === "pending").length;
   const genericProofQueueHref = buildStaffProofHref(pathname, currentSearch);
   const genericProofAdminHref = buildStaffAdminProofHref(pathname, currentSearch);
+  const proofQueueReturnLoopLabel = getStaffAdminReturnLoopLabel(
+    "Proof / UGC",
+    null,
+    getEmbeddedProofQueueContext(
+      statusFilter === "all" ? null : statusFilter,
+      platformFilter === "all" ? null : platformFilter,
+    ),
+  );
   const handleFilterChange = (
     nextStatusFilter: ProofQueueStatusFilter,
     nextPlatformFilter: Platform | "all",
@@ -1733,6 +1753,7 @@ function ProofUGCQueue({
                 </a>
                 <a
                   href={buildStaffProofHref(pathname, currentSearch, selectedCard.id)}
+                  title={`Return to ${selectedCardReturnLoopLabel} after the Admin readback to continue the same Command Center review loop.`}
                   className="inline-flex items-center gap-1 rounded-full border border-border bg-slate-50 px-2.5 py-1 text-[10px] font-semibold text-slate-700 hover:bg-slate-100"
                 >
                   <ArrowLeft className="w-3 h-3" /> Return to Proof / UGC
@@ -1817,7 +1838,7 @@ function ProofUGCQueue({
                   rows={3}
                 />
                 <p className="mt-1.5 text-[10px] leading-relaxed text-amber-700">
-                  Context drafting stays visible for review, but no coach note, moderation note, or caption save runs from this queue until Admin review approves the next step in the same command-center flow. Return to Proof / UGC after Admin readback to continue the same review loop in the staff shell.
+                  {`Context drafting stays visible for review, but no coach note, moderation note, or caption save runs from this queue until Admin review approves the next step in the same command-center flow. Return to ${selectedCardReturnLoopLabel} after Admin readback to continue the same review loop in the staff shell.`}
                 </p>
               </div>
             </div>
@@ -1838,6 +1859,7 @@ function ProofUGCQueue({
               </a>
               <a
                 href={genericProofQueueHref}
+                title={`Return to ${proofQueueReturnLoopLabel} after the Admin readback to continue the same Command Center review loop.`}
                 className="inline-flex items-center gap-1 rounded-full border border-border bg-slate-50 px-2.5 py-1 text-[10px] font-semibold text-slate-700 hover:bg-slate-100"
               >
                 <ArrowLeft className="w-3 h-3" /> Return to Proof / UGC
@@ -1868,7 +1890,7 @@ function ProofUGCQueue({
               Review consent and blocked actions here, then open the Admin preview for DS audit readback before any publishing or coach-note approval request.
             </p>
             <p className="mt-1 text-[10px] leading-relaxed text-muted-foreground">
-              Return to Proof / UGC after the Admin readback to continue the same Command Center review loop.
+              {`Return to ${proofQueueReturnLoopLabel} after the Admin readback to continue the same Command Center review loop.`}
             </p>
           </div>
         </div>
