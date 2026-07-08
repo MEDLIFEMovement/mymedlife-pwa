@@ -214,14 +214,15 @@ export function AdminUsersManagementPanel({
               Search users, inspect their workspace access, and review the exact
               audited action packets for role, chapter, invite, status, and
               destructive access changes. These operations use the same service
-              guards as the tests.
+              guards as the tests. Return to the Command Center after this
+              review to continue the DS Admin walkthrough.
             </p>
           </div>
           <a
             href="/admin"
             className="rounded-md border border-white/10 px-4 py-2 text-sm font-semibold text-slate-200 hover:bg-white/5"
           >
-            Back to Admin
+            Return to Command Center
           </a>
         </header>
 

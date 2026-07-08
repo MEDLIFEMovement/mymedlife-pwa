@@ -41,14 +41,15 @@ export function AdminAccessManagementPanel({ actor }: AdminAccessManagementPanel
               This page shows user roles, chapter membership, allowed
               workspaces, default routing, module access, preview permissions,
               and the audit events expected for denied access or sensitive
-              preview access.
+              preview access. Return to the Command Center after this readback
+              pass to continue the DS Admin walkthrough.
             </p>
           </div>
           <a
             href="/admin"
             className="rounded-md border border-white/10 px-4 py-2 text-sm font-semibold text-slate-200 hover:bg-white/5"
           >
-            Back to Admin
+            Return to Command Center
           </a>
         </header>
 
