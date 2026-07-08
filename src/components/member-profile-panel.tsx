@@ -8,6 +8,7 @@ import {
   Share2,
   Shield,
 } from "lucide-react";
+import { signOut } from "@/app/login/actions";
 import type { MvpMemberHome } from "@/services/mvp-event-tracking-workspace";
 import type { ProfileWorkspace } from "@/services/profile-workspace";
 import type { MemberRecognitionSummary } from "@/services/member-recognition";
@@ -211,7 +212,7 @@ export function MemberProfilePanel({
               <div className="flex items-center gap-2">
                 <Shield size={15} className="text-[#2563eb]" />
                 <p className="text-sm font-semibold text-slate-950">
-                  Designation preview
+                  Switch designation to preview access
                 </p>
               </div>
               <div className="mt-3 flex flex-wrap gap-2">
@@ -293,19 +294,19 @@ export function MemberProfilePanel({
               <p>No profile save runs from this route.</p>
               <p>No join request, role approval, membership change, or coach assignment runs from this route.</p>
               {isPreviewMode ? (
-                <p>Certificates, profile sharing, and sign-out stay blocked in this preview shell.</p>
+                <p>Certificates and profile sharing stay blocked in this preview shell.</p>
               ) : null}
             </div>
           </div>
 
-          <button
-            type="button"
-            disabled
-            aria-disabled="true"
-            className="w-full rounded-[1.4rem] border border-red-200 bg-red-50 px-4 py-3.5 text-sm font-bold text-red-600 opacity-80"
-          >
-            Sign out
-          </button>
+          <form action={signOut}>
+            <button
+              type="submit"
+              className="w-full rounded-[1.4rem] border border-red-200 bg-red-50 px-4 py-3.5 text-sm font-bold text-red-600 transition active:scale-[0.98]"
+            >
+              Sign Out
+            </button>
+          </form>
           <p className="text-center text-xs text-slate-500">
             myMEDLIFE v1.0 · {testChapterName}
           </p>

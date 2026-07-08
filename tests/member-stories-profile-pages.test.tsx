@@ -154,7 +154,7 @@ describe("member stories and profile pages", () => {
     expect(html).toContain("Recent Activity");
     expect(html).toContain("View full history");
     expect(html).toContain("Your Designation");
-    expect(html).toContain("Designation preview");
+    expect(html).toContain("Switch designation to preview access");
     expect(html).toContain("Super Admin");
     expect(html).toContain("Settings");
     expect(html).toContain("Read-only profile");
@@ -166,7 +166,7 @@ describe("member stories and profile pages", () => {
     expect(html).toContain("bg-[#d6e0f0]");
     expect(html).toContain('href="/app"');
     expect(html).toContain('aria-label="Member bottom navigation"');
-    expect(html).toContain("Sign out");
+    expect(html).toContain("Sign Out");
     expect(html).toContain("myMEDLIFE v1.0");
     expect(html).not.toContain("Profile Details");
     expect(html).not.toContain("Next chapter moment");
@@ -444,9 +444,9 @@ describe("member stories and profile pages", () => {
     expect(html).toContain("TEST Member ID");
     expect(html).toContain("TEST Speaker");
     expect(html).toContain("TEST Season MVP");
-    expect(html).toContain("Designation preview");
+    expect(html).toContain("Switch designation to preview access");
     expect(html).toContain("View full history");
-    expect(html).toContain("Sign out");
+    expect(html).toContain("Sign Out");
     expect(html).toContain("myMEDLIFE v1.0 · TEST UCLA MEDLIFE");
     expect(html).not.toContain("Open the next chapter event");
     expect(html).not.toContain("Back to Home");
