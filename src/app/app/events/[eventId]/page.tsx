@@ -710,11 +710,23 @@ function buildEventStepHref(
 }
 
 function getEventReturnHref(source?: string) {
-  return source === "home" ? "/app" : source === "profile" ? "/profile" : "/app/events";
+  return source === "home"
+    ? "/app"
+    : source === "profile"
+      ? "/profile"
+      : source === "points"
+        ? "/app/points?source=events"
+        : "/app/events";
 }
 
 function getEventReturnLabel(source?: string) {
-  return source === "home" ? "Back to Home" : source === "profile" ? "Back to Profile" : "Back to Events";
+  return source === "home"
+    ? "Back to Home"
+    : source === "profile"
+      ? "Back to Profile"
+      : source === "points"
+        ? "Back to Points"
+        : "Back to Events";
 }
 
 function getEventPointsSource(source?: string) {
