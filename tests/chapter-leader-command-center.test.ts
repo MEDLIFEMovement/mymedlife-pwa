@@ -135,7 +135,7 @@ describe("chapter leader command center", () => {
     expect(markup).toContain("Operations");
     expect(markup).toContain("Impact &amp; Culture");
     expect(markup).toContain("Leadership");
-    expect(markup).toContain("Leadership Metrics — June 2025");
+    expect(markup).toContain("Chapter Metrics — June 2025");
     expect(markup).toContain("E-Board roles");
     expect(markup).toContain("Health Score");
     expect(markup).toContain("Active Members");
@@ -169,19 +169,19 @@ describe("chapter leader command center", () => {
     expect(markup).not.toContain("Impact signals");
     expect(markup).not.toContain("Leadership pipeline");
     expect(markup).not.toContain("Bridge stories");
-    expect(markup.match(/>Create Event</g)?.length).toBe(2);
+    expect(markup.match(/>Create Event</g)?.length).toBe(3);
     expect(markup.match(/>Confirm Attendance</g)?.length).toBe(2);
-    expect(markup.indexOf("Create Event")).toBeLessThan(markup.indexOf("Leadership Metrics"));
-    expect(markup.indexOf("Confirm Attendance")).toBeLessThan(markup.indexOf("Leadership Metrics"));
-    expect(markup.indexOf("Leadership Metrics")).toBeLessThan(markup.indexOf("Risk Alerts"));
-    expect(markup.indexOf("Active Members")).toBeGreaterThan(markup.indexOf("Leadership Metrics"));
+    expect(markup.indexOf("Create Event")).toBeLessThan(markup.indexOf("Chapter Metrics"));
+    expect(markup.indexOf("Confirm Attendance")).toBeLessThan(markup.indexOf("Chapter Metrics"));
+    expect(markup.indexOf("Chapter Metrics")).toBeLessThan(markup.indexOf("Risk Alerts"));
+    expect(markup.indexOf("Active Members")).toBeGreaterThan(markup.indexOf("Chapter Metrics"));
     expect(markup.indexOf("Risk Alerts")).toBeLessThan(markup.indexOf("This Week&#x27;s Priority"));
     expect(markup.indexOf("This Week&#x27;s Priority")).toBeLessThan(markup.indexOf("Quick Actions"));
     expect(markup.indexOf("Quick Actions")).toBeLessThan(markup.lastIndexOf("Confirm Attendance"));
     expect(markup.indexOf("Quick Actions")).toBeLessThan(markup.lastIndexOf("Create Event"));
     expect(markup.indexOf("Quick Actions")).toBeLessThan(markup.lastIndexOf("Open Leaderboard"));
     expect(markup.indexOf("Risk Alerts")).toBeLessThan(markup.indexOf("Weekly Points Trend"));
-    expect(markup.indexOf("Leadership Metrics")).toBeLessThan(markup.indexOf("Org Rank"));
+    expect(markup.indexOf("Chapter Metrics")).toBeLessThan(markup.indexOf("Org Rank"));
     expect(markup.indexOf("Org Rank")).toBeLessThan(markup.indexOf("Risk Alerts"));
     expect(markup.indexOf("Quick Actions")).toBeLessThan(markup.indexOf("Weekly Points Trend"));
     expect(markup.indexOf("Weekly Points Trend")).toBeLessThan(markup.indexOf("Role coverage"));
@@ -400,7 +400,7 @@ describe("chapter leader command center", () => {
       createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
     );
 
-    expect(markup).toContain("Member Pipeline");
+    expect(markup).toContain("Member Leaderboard");
     expect(markup).toContain(">Export<");
     expect(markup).toContain(">Add Member<");
     expect(markup).toContain("Search members…");
@@ -956,7 +956,7 @@ describe("chapter leader command center", () => {
       createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
     );
 
-    expect(markup).toContain("Action Committees");
+    expect(markup).toContain("Event Committees");
     expect(markup).toContain("<h1");
     expect(markup).toContain("Monitor whether each committee is moving the chapter forward - not just existing.");
     expect(markup).toContain("Add Committee");
@@ -1177,7 +1177,7 @@ describe("chapter leader command center", () => {
     expect(commandCenter.events[0]?.href).toBe(
       "/leader?view=events&member=member-ivy&eventCommittee=events&event=bc-event-moving-mountains-kickoff",
     );
-    expect(markup).toContain(">Events</h1>");
+    expect(markup).toContain(">Event Performance</h1>");
     expect(markup).toContain("Event Detail");
     expect(markup).toContain(
       "Keep the selected event in chapter context before you leave this surface.",
@@ -1294,8 +1294,7 @@ describe("chapter leader command center", () => {
     expect(markup).toContain('aria-label="Leaderboard region filter"');
     expect(markup).toContain('id="chapter-leaderboard-region-filter"');
     expect(markup).toContain(">Canada</option>");
-    expect(markup).toContain("Leaderboard");
-    expect(markup).not.toContain("Chapter Leaderboard");
+    expect(markup).toContain("Chapter Leaderboard");
     expect(markup).toContain("Ideas to try");
     expect(markup).toContain("Learn from top chapters. Find ideas to try. Rise together.");
     expect(markup).not.toContain(">Apply<");
@@ -1912,7 +1911,7 @@ describe("chapter leader command center", () => {
       createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
     );
 
-    expect(markup).toContain(">Events</h1>");
+    expect(markup).toContain(">Event Performance</h1>");
     expect(markup).toContain("All Events — June 2025");
     expect(markup).toContain("Events This Month");
     expect(markup).toContain("RSVP vs. Actual Attendance Readback");

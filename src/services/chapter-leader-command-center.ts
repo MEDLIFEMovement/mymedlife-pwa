@@ -656,11 +656,11 @@ const mockLeaderProfileId = "member-sofia-profile";
 
 const commandCenterViewLabels: Record<ChapterLeaderCommandCenterView, string> = {
   overview: "Chapter Home",
-  leaderboard: "Leaderboard",
-  members: "Member Pipeline",
+  leaderboard: "Chapter Leaderboard",
+  members: "Member Leaderboard",
   member_profile: "Member Profile",
-  committees: "Committees",
-  events: "Events",
+  committees: "Event Committees",
+  events: "Event Performance",
   impact: "Impact",
   bridge_videos: "Bridge Videos",
   succession: "Succession",
