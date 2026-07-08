@@ -29,8 +29,8 @@ describe("chapter leader command center", () => {
     const commandCenter = getChapterLeaderCommandCenter(actor, data);
 
     expect(commandCenter.canReadCommandCenter).toBe(true);
-    expect(commandCenter.chapterName).toBe("Boston College MEDLIFE");
-    expect(commandCenter.sampleLabel).toBe("Boston College sample surface");
+    expect(commandCenter.chapterName).toBe("TEST Boston College MEDLIFE");
+    expect(commandCenter.sampleLabel).toBe("TEST Boston College sample surface");
     expect(commandCenter.selectedView).toBe("overview");
     expect(commandCenter.healthTone).toBe("yellow");
     expect(commandCenter.quickActions.map((action) => action.label)).toEqual([
@@ -51,11 +51,11 @@ describe("chapter leader command center", () => {
     expect(commandCenter.quickActions.find((action) => action.label === "Review Leaderboard")?.href).toBe(
       "/leader?view=leaderboard&leaderboardMetric=attendance",
     );
-    expect(commandCenter.activeCampaignLabel).toBe("Moving Mountains 🏔");
+    expect(commandCenter.activeCampaignLabel).toBe("TEST Moving Mountains 🏔");
     expect(commandCenter.navGroups.map((group) => group.label)).toEqual([
       "Chapter",
       "Members",
-      "Operations",
+      "Event Operations",
       "Impact & Culture",
       "Leadership",
     ]);
@@ -132,7 +132,7 @@ describe("chapter leader command center", () => {
     expect(markup).toContain("Confirm Attendance");
     expect(markup).toContain("Open Leaderboard");
     expect(markup).toContain("Members");
-    expect(markup).toContain("Operations");
+    expect(markup).toContain("Event Operations");
     expect(markup).toContain("Impact &amp; Culture");
     expect(markup).toContain("Leadership");
     expect(markup).toContain("Chapter Metrics — June 2025");
@@ -246,7 +246,7 @@ describe("chapter leader command center", () => {
     expect(commandCenter.navGroups.map((group) => group.label)).toEqual([
       "Chapter",
       "Members",
-      "Operations",
+      "Event Operations",
       "Impact & Culture",
       "Leadership",
     ]);
@@ -1250,11 +1250,11 @@ describe("chapter leader command center", () => {
       "UCLA runs weekly SLT testimonial posts",
     );
     expect(commandCenter.leaderboardChapters[0]).toMatchObject({
-      chapterName: "UCLA MEDLIFE",
+      chapterName: "TEST UCLA MEDLIFE",
       healthLabel: "Health 96",
     });
     expect(commandCenter.leaderboardChapters[2]).toMatchObject({
-      chapterName: "Boston College MEDLIFE",
+      chapterName: "TEST Boston College MEDLIFE",
       badgeLabel: "Your Chapter",
       healthLabel: "Health 87",
     });
@@ -1281,7 +1281,7 @@ describe("chapter leader command center", () => {
       href: "/leader?view=leaderboard&leaderboardMetric=attendance&region=canada",
     });
     expect(commandCenter.leaderboardChapters).toHaveLength(1);
-    expect(commandCenter.leaderboardChapters[0]?.chapterName).toBe("McGill MEDLIFE");
+    expect(commandCenter.leaderboardChapters[0]?.chapterName).toBe("TEST McGill MEDLIFE");
     expect(commandCenter.leaderboardFilters.find((filter) => filter.key === "attendance")).toMatchObject({
       isActive: true,
       href: "/leader?view=leaderboard&leaderboardMetric=attendance&region=canada",
@@ -1317,10 +1317,10 @@ describe("chapter leader command center", () => {
 
     expect(commandCenter.selectedSource).toBe("leaderboard");
     expect(commandCenter.selectedBestPracticeChapterId).toBe("leaderboard-ucla");
-    expect(commandCenter.selectedBestPracticeChapter?.chapterName).toBe("UCLA MEDLIFE");
+    expect(commandCenter.selectedBestPracticeChapter?.chapterName).toBe("TEST UCLA MEDLIFE");
     expect(commandCenter.sourceContext).toMatchObject({
       eyebrow: "Leaderboard handoff",
-      title: "Opened from UCLA MEDLIFE best practices",
+      title: "Opened from TEST UCLA MEDLIFE best practices",
     });
     expect(commandCenter.sourceContext?.actions?.[0]).toMatchObject({
       label: "Back to leaderboard",
@@ -1330,10 +1330,10 @@ describe("chapter leader command center", () => {
       "/leader?view=leaderboard&leaderboardMetric=attendance",
     );
     expect(markup).toContain("Leaderboard handoff");
-    expect(markup).toContain("Opened from UCLA MEDLIFE best practices");
+    expect(markup).toContain("Opened from TEST UCLA MEDLIFE best practices");
     expect(markup).toContain("Benchmark chapter in focus");
     expect(markup).toContain("Health 96");
-    expect(markup).toContain("Weekly SLT testimonial posts doubled sign-up rate");
+    expect(markup).toContain("TEST weekly SLT testimonial posts doubled sign-up rate");
     expect(markup).toContain("Back to leaderboard");
     expect(markup).toContain(
       "/leader?view=leaderboard&amp;leaderboardMetric=attendance",
@@ -1393,17 +1393,17 @@ describe("chapter leader command center", () => {
 
     expect(commandCenter.selectedSource).toBe("leaderboard");
     expect(commandCenter.selectedBestPracticeChapterId).toBe("leaderboard-mcgill");
-    expect(commandCenter.selectedBestPracticeChapter?.chapterName).toBe("McGill MEDLIFE");
+    expect(commandCenter.selectedBestPracticeChapter?.chapterName).toBe("TEST McGill MEDLIFE");
     expect(commandCenter.feedPostRows[0]).toMatchObject({
       href:
         "/leader?view=feed_analytics&source=leaderboard&leaderboardMetric=attendance&region=canada&benchmark=leaderboard-mcgill&feedPost=feed-post-info-night",
     });
     expect(commandCenter.sourceContext).toMatchObject({
-      title: "Opened from McGill MEDLIFE best practices",
+      title: "Opened from TEST McGill MEDLIFE best practices",
     });
-    expect(markup).toContain("Opened from McGill MEDLIFE best practices");
+    expect(markup).toContain("Opened from TEST McGill MEDLIFE best practices");
     expect(markup).toContain("Benchmark chapter in focus");
-    expect(markup).toContain("McGill MEDLIFE");
+    expect(markup).toContain("TEST McGill MEDLIFE");
     expect(markup).toContain("Back to recent posts");
     expect(markup).toContain(
       "/leader?view=feed_analytics&amp;source=leaderboard&amp;leaderboardMetric=attendance&amp;region=canada&amp;benchmark=leaderboard-mcgill",
@@ -1692,11 +1692,11 @@ describe("chapter leader command center", () => {
     expect(commandCenter.selectedSource).toBe("member_home");
     expect(commandCenter.sourceContext).toMatchObject({
       eyebrow: "Member app handoff",
-      title: "Opened from UCLA MEDLIFE into Leader Hub",
+      title: "Opened from TEST UCLA MEDLIFE into Leader Hub",
     });
     expect(commandCenter.sourceContext?.preview).toMatchObject({
       heading: "Leader Hub",
-      chapterLabel: "UCLA MEDLIFE",
+      chapterLabel: "TEST UCLA MEDLIFE",
     });
     expect(commandCenter.sourceContext?.preview?.stats.map((stat) => stat.label)).toEqual([
       "Members active",

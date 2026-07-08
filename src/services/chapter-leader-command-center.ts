@@ -710,15 +710,15 @@ const eventCommitteeFilterLabels: Record<ChapterLeaderEventCommitteeFilterKey, s
 };
 
 const mockChapterLeaderSample = {
-  chapterName: "Boston College MEDLIFE",
+  chapterName: "TEST Boston College MEDLIFE",
   campusLabel: "Boston College",
   regionLabel: "New England",
   coachLabel: "Cam Coach",
-  activeCampaignLabel: "Moving Mountains 🏔",
+  activeCampaignLabel: "TEST Moving Mountains 🏔",
   activeProgramLabels: ["Rush Month", "Moving Mountains", "SLT Promotion"],
-  sidebarLeaderLabel: "Sofia Reyes",
+  sidebarLeaderLabel: "TEST Sofia Reyes",
   sidebarLeaderRoleLabel: "President",
-  sampleLabel: "Boston College sample surface",
+  sampleLabel: "TEST Boston College sample surface",
 };
 
 const mockCommandCenterPipelineMembers: ChapterMemberRow[] = [
@@ -927,7 +927,7 @@ const commandCenterNavGroups: ChapterLeaderCommandCenterNavGroup[] = [
     viewKeys: ["members", "member_profile"],
   },
   {
-    label: "Operations",
+    label: "Event Operations",
     viewKeys: ["committees", "events"],
   },
   {
@@ -1844,14 +1844,15 @@ function getChapterLeaderSourceContext(
 ): ChapterLeaderCommandCenterSourceContext | null {
   switch (source) {
     case "member_home":
+      const visibleOriginChapterName = toVisibleLeaderSampleLabel(context.originChapterName);
       return {
         eyebrow: "Member app handoff",
-        title: `Opened from ${context.originChapterName} into Leader Hub`,
+        title: `Opened from ${visibleOriginChapterName} into Leader Hub`,
         summary:
-          `This leadership view was opened from the ${context.originChapterName} member-home handoff. Keep the next move anchored to the student event loop: open events, confirm attendance, and watch points move without treating this like a disconnected dashboard.`,
+          `This leadership view was opened from the ${visibleOriginChapterName} member-home handoff. Keep the next move anchored to the student event loop: open events, confirm attendance, and watch points move without treating this like a disconnected dashboard.`,
         preview: {
           heading: "Leader Hub",
-          chapterLabel: context.originChapterName,
+          chapterLabel: visibleOriginChapterName,
           stats: [
             {
               label: "Members active",
@@ -2861,17 +2862,17 @@ function getLeaderboardIdeaNote(
   if (sourceMode === "mock") {
     switch (selectedMetric) {
       case "attendance":
-        return "Ideas to try: McGill holds a same-day RSVP confirmation push and assigns one follow-up owner per event, which helps attendance stay high even when event volume grows.";
+        return "Ideas to try: TEST McGill holds a same-day RSVP confirmation push and assigns one follow-up owner per event, which helps attendance stay high even when event volume grows.";
       case "bridge_videos":
-        return "Ideas to try: UCLA and McGill both submit bridge videos consistently, then reuse them across recruiting and follow-up so students hear real chapter voices more than once.";
+        return "Ideas to try: TEST UCLA and TEST McGill both submit bridge videos consistently, then reuse them across recruiting and follow-up so students hear real chapter voices more than once.";
       case "funds_raised":
         return "Ideas to try: top fundraising chapters tie event proof, donor follow-up, and student ownership together instead of treating fundraising like a separate lane.";
       case "slt_participants":
-        return "Ideas to try: UCLA runs weekly SLT testimonial posts. Top chapters keep values, cost, and travel objections visible in every follow-up.";
+        return "Ideas to try: TEST UCLA runs weekly SLT testimonial posts. Top chapters keep values, cost, and travel objections visible in every follow-up.";
       case "events_created":
-        return "Ideas to try: UT Austin assigns event creation as a first action for new members so ownership forms early instead of waiting for senior leaders to carry the whole calendar.";
+        return "Ideas to try: TEST UT Austin assigns event creation as a first action for new members so ownership forms early instead of waiting for senior leaders to carry the whole calendar.";
       default:
-        return "Ideas to try: UCLA runs weekly SLT testimonial posts. McGill uses a chapter buddy system. UT Austin assigns event creation as a first action for new members. All three submit bridge videos consistently.";
+        return "Ideas to try: TEST UCLA runs weekly SLT testimonial posts. TEST McGill uses a chapter buddy system. TEST UT Austin assigns event creation as a first action for new members. All three submit bridge videos consistently.";
     }
   }
 
@@ -2895,10 +2896,10 @@ function getLeaderboardChapters(
       {
         id: "leaderboard-ucla",
         rankLabel: "🥇",
-        chapterName: "UCLA MEDLIFE",
+        chapterName: "TEST UCLA MEDLIFE",
         countryLabel: "USA",
         healthLabel: "Health 96",
-        quote: '"Weekly SLT testimonial posts doubled sign-up rate"',
+        quote: '"TEST weekly SLT testimonial posts doubled sign-up rate"',
         metrics: [
           { label: "Events", value: "18" },
           { label: "Members", value: "112" },
@@ -2920,10 +2921,10 @@ function getLeaderboardChapters(
       {
         id: "leaderboard-mcgill",
         rankLabel: "🥈",
-        chapterName: "McGill MEDLIFE",
+        chapterName: "TEST McGill MEDLIFE",
         countryLabel: "Canada",
         healthLabel: "Health 93",
-        quote: '"Chapter buddy system retains 40% more new members"',
+        quote: '"TEST chapter buddy system retains 40% more new members"',
         metrics: [
           { label: "Events", value: "15" },
           { label: "Members", value: "94" },
@@ -2945,11 +2946,11 @@ function getLeaderboardChapters(
       {
         id: "leaderboard-boston-college",
         rankLabel: "🥉",
-        chapterName: "Boston College MEDLIFE",
+        chapterName: "TEST Boston College MEDLIFE",
         countryLabel: "USA",
         badgeLabel: "Your Chapter",
         healthLabel: "Health 87",
-        quote: '"Leading Moving Mountains in New England - #3 overall"',
+        quote: '"TEST leading Moving Mountains in New England - #3 overall"',
         metrics: [
           { label: "Events", value: "12" },
           { label: "Members", value: "84" },
@@ -2971,10 +2972,10 @@ function getLeaderboardChapters(
       {
         id: "leaderboard-ut-austin",
         rankLabel: "4",
-        chapterName: "UT Austin MEDLIFE",
+        chapterName: "TEST UT Austin MEDLIFE",
         countryLabel: "USA",
         healthLabel: "Health 84",
-        quote: '"Event creation is the first visible action for new members"',
+        quote: '"TEST event creation is the first visible action for new members"',
         metrics: [
           { label: "Events", value: "14" },
           { label: "Members", value: "88" },
@@ -4138,16 +4139,25 @@ function getSelectedBestPracticeChapterId(
 function getBestPracticeChapterName(chapterId?: string | null) {
   switch (chapterId) {
     case "leaderboard-ucla":
-      return "UCLA MEDLIFE";
+      return "TEST UCLA MEDLIFE";
     case "leaderboard-mcgill":
-      return "McGill MEDLIFE";
+      return "TEST McGill MEDLIFE";
     case "leaderboard-boston-college":
-      return "Boston College MEDLIFE";
+      return "TEST Boston College MEDLIFE";
     case "leaderboard-ut-austin":
-      return "UT Austin MEDLIFE";
+      return "TEST UT Austin MEDLIFE";
     default:
       return null;
   }
+}
+
+function toVisibleLeaderSampleLabel(label: string) {
+  const trimmed = label.trim();
+  if (!trimmed || trimmed.startsWith("TEST ")) {
+    return trimmed;
+  }
+
+  return `TEST ${trimmed}`;
 }
 
 function getCommitteesOverview(

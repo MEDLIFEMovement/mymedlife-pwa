@@ -224,7 +224,7 @@ export function ChapterLeaderCommandCenterPanel({
                   Active Campaign
                 </p>
                 <p className="mt-2 text-base font-semibold text-white">
-                  {commandCenter.activeCampaignLabel}
+                  {toVisibleTestLabel(commandCenter.activeCampaignLabel)}
                 </p>
               </div>
               <span className="rounded-full border border-white/10 bg-white/10 px-2 py-1 text-[0.62rem] font-semibold uppercase tracking-[0.16em] text-white">
@@ -2402,7 +2402,7 @@ function renderView(
                         {commandCenter.selectedBestPracticeChapter.rankLabel}
                       </span>
                       <h3 className="text-lg font-semibold text-slate-950">
-                        {commandCenter.selectedBestPracticeChapter.chapterName}
+                        {toVisibleTestLabel(commandCenter.selectedBestPracticeChapter.chapterName)}
                       </h3>
                       {commandCenter.selectedBestPracticeChapter.badgeLabel ? (
                         <span className="rounded-full border border-[#bfdbfe] bg-white px-3 py-1 text-xs font-semibold text-[#1d4ed8]">
