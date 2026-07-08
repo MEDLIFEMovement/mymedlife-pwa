@@ -23,6 +23,7 @@ export function MemberProfilePanel({
   studentHome,
   recognition,
 }: MemberProfilePanelProps) {
+  const launchLaneHomeHref = "/app";
   const testDisplayName = ensureVisibleTestLabel(displayName);
   const testChapterName = ensureVisibleTestLabel(chapterName);
   const firstName = ensureVisibleTestLabel(displayName.split(" ")[0] ?? displayName);
@@ -187,6 +188,9 @@ export function MemberProfilePanel({
           ]}
         />
         <div className="mt-4 flex flex-wrap gap-2">
+          <PanelButton href={launchLaneHomeHref} variant="secondary">
+            Back to Home
+          </PanelButton>
           <PanelButton href={launchLaneEventsHref} variant="secondary">
             Open events
           </PanelButton>
@@ -204,6 +208,9 @@ export function MemberProfilePanel({
           event, RSVP or check attendance, and then watch the chapter points move.
         </p>
         <div className="mt-4 flex flex-wrap gap-3">
+          <PanelButton href={launchLaneHomeHref} variant="secondary">
+            Back to Home
+          </PanelButton>
           <PanelButton href={launchLaneEventsHref}>
             Open events
           </PanelButton>
