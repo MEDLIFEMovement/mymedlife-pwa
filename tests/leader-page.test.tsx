@@ -254,10 +254,10 @@ describe("leader page", () => {
     expect(html).toContain(expectedCopy);
 
     if (view === "member_profile") {
-      expect(html).toContain("Preview Promotion");
-      expect(html).toContain("Preview Review Actions");
-      expect(html).toContain("Preview Leadership Follow-through");
-      expect(html).toContain("Preview E-Board Succession");
+      expect(html).toContain("Preview Promotion Review");
+      expect(html).toContain("Preview Handoff Actions");
+      expect(html).toContain("Preview Follow-through Review");
+      expect(html).toContain("Preview Succession Handoff");
       expect(html).toContain("Preview Note");
     }
 
@@ -272,8 +272,8 @@ describe("leader page", () => {
     }
 
     if (view === "succession") {
-      expect(html).toContain("Preview Candidate Nomination");
-      expect(html).toContain("Preview Transition Plan");
+      expect(html).toContain("Preview Candidate Review");
+      expect(html).toContain("Preview Transition Handoff");
       expect(html).toContain("TEST succession preview.");
     }
 
@@ -292,8 +292,8 @@ describe("leader page", () => {
 
     if (view === "leaders") {
       expect(html).toContain("TEST leadership roster preview.");
-      expect(html).toContain("Preview Succession Review");
-      expect(html).toContain("Preview Values Review");
+      expect(html).toContain("Preview Succession Handoff");
+      expect(html).toContain("Preview Values Readiness");
     }
   });
 
@@ -476,8 +476,8 @@ describe("leader page", () => {
     expect(source).toContain("Preview role path");
     expect(source).toContain("Confirm Values & Preview Promotion");
     expect(source).toContain("TEST values interview completed in preview");
-    expect(source).toContain("Preview Leadership Follow-through");
-    expect(source).toContain("Preview E-Board Succession");
+    expect(source).toContain("Preview Follow-through Review");
+    expect(source).toContain("Preview Succession Handoff");
     expect(source).toContain("TEST strong E-Board candidate preview");
     expect(source).toContain("TEST strong E-Board candidate — nomination preview");
     expect(source).toContain("TEST chair promotion preview — ready now");
@@ -487,14 +487,14 @@ describe("leader page", () => {
     expect(source).toContain("This leader workflow stays visible for review, but it is preview-only until the audited write path is approved.");
     expect(source).toContain("Preview Plan");
     expect(source).toContain("Preview Transition Plan");
-    expect(source).toContain("TEST succession preview. Candidate planning stays route-backed for review, but no nomination, transition, promotion, or notify flow goes live from this shell.");
+    expect(source).toContain("TEST succession preview. Candidate planning stays route-backed for review and handoff, but no nomination, transition, promotion, or notify flow goes live from this shell.");
     expect(source).toContain("TEST Appoint Member Engagement chair");
     expect(source).toContain("TEST Full E-Board transition complete");
     expect(source).toContain("TEST values preview. Three values guide every MEDLIFE leader, but no interview, nomination, promotion, or approval decision becomes live from this shell.");
     expect(source).not.toContain("Activate Transition Plan");
-    expect(source).toContain("Preview Promotion");
-    expect(source).toContain("Preview Candidate Nomination");
-    expect(source).toContain("Preview Transition Plan");
+    expect(source).toContain("Preview Promotion Review");
+    expect(source).toContain("Preview Candidate Review");
+    expect(source).toContain("Preview Transition Handoff");
     expect(source).toContain("Preview Values Interview");
     expect(source).toContain("Preview Interview Scheduling");
     expect(source).toContain("Preview Values Interview Form");
@@ -502,13 +502,13 @@ describe("leader page", () => {
     expect(source).toContain("toTestLabel");
     expect(source).toContain("TEST leadership roster preview.");
     expect(source).toContain("TEST leader roster preview only.");
-    expect(source).toContain("Preview Succession Review");
-    expect(source).toContain("Preview Values Review");
+    expect(source).toContain("Preview Succession Handoff");
+    expect(source).toContain("Preview Values Readiness");
     expect(source).toContain("Preview vacancy only");
     expect(source).toContain("No chair assigned in TEST preview");
-    expect(source).toContain("Preview Review Actions");
+    expect(source).toContain("Preview Handoff Actions");
     expect(source).toContain("Leader Review Notes");
-    expect(source).toContain("Review this TEST member's points, event follow-through, preview actions, blocked notes, and succession handoff posture.");
+    expect(source).toContain("Review this TEST member's points, event follow-through, preview handoff actions, blocked notes, and succession readiness posture.");
     expect(source).toContain("TEST Service Committee Chair interview preview");
     expect(source).toContain("TEST reviewed Moving Mountains Kickoff event handoff preview");
     expect(source).toContain("TEST reviewed committee co-lead readiness preview");

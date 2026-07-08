@@ -932,13 +932,13 @@ function ProfileScreen({
   return (
     <div className="space-y-5">
       <button onClick={onBack} className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-800 cursor-pointer transition-colors">
-        <ChevronRight size={13} className="rotate-180"/>Back to Member Pipeline
+        <ChevronRight size={13} className="rotate-180"/>Back to Member Review
       </button>
 
       <div>
         <h1 className="text-2xl font-black text-slate-900">Member Profile</h1>
         <p className="text-sm text-slate-500 mt-1">
-          Review this TEST member's points, event follow-through, preview actions, blocked notes, and succession handoff posture.
+          Review this TEST member's points, event follow-through, preview handoff actions, blocked notes, and succession readiness posture.
         </p>
       </div>
 
@@ -987,10 +987,10 @@ function ProfileScreen({
             </div>
           </div>
           <div className="bg-white rounded-xl border border-slate-200 p-4 space-y-2">
-            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Preview Review Actions</div>
-            <Btn variant="primary"   className="w-full justify-start" onClick={() => onPromote(m.id)}><Star size={11}/>Preview Promotion</Btn>
-            <Btn variant="secondary" className="w-full justify-start" onClick={() => onAssignAction(m.id)}><Zap size={11}/>Preview Leadership Follow-through</Btn>
-            <Btn variant="ghost"     className="w-full justify-start" onClick={() => onOpenSuccession(m.id)}><Flag size={11}/>Preview E-Board Succession</Btn>
+            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Preview Handoff Actions</div>
+            <Btn variant="primary"   className="w-full justify-start" onClick={() => onPromote(m.id)}><Star size={11}/>Preview Promotion Review</Btn>
+            <Btn variant="secondary" className="w-full justify-start" onClick={() => onAssignAction(m.id)}><Zap size={11}/>Preview Follow-through Review</Btn>
+            <Btn variant="ghost"     className="w-full justify-start" onClick={() => onOpenSuccession(m.id)}><Flag size={11}/>Preview Succession Handoff</Btn>
             <Btn
               variant="secondary"
               className="w-full justify-start"
@@ -2844,11 +2844,11 @@ function SuccessionScreen({ onNavigate, onSelectMember }: { onNavigate:(s:Screen
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-black text-slate-900">Leadership Succession</h1>
-          <p className="text-sm text-slate-500 mt-1">TEST succession preview. Candidate planning stays route-backed for review, but no nomination, transition, promotion, or notify flow goes live from this shell.</p>
+          <p className="text-sm text-slate-500 mt-1">TEST succession preview. Candidate planning stays route-backed for review and handoff, but no nomination, transition, promotion, or notify flow goes live from this shell.</p>
         </div>
         <div className="flex gap-2">
-          <Btn variant="secondary" onClick={() => setShowTransition(true)}><Flag size={11}/>Preview Candidate Nomination</Btn>
-          <Btn variant="primary"    onClick={() => setShowTransition(true)}><ArrowRight size={11}/>Preview Transition Plan</Btn>
+          <Btn variant="secondary" onClick={() => setShowTransition(true)}><Flag size={11}/>Preview Candidate Review</Btn>
+          <Btn variant="primary"    onClick={() => setShowTransition(true)}><ArrowRight size={11}/>Preview Transition Handoff</Btn>
         </div>
       </div>
 
@@ -2882,7 +2882,7 @@ function SuccessionScreen({ onNavigate, onSelectMember }: { onNavigate:(s:Screen
             <div className="flex items-center justify-between mb-3">
               <SH>Candidate Pipeline</SH>
               <button onClick={()=>onNavigate("members")} className="text-[11px] text-blue-600 hover:underline cursor-pointer font-semibold flex items-center gap-1">
-                Full table <ExternalLink size={10}/>
+                Full member review table <ExternalLink size={10}/>
               </button>
             </div>
             <div className="space-y-1">
@@ -3233,11 +3233,11 @@ function LeadersScreen({
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-black text-slate-900">Current Leaders</h1>
-          <p className="text-sm text-slate-500 mt-1">TEST leadership roster preview. E-Board coverage and committee ownership stay visible for review, but no appointment, promotion, vacancy fill, or notify flow goes live from this shell.</p>
+          <p className="text-sm text-slate-500 mt-1">TEST leadership roster preview. E-Board coverage and committee ownership stay visible for review and handoff, but no appointment, promotion, vacancy fill, or notify flow goes live from this shell.</p>
         </div>
         <div className="flex gap-2">
-          <Btn variant="secondary" onClick={() => onNavigate("succession")}><GitBranch size={11}/>Preview Succession Review</Btn>
-          <Btn variant="secondary" onClick={() => onNavigate("values")}><Star size={11}/>Preview Values Review</Btn>
+          <Btn variant="secondary" onClick={() => onNavigate("succession")}><GitBranch size={11}/>Preview Succession Handoff</Btn>
+          <Btn variant="secondary" onClick={() => onNavigate("values")}><Star size={11}/>Preview Values Readiness</Btn>
         </div>
       </div>
 
