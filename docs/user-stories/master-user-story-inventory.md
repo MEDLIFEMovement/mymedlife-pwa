@@ -21,16 +21,18 @@ the built/partial/preview-only/blocked line clear for MVP planning.
 ## Sources Inspected
 
 - Repo truth refresh checked against this repo checkout on `origin/main` commit
-  `86d378c` (`Add next shell slice briefs (#517)`), which includes the
-  repo-truth story package, builder delivery map, member home/profile
-  continuity, member Stories feed parity, member event/points return
-  continuity, embedded Admin review posture, admin command center return cues,
-  and next-shell slice brief planning.
-- Live PR board checked during this refresh: `#503` remained the real staff
-  blocker, `#512` and `#515` were healthy rerun/behind-watch lanes, `#516` was
-  healthy and still draft, `#518` was the live member repair branch, and `#519`
-  was a healthy admin launch-gate review-label follow-on. These are coordination
-  context only, not merged implementation truth unless they land on `main`.
+  `8a2a7f4` (`Add active builder lane truth refresh (#548)`), which includes
+  the repo-truth story package, builder delivery map, shell acceptance packets,
+  member profile body and Stories IG-feed acceptance maps, leader cross-route
+  continuity guidance, staff embedded Admin return-loop guidance, and the
+  active builder lane truth refresh.
+- Live PR board checked during this refresh: Coordinator reported `#523`
+  rerunning with `#536` behind it in the member lane; `#545` clean behind-only
+  and `#547` Codecov-only red in the leader lane; and `#522` clean with `#521`,
+  `#534`, and `#538` fully green/behind-only in the Staff/Admin lane. At local
+  check time, GitHub still showed many older branches as draft/behind/unknown
+  board noise. These are coordination context only, not merged implementation
+  truth unless they land on `main`.
 - Current repo files inspected for route/surface truth: `src/app/app/*`,
   `src/app/leader/page.tsx`, `src/app/staff/page.tsx`, `src/app/admin/*`,
   `src/components/figma-member-mobile-home.tsx`,
@@ -104,11 +106,11 @@ Current builder ownership for this story package:
 
 Current-main story rollup:
 
-| Persona group | Story IDs | Repo-truth posture after #517 |
+| Persona group | Story IDs | Repo-truth posture after #548 |
 | --- | --- | --- |
-| Member | `MEM-001` through `MEM-009` | Strong shell coverage; home/profile, Stories, event return, points return, and SLT entry are reviewable. RSVP, check-in, attendance, points award authority, story publishing, profile writes, and SLT traveler/payment/provider workflow remain preview-only or blocked. |
-| Leader | `LDR-001` through `LDR-007` | Rich command-center shell; route/menu continuity and leadership-family handoffs are active work. Live event creation, attendance imports, assignments, succession, role/member mutations, points awards, and provider sends remain blocked. |
-| Coach/staff | `STF-001` through `STF-006` | Staff shell and embedded Admin posture are reviewable; #503 still blocks full chapter-drawer continuity. Interventions, exports, proof moderation, survey sends, and provider sync remain blocked. |
+| Member | `MEM-001` through `MEM-009` | Strong shell coverage; home/profile, Stories, event return, points return, and SLT entry are reviewable. Current queue pressure is `#523` member SLT shell continuity followed by `#536` Stories reader continuity. RSVP, check-in, attendance, points award authority, story publishing, profile writes, and SLT traveler/payment/provider workflow remain preview-only or blocked. |
+| Leader | `LDR-001` through `LDR-007` | Rich command-center shell; current pressure is leader training/event review continuity (`#545` / `#547`) and broader `/leader?view=*` cross-route polish. Live event creation, attendance imports, assignments, succession, role/member mutations, points awards, and provider sends remain blocked. |
+| Coach/staff | `STF-001` through `STF-006` | Staff shell, Proof / UGC follow-through, embedded Admin posture, and admin TEST/readback surfaces are reviewable. Current queue pressure is `#522` Proof / UGC chapter follow-through plus behind-only Staff/Admin admin review slices. Interventions, exports, proof moderation, survey sends, and provider sync remain blocked. |
 | Admin | `ADM-001` through `ADM-004` | Admin review surfaces and launch-gate posture are visible; owner CSV application, invites, user/role/chapter writes, audit/outbox mutation, and final gate remain blocked. |
 | DS admin | `DSA-001` through `DSA-004` | Dark admin shell, integrations/API/MCP, system health, and signed-in proof readiness are reviewable/staged; provider/API/MCP operations and production proof capture are not live. |
 | Super admin | `SUP-001` through `SUP-003` | Cross-shell review and write-promotion governance are staged; final invite approval is blocked until real rollout evidence exists. |
