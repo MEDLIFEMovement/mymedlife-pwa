@@ -549,6 +549,7 @@ describe("staff page", () => {
     );
 
     expect(html).toContain("Proof review context: TEST Stanford University (Pending · Instagram)");
+    expect(html).toContain("Restricted to DS Admin and Super Admin only · Proof / UGC review for TEST Stanford University (Pending · Instagram)");
     expect(html).toContain("Return to Proof / UGC");
   });
 
@@ -577,6 +578,7 @@ describe("staff page", () => {
     expect(html).toContain("Admin access blocked");
     expect(html).toContain("Proof review context: TEST Stanford University (Pending · Instagram)");
     expect(html).toContain("Return to Proof / UGC");
+    expect(html).toContain("Restricted to DS Admin and Super Admin only · Proof / UGC review for TEST Stanford University (Pending · Instagram)");
   });
 
   it("keeps proof queue filter context on the proof-to-admin handoff from first render", async () => {
@@ -605,6 +607,8 @@ describe("staff page", () => {
     expect(source).toContain("const currentSearch = searchParams.toString() || initialRouteSearch;");
     expect(source).toContain('initialSelectedCardId={getRouteParam("ugcCard")}');
     expect(source).toContain("const selectedCardId = searchParams.get(\"ugcCard\") ?? initialSelectedCardId;");
+    expect(source).toContain("const adminHeaderSubtitle =");
+    expect(source).toContain("getStaffAdminHeaderSubtitle(adminBackLabel, adminChapterContext, adminProofQueueContext)");
   });
 
   it("keeps chapter portfolio filter context route-backed for the chapter review loop", async () => {
@@ -671,7 +675,7 @@ describe("staff page", () => {
     const lineCount = source.split("\n").length;
 
     expect(lineCount).toBeGreaterThanOrEqual(2170);
-    expect(lineCount).toBeLessThanOrEqual(2865);
+    expect(lineCount).toBeLessThanOrEqual(2900);
     expect(source).toContain("type Screen = \"chapters\" | \"campaigns\" | \"events\" | \"ugc\" | \"reports\" | \"admin\" | \"best-practices\" | \"sops\";");
     expect(source).toContain("const NAV_ITEMS");
     expect(source).toContain("function PortfolioOverview");

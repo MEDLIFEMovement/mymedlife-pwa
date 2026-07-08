@@ -2329,6 +2329,10 @@ export function FigmaStaffCommandCenter({
       ? getEmbeddedProofQueueContext(getRouteParam("proofStatus"), getRouteParam("proofPlatform"))
       : null;
   const adminBackLabel = getStaffAdminReturnLabel(adminReturnScreen, adminReturnChapterId);
+  const adminHeaderSubtitle =
+    activeScreen === "admin"
+      ? getStaffAdminHeaderSubtitle(adminBackLabel, adminChapterContext, adminProofQueueContext)
+      : null;
   const initialProofStatusFilter = resolveProofQueueStatusFilter(getRouteParam("proofStatus"));
   const initialProofPlatformFilter = resolveProofQueuePlatformFilter(getRouteParam("proofPlatform"));
   const initialChapterSearch = getRouteParam("chapterSearch") ?? "";
@@ -2430,7 +2434,10 @@ export function FigmaStaffCommandCenter({
             {activeScreen === "campaigns" && "7 campaigns active across all regions"}
             {activeScreen === "ugc" && `${UGC_CARDS.filter(c=>c.visibility==="pending").length} items pending review`}
             {activeScreen === "best-practices" && `${BEST_PRACTICES.length} verified best practices ready to share`}
-            {activeScreen === "admin" && (adminRole ? `Previewing as ${adminRole === "super-admin" ? "Super Admin" : "DS Admin"} · blocked controls stay preview-only unless explicitly approved` : "Restricted to DS Admin and Super Admin only")}
+            {activeScreen === "admin" &&
+              (adminRole
+                ? `Previewing as ${adminRole === "super-admin" ? "Super Admin" : "DS Admin"} · blocked controls stay preview-only unless explicitly approved${adminHeaderSubtitle ? ` · ${adminHeaderSubtitle}` : ""}`
+                : `Restricted to DS Admin and Super Admin only${adminHeaderSubtitle ? ` · ${adminHeaderSubtitle}` : ""}`)}
             {activeScreen === "sops" && (sopView === "builder" && sopCampaign ? `${sopCampaign.name} · ${sopCampaign.version}` : "Build, version, and publish campaign workflows — steps, roles, points, and comms")}
           </div>
         </div>
@@ -2652,6 +2659,29 @@ function getStaffAdminContextLabel(
   }
   if (!chapterContext) return null;
   return `Chapter review context: ${chapterContext}`;
+}
+
+function getStaffAdminHeaderSubtitle(
+  backLabel: string,
+  chapterContext?: string | null,
+  proofQueueContext?: string | null,
+) {
+  if (backLabel === "Proof / UGC") {
+    if (chapterContext && proofQueueContext) {
+      return `Proof / UGC review for ${chapterContext} (${proofQueueContext})`;
+    }
+    if (chapterContext) {
+      return `Proof / UGC review for ${chapterContext}`;
+    }
+    if (proofQueueContext) {
+      return `Proof / UGC review for ${proofQueueContext}`;
+    }
+    return null;
+  }
+  if (backLabel === "this chapter" && chapterContext) {
+    return `Chapter review for ${chapterContext}`;
+  }
+  return null;
 }
 
 function getStaffShellViewParam(screen: Screen): string {
