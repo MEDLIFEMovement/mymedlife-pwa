@@ -33,23 +33,29 @@ export function PilotSupportPacketPanel({
             Recommended next move: {packet.recommendedNextMove}
           </p>
           <div className="mt-4 flex flex-wrap gap-2">
+            <PreviewToken>Read-only preview</PreviewToken>
+            <PreviewToken>Blocked production writes</PreviewToken>
+            <PreviewToken>Blocked external sends</PreviewToken>
+            <PreviewToken>Source-backed owner handoffs</PreviewToken>
+          </div>
+          <div className="mt-4 flex flex-wrap gap-2">
             <Link
               href="/admin/staff-dry-run"
               className="rounded-full bg-cyan-200 px-4 py-2 text-sm font-semibold text-[#062028]"
             >
-              Open staff dry run
+              Open staff dry run review
             </Link>
             <Link
               href="/admin/pilot-scope"
               className="rounded-full border border-white/12 bg-black/20 px-4 py-2 text-sm font-semibold text-white/78"
             >
-              Open pilot scope
+              Open pilot scope review
             </Link>
             <Link
               href="/admin/launch-gate"
               className="rounded-full border border-white/12 bg-black/20 px-4 py-2 text-sm font-semibold text-white/78"
             >
-              Open launch gate
+              Open launch gate review
             </Link>
           </div>
         </div>
@@ -196,6 +202,14 @@ function MiniStat({ label, value }: { label: string; value: string }) {
       </p>
       <p className="mt-1 text-xl font-semibold text-white">{value}</p>
     </div>
+  );
+}
+
+function PreviewToken({ children }: { children: string }) {
+  return (
+    <span className="rounded-full border border-cyan-300/25 bg-cyan-300/10 px-2.5 py-1 text-xs font-semibold text-cyan-100/80">
+      {children}
+    </span>
   );
 }
 
