@@ -95,7 +95,9 @@ describe("copied Figma shell CTA safety", () => {
     expect(memberSource).toContain('label: "Stories"');
     expect(adminSource).toContain("Command Center");
     expect(adminSource).toContain("onBack?: () => void");
-    expect(staffSource).toContain("AdminPanel onBack={() => { setAdminRole(null); handleNavChange(\"chapters\"); }}");
+    expect(staffSource).toContain("<AdminPanel");
+    expect(staffSource).toContain('onBack={() => { setAdminRole(null); handleNavChange("chapters"); }}');
+    expect(staffSource).toContain('embeddedBackLabel="chapters"');
   });
 
   it("keeps the copied admin account row visibly delegated to the top-right session menu", () => {
