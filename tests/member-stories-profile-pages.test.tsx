@@ -144,26 +144,35 @@ describe("member stories and profile pages", () => {
     expect(html).toContain("TEST Sofia Alvarez");
     expect(html).toContain("TEST UCLA MEDLIFE");
     expect(html).toContain("TEST Rush Month kickoff social");
-    expect(html).toContain("TEST member ID");
-    expect(html).toContain("Profile Details");
+    expect(html).toContain("TEST Member ID");
+    expect(html).toContain("ID Card");
+    expect(html).toContain("Total Points");
+    expect(html).toContain("Tasks Done");
     expect(html).toContain("Achievements");
+    expect(html).toContain("TEST Speaker");
+    expect(html).toContain("TEST Season MVP");
     expect(html).toContain("Recent Activity");
+    expect(html).toContain("View full history");
     expect(html).toContain("Your Designation");
+    expect(html).toContain("Switch designation to preview access");
+    expect(html).toContain("Super Admin");
     expect(html).toContain("Settings");
-    expect(html).toContain("Read-only profile");
     expect(html).toContain("Preview Mode — read-only");
-    expect(html).toContain("No profile save runs from this route.");
-    expect(html).toContain("No join request, role approval, membership change, or coach assignment runs from this route.");
+    expect(html).toContain("profile writes stay blocked");
+    expect(html).toContain("Notification preference writes stay blocked");
+    expect(html).toContain("Certificates stay blocked");
     expect(html).toContain("max-w-[430px]");
     expect(html).toContain("bg-[#d6e0f0]");
     expect(html).toContain('href="/app"');
     expect(html).toContain('aria-label="Member bottom navigation"');
-    expect(html).toContain("Open events");
-    expect(html).toContain("Open points");
     expect(html).toContain("Sign out");
-    expect(html).toContain("Sign-out stays in the account menu for this preview shell.");
+    expect(html).toContain("Sign-out and profile writes stay blocked in this preview shell.");
+    expect(html).toContain("myMEDLIFE v1.0");
+    expect(html).not.toContain("Profile Details");
+    expect(html).not.toContain("Read-only profile");
+    expect(html).not.toContain("Next chapter moment");
     expect(html).toContain('href="/app/stories"');
-    expect(html).toContain('href="/app/events?source=profile"');
+    expect(html).toContain('href="/app/events"');
     expect(html).toContain('href="/app/points?source=profile"');
     expect(html).toContain('href="/profile"');
     expect(html).toContain('aria-current="page"');
@@ -247,12 +256,13 @@ describe("member stories and profile pages", () => {
     expect(html).toContain('aria-label="Member bottom navigation"');
     expect(html).not.toContain("Preview Mode — read-only");
     expect(html).not.toContain("Read-only profile");
+    expect(html).not.toContain("Profile Details");
 
     homeSpy.mockRestore();
     previewSpy.mockRestore();
   });
 
-  it("keeps the home-to-profile walkthrough explicit when the member shell opens profile from home", async () => {
+  it("keeps the source-backed mobile profile shell when the member shell opens profile from home", async () => {
     const actorModule = await import("@/services/local-actor-context");
     const dataModule = await import("@/services/read-only-app-data");
 
@@ -270,10 +280,15 @@ describe("member stories and profile pages", () => {
       }),
     );
 
-    expect(html).toContain("Opened from the TEST home walkthrough");
-    expect(html).toContain("Keep home, profile, and the next event in one member flow.");
+    expect(html).toContain("TEST Sofia Alvarez");
+    expect(html).toContain("ID Card");
+    expect(html).toContain("Achievements");
+    expect(html).toContain("Recent Activity");
+    expect(html).toContain("Your Designation");
+    expect(html).toContain("Settings");
+    expect(html).not.toContain("Opened from the TEST home walkthrough");
+    expect(html).not.toContain("Keep home, profile, and the next event in one member flow.");
     expect(html).toContain('href="/app"');
-    expect(html).toContain("Back to Home");
     expect(html).toContain('aria-label="Member bottom navigation"');
     expect(html).toContain('href="/profile"');
   });
@@ -377,13 +392,16 @@ describe("member stories and profile pages", () => {
 
     expect(html).toContain("TEST Sofia Alvarez");
     expect(html).not.toContain("TEST TEST Sofia");
-    expect(html).toContain("Open the next chapter event");
-    expect(html).toContain("Back to Home");
-    expect(html).toContain('href="/app"');
-    expect(html).toContain("Open events");
+    expect(html).toContain("TEST Member ID");
+    expect(html).toContain("TEST Speaker");
+    expect(html).toContain("TEST Season MVP");
+    expect(html).toContain("Switch designation to preview access");
+    expect(html).toContain("View full history");
     expect(html).toContain("Sign out");
-    expect(html).toContain("TEST member ID");
-    expect(html).toContain("member.a@mymedlife.test");
-    expect(html).toContain("None");
+    expect(html).toContain("myMEDLIFE v1.0 · TEST UCLA MEDLIFE");
+    expect(html).not.toContain("Open the next chapter event");
+    expect(html).not.toContain("Back to Home");
+    expect(html).not.toContain("member.a@mymedlife.test");
+    expect(html).not.toContain("Profile Details");
   });
 });
