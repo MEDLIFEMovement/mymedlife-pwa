@@ -127,13 +127,13 @@ describe("staff page", () => {
     expect(html).toContain("College / University Chapter");
     expect(html).toContain("Needs Review");
     expect(html).toContain("Export blocked");
-    expect(html).toContain("pr-[11rem]");
+    expect(html).toContain("pr-[4.5rem]");
     expect(html).toContain("sm:pr-[16rem]");
-    expect(html).toContain("lg:pr-[18rem]");
-    expect(html).toContain("xl:pr-[19rem]");
+    expect(html).toContain("lg:pr-[19rem]");
+    expect(html).toContain("xl:pr-[21rem]");
     expect(html).toContain("pointer-events-none");
     expect(html).toContain(
-      "pointer-events-none ml-auto min-w-0 flex-none items-center justify-end hidden md:flex max-w-[8.5rem] lg:max-w-[10rem] xl:max-w-[11.5rem]",
+      "pointer-events-none ml-auto min-w-0 flex-none items-center justify-end hidden md:flex max-w-[7rem] lg:max-w-[8.5rem] xl:max-w-[10rem] 2xl:max-w-[11.5rem]",
     );
     expect(html).toContain("truncate text-xs font-semibold text-red-300");
     expect(html).not.toContain("w-7 h-7 rounded-full bg-accent flex items-center justify-center text-xs font-bold text-sidebar");
@@ -681,6 +681,17 @@ describe("staff page", () => {
     expect(source).toContain("buildStaffChapterAdminHref(");
     expect(source).toContain('params.set("chapterContext", chapterContext);');
     expect(source).toContain('params.set("adminView", "chapters");');
+  });
+
+  it("shares account-menu clearance with the staff header and truncates the alert pill before the profile chip", () => {
+    const staffSource = readFileSync("src/components/figma-staff-command-center.tsx", "utf8");
+    const accountMenuSource = readFileSync("src/components/workspace-account-menu.tsx", "utf8");
+
+    expect(accountMenuSource).toContain("export const WORKSPACE_ACCOUNT_MENU_SHELL_CLEARANCE");
+    expect(staffSource).toContain("const STAFF_HEADER_ACCOUNT_CLEARANCE = WORKSPACE_ACCOUNT_MENU_SHELL_CLEARANCE;");
+    expect(staffSource).toContain(
+      'hidden md:flex max-w-[7rem] lg:max-w-[8.5rem] xl:max-w-[10rem] 2xl:max-w-[11.5rem]',
+    );
   });
 
   it("keeps the local staff shell close to the 2,095-line Figma export while allowing route wiring", () => {
