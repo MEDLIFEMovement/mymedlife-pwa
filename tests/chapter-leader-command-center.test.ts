@@ -1073,6 +1073,57 @@ describe("chapter leader command center", () => {
     expect(markup).toContain("Selected");
   });
 
+  it("maps every selected committee lane into the matching event follow-through filter", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const baseCommandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "committees",
+      memberId: "member-ivy",
+      committeeId: "committee-events",
+    });
+
+    expect(baseCommandCenter.selectedCommittee).not.toBeNull();
+
+    const cases = [
+      { committeeId: "committee-events", expectedHref: "/leader?view=events&amp;member=member-ivy&amp;eventCommittee=events" },
+      {
+        committeeId: "committee-slt-promotion",
+        expectedHref: "/leader?view=events&amp;member=member-ivy&amp;eventCommittee=slt_promotion",
+      },
+      {
+        committeeId: "committee-recruitment",
+        expectedHref: "/leader?view=events&amp;member=member-ivy&amp;eventCommittee=recruitment",
+      },
+      {
+        committeeId: "committee-fundraising",
+        expectedHref: "/leader?view=events&amp;member=member-ivy&amp;eventCommittee=fundraising",
+      },
+      { committeeId: "committee-service", expectedHref: "/leader?view=events&amp;member=member-ivy&amp;eventCommittee=service" },
+      {
+        committeeId: "committee-communications",
+        expectedHref: "/leader?view=events&amp;member=member-ivy&amp;eventCommittee=comms",
+      },
+      { committeeId: "committee-unknown", expectedHref: "/leader?view=events&amp;member=member-ivy" },
+    ] as const;
+
+    for (const { committeeId, expectedHref } of cases) {
+      const commandCenter = {
+        ...baseCommandCenter,
+        selectedCommitteeId: committeeId,
+        selectedCommittee: baseCommandCenter.selectedCommittee
+          ? {
+              ...baseCommandCenter.selectedCommittee,
+              id: committeeId,
+            }
+          : baseCommandCenter.selectedCommittee,
+      };
+      const markup = renderToStaticMarkup(
+        createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
+      );
+
+      expect(markup).toContain(`href="${expectedHref}"`);
+    }
+  });
+
   it("keeps selected committee owner copy honest when a chair is still unassigned", () => {
     const actor = getMockLocalActorContext("leader.a@mymedlife.test");
     const commandCenter = getChapterLeaderCommandCenter(actor, data, {
@@ -1277,6 +1328,44 @@ describe("chapter leader command center", () => {
       markup.indexOf("Events This Month"),
     );
     expect(markup.indexOf("Event Detail")).toBeLessThan(markup.indexOf("RSVP vs. Actual Attendance Readback"));
+  });
+
+  it("maps every event follow-through filter back into the matching committee review lane", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const baseCommandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "events",
+      memberId: "member-ivy",
+      eventCommittee: "events",
+      eventId: "bc-event-moving-mountains-kickoff",
+    });
+
+    const cases = [
+      { eventCommitteeFilter: "events", expectedCommitteeId: "committee-events" },
+      { eventCommitteeFilter: "slt_promotion", expectedCommitteeId: "committee-slt-promotion" },
+      { eventCommitteeFilter: "recruitment", expectedCommitteeId: "committee-recruitment" },
+      { eventCommitteeFilter: "fundraising", expectedCommitteeId: "committee-fundraising" },
+      { eventCommitteeFilter: "service", expectedCommitteeId: "committee-service" },
+      { eventCommitteeFilter: "comms", expectedCommitteeId: "committee-communications" },
+      { eventCommitteeFilter: "all", expectedCommitteeId: null },
+    ] as const;
+
+    for (const { eventCommitteeFilter, expectedCommitteeId } of cases) {
+      const commandCenter = {
+        ...baseCommandCenter,
+        selectedEventCommitteeFilter: eventCommitteeFilter,
+      };
+      const markup = renderToStaticMarkup(
+        createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
+      );
+
+      if (expectedCommitteeId) {
+        expect(markup).toContain(
+          `href="/leader?view=committees&amp;member=member-ivy&amp;committee=${expectedCommitteeId}"`,
+        );
+      } else {
+        expect(markup).toContain("href=\"/leader?view=committees&amp;member=member-ivy\"");
+      }
+    }
   });
 
   it("maps the leaderboard view to the cross-chapter comparison layout from the mockup", () => {
