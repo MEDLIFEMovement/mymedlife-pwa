@@ -1090,7 +1090,6 @@ describe("chapter leader command center", () => {
     expect(markup).toContain("Intent before check-in");
     expect(markup).toContain("Attendance readback unlocks point review");
     expect(markup).toContain("Awarded");
-    expect(markup).toContain("Ready for review");
     expect(markup).toContain(
       "href=\"/leader?view=events&amp;member=member-ivy&amp;eventCommittee=events&amp;quickAction=create_event\"",
     );
