@@ -106,6 +106,9 @@ describe("member stories and profile pages", () => {
     expect(html).toContain("Instagram preview");
     expect(html).toContain("preview likes");
     expect(html).toContain("preview views");
+    expect(html).toContain("Preview reader");
+    expect(html).toContain("TEST @uconn");
+    expect(html).toContain("Instagram");
     expect(html).toContain("Preview only - reactions, save preview, and source previews stay blocked in this reader.");
     expect(html).toContain("TEST UConn");
   });
