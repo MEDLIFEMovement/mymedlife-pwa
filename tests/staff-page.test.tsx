@@ -289,16 +289,16 @@ describe("staff page", () => {
     expect(source).toContain("Next step: finish consent and coach context here, then open Admin preview for embedded DS audit readback and blocked-control posture before any publishing request.");
     expect(source).toContain("DS Admin audit handoff");
     expect(source).toContain("Review consent and blocked actions here, then open the Admin preview for DS audit readback before any publishing or coach-note approval request.");
-    expect(source).toContain('href="/staff?view=admin&adminView=audit"');
-    expect(source).toContain('href="/staff?view=chapters"');
+    expect(source).toContain('href="/staff?view=admin&adminView=audit&returnView=proof_ugc"');
+    expect(source).toContain('href="/staff?view=proof_ugc"');
     expect(source).toContain("Open Admin preview");
-    expect(source).toContain("Return to chapters");
+    expect(source).toContain("Return to Proof / UGC");
     expect(source).toContain("Embedded Admin review keeps DS directory, audit logs, and blocked controls in the same command-center walkthrough.");
     expect(source).toContain("Admin review approves the next step");
     expect(source).toContain("Click any card to review consent and blocked actions, or open the Admin preview for DS audit readback without leaving the Staff Command Center.");
     expect(source).toContain("Caption and coach-note drafting stays local-only in this preview");
-    expect(source).toContain("Return to chapters after Admin readback to confirm the chapter follow-through in the same staff shell.");
-    expect(source).toContain("Return to chapters after the Admin readback to confirm the chapter follow-through in the same Command Center loop.");
+    expect(source).toContain("Return to Proof / UGC after Admin readback to continue the same review loop in the staff shell.");
+    expect(source).toContain("Return to Proof / UGC after the Admin readback to continue the same Command Center review loop.");
     expect(source).toContain("Next review step");
   });
 
@@ -363,6 +363,14 @@ describe("staff page", () => {
     expect(html).toContain("embedded admin preview from the staff workspace");
     expect(html).toContain("Return to chapters");
     expect(html).not.toContain("Open Admin preview");
+  });
+
+  it("keeps the proof review admin handoff wired to a Proof / UGC return target in source", () => {
+    const source = readFileSync("src/components/figma-staff-command-center.tsx", "utf8");
+
+    expect(source).toContain('href="/staff?view=admin&adminView=audit&returnView=proof_ugc"');
+    expect(source).toContain("resolveStaffAdminReturnScreen");
+    expect(source).toContain('return screen === "ugc" ? "Proof / UGC" : "chapters";');
   });
 
   it("keeps chapter-detail NPS controls preview-only instead of implying a live send", () => {
@@ -456,7 +464,7 @@ describe("staff page", () => {
     const lineCount = source.split("\n").length;
 
     expect(lineCount).toBeGreaterThanOrEqual(2170);
-    expect(lineCount).toBeLessThanOrEqual(2425);
+    expect(lineCount).toBeLessThanOrEqual(2465);
     expect(source).toContain("type Screen = \"chapters\" | \"campaigns\" | \"events\" | \"ugc\" | \"reports\" | \"admin\" | \"best-practices\" | \"sops\";");
     expect(source).toContain("const NAV_ITEMS");
     expect(source).toContain("function PortfolioOverview");
