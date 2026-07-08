@@ -10,6 +10,11 @@ This document translates the repo-truth story package into PR-sized slices while
 keeping shell/UI progress, QA progress, data/write readiness, and rollout proof
 separate.
 
+Event-loop companion packet:
+
+- `docs/user-stories/narrow-launch-event-loop-truth.md`
+- `docs/user-stories/narrow-launch-event-loop-gap-sequence.md`
+
 ## Current PR Context
 
 Coordinator's fresh live truth for this refresh:
@@ -18,7 +23,7 @@ Coordinator's fresh live truth for this refresh:
 - Member queue: `#523` is rerunning, with `#536` rerunning behind it.
 - Leader queue: `#545` is clean behind-only, and `#547` is Codecov-only red.
 - Staff/Admin queue: `#522` is clean, with `#521`, `#534`, and `#538` fully
-  green and behind-only.
+  green and behind-only, plus the broader continuity PR `#550`.
 
 Those PRs are active coordination context, not implementation truth until they
 land on `main`.
@@ -64,7 +69,7 @@ land on `main`.
 | DB-010 | `#3` | `gpt-5.4` medium/high | Staff Proof / UGC | active queue / preview-only | Let `#522` land first; then review queue next-step clarity and Proof/UGC handoff copy can continue if source drift remains. | `Scope/UI`, `QA/Ops` | No proof ingestion, consent approval, publish, social/provider sync, or production evidence claims. |
 | DB-011 | `#3` | `gpt-5.4` medium | Staff/Admin walkthrough | partial | Renato-facing staff/admin walkthrough continuity: staff top nav, embedded dark Admin, back affordance, admin menu family. | `Scope/UI`, `QA/Ops` | No live admin/provider writes, secrets, user/role/chapter mutations, or launch gate advancement. |
 | DB-012 | `#3` | `gpt-5.4` medium | Admin integrations/API/MCP | preview-only | Keep provider/API/MCP verbs masked, blocked, or preview-only with TEST sample content. | `Scope/UI`, `QA/Ops` | No API key reveal/copy/rotate/revoke, MCP connect, provider test/send, or production readiness claims. |
-| DB-013 | `#4` | `gpt-5.3-codex-spark` or `gpt-5.4-mini` | PR board watch | ongoing | Watch `#523/#536`, `#545/#547`, and `#522/#521/#534/#538`; call out behind-only vs failing vs blocked without treating draft branches as merged truth. | `QA/Ops` only when tied to checks | No implementation, matrix edits, rollout proof claims, or provider access. |
+| DB-013 | `#4` | `gpt-5.3-codex-spark` or `gpt-5.4-mini` | PR board watch | ongoing | Watch `#523/#536`, `#545/#547`, and `#522/#521/#534/#538/#550`; call out behind-only vs failing vs blocked without treating draft branches as merged truth. | `QA/Ops` only when tied to checks | No implementation, matrix edits, rollout proof claims, or provider access. |
 | DB-014 | `#4` | `gpt-5.4-mini` | Three-shell visual QA | needs current pass | Verify TEST labels, no silent controls, and shell-specific source fidelity after each shell PR. | `QA/Ops` | QA screenshots alone do not prove production readiness. |
 | DB-015 | `#5` | `gpt-5.5` medium | Story/backlog truth | this lane | Refresh story package, delivery backlog, and stale-steering notes after each merge wave. | none from docs alone | No product code, no matrix edits, no rollout proof capture. |
 | DB-016 | Data/Safety | `gpt-5.5` medium | Production signed-in proof readiness | partial / staged | Confirm tooling separates real production accounts from preview cookies/TEST actors. | `Data/Auth`, `QA/Ops` if tested | No production account creation or proof rows without approval. |
@@ -107,6 +112,11 @@ If the current queue settles cleanly, the next strongest shell queue is:
 If only one builder can move first, prioritize `#1 DB-001`; it is the clearest
 narrow-launch user path and connects directly to the rollout-critical event and
 points proof that still cannot be claimed from UI alone.
+
+Use the event-loop companion packet before assigning DB-001, DB-007, DB-017, or
+DB-020 so the builder and reviewer do not confuse route-backed preview, local
+readback tests, staging proof, production signed-in proof, and rollout-gate
+proof.
 
 ## Matrix Recommendation
 
