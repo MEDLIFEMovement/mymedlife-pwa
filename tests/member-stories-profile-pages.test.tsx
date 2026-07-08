@@ -122,7 +122,7 @@ describe("member stories and profile pages", () => {
     );
 
     const { default: ProfilePage } = await import("@/app/profile/page");
-    const html = renderToStaticMarkup(await ProfilePage());
+    const html = renderToStaticMarkup(await ProfilePage({}));
 
     expect(html).toContain("Hi, TEST Sofia");
     expect(html).toContain("TEST Sofia Alvarez");
@@ -136,6 +136,30 @@ describe("member stories and profile pages", () => {
     expect(html).toContain('href="/app/stories"');
     expect(html).toContain('href="/app/events?source=profile"');
     expect(html).toContain('href="/app/points?source=profile"');
+  });
+
+  it("keeps the home-to-profile walkthrough explicit when the member shell opens profile from home", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const dataModule = await import("@/services/read-only-app-data");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("member.a@mymedlife.test"),
+    );
+    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
+      getMockReadOnlyAppData("Testing home-to-profile continuity."),
+    );
+
+    const { default: ProfilePage } = await import("@/app/profile/page");
+    const html = renderToStaticMarkup(
+      await ProfilePage({
+        searchParams: Promise.resolve({ source: "home" }),
+      }),
+    );
+
+    expect(html).toContain("Opened from the TEST home walkthrough");
+    expect(html).toContain("Keep home, profile, and the next event in one member flow.");
+    expect(html).toContain('href="/app"');
+    expect(html).toContain("Back to Home");
   });
 
   it("keeps already-labeled profile content stable and falls back cleanly when no next event is present", () => {

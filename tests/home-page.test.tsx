@@ -75,7 +75,7 @@ describe("home page", () => {
     expect(html).toContain('href="/app/events/chapter-event-lakeside-welcome?source=home"');
     expect(html).toContain('href="/app/points?source=home"');
     expect(html).toContain('href="/app/stories"');
-    expect(html).toContain('href="/profile"');
+    expect(html).toContain('href="/profile?source=home"');
     expect(html).not.toContain("Local preview tools");
     expect(html).not.toContain('href="/slt-prep"');
     expect(html).not.toContain('href="/app/slt-prep?source=home"');

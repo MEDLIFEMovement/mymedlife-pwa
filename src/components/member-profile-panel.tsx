@@ -11,6 +11,7 @@ import { PanelButton, SurfacePanel, StatCard } from "@/components/visual-primiti
 type MemberProfilePanelProps = {
   chapterName: string;
   displayName: string;
+  entrySource?: "home" | null;
   workspace: ProfileWorkspace;
   studentHome: MvpMemberHome;
   recognition: MemberRecognitionSummary;
@@ -19,6 +20,7 @@ type MemberProfilePanelProps = {
 export function MemberProfilePanel({
   chapterName,
   displayName,
+  entrySource = null,
   workspace,
   studentHome,
   recognition,
@@ -102,6 +104,29 @@ export function MemberProfilePanel({
               </ul>
             </div>
           </SurfacePanel>
+
+          {entrySource ? (
+            <SurfacePanel tone="info" className="mt-4">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <div className="max-w-2xl">
+                  <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-[#2563eb]">
+                    Opened from the TEST home walkthrough
+                  </p>
+                  <h2 className="mt-2 text-xl font-semibold leading-tight text-slate-950">
+                    Keep home, profile, and the next event in one member flow.
+                  </h2>
+                  <p className="mt-2 text-sm leading-6 text-slate-600">
+                    Home sent you here to confirm your TEST chapter scope and role without
+                    leaving the student shell. Keep profile read-only, then step back into
+                    the next event or points move when you are ready.
+                  </p>
+                </div>
+                <PanelButton href={launchLaneHomeHref} variant="secondary" className="w-fit">
+                  Back to Home
+                </PanelButton>
+              </div>
+            </SurfacePanel>
+          ) : null}
 
           <div className="mt-4 grid gap-2 sm:grid-cols-3">
             <ProfileHeroCard
