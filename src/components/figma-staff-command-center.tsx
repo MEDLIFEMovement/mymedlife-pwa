@@ -1369,6 +1369,30 @@ function ProofUGCQueue() {
       {/* Left: queue */}
       <div className="flex-1 min-w-0 flex flex-col gap-4">
 
+        <div className="bg-white rounded-xl border border-border p-4">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+            <div>
+              <div className="text-sm font-semibold text-foreground">
+                Proof / UGC review stays visible, but moderation writes stay blocked
+              </div>
+              <div className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                Use this queue to review TEST story context, consent posture, share targets, and the next Admin audit handoff before any publishing, note save, provider ingest, or moderation write is approved.
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <span className="rounded-full border border-border bg-slate-50 px-3 py-1 text-[11px] font-semibold text-slate-700">
+                Read-only preview
+              </span>
+              <span className="rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-[11px] font-semibold text-amber-700">
+                Blocked moderation writes
+              </span>
+              <span className="rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-[11px] font-semibold text-sky-700">
+                Source-backed Admin handoff
+              </span>
+            </div>
+          </div>
+        </div>
+
         {/* Link paste bar */}
         <div className="bg-white rounded-xl border border-border p-4">
           <div className="flex items-center gap-2 mb-3">
@@ -1586,6 +1610,18 @@ function ProofUGCQueue() {
             </div>
 
             <div className="p-4 space-y-4">
+              <div className="flex flex-wrap gap-2">
+                <span className="rounded-full border border-border bg-slate-50 px-2.5 py-1 text-[10px] font-semibold text-slate-700">
+                  Read-only preview
+                </span>
+                <span className="rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-[10px] font-semibold text-amber-700">
+                  No moderation save
+                </span>
+                <span className="rounded-full border border-sky-200 bg-sky-50 px-2.5 py-1 text-[10px] font-semibold text-sky-700">
+                  DS Admin audit handoff
+                </span>
+              </div>
+
               {/* Consent */}
               <div>
                 <div className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Consent & Visibility</div>
@@ -1681,6 +1717,9 @@ function ProofUGCQueue() {
               </div>
             ))}
           </div>
+          <p className="mt-3 text-[10px] leading-relaxed text-muted-foreground">
+            Next step: review consent and blocked actions here, then open the Admin preview for DS audit readback before any publishing or coach-note approval request.
+          </p>
         </div>
       </div>
     </div>
