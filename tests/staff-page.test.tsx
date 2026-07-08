@@ -286,13 +286,13 @@ describe("staff page", () => {
     expect(source).toContain("TEST Best Practice: QR Lead Capture");
     expect(source).toContain("External source links are blocked in this preview");
     expect(source).toContain("Proof sharing is blocked until feed publishing approval is complete");
-    expect(source).toContain("Next step: finish consent and coach context here, then open Admin review for audit and blocked-control posture before any publishing request.");
+    expect(source).toContain("Next step: finish consent and coach context here, then open Admin preview for DS audit readback and blocked-control posture before any publishing request.");
     expect(source).toContain("DS Admin audit handoff");
     expect(source).toContain("Next step: review consent and blocked actions here, then open the Admin preview for DS audit readback before any publishing or coach-note approval request.");
     expect(source).toContain('href="/staff?view=admin&adminView=audit"');
     expect(source).toContain("Open Admin preview");
     expect(source).toContain("Admin review approves the next step");
-    expect(source).toContain("Click any card to review consent and blocked actions, or use the Admin tab for DS preview.");
+    expect(source).toContain("Click any card to review consent and blocked actions, or open the Admin preview for DS audit readback.");
     expect(source).toContain("Caption and coach-note drafting stays local-only in this preview");
   });
 
