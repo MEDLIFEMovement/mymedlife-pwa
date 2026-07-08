@@ -240,6 +240,7 @@ function Sidebar({
   backLabel?: string;
 }) {
   const isEmbeddedPreview = Boolean(onBack);
+  const embeddedReviewCopy = getEmbeddedAdminReviewCopy(backLabel);
 
   return (
     <aside className="fixed left-0 top-0 h-screen w-[220px] bg-[#090d12] border-r border-white/[0.05] flex flex-col z-40">
@@ -258,7 +259,7 @@ function Sidebar({
               {`Return to ${backLabel}`}
             </div>
             <div className="mt-1 inline-flex items-center rounded-full border border-sky-500/15 bg-sky-500/10 px-1.5 py-0.5 text-[9px] font-mono uppercase tracking-[0.14em] text-sky-300">
-              Staff review handoff
+              {embeddedReviewCopy.badge}
             </div>
           </div>
         </button>
@@ -273,7 +274,7 @@ function Sidebar({
             <div className="text-[10px] text-slate-500 font-mono tracking-wider">DS Admin · v2.4</div>
             {isEmbeddedPreview ? (
               <div className="mt-1 inline-flex items-center rounded-full border border-sky-500/20 bg-sky-500/10 px-2 py-0.5 text-[9px] font-mono uppercase tracking-[0.16em] text-sky-300">
-                Embedded Admin Review
+                {embeddedReviewCopy.label}
               </div>
             ) : null}
           </div>
@@ -328,17 +329,49 @@ function Sidebar({
             <div className="text-[10px] text-slate-600 font-mono">Super Admin</div>
             <div className="mt-1 text-[9px] text-slate-500">
               {isEmbeddedPreview
-                ? "Return with Command Center after this review pass, or use the top-right menu to switch workspaces or log out."
+                ? embeddedReviewCopy.footer
                 : "Use the top-right menu to switch workspaces or log out."}
             </div>
           </div>
           <span className="rounded border border-white/[0.06] px-1.5 py-0.5 text-[9px] font-mono uppercase tracking-wider text-slate-600">
-            {isEmbeddedPreview ? "Staff review" : "Account menu"}
+            {isEmbeddedPreview ? embeddedReviewCopy.tag : "Account menu"}
           </span>
         </div>
       </div>
     </aside>
   );
+}
+
+function getEmbeddedAdminReviewCopy(backLabel: string) {
+  const normalized = backLabel.trim().toLowerCase();
+
+  if (normalized === "proof / ugc") {
+    return {
+      badge: "Proof review handoff",
+      label: "Embedded Proof Review",
+      footer:
+        "Return with Command Center after this Proof / UGC review pass, or use the top-right menu to switch workspaces or log out.",
+      tag: "Proof review",
+    };
+  }
+
+  if (normalized === "this chapter" || normalized === "chapters") {
+    return {
+      badge: "Chapter review handoff",
+      label: "Embedded Chapter Review",
+      footer:
+        "Return with Command Center after this chapter review pass, or use the top-right menu to switch workspaces or log out.",
+      tag: "Chapter review",
+    };
+  }
+
+  return {
+    badge: "Staff review handoff",
+    label: "Embedded Admin Review",
+    footer:
+      "Return with Command Center after this review pass, or use the top-right menu to switch workspaces or log out.",
+    tag: "Staff review",
+  };
 }
 
 function Header({ title, subtitle, isEmbeddedPreview = false }: { title: string; subtitle?: string; isEmbeddedPreview?: boolean }) {
