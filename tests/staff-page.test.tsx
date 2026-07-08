@@ -274,6 +274,11 @@ describe("staff page", () => {
 
     expect(html).toContain("Story link ingestion is blocked until proof-review writes are approved");
     expect(html).toContain("provider fetch and queue writes are blocked in this preview");
+    expect(html).toContain("Proof / UGC review stays visible, but moderation writes stay blocked");
+    expect(html).toContain("Use this queue to review TEST story context, consent posture, share targets, and the next Admin audit handoff before any publishing, note save, provider ingest, or moderation write is approved.");
+    expect(html).toContain("Read-only preview");
+    expect(html).toContain("Blocked moderation writes");
+    expect(html).toContain("Source-backed Admin handoff");
     expect(html).toContain("Approved (2)");
     expect(html).toContain("Submit blocked");
     expect(html).toContain("TEST Rush Month tabling");
@@ -281,11 +286,13 @@ describe("staff page", () => {
     expect(source).toContain("TEST Best Practice: QR Lead Capture");
     expect(source).toContain("External source links are blocked in this preview");
     expect(source).toContain("Proof sharing is blocked until feed publishing approval is complete");
-    expect(source).toContain("Next step: finish consent and coach context here, then open Admin review for audit and blocked-control posture before any publishing request.");
+    expect(source).toContain("Next step: finish consent and coach context here, then open Admin preview for DS audit readback and blocked-control posture before any publishing request.");
+    expect(source).toContain("DS Admin audit handoff");
+    expect(source).toContain("Next step: review consent and blocked actions here, then open the Admin preview for DS audit readback before any publishing or coach-note approval request.");
     expect(source).toContain('href="/staff?view=admin&adminView=audit"');
     expect(source).toContain("Open Admin preview");
     expect(source).toContain("Admin review approves the next step");
-    expect(source).toContain("Click any card to review consent and blocked actions, or use the Admin tab for DS preview.");
+    expect(source).toContain("Click any card to review consent and blocked actions, or open the Admin preview for DS audit readback.");
     expect(source).toContain("Caption and coach-note drafting stays local-only in this preview");
   });
 
@@ -440,7 +447,7 @@ describe("staff page", () => {
     const lineCount = source.split("\n").length;
 
     expect(lineCount).toBeGreaterThanOrEqual(2170);
-    expect(lineCount).toBeLessThanOrEqual(2335);
+    expect(lineCount).toBeLessThanOrEqual(2400);
     expect(source).toContain("type Screen = \"chapters\" | \"campaigns\" | \"events\" | \"ugc\" | \"reports\" | \"admin\" | \"best-practices\" | \"sops\";");
     expect(source).toContain("const NAV_ITEMS");
     expect(source).toContain("function PortfolioOverview");
