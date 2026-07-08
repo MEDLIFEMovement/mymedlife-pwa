@@ -2040,7 +2040,16 @@ function AdminHealth() {
 
 type AdminRole = "ds-admin" | "super-admin";
 
-function AdminRouteBlocked({ onBack, backLabel }: { onBack: () => void; backLabel: string }) {
+function AdminRouteBlocked({
+  onBack,
+  backLabel,
+  chapterContext,
+}: {
+  onBack: () => void;
+  backLabel: string;
+  chapterContext?: string | null;
+}) {
+  const contextLabel = getStaffAdminContextLabel(backLabel, chapterContext);
   return (
     <div className="flex-1 flex items-center justify-center bg-[#0d1117]">
       <div className="w-full max-w-sm text-center space-y-6">
@@ -2063,6 +2072,11 @@ function AdminRouteBlocked({ onBack, backLabel }: { onBack: () => void; backLabe
         <div className="bg-[#161b22] border border-white/[0.08] rounded-xl p-5 text-left">
           <p className="text-[11px] text-slate-600 font-mono uppercase tracking-wider mb-2">Current posture</p>
           <p className="text-[12px] text-slate-400 leading-relaxed">Admin controls stay route-backed and visible for review, but this actor cannot open the embedded admin preview from the staff workspace.</p>
+          {contextLabel ? (
+            <div className="mt-3 rounded-lg border border-sky-500/15 bg-sky-500/10 px-3 py-2 text-[11px] text-sky-300">
+              {contextLabel}
+            </div>
+          ) : null}
         </div>
 
         <button
@@ -2080,12 +2094,15 @@ function AdminRoleGate({
   onGrant,
   onBack,
   backLabel,
+  chapterContext,
 }: {
   onGrant: (role: AdminRole) => void;
   onBack: () => void;
   backLabel: string;
+  chapterContext?: string | null;
 }) {
   const [picked, setPicked] = useState<AdminRole>("ds-admin");
+  const contextLabel = getStaffAdminContextLabel(backLabel, chapterContext);
 
   return (
     <div className="flex-1 flex items-center justify-center bg-[#0d1117]">
@@ -2104,6 +2121,11 @@ function AdminRoleGate({
             <span className="text-sky-400 font-semibold">Super Admin</span> roles only.
             All deeper admin actions stay logged, audited, and blocked or read-only unless the shell explicitly says otherwise.
           </p>
+          {contextLabel ? (
+            <div className="mt-3 inline-flex max-w-full items-center rounded-full border border-sky-500/15 bg-sky-500/10 px-3 py-1 text-[10px] font-mono text-sky-300">
+              {contextLabel}
+            </div>
+          ) : null}
         </div>
 
         {/* Role selector */}
@@ -2183,26 +2205,33 @@ type FigmaStaffCommandCenterProps = {
   canAccessAdminPanel?: boolean;
   initialView?: string;
   initialCampaign?: string | null;
+  initialRouteParams?: Partial<
+    Record<"view" | "campaign" | "chapter" | "ugcCard" | "returnView" | "chapterContext", string | null | undefined>
+  >;
 };
 
 export function FigmaStaffCommandCenter({
   canAccessAdminPanel = false,
   initialView,
   initialCampaign = null,
+  initialRouteParams,
 }: FigmaStaffCommandCenterProps = {}) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const activeScreen = resolveStaffShellScreen(searchParams.get("view") ?? initialView ?? null);
-  const selectedChapterId = searchParams.get("chapter");
+  const getRouteParam = (key: "view" | "campaign" | "chapter" | "ugcCard" | "returnView" | "chapterContext") =>
+    searchParams.get(key) ?? initialRouteParams?.[key] ?? null;
+  const activeScreen = resolveStaffShellScreen(getRouteParam("view") ?? initialView ?? null);
+  const selectedChapterId = getRouteParam("chapter");
   const selectedChapter =
     activeScreen === "chapters" && selectedChapterId
       ? CHAPTERS.find((chapter) => chapter.id === selectedChapterId) ?? null
       : null;
   const adminReturnScreen =
-    activeScreen === "admin" ? resolveStaffAdminReturnScreen(searchParams.get("returnView")) : "chapters";
+    activeScreen === "admin" ? resolveStaffAdminReturnScreen(getRouteParam("returnView")) : "chapters";
   const adminReturnChapterId =
-    activeScreen === "admin" && adminReturnScreen === "chapters" ? searchParams.get("chapter") : null;
+    activeScreen === "admin" && adminReturnScreen === "chapters" ? getRouteParam("chapter") : null;
+  const adminChapterContext = activeScreen === "admin" ? getRouteParam("chapterContext") : null;
   const adminBackLabel = getStaffAdminReturnLabel(adminReturnScreen, adminReturnChapterId);
 
   // SOP Builder sub-navigation
@@ -2327,9 +2356,10 @@ export function FigmaStaffCommandCenter({
               onGrant={(role) => setAdminRole(role)}
               onBack={handleAdminBack}
               backLabel={adminBackLabel}
+              chapterContext={adminChapterContext}
             />
           ) : (
-            <AdminRouteBlocked onBack={handleAdminBack} backLabel={adminBackLabel} />
+            <AdminRouteBlocked onBack={handleAdminBack} backLabel={adminBackLabel} chapterContext={adminChapterContext} />
           )
         )}
 
@@ -2404,6 +2434,14 @@ function resolveStaffAdminReturnScreen(view: string | null): Extract<Screen, "ch
 function getStaffAdminReturnLabel(screen: Extract<Screen, "chapters" | "ugc">, chapterId?: string | null) {
   if (screen === "ugc") return "Proof / UGC";
   return chapterId ? "this chapter" : "chapters";
+}
+
+function getStaffAdminContextLabel(backLabel: string, chapterContext?: string | null) {
+  if (!chapterContext) return null;
+  if (backLabel === "Proof / UGC") {
+    return `Proof review context: ${chapterContext}`;
+  }
+  return `Chapter review context: ${chapterContext}`;
 }
 
 function getStaffShellViewParam(screen: Screen): string {

@@ -369,6 +369,30 @@ describe("staff page", () => {
     expect(html).not.toContain("Open Admin preview");
   });
 
+  it("keeps chapter review context visible when admin access is blocked from a chapter-linked handoff", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("general.staff@mymedlife.test"),
+    );
+
+    const { default: StaffPage } = await import("@/app/staff/page");
+    const html = renderToStaticMarkup(
+      await StaffPage({
+        searchParams: Promise.resolve({
+          view: "admin",
+          adminView: "chapters",
+          returnView: "chapters",
+          chapter: "chapter-test",
+          chapterContext: "TEST Boston College",
+        }),
+      }),
+    );
+
+    expect(html).toContain("Chapter review context: TEST Boston College");
+    expect(html).toContain("Return to this chapter");
+  });
+
   it("keeps the proof review admin handoff wired to a Proof / UGC return target in source", () => {
     const source = readFileSync("src/components/figma-staff-command-center.tsx", "utf8");
 
@@ -469,12 +493,36 @@ describe("staff page", () => {
     expect(source).toContain("Previewing as");
   });
 
+  it("keeps proof review context visible in the admin role gate before opening the embedded admin shell", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("super.admin@mymedlife.test"),
+    );
+
+    const { default: StaffPage } = await import("@/app/staff/page");
+    const html = renderToStaticMarkup(
+      await StaffPage({
+        searchParams: Promise.resolve({
+          view: "admin",
+          adminView: "audit",
+          returnView: "proof_ugc",
+          ugcCard: "ugc4",
+          chapterContext: "TEST Stanford University",
+        }),
+      }),
+    );
+
+    expect(html).toContain("Proof review context: TEST Stanford University");
+    expect(html).toContain("Return to Proof / UGC");
+  });
+
   it("keeps the local staff shell close to the 2,095-line Figma export while allowing route wiring", () => {
     const source = readFileSync("src/components/figma-staff-command-center.tsx", "utf8");
     const lineCount = source.split("\n").length;
 
     expect(lineCount).toBeGreaterThanOrEqual(2170);
-    expect(lineCount).toBeLessThanOrEqual(2555);
+    expect(lineCount).toBeLessThanOrEqual(2605);
     expect(source).toContain("type Screen = \"chapters\" | \"campaigns\" | \"events\" | \"ugc\" | \"reports\" | \"admin\" | \"best-practices\" | \"sops\";");
     expect(source).toContain("const NAV_ITEMS");
     expect(source).toContain("function PortfolioOverview");

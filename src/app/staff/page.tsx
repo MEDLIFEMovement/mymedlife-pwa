@@ -53,6 +53,14 @@ export default async function StaffPage({ searchParams }: StaffPageProps) {
         canAccessAdminPanel={canAccessAdminWorkspace(actor)}
         initialView={resolvedSearchParams?.view}
         initialCampaign={resolvedSearchParams?.campaign}
+        initialRouteParams={{
+          view: resolvedSearchParams?.view,
+          campaign: resolvedSearchParams?.campaign,
+          chapter: resolvedSearchParams?.chapter,
+          ugcCard: resolvedSearchParams?.ugcCard,
+          returnView: resolvedSearchParams?.returnView,
+          chapterContext: resolvedSearchParams?.chapterContext,
+        }}
       />
     </>
   );
