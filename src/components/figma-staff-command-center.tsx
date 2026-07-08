@@ -2432,7 +2432,9 @@ export function FigmaStaffCommandCenter({
         ? adminReturnChapterId
           ? buildStaffChapterHref(adminReturnChapterId, pathname, currentRouteSearch)
           : buildStaffShellHref("chapters", pathname, currentRouteSearch)
-        : null
+        : adminReturnScreen === "ugc"
+          ? buildStaffProofHref(pathname, currentRouteSearch, getRouteParam("ugcCard"))
+          : null
       : null;
   const chapterDrawerProofQueueContext =
     activeScreen === "chapters"
