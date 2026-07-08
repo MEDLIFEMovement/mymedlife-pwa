@@ -81,7 +81,7 @@ describe("SLT Prep routes", () => {
 
     const { default: AppSltPrepPage } = await import("@/app/app/slt-prep/page");
 
-    await expect(AppSltPrepPage()).rejects.toThrow(
+    await expect(AppSltPrepPage({})).rejects.toThrow(
       "NEXT_REDIRECT:/login?redirectTo=%2Fapp%2Fslt-prep",
     );
   });
@@ -91,7 +91,7 @@ describe("SLT Prep routes", () => {
     await primeSignedInActor("traveler.a@mymedlife.test");
 
     const { default: AppSltPrepPage } = await import("@/app/app/slt-prep/page");
-    const html = renderToStaticMarkup(await AppSltPrepPage());
+    const html = renderToStaticMarkup(await AppSltPrepPage({}));
 
     expect(html).toContain('href="/app/stories"');
     expect(html).toContain('href="/app/events"');

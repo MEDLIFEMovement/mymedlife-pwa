@@ -11,7 +11,7 @@ type MemberSltPrepAliasPageProps = {
 };
 
 export default async function MemberSltPrepAliasPage(
-  props: MemberSltPrepAliasPageProps = {},
+  props: MemberSltPrepAliasPageProps,
 ) {
   const query = (await props.searchParams) ?? {};
 
