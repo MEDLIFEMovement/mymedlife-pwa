@@ -92,7 +92,7 @@ describe("admin master data page", () => {
     expect(html).not.toContain("Fake users");
   });
 
-  it("drops the chapter TEST badge when the chapter inventory is read-only live-shaped data", async () => {
+  it("keeps TEST labels but drops the chapter preview badge when the chapter inventory is read-only live-shaped data", async () => {
     const actorModule = await import("@/services/local-actor-context");
     const dataModule = await import("@/services/read-only-app-data");
 

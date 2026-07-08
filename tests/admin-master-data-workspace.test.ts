@@ -1,7 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { campaignShells } from "@/data/mock-campaigns";
 import { getAdminMasterDataWorkspace } from "@/services/admin-master-data-workspace";
-import { getMockLocalActorContext } from "@/services/local-actor-context";
+import {
+  getMockLocalActorContext,
+  localActorOptions,
+} from "@/services/local-actor-context";
 import { getMockReadOnlyAppData } from "@/services/read-only-app-data";
 
 const data = getMockReadOnlyAppData("Testing admin master data workspace.");
@@ -47,6 +50,24 @@ describe("admin master data workspace", () => {
     expect(
       workspace.roles.find((role) => role.role === "President / VP")?.detail,
     ).toContain("TEST Priya President previews President / VP permissions locally.");
+    expect(workspace.users.find((user) => user.email === "leader.a@mymedlife.test")).toEqual(
+      expect.objectContaining({
+        displayName: "TEST Priya President",
+        chapterNames: ["TEST UCLA MEDLIFE"],
+      }),
+    );
+    expect(workspace.chapters[0]).toEqual(
+      expect.objectContaining({
+        name: "TEST UCLA MEDLIFE",
+        campus: "TEST UCLA",
+        coachName: "TEST Renato Coach",
+      }),
+    );
+    expect(workspace.campaignTemplates[0]).toEqual(
+      expect.objectContaining({
+        name: "TEST Rush Month",
+      }),
+    );
   });
 
   it("keeps DS Admin eligible but routed back to safety review", () => {
@@ -107,5 +128,42 @@ describe("admin master data workspace", () => {
     expect(
       workspace.roles.find((role) => role.role === "President / VP")?.detail,
     ).toContain("TEST Priya President previews President / VP permissions locally.");
+  });
+
+  it("does not double-prefix TEST labels when seed data is already marked", () => {
+    const actor = getMockLocalActorContext("admin@mymedlife.test");
+    const workspace = getAdminMasterDataWorkspace(
+      actor,
+      {
+        ...data,
+        chapter: {
+          ...data.chapter,
+          name: "TEST UCLA MEDLIFE",
+          campus: "TEST UCLA",
+          coachName: "TEST Renato Coach",
+        },
+      },
+      [
+        {
+          ...localActorOptions.find((option) => option.email === "leader.a@mymedlife.test")!,
+          displayName: "TEST Priya President",
+          chapterNames: ["TEST UCLA MEDLIFE"],
+        },
+      ],
+    );
+
+    expect(workspace.users[0]).toEqual(
+      expect.objectContaining({
+        displayName: "TEST Priya President",
+        chapterNames: ["TEST UCLA MEDLIFE"],
+      }),
+    );
+    expect(workspace.chapters[0]).toEqual(
+      expect.objectContaining({
+        name: "TEST UCLA MEDLIFE",
+        campus: "TEST UCLA",
+        coachName: "TEST Renato Coach",
+      }),
+    );
   });
 });

@@ -135,11 +135,11 @@ function getUserInventory(
     audience: actor.audience,
     chapterRoles: actor.chapterRoles,
     staffRoles: actor.staffRoles,
-    chapterNames: actor.chapterNames,
-    coachPortfolioChapterNames: actor.coachPortfolioChapterNames,
+    chapterNames: actor.chapterNames.map(asTestLabel),
+    coachPortfolioChapterNames: actor.coachPortfolioChapterNames.map(asTestLabel),
     status: "mock_only",
     detail:
-      "Fake local review persona. Replace with Supabase Auth profile data only after production auth approval.",
+      "TEST local review persona. Replace with Supabase Auth profile data only after production auth approval.",
   }));
 }
 
@@ -176,7 +176,7 @@ function getCampaignTemplateInventory(): readonly AdminCampaignTemplateInventory
     integrationPosture: shell.integrationPosture,
     adminStatus: "ready_readonly",
     detail:
-      "Read-only campaign shell. Template editing stays disabled until campaign admin writes are approved.",
+      "Read-only TEST campaign shell. Template editing stays disabled until campaign admin writes are approved.",
   }));
 }
 

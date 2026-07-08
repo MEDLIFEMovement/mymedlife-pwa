@@ -162,9 +162,9 @@ export function getAdminControlCenterSummary(
       key: "campaign_templates",
       title: "Campaign templates",
       status: "ready_readonly",
-      primaryMetric: `${campaignShells.length} shells`,
+      primaryMetric: `${campaignShells.length} TEST shells`,
       detail:
-        "Rush Month plus reusable campaign shells are visible as read-only operating templates.",
+        "TEST Rush Month plus reusable TEST campaign shells are visible as read-only operating templates.",
       nextAction:
         "Keep campaign template editing disabled until campaign admin writes are explicitly approved.",
     },
@@ -266,7 +266,7 @@ function getAdminMasterDataInventory(
       integrationPosture: shell.integrationPosture,
       adminStatus: "ready_readonly",
       detail:
-        "Read-only campaign shell. Template editing stays disabled until campaign admin writes are approved.",
+        "Read-only TEST campaign shell. Template editing stays disabled until campaign admin writes are approved.",
     })),
     mutationControlsEnabled: 0,
     externalWritesExpected: 0,
