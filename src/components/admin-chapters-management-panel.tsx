@@ -135,13 +135,15 @@ export function AdminChaptersManagementPanel({
               Manage chapter records, coach ownership, staff scope, student
               leaders, enabled launch modules, and archive/delete safeguards.
               Events, attendance, and points history are preserved by default.
+              Return to the Command Center after this chapter review pass to
+              keep the embedded DS Admin walkthrough coherent.
             </p>
           </div>
           <a
             href="/admin"
             className="rounded-md border border-white/10 px-4 py-2 text-sm font-semibold text-slate-200 hover:bg-white/5"
           >
-            Back to Admin
+            Return to Command Center
           </a>
         </header>
 

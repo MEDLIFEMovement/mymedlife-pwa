@@ -51,6 +51,7 @@ describe("admin management pages", () => {
     );
 
     expect(html).toContain("User Access Management");
+    expect(html).toContain("Return to Command Center");
     expect(html).toContain("Search name or email");
     expect(html).toContain("TEST Sofia Alvarez");
     expect(html).toContain("TEST Sofia, TEST coach, medlife.test");
@@ -122,6 +123,7 @@ describe("admin management pages", () => {
     );
 
     expect(html).toContain("Chapter Management");
+    expect(html).toContain("Return to Command Center");
     expect(html).toContain("TEST UCLA MEDLIFE");
     expect(html).toContain("TEST UCLA");
     expect(html).toContain("TEST West Coast");
@@ -302,6 +304,7 @@ describe("admin management pages", () => {
     expect(html).toContain("Managed Directory Access");
     expect(html).toContain("General Student App");
     expect(html).toContain("Student Command Center");
+    expect(html).toContain("Return to Command Center");
     expect(html).toContain("Failed unauthorized admin attempt");
     expect(html).toContain("Sensitive preview access");
     expect(html).toContain("access.denied");
