@@ -135,10 +135,14 @@ describe("member stories and profile pages", () => {
     expect(html).toContain("No profile save runs from this route.");
     expect(html).toContain("No join request, role approval, membership change, or coach assignment runs from this route.");
     expect(html).toContain('href="/app"');
+    expect(html).toContain('aria-label="Member bottom navigation"');
     expect(html).toContain("Back to Home");
+    expect(html).toContain('href="/app/stories"');
     expect(html).toContain('href="/app/stories"');
     expect(html).toContain('href="/app/events?source=profile"');
     expect(html).toContain('href="/app/points?source=profile"');
+    expect(html).toContain('href="/profile"');
+    expect(html).toContain('aria-current="page"');
   });
 
   it("keeps the home-to-profile walkthrough explicit when the member shell opens profile from home", async () => {
@@ -163,6 +167,8 @@ describe("member stories and profile pages", () => {
     expect(html).toContain("Keep home, profile, and the next event in one member flow.");
     expect(html).toContain('href="/app"');
     expect(html).toContain("Back to Home");
+    expect(html).toContain('aria-label="Member bottom navigation"');
+    expect(html).toContain('href="/profile"');
   });
 
   it("keeps already-labeled profile content stable and falls back cleanly when no next event is present", () => {
