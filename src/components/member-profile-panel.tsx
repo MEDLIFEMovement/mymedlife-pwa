@@ -7,7 +7,6 @@ import {
   Share2,
   Shield,
 } from "lucide-react";
-import { getLaunchLaneMemberPointsHref } from "@/services/events-points-launch-lane";
 import type { MvpMemberHome } from "@/services/mvp-event-tracking-workspace";
 import type { ProfileWorkspace } from "@/services/profile-workspace";
 import type { MemberRecognitionSummary } from "@/services/member-recognition";
@@ -18,6 +17,7 @@ type MemberProfilePanelProps = {
   chapterName: string;
   displayName: string;
   entrySource?: "home" | null;
+  isPreviewMode?: boolean;
   workspace: ProfileWorkspace;
   studentHome: MvpMemberHome;
   recognition: MemberRecognitionSummary;
@@ -26,11 +26,12 @@ type MemberProfilePanelProps = {
 export function MemberProfilePanel({
   chapterName,
   displayName,
+  isPreviewMode = false,
   workspace,
   studentHome,
   recognition,
 }: MemberProfilePanelProps) {
-  const launchLanePointsHref = getLaunchLaneMemberPointsHref("profile");
+  const launchLanePointsHref = "/app/points?source=profile";
   const testDisplayName = ensureVisibleTestLabel(displayName);
   const testChapterName = ensureVisibleTestLabel(chapterName);
   const visibleBadges = getProfileBadges(recognition);
@@ -51,7 +52,7 @@ export function MemberProfilePanel({
         <div className="bg-[#1d4ed8] px-5 pb-6 pt-12 text-white">
           <div className="flex items-start justify-between gap-3">
             <div className="flex items-center gap-3">
-              <div className="flex h-16 w-16 items-center justify-center rounded-[1.35rem] bg-white/18 text-2xl font-extrabold shadow-lg">
+              <div className="flex h-16 w-16 items-center justify-center rounded-[1.35rem] bg-[#facc15] text-2xl font-extrabold text-slate-900 shadow-lg">
                 {avatarMonogram}
               </div>
               <div>
@@ -204,12 +205,28 @@ export function MemberProfilePanel({
           <section>
             <ProfileSectionLabel>Settings</ProfileSectionLabel>
             <SurfacePanel className="overflow-hidden rounded-[1.6rem] p-0">
-              <ProfileSettingRow
-                icon={<Bell size={16} className="text-[#2563eb]" />}
-                label="Push Notifications"
-                detail="Preview-only toggle. Notification preference writes stay blocked here."
-                status="Preview only"
-              />
+              <div className="border-b border-slate-200 px-4 py-3.5">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <Bell size={16} className="text-[#2563eb]" />
+                    <div>
+                      <p className="text-sm font-semibold text-slate-950">Push Notifications</p>
+                      <p className="mt-1 text-xs leading-5 text-slate-500">
+                        Preview-only toggle. Notification preference writes stay blocked here.
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    disabled
+                    aria-disabled="true"
+                    aria-pressed="true"
+                    className="relative h-6 w-11 rounded-full bg-[#2563eb] opacity-80"
+                  >
+                    <span className="absolute left-6 top-1 h-4 w-4 rounded-full bg-white shadow" />
+                  </button>
+                </div>
+              </div>
               <ProfileSettingRow
                 icon={<Award size={16} className="text-[#2563eb]" />}
                 label="My Certificates"
@@ -225,12 +242,23 @@ export function MemberProfilePanel({
               <ProfileSettingRow
                 icon={<Settings size={16} className="text-[#2563eb]" />}
                 label="Account Settings"
-                detail="Read-only account context stays available in the account menu."
+                detail="Read-only account context stays visible from this profile route."
                 status="Read-only"
                 isLast
               />
             </SurfacePanel>
           </section>
+
+          {isPreviewMode ? (
+            <div className="rounded-[1.35rem] border border-blue-200 bg-blue-50 px-4 py-3">
+              <p className="text-sm font-semibold text-[#1d4ed8]">Preview Mode — read-only</p>
+              <div className="mt-2 space-y-1.5 text-xs leading-5 text-slate-600">
+                <p>No profile save runs from this route, and profile writes stay blocked.</p>
+                <p>No join request, role approval, membership change, or coach assignment runs from this route.</p>
+                <p>Certificates stay blocked, and TEST content remains preview-only until launch cleanup.</p>
+              </div>
+            </div>
+          ) : null}
 
           <button
             type="button"
@@ -358,14 +386,6 @@ function getRecentActivity(
 
   if (combinedActivity.length > 0) {
     return combinedActivity;
-  }
-
-  if (recognition.recentApprovedActions.length > 0) {
-    return recognition.recentApprovedActions.slice(0, 5).map((action) => ({
-      title: ensureVisibleTestLabel(action.title),
-      detail: action.detail,
-      pointsLabel: action.pointsLabel,
-    }));
   }
 
   return studentHome.recentHistory.slice(0, 5).map((entry) => ({
