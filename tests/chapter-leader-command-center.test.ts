@@ -54,7 +54,10 @@ describe("chapter leader command center", () => {
     expect(commandCenter.activeCampaignLabel).toBe("Moving Mountains 🏔");
     expect(commandCenter.navGroups.map((group) => group.label)).toEqual([
       "Chapter",
-      "Event Loop",
+      "Members",
+      "Operations",
+      "Impact & Culture",
+      "Leadership",
     ]);
     expect(commandCenter.chapterPointsTrend).toHaveLength(10);
     expect(commandCenter.chapterPointsTrend[0]).toMatchObject({
@@ -123,11 +126,15 @@ describe("chapter leader command center", () => {
     expect(markup).toContain("Chapter Home");
     expect(markup).toContain("Leadership Center");
     expect(markup).toContain("Chapter Dashboard · Jun 2025");
-    expect(markup).toContain("Sofia Reyes, President · New England Region");
+    expect(markup).toContain("TEST Sofia Reyes, President · New England Region");
     expect(markup).toContain("3rd in New England · top 15% globally");
     expect(markup).toContain("Create Event");
     expect(markup).toContain("Confirm Attendance");
     expect(markup).toContain("Open Leaderboard");
+    expect(markup).toContain("Members");
+    expect(markup).toContain("Operations");
+    expect(markup).toContain("Impact &amp; Culture");
+    expect(markup).toContain("Leadership");
     expect(markup).toContain("Leadership Metrics — June 2025");
     expect(markup).toContain("E-Board roles");
     expect(markup).toContain("Health Score");
@@ -183,6 +190,72 @@ describe("chapter leader command center", () => {
     expect(markup).not.toContain("Impact Snapshot");
   });
 
+  it("falls back to zeroed progress bars and chapter-posture copy when overview labels are not sample-formatted", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data);
+    const fallbackCommandCenter = {
+      ...commandCenter,
+      sampleLabel: null,
+      successionOverview: {
+        ...commandCenter.successionOverview,
+        eboardRolesFilledLabel: "not started",
+        activeCommitteesLabel: "4 / 0",
+      },
+    };
+    const markup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter: fallbackCommandCenter }),
+    );
+
+    expect(markup).toContain("Watch closely chapter posture");
+    expect(markup.match(/style=\"width:0%\"/g)?.length).toBeGreaterThanOrEqual(2);
+  });
+
+  it("keeps existing TEST prefixes visible without doubling them in the overview shell", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data);
+    const prefixedCommandCenter = {
+      ...commandCenter,
+      sidebarLeaderLabel: "TEST Sofia Reyes, President · New England Region",
+      chapterName: "TEST Boston College MEDLIFE",
+    };
+    const markup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter: prefixedCommandCenter }),
+    );
+
+    expect(markup).toContain("TEST Sofia Reyes, President · New England Region");
+    expect(markup).toContain("TEST Boston College MEDLIFE");
+    expect(markup).not.toContain("TEST TEST Sofia Reyes");
+    expect(markup).not.toContain("TEST TEST Boston College MEDLIFE");
+  });
+
+  it("keeps the service-backed leader menu visible for supabase-backed route state too", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const supabaseData = {
+      ...data,
+      source: {
+        mode: "supabase" as const,
+        status: "supabase_ready" as const,
+        message: "Testing supabase-backed chapter leader command center.",
+      },
+    };
+    const commandCenter = getChapterLeaderCommandCenter(actor, supabaseData, {
+      view: "members",
+      memberId: "member-maya",
+    });
+
+    expect(commandCenter.navGroups.map((group) => group.label)).toEqual([
+      "Chapter",
+      "Members",
+      "Operations",
+      "Impact & Culture",
+      "Leadership",
+    ]);
+    expect(commandCenter.viewOptions.find((item) => item.key === "member_profile")?.href).toBe(
+      "/leader?view=member_profile&member=member-maya",
+    );
+    expect(commandCenter.selectedMember?.displayName).toBe("Sofia Alvarez");
+  });
+
   it("keeps Review Members wired from the overview hero into the member-pipeline quick-action state", () => {
     const actor = getMockLocalActorContext("leader.a@mymedlife.test");
     const commandCenter = getChapterLeaderCommandCenter(actor, data);
@@ -202,13 +275,13 @@ describe("chapter leader command center", () => {
     );
 
     expect(markup).toContain("Active Campaign");
-    expect(markup).toContain("Sofia Reyes");
+    expect(markup).toContain("TEST Sofia Reyes");
     expect(markup).toContain("President");
     expect(markup).not.toContain("Navigation");
     expect(markup).not.toContain("Views");
     expect(markup).not.toContain(">Chapter Lead<");
     expect(markup.indexOf("Active Campaign")).toBeLessThan(markup.indexOf("Chapter Home"));
-    expect(markup.indexOf("Feed Analytics")).toBeLessThan(markup.indexOf("Sofia Reyes"));
+    expect(markup.indexOf("Feed Analytics")).toBeLessThan(markup.indexOf("TEST Sofia Reyes"));
     expect(markup).not.toContain("3 shortcuts");
     expect(markup).not.toContain("4 active alerts");
     expect(markup).not.toContain("Quick tools");
@@ -245,7 +318,9 @@ describe("chapter leader command center", () => {
     expect(commandCenter.viewOptions.find((item) => item.key === "leaderboard")?.href).toBe(
       "/leader?view=leaderboard",
     );
-    expect(commandCenter.viewOptions.find((item) => item.key === "member_profile")).toBeUndefined();
+    expect(commandCenter.viewOptions.find((item) => item.key === "member_profile")?.href).toBe(
+      "/leader?view=member_profile",
+    );
   });
 
   it("keeps E-Board focused on owner movement and lets the selected member carry across views", () => {
@@ -765,7 +840,9 @@ describe("chapter leader command center", () => {
     expect(commandCenter.viewOptions.find((item) => item.key === "events")?.href).toBe(
       "/leader?view=events&source=feed_analytics&member=member-ivy&pipeline=follow_up&q=Ivy",
     );
-    expect(commandCenter.viewOptions.find((item) => item.key === "bridge_videos")).toBeUndefined();
+    expect(commandCenter.viewOptions.find((item) => item.key === "bridge_videos")?.href).toBe(
+      "/leader?view=bridge_videos&source=feed_analytics&member=member-ivy&pipeline=follow_up&q=Ivy",
+    );
   });
 
   it("keeps the selected feed post attached to member review opened from that post", () => {
@@ -802,10 +879,10 @@ describe("chapter leader command center", () => {
     expect(markup).toContain("DeShawn Williams · Jun 13");
     expect(markup).toContain("Actions After");
     expect(markup).toContain(
-      "Review Sofia Alvarez&#x27;s next move against this content signal first so the follow-up stays anchored to the actual post that surfaced them.",
+      "Review TEST Sofia Alvarez&#x27;s next move against this content signal first so the follow-up stays anchored to the actual post that surfaced them.",
     );
     expect(markup).toContain("Back to selected post");
-    expect(markup).toContain("Sofia Alvarez");
+    expect(markup).toContain("TEST Sofia Alvarez");
     expect(markup).toContain(
       "/leader?view=feed_analytics&amp;source=feed_analytics&amp;member=member-maya&amp;q=Sofia&amp;feedPost=feed-post-slt-recap",
     );
@@ -865,7 +942,9 @@ describe("chapter leader command center", () => {
     expect(
       commandCenter.committees.find((committee) => committee.id === "committee-events")?.href,
     ).toBe("/leader?view=committees&committee=committee-events");
-    expect(commandCenter.viewOptions.find((item) => item.key === "committees")).toBeUndefined();
+    expect(commandCenter.viewOptions.find((item) => item.key === "committees")?.href).toBe(
+      "/leader?view=committees&committee=committee-events",
+    );
   });
 
   it("renders the committees route as the compact operating board from the mockup", () => {
@@ -899,7 +978,7 @@ describe("chapter leader command center", () => {
     expect(markup).toContain("Marcus");
     expect(markup).toContain("Elena");
     expect(markup).not.toContain("Marcus + Elena");
-    expect(markup).toContain("No chair assigned");
+    expect(markup).toContain("No TEST chair assigned");
     expect(markup).not.toContain("Selected Committee");
     expect(markup).not.toContain("Committee lane");
   });
@@ -938,6 +1017,29 @@ describe("chapter leader command center", () => {
       "href=\"/leader?view=committees&amp;committee=committee-events\"",
     );
     expect(markup).toContain("Selected");
+  });
+
+  it("keeps selected committee owner copy honest when a chair is still unassigned", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "committees",
+      committeeId: "committee-events",
+    });
+    const unassignedCommandCenter = {
+      ...commandCenter,
+      selectedCommittee: commandCenter.selectedCommittee
+        ? {
+            ...commandCenter.selectedCommittee,
+            ownerLabel: "No chair assigned",
+          }
+        : commandCenter.selectedCommittee,
+    };
+    const markup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter: unassignedCommandCenter }),
+    );
+
+    expect(markup).toContain("No TEST chair assigned");
+    expect(markup).not.toContain("TEST No chair assigned");
   });
 
   it("maps the events view to the attendance table and social recruiting panel from the mockup", () => {
@@ -1237,7 +1339,9 @@ describe("chapter leader command center", () => {
     expect(markup).toContain(
       "/leader?view=leaderboard&amp;leaderboardMetric=attendance",
     );
-    expect(commandCenter.viewOptions.find((item) => item.key === "bridge_videos")).toBeUndefined();
+    expect(commandCenter.viewOptions.find((item) => item.key === "bridge_videos")?.href).toBe(
+      "/leader?view=bridge_videos&source=leaderboard&leaderboardMetric=attendance&benchmark=leaderboard-ucla",
+    );
   });
 
   it("keeps leaderboard region context attached to best-practice handoffs", () => {
@@ -1263,8 +1367,12 @@ describe("chapter leader command center", () => {
       leaderboardRegion: "canada",
     });
 
-    expect(commandCenter.viewOptions.find((item) => item.key === "bridge_videos")).toBeUndefined();
-    expect(commandCenter.viewOptions.find((item) => item.key === "members")).toBeUndefined();
+    expect(commandCenter.viewOptions.find((item) => item.key === "bridge_videos")?.href).toBe(
+      "/leader?view=bridge_videos&source=leaderboard&leaderboardMetric=attendance&region=canada&benchmark=leaderboard-mcgill",
+    );
+    expect(commandCenter.viewOptions.find((item) => item.key === "members")?.href).toBe(
+      "/leader?view=members&source=leaderboard&leaderboardMetric=attendance&region=canada&benchmark=leaderboard-mcgill",
+    );
     expect(commandCenter.viewOptions.find((item) => item.key === "overview")?.href).toBe(
       "/leader?view=overview&source=leaderboard&leaderboardMetric=attendance&region=canada&benchmark=leaderboard-mcgill",
     );
@@ -2208,7 +2316,7 @@ describe("chapter leader command center", () => {
 
     expect(commandCenter.selectedMember?.displayName).toBe("Ivy Invite");
     expect(markup).toContain("Story owner context");
-    expect(markup).toContain("Reviewing bridge content with Ivy Invite in focus");
+    expect(markup).toContain("Reviewing bridge content with TEST Ivy Invite in focus");
     expect(markup).toContain("General Member");
     expect(markup).toContain("Recruitment");
     expect(markup).toContain("Follow-up now");
@@ -2240,8 +2348,12 @@ describe("chapter leader command center", () => {
       label: "Communications bridge videos",
       backHref: "/leader?view=bridge_videos&bridge=comms",
     });
-    expect(commandCenter.viewOptions.find((item) => item.key === "feed_analytics")).toBeUndefined();
-    expect(commandCenter.viewOptions.find((item) => item.key === "bridge_videos")).toBeUndefined();
+    expect(commandCenter.viewOptions.find((item) => item.key === "feed_analytics")?.href).toBe(
+      "/leader?view=feed_analytics&source=bridge_videos",
+    );
+    expect(commandCenter.viewOptions.find((item) => item.key === "bridge_videos")?.href).toBe(
+      "/leader?view=bridge_videos&source=bridge_videos&bridge=comms",
+    );
     expect(markup).toContain("Opened from bridge-video review into feed planning");
     expect(markup).toContain("Back to bridge videos");
     expect(markup).toContain("Bridge Video Context");
@@ -2353,7 +2465,7 @@ describe("chapter leader command center", () => {
     expect(markup).toContain("Succession Planning");
     expect(markup).toContain("Ensure the chapter can survive and grow beyond any single leader.");
     expect(markup).toContain("Selected candidate");
-    expect(markup).toContain("Reviewing Ivy Invite for succession readiness");
+    expect(markup).toContain("Reviewing TEST Ivy Invite for succession readiness");
     expect(markup).toContain("Open member profile");
     expect(markup).toContain("Selected now");
     expect(markup).toContain("Open Candidate Review");
