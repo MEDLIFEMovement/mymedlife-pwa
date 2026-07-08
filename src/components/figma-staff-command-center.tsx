@@ -1,7 +1,7 @@
 "use client";
 /* eslint-disable @next/next/no-img-element, @typescript-eslint/no-unused-vars */
 
-import { useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   LayoutDashboard, Megaphone, Calendar, Rss, Film,
@@ -628,7 +628,7 @@ export function ChapterDetailDrawer({ chapter, onClose }: { chapter: Chapter; on
               rows={3}
             />
             <p className="mt-2 text-[10px] leading-relaxed text-amber-700">
-              Chapter support notes stay visible for coach review. Next step: open the Admin preview for DS directory readback, audit, and blocked-control follow-through before requesting any write path. Return to chapters in the same Command Center loop after the Admin readback closes.
+              Chapter support notes stay visible for coach review. Next step: open the Admin preview for DS directory readback, audit, and blocked-control follow-through before requesting any write path. Return to this chapter in the same Command Center loop after the Admin readback closes.
             </p>
           </div>
         </div>
@@ -646,7 +646,7 @@ export function ChapterDetailDrawer({ chapter, onClose }: { chapter: Chapter; on
             <Star className="w-3.5 h-3.5" /> Preview NPS Survey
           </button>
           <a
-            href="/staff?view=admin&adminView=chapters"
+            href={`/staff?view=admin&adminView=chapters&returnView=chapters&chapter=${chapter.id}`}
             title="Open the embedded Admin preview for DS directory readback and audit review"
             className="flex items-center gap-1.5 rounded-lg bg-muted px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted/70"
           >
@@ -2176,9 +2176,12 @@ export function FigmaStaffCommandCenter({
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const activeScreen = resolveStaffShellScreen(searchParams.get("view") ?? initialView ?? null);
+  const selectedChapterId = searchParams.get("chapter");
   const adminReturnScreen =
     activeScreen === "admin" ? resolveStaffAdminReturnScreen(searchParams.get("returnView")) : "chapters";
-  const adminBackLabel = getStaffAdminReturnLabel(adminReturnScreen);
+  const adminReturnChapterId =
+    activeScreen === "admin" && adminReturnScreen === "chapters" ? searchParams.get("chapter") : null;
+  const adminBackLabel = getStaffAdminReturnLabel(adminReturnScreen, adminReturnChapterId);
   const [selectedChapter, setSelectedChapter] = useState<Chapter | null>(null);
 
   // SOP Builder sub-navigation
@@ -2188,8 +2191,18 @@ export function FigmaStaffCommandCenter({
   // Admin panel — DS Admin / Super Admin gate
   const [adminRole, setAdminRole] = useState<AdminRole | null>(null);
 
+  useEffect(() => {
+    if (activeScreen !== "chapters") return;
+    if (!selectedChapterId) {
+      setSelectedChapter(null);
+      return;
+    }
+    setSelectedChapter(CHAPTERS.find((chapter) => chapter.id === selectedChapterId) ?? null);
+  }, [activeScreen, selectedChapterId]);
+
   const handleSelectChapter = (ch: Chapter) => {
     setSelectedChapter(ch);
+    router.replace(buildStaffChapterHref(ch.id, pathname, searchParams.toString()), { scroll: false });
   };
 
   const handleNavChange = (key: Screen) => {
@@ -2197,6 +2210,20 @@ export function FigmaStaffCommandCenter({
     if (key !== "sops") { setSopView("library"); setSopCampaign(null); }
     if (key !== "admin") setAdminRole(null);
     router.replace(buildStaffShellHref(key, pathname, searchParams.toString()), { scroll: false });
+  };
+
+  const handleCloseChapterDrawer = () => {
+    setSelectedChapter(null);
+    router.replace(buildStaffShellHref("chapters", pathname, searchParams.toString()), { scroll: false });
+  };
+
+  const handleAdminBack = () => {
+    setAdminRole(null);
+    if (adminReturnScreen === "chapters" && adminReturnChapterId) {
+      router.replace(buildStaffChapterHref(adminReturnChapterId, pathname, searchParams.toString()), { scroll: false });
+      return;
+    }
+    handleNavChange(adminReturnScreen);
   };
 
   return (
@@ -2289,11 +2316,11 @@ export function FigmaStaffCommandCenter({
           canAccessAdminPanel ? (
             <AdminRoleGate
               onGrant={(role) => setAdminRole(role)}
-              onBack={() => handleNavChange(adminReturnScreen)}
+              onBack={handleAdminBack}
               backLabel={adminBackLabel}
             />
           ) : (
-            <AdminRouteBlocked onBack={() => handleNavChange(adminReturnScreen)} backLabel={adminBackLabel} />
+            <AdminRouteBlocked onBack={handleAdminBack} backLabel={adminBackLabel} />
           )
         )}
 
@@ -2314,7 +2341,7 @@ export function FigmaStaffCommandCenter({
       {activeScreen === "admin" && adminRole && canAccessAdminPanel && (
         <div className="fixed inset-0 z-[60] flex flex-col">
           <AdminPanel
-            onBack={() => { setAdminRole(null); handleNavChange(adminReturnScreen); }}
+            onBack={handleAdminBack}
             embeddedBackLabel={adminBackLabel}
           />
         </div>
@@ -2325,10 +2352,10 @@ export function FigmaStaffCommandCenter({
         <>
           <div
             className="fixed inset-0 bg-black/30 z-40 backdrop-blur-[1px]"
-            onClick={() => setSelectedChapter(null)}
+            onClick={handleCloseChapterDrawer}
           />
           <div className="relative z-50">
-            <ChapterDetailDrawer chapter={selectedChapter} onClose={() => setSelectedChapter(null)} />
+            <ChapterDetailDrawer chapter={selectedChapter} onClose={handleCloseChapterDrawer} />
           </div>
         </>
       )}
@@ -2365,8 +2392,9 @@ function resolveStaffAdminReturnScreen(view: string | null): Extract<Screen, "ch
   return resolveStaffShellScreen(view) === "ugc" ? "ugc" : "chapters";
 }
 
-function getStaffAdminReturnLabel(screen: Extract<Screen, "chapters" | "ugc">) {
-  return screen === "ugc" ? "Proof / UGC" : "chapters";
+function getStaffAdminReturnLabel(screen: Extract<Screen, "chapters" | "ugc">, chapterId?: string | null) {
+  if (screen === "ugc") return "Proof / UGC";
+  return chapterId ? "this chapter" : "chapters";
 }
 
 function getStaffShellViewParam(screen: Screen): string {
@@ -2435,10 +2463,21 @@ function buildStaffCampaignHref(campaign: string, pathname: string, search: stri
 function buildStaffShellHref(screen: Screen, pathname: string, search: string): string {
   const params = new URLSearchParams(search);
   params.set("view", getStaffShellViewParam(screen));
+  params.delete("chapter");
   if (screen !== "admin") {
     params.delete("adminView");
     params.delete("returnView");
   }
+  const query = params.toString();
+  return query ? `${pathname}?${query}` : pathname;
+}
+
+function buildStaffChapterHref(chapterId: string, pathname: string, search: string): string {
+  const params = new URLSearchParams(search);
+  params.set("view", "chapters");
+  params.set("chapter", chapterId);
+  params.delete("adminView");
+  params.delete("returnView");
   const query = params.toString();
   return query ? `${pathname}?${query}` : pathname;
 }
