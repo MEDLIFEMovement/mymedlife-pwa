@@ -490,7 +490,7 @@ describe("staff page", () => {
     expect(html).toContain("Coach notes stay preview-only in this chapter drawer");
     expect(html).toContain("Next step: open the Admin preview for DS directory readback, audit, and blocked-control follow-through before requesting any write path.");
     expect(html).toContain("Return to this chapter in the same Command Center loop after the Admin readback closes.");
-    expect(html).toContain('href="/staff?view=admin&amp;adminView=chapters&amp;returnView=chapters&amp;chapter=chapter-test&amp;chapterContext=Boston%20College"');
+    expect(html).toContain('href="/staff?view=admin&amp;adminView=chapters&amp;returnView=chapters&amp;chapter=chapter-test&amp;chapterContext=Boston+College"');
     expect(html).toContain("Open Admin preview");
     expect(html).toContain("Return to chapters");
     expect(html).toContain("Return to the chapters overview after this preview readback");
@@ -578,6 +578,32 @@ describe("staff page", () => {
     expect(source).toContain("resolveStaffChapterSort(searchParams.get(\"chapterSort\"), initialSortBy)");
     expect(source).toContain("handleChapterFilterChange");
     expect(source).toContain('params.set(key, value);');
+  });
+
+  it("keeps chapter portfolio filter context on the chapter-to-admin handoff", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("general.staff@mymedlife.test"),
+    );
+
+    const { default: StaffPage } = await import("@/app/staff/page");
+    const html = renderToStaticMarkup(
+      await StaffPage({
+        searchParams: Promise.resolve({
+          view: "chapters",
+          chapter: "ch13",
+          chapterRegion: "West",
+          chapterSort: "points",
+        }),
+      }),
+    );
+    const source = readFileSync("src/components/figma-staff-command-center.tsx", "utf8");
+
+    expect(html).toContain('href="/staff?view=admin&amp;chapter=ch13&amp;chapterRegion=West&amp;chapterSort=points&amp;adminView=chapters&amp;returnView=chapters&amp;chapterContext=TEST+Stanford+University"');
+    expect(source).toContain("buildStaffChapterAdminHref(");
+    expect(source).toContain('params.set("chapterContext", chapterContext);');
+    expect(source).toContain('params.set("adminView", "chapters");');
   });
 
   it("keeps the local staff shell close to the 2,095-line Figma export while allowing route wiring", () => {

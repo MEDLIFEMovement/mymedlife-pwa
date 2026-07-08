@@ -440,8 +440,26 @@ function NPSSurveyPreview({ onClose }: { onClose: () => void }) {
 /*  CHAPTER DETAIL DRAWER                                       */
 /* ─────────────────────────────────────────────────────────── */
 
-export function ChapterDetailDrawer({ chapter, onClose }: { chapter: Chapter; onClose: () => void }) {
+export function ChapterDetailDrawer({
+  chapter,
+  onClose,
+  adminPreviewHref,
+}: {
+  chapter: Chapter;
+  onClose: () => void;
+  adminPreviewHref?: string;
+}) {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [showSurvey, setShowSurvey] = useState(false);
+  const resolvedAdminPreviewHref =
+    adminPreviewHref ??
+    buildStaffChapterAdminHref(
+      chapter.id,
+      chapter.name,
+      pathname,
+      searchParams.toString(),
+    );
 
   const recentEvents = [
     { name:"TEST Rush Month Info Night",   date:"Jun 14",  attendees: chapter.attendance,                  nps: chapter.avgNpsScore },
@@ -646,7 +664,7 @@ export function ChapterDetailDrawer({ chapter, onClose }: { chapter: Chapter; on
             <Star className="w-3.5 h-3.5" /> Preview NPS Survey
           </button>
           <a
-            href={`/staff?view=admin&adminView=chapters&returnView=chapters&chapter=${chapter.id}&chapterContext=${encodeURIComponent(chapter.name)}`}
+            href={resolvedAdminPreviewHref}
             title="Open the embedded Admin preview for DS directory readback and audit review"
             className="flex items-center gap-1.5 rounded-lg bg-muted px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted/70"
           >
@@ -2305,6 +2323,7 @@ export function FigmaStaffCommandCenter({
   const initialChapterCoachFilter = getRouteParam("chapterCoach") ?? "all";
   const initialChapterTypeFilter = resolveStaffChapterTypeFilter(getRouteParam("chapterType"));
   const initialChapterSort = resolveStaffChapterSort(getRouteParam("chapterSort"));
+  const initialRouteSearch = buildStaffShellQueryFromInitialRouteParams(initialRouteParams);
 
   // SOP Builder sub-navigation
   const [sopView, setSopView] = useState<"library" | "builder">("library");
@@ -2480,7 +2499,16 @@ export function FigmaStaffCommandCenter({
             onClick={handleCloseChapterDrawer}
           />
           <div className="relative z-50">
-            <ChapterDetailDrawer chapter={selectedChapter} onClose={handleCloseChapterDrawer} />
+            <ChapterDetailDrawer
+              chapter={selectedChapter}
+              onClose={handleCloseChapterDrawer}
+              adminPreviewHref={buildStaffChapterAdminHref(
+                selectedChapter.id,
+                selectedChapter.name,
+                pathname,
+                searchParams.toString() || initialRouteSearch,
+              )}
+            />
           </div>
         </>
       )}
@@ -2605,6 +2633,24 @@ function getStaffShellViewParam(screen: Screen): string {
   }
 }
 
+function buildStaffShellQueryFromInitialRouteParams(
+  initialRouteParams?: Partial<
+    Record<
+      "view" | "campaign" | "chapter" | "ugcCard" | "returnView" | "chapterContext" | "proofStatus" | "proofPlatform" | "chapterSearch" | "chapterRegion" | "chapterCoach" | "chapterType" | "chapterSort",
+      string | null | undefined
+    >
+  >,
+) {
+  if (!initialRouteParams) return "";
+  const params = new URLSearchParams();
+
+  for (const [key, value] of Object.entries(initialRouteParams)) {
+    if (value) params.set(key, value);
+  }
+
+  return params.toString();
+}
+
 function resolveStaffCampaignTab(campaign: string | null) {
   switch (campaign) {
     case "rush-month":
@@ -2677,6 +2723,22 @@ function buildStaffChapterHref(chapterId: string, pathname: string, search: stri
   params.delete("ugcCard");
   params.delete("adminView");
   params.delete("returnView");
+  const query = params.toString();
+  return query ? `${pathname}?${query}` : pathname;
+}
+
+function buildStaffChapterAdminHref(
+  chapterId: string,
+  chapterContext: string,
+  pathname: string,
+  search: string,
+): string {
+  const params = new URLSearchParams(search);
+  params.set("view", "admin");
+  params.set("adminView", "chapters");
+  params.set("returnView", "chapters");
+  params.set("chapter", chapterId);
+  params.set("chapterContext", chapterContext);
   const query = params.toString();
   return query ? `${pathname}?${query}` : pathname;
 }
