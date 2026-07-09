@@ -4227,8 +4227,6 @@ function getMemberBackToContext(
           bestPracticeChapterId: context.bestPracticeChapterId,
           leaderboardMetric: context.leaderboardMetric,
           leaderboardRegion: context.leaderboardRegion,
-          eventCommitteeFilter: context.eventCommitteeFilter,
-          eventId: context.eventId,
         }),
       };
     default:
