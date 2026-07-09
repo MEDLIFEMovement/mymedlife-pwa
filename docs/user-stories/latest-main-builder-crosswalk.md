@@ -15,18 +15,18 @@ next live branch:
 2. `#618` is merged, so stop treating it as active queue work.
 3. `#620` is merged and public no-write smoke stayed `11/11` green after the
    merge. Do not keep its staff/admin seam in the pending queue.
-4. `#621` is merged. No new member front branch is promoted in this packet;
-   `#1` should shape the next member seam locally until Coordinator identifies
-   the next real front candidate.
-5. `#2` should return to local leader follow-on shaping after the `#619`
+4. `#621` is merged.
+5. `#624` is now the new member front candidate and is in first-pass watch with
+   checks still in progress.
+6. `#2` should return to local leader follow-on shaping after the `#619`
    landing, keeping attendance, member review, and simple-leaderboard continuity
    narrow.
-6. `#3` should shape the next staff/admin seam locally while there is no
-   promoted member front branch, with emphasis on chapter oversight honesty,
-   embedded Admin context, and visible TEST-label coverage.
-7. `#4` should watch the next promoted front branch for scope, TEST labels,
-   route evidence, and no rollout-proof inflation. `#6` should stay quiet unless
-   real proof artifacts appear.
+7. `#3` should shape the next staff/admin seam locally while member `#624` is in
+   first-pass watch, with emphasis on chapter oversight honesty, embedded Admin
+   context, and visible TEST-label coverage.
+8. `#4` should watch `#624` for scope, TEST labels, route evidence, and no
+   rollout-proof inflation. `#6` should stay quiet unless real proof artifacts
+   appear.
 
 Rollout-proof truth is unchanged. Shell merges, public no-write smoke, green CI,
 and TEST/sandbox rows may support `Scope/UI` or `QA/Ops` discussion, but they do
@@ -35,7 +35,7 @@ readiness, or rollout approval.
 
 ## Sources Inspected
 
-- Repo `origin/main` after the `#620` merge.
+- Repo `origin/main` after the `#621` merge.
 - Merged planning docs:
   - `docs/user-stories/master-user-story-inventory.md`
   - `docs/user-stories/narrow-launch-mvp-stories.md`
@@ -48,6 +48,7 @@ readiness, or rollout approval.
   - `#619` merged.
   - `#618` merged.
   - `#621` merged.
+  - `#624` open, draft, and first-pass checks in progress.
 - Coordinator-reported public no-write smoke: 11/11 passed after `#620`.
 
 ## How To Use This Crosswalk
