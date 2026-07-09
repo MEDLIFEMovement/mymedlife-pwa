@@ -1143,6 +1143,10 @@ describe("staff page", () => {
     expect(html).toContain(
       "Points posture stays read-only here: 1890 weekly points remain review context only until an approved correction workflow exists.",
     );
+    expect(html).toContain(">School</div><div class=\"mt-1 text-[13px] font-mono font-semibold text-slate-100\">TEST Stanford University</div>");
+    expect(html).toContain(">Region</div><div class=\"mt-1 text-[13px] font-mono font-semibold text-slate-100\">West</div>");
+    expect(html).toContain(">Coach</div><div class=\"mt-1 text-[13px] font-mono font-semibold text-slate-100\">TEST James Okafor</div>");
+    expect(html).toContain(">Active Members</div><div class=\"mt-1 text-[13px] font-mono font-semibold text-slate-100\">52</div>");
     expect(html).toContain("Chapter Detail");
     expect(html).toContain("TEST Stanford University · West");
     expect(html).toContain("TEST James Okafor");
