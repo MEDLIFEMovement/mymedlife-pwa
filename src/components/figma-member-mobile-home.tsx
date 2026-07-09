@@ -3569,7 +3569,7 @@ export function FigmaMemberMobileHome({
     screen === "home"
       ? "/profile?source=home"
       : screen === "points"
-        ? "/profile?source=points"
+        ? getPointsBottomNavProfileHref(pointsSource, pointsReturnEventId)
         : "/profile";
   const bottomNavHrefOverrides = getMemberBottomNavHrefOverrides({
     screen,
@@ -3687,11 +3687,26 @@ function getPointsBottomNavEventsHref(
 
   if (source === "profile") {
     return returnEventId
-      ? `/app/events/${returnEventId}?source=profile`
+      ? `/app/events/${returnEventId}?source=profile&profileSource=points`
       : "/app/events?source=profile";
   }
 
   return "/app/events";
+}
+
+function getPointsBottomNavProfileHref(
+  source: MemberLoopSource,
+  returnEventId: string | null,
+) {
+  if (source === "points" && returnEventId) {
+    return `/profile?source=points&event=${returnEventId}`;
+  }
+
+  return screenlessProfileHref(source);
+}
+
+function screenlessProfileHref(source: MemberLoopSource) {
+  return source === "home" ? "/profile?source=home" : "/profile?source=points";
 }
 
 function getEventsBottomNavPointsHref(source: MemberLoopSource) {
