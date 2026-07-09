@@ -805,7 +805,7 @@ function ChaptersPage({
                   Embedded chapter oversight readback
                 </div>
                 <p className="mt-1 text-[12px] text-sky-300/80 leading-relaxed">
-                  {`Use this Admin readback to verify event readiness, RSVP totals, attendance context, and points posture for ${embeddedReadback.chapterContext} before requesting any correction path.`}
+                  {`Use this Admin readback to verify event readiness, RSVP totals, attendance context, and points posture for ${embeddedReadback.chapterContext} before requesting any blocked-control follow-through or correction path.`}
                 </p>
               </div>
             </div>
@@ -916,7 +916,7 @@ function ChaptersPage({
             </div>
             {embeddedReadback.pointsWeek ? (
               <p className="text-[11px] leading-relaxed text-slate-300">
-                {`Points posture stays read-only here: ${embeddedReadback.pointsWeek} weekly points remain review context only until an approved correction workflow exists.`}
+                {`Points posture stays read-only here: ${embeddedReadback.pointsWeek} weekly points remain review context only until an approved correction workflow exists, and blocked-control follow-through stays in this Admin readback lane.`}
               </p>
             ) : null}
           </div>

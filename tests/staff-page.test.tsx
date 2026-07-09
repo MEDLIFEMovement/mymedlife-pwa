@@ -1133,14 +1133,14 @@ describe("staff page", () => {
 
     expect(html).toContain("Embedded chapter oversight readback");
     expect(html).toContain(
-      "Use this Admin readback to verify event readiness, RSVP totals, attendance context, and points posture for TEST Stanford University before requesting any correction path.",
+      "Use this Admin readback to verify event readiness, RSVP totals, attendance context, and points posture for TEST Stanford University before requesting any blocked-control follow-through or correction path.",
     );
     expect(html).toContain(">5</div>");
     expect(html).toContain(">80</div>");
     expect(html).toContain(">68</div>");
     expect(html).toContain(">22100</div>");
     expect(html).toContain(
-      "Points posture stays read-only here: 1890 weekly points remain review context only until an approved correction workflow exists.",
+      "Points posture stays read-only here: 1890 weekly points remain review context only until an approved correction workflow exists, and blocked-control follow-through stays in this Admin readback lane.",
     );
     expect(html).toContain(">School</div><div class=\"mt-1 text-[13px] font-mono font-semibold text-slate-100\">TEST Stanford University</div>");
     expect(html).toContain(">Region</div><div class=\"mt-1 text-[13px] font-mono font-semibold text-slate-100\">West</div>");
