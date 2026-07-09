@@ -19,6 +19,7 @@ type ProfilePageProps = {
   searchParams?: Promise<{
     source?: string;
     event?: string;
+    campaign?: string;
   }>;
 };
 
@@ -35,11 +36,12 @@ export default async function ProfilePage(props: ProfilePageProps) {
     getLocalActorContext(),
     getReadOnlyAppData(),
   ]);
-  const resolvedSearchParams: { source?: string; event?: string } = await (
+  const resolvedSearchParams: { source?: string; event?: string; campaign?: string } = await (
     props.searchParams ?? Promise.resolve({})
   );
   const profileSource = getProfileSource(resolvedSearchParams.source);
   const profileEventId = resolvedSearchParams.event ?? null;
+  const profileCampaign = resolvedSearchParams.campaign ?? null;
   const workspace = getProfileWorkspace(actor, data);
   const isMemberProfile = canAccessMemberWorkspace(actor);
   const studentHome = isMemberProfile
@@ -67,6 +69,7 @@ export default async function ProfilePage(props: ProfilePageProps) {
               displayName={actor.user.displayName}
               entrySource={profileSource}
               entryEventId={profileEventId}
+              entryCampaign={profileCampaign}
               isPreviewMode={isPreviewWorkspaceAccess(actor, "student_app")}
               workspace={workspace}
               studentHome={studentHome}
@@ -77,8 +80,8 @@ export default async function ProfilePage(props: ProfilePageProps) {
         <MemberBottomNav
           activeTab="profile"
           hrefOverrides={{
-            events: buildProfileEventsHref(profileSource, profileEventId),
-            points: buildProfilePointsHref(profileSource, profileEventId),
+            events: buildProfileEventsHref(profileSource, profileEventId, profileCampaign),
+            points: buildProfilePointsHref(profileSource, profileEventId, profileCampaign),
           }}
         />
       </div>
@@ -89,9 +92,14 @@ export default async function ProfilePage(props: ProfilePageProps) {
 function buildProfileEventsHref(
   source: "home" | "points" | null,
   eventId: string | null,
+  campaign: string | null,
 ) {
   if (!eventId) {
-    return "/app/events?source=profile";
+    const url = new URL("https://mymedlife.local/app/events?source=profile");
+    if (campaign && campaign !== "All") {
+      url.searchParams.set("campaign", campaign);
+    }
+    return `${url.pathname}${url.search}`;
   }
 
   const url = new URL(
@@ -102,12 +110,17 @@ function buildProfileEventsHref(
     url.searchParams.set("profileSource", "points");
   }
 
+  if (campaign && campaign !== "All") {
+    url.searchParams.set("campaign", campaign);
+  }
+
   return `${url.pathname}${url.search}`;
 }
 
 function buildProfilePointsHref(
   source: "home" | "points" | null,
   eventId: string | null,
+  campaign: string | null,
 ) {
   const url = new URL(
     `https://mymedlife.local${
@@ -121,6 +134,10 @@ function buildProfilePointsHref(
 
   if (eventId) {
     url.searchParams.set("event", eventId);
+  }
+
+  if (campaign && campaign !== "All") {
+    url.searchParams.set("campaign", campaign);
   }
 
   return `${url.pathname}${url.search}`;

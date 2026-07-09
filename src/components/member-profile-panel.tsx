@@ -20,6 +20,7 @@ type MemberProfilePanelProps = {
   displayName: string;
   entrySource?: "home" | "points" | null;
   entryEventId?: string | null;
+  entryCampaign?: string | null;
   isPreviewMode?: boolean;
   workspace: ProfileWorkspace;
   studentHome: MvpMemberHome;
@@ -31,13 +32,14 @@ export function MemberProfilePanel({
   displayName,
   entrySource = null,
   entryEventId = null,
+  entryCampaign = null,
   isPreviewMode = false,
   workspace,
   studentHome,
   recognition,
 }: MemberProfilePanelProps) {
-  const launchLanePointsHref = buildProfilePointsHref(entrySource, entryEventId);
-  const launchLaneEventsHref = buildProfileEventsHref(entrySource, entryEventId);
+  const launchLanePointsHref = buildProfilePointsHref(entrySource, entryEventId, entryCampaign);
+  const launchLaneEventsHref = buildProfileEventsHref(entrySource, entryEventId, entryCampaign);
   const testDisplayName = ensureVisibleTestLabel(displayName);
   const testChapterName = ensureVisibleTestLabel(chapterName);
   const visibleBadges = getProfileBadges(recognition);
@@ -67,7 +69,7 @@ export function MemberProfilePanel({
               entryEventId
                 ? "This profile stays inside the student shell so you can review your TEST identity, chapter standing, and exact event context without breaking the points-to-profile member loop."
                 : "This profile stays inside the student shell so you can review your TEST identity and chapter standing without breaking the points-to-profile member loop.",
-            href: buildProfilePointsHref("points", entryEventId),
+            href: buildProfilePointsHref("points", entryEventId, entryCampaign),
             cta: "Back to Points",
           }
         : null;
@@ -333,6 +335,7 @@ export function MemberProfilePanel({
 function buildProfilePointsHref(
   entrySource: "home" | "points" | null,
   entryEventId: string | null,
+  entryCampaign: string | null,
 ) {
   const url = new URL(
     `https://mymedlife.local${entrySource === "points" ? "/app/points?source=points" : "/app/points?source=profile"}`,
@@ -342,21 +345,34 @@ function buildProfilePointsHref(
     url.searchParams.set("event", entryEventId);
   }
 
+  if (entryCampaign && entryCampaign !== "All") {
+    url.searchParams.set("campaign", entryCampaign);
+  }
+
   return `${url.pathname}${url.search}`;
 }
 
 function buildProfileEventsHref(
   entrySource: "home" | "points" | null,
   entryEventId: string | null,
+  entryCampaign: string | null,
 ) {
   if (!entryEventId) {
-    return "/app/events?source=profile";
+    const url = new URL("https://mymedlife.local/app/events?source=profile");
+    if (entryCampaign && entryCampaign !== "All") {
+      url.searchParams.set("campaign", entryCampaign);
+    }
+    return `${url.pathname}${url.search}`;
   }
 
   const url = new URL(`https://mymedlife.local/app/events/${entryEventId}?source=profile`);
 
   if (entrySource === "points") {
     url.searchParams.set("profileSource", "points");
+  }
+
+  if (entryCampaign && entryCampaign !== "All") {
+    url.searchParams.set("campaign", entryCampaign);
   }
 
   return `${url.pathname}${url.search}`;
