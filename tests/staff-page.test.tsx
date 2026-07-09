@@ -465,6 +465,10 @@ describe("staff page", () => {
     expect(html).toContain("New England");
     expect(html).toContain("TEST Maria Santos");
     expect(html).toContain(">32</div>");
+    expect(html).toContain("Risk posture");
+    expect(html).toContain("Carry the same chapter risk context through this blocked Admin handoff before requesting any blocked-control follow-through or correction path.");
+    expect(html).toContain(">Handoff source</div><div class=\"mt-1 text-[12px] font-mono font-semibold text-slate-200\">Staff chapter drawer</div>");
+    expect(html).toContain(">Return target</div><div class=\"mt-1 text-[12px] font-mono font-semibold text-slate-200\">TEST Boston College in Chapters</div>");
     expect(html).toContain("2 events this month");
     expect(html).toContain("30 RSVPs");
     expect(html).toContain("24 attended");
@@ -513,6 +517,10 @@ describe("staff page", () => {
     expect(html).toContain("West");
     expect(html).toContain("TEST James Okafor");
     expect(html).toContain(">52</div>");
+    expect(html).toContain("Risk posture");
+    expect(html).toContain("Carry the same chapter risk context through this Admin gate before requesting any blocked-control follow-through or correction path.");
+    expect(html).toContain(">Handoff source</div><div class=\"mt-1 text-[12px] font-mono font-semibold text-slate-200\">Staff chapter drawer</div>");
+    expect(html).toContain(">Return target</div><div class=\"mt-1 text-[12px] font-mono font-semibold text-slate-200\">TEST Stanford University in Chapters</div>");
     expect(html).toContain("5 events this month");
     expect(html).toContain("80 RSVPs");
     expect(html).toContain("68 attended");
@@ -720,6 +728,11 @@ describe("staff page", () => {
     expect(html).toContain("30 RSVPs");
     expect(html).toContain("24 attended");
     expect(html).toContain("+620 this week");
+    expect(html).toContain("Risk posture");
+    expect(html).toContain("Carry the same chapter risk context into the embedded Admin readback.");
+    expect(html).toContain("Staff chapter drawer");
+    expect(html).toContain("Boston College in Chapters");
+    expect(html).toContain("Return to the same selected chapter after the Admin readback closes.");
     expect(html).toContain("Next step: open the Admin preview for DS directory readback, event readiness, RSVP totals, attendance context, points posture, and blocked-control follow-through before requesting any write path.");
     expect(html).toContain("Return to this chapter in the same Command Center loop after the Admin readback closes.");
     expect(html).toContain('href="/staff?view=admin&amp;adminView=chapters&amp;returnView=chapters&amp;chapter=chapter-test&amp;chapterContext=Boston+College&amp;chapterSchool=Boston+College&amp;chapterRegionName=New+England&amp;chapterCoachName=Maria+Santos&amp;chapterMembers=32&amp;chapterRisk=healthy&amp;chapterEvents=2&amp;chapterRsvps=30&amp;chapterAttendance=24&amp;chapterPoints=7800&amp;chapterPointsWeek=620"');
@@ -1242,7 +1255,7 @@ describe("staff page", () => {
     const lineCount = source.split("\n").length;
 
     expect(lineCount).toBeGreaterThanOrEqual(2170);
-    expect(lineCount).toBeLessThanOrEqual(3310);
+    expect(lineCount).toBeLessThanOrEqual(3400);
     expect(source).toContain("type Screen = \"chapters\" | \"campaigns\" | \"events\" | \"ugc\" | \"reports\" | \"admin\" | \"best-practices\" | \"sops\";");
     expect(source).toContain("const NAV_ITEMS");
     expect(source).toContain("function PortfolioOverview");
