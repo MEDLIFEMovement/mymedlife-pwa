@@ -509,6 +509,9 @@ describe("staff page", () => {
     expect(html).toContain("Return to TEST Stanford University");
     expect(html).toContain("Chapter context: TEST Stanford University");
     expect(html).toContain("Embedded Chapter Review");
+    expect(html).toContain(
+      "Use this Admin readback to confirm event readiness, RSVP totals, attendance context, and points posture for TEST Stanford University before requesting any correction path.",
+    );
     expect(html).toContain('href="/staff?view=chapters&amp;chapter=ch13&amp;chapterRegion=West&amp;chapterSort=points"');
     expect(staffSource).toContain("const adminReturnHref =");
     expect(staffSource).toContain('adminReturnScreen === "chapters"');
@@ -549,6 +552,9 @@ describe("staff page", () => {
     expect(html).toContain("Context: TEST Stanford University");
     expect(html).toContain("Queue: Pending · Instagram");
     expect(html).toContain("Queue context: Pending · Instagram");
+    expect(html).toContain(
+      "Use this Admin readback to verify chapter oversight context for TEST Stanford University while preserving the same Pending · Instagram moderation queue.",
+    );
     expect(html).toContain('href="/staff?view=proof_ugc&amp;ugcCard=ugc4&amp;chapterContext=TEST+Stanford+University&amp;proofStatus=pending&amp;proofPlatform=instagram"');
     expect(staffSource).toContain('adminReturnScreen === "ugc"');
     expect(staffSource).toContain('buildStaffProofHref(pathname, currentRouteSearch, getRouteParam("ugcCard"))');

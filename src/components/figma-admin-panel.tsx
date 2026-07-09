@@ -284,6 +284,9 @@ function Sidebar({
                 {`Queue context: ${proofQueueContext}`}
               </div>
             ) : null}
+            <div className="mt-1 text-[10px] leading-tight text-slate-500 group-hover:text-slate-300">
+              {embeddedReviewCopy.note}
+            </div>
           </div>
         </a>
       )}
@@ -376,6 +379,14 @@ function getEmbeddedAdminReviewCopy(
     return {
       badge: "Proof review handoff",
       label: "Embedded Proof Review",
+      note:
+        chapterContext && proofQueueContext
+          ? `Use this Admin readback to verify chapter oversight context for ${chapterContext} while preserving the same ${proofQueueContext} moderation queue.`
+          : chapterContext
+            ? `Use this Admin readback to verify chapter oversight context for ${chapterContext} before returning to the same moderation queue.`
+            : proofQueueContext
+              ? `Use this Admin readback to verify blocked controls before returning to the same ${proofQueueContext} moderation queue.`
+              : "Use this Admin readback to verify blocked controls before returning to the same Proof / UGC review queue.",
       footer:
         chapterContext && proofQueueContext
           ? `Return with Command Center after this Proof / UGC review pass for ${chapterContext} (${proofQueueContext}), or use the top-right menu to switch workspaces or log out.`
@@ -392,6 +403,10 @@ function getEmbeddedAdminReviewCopy(
     return {
       badge: "Chapter review handoff",
       label: "Embedded Chapter Review",
+      note:
+        chapterContext
+          ? `Use this Admin readback to confirm event readiness, RSVP totals, attendance context, and points posture for ${chapterContext} before requesting any correction path.`
+          : "Use this Admin readback to confirm event readiness, RSVP totals, attendance context, and points posture before requesting any correction path.",
       footer:
         chapterContext
           ? `Return with Command Center after this chapter review pass for ${chapterContext}, or use the top-right menu to switch workspaces or log out.`
@@ -403,6 +418,7 @@ function getEmbeddedAdminReviewCopy(
   return {
     badge: "Staff review handoff",
     label: "Embedded Admin Review",
+    note: "Use this Admin readback to review blocked controls and visibility posture before returning to the staff shell.",
     footer:
       "Return with Command Center after this review pass, or use the top-right menu to switch workspaces or log out.",
     tag: "Staff review",
