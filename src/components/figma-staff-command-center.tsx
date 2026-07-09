@@ -120,9 +120,11 @@ interface BestPractice {
 
 type Screen = "chapters" | "campaigns" | "events" | "ugc" | "reports" | "admin" | "best-practices" | "sops";
 
-const STAFF_HEADER_ACCOUNT_CLEARANCE = WORKSPACE_ACCOUNT_MENU_SHELL_CLEARANCE;
+const STAFF_PAGE_HEADER_ACCOUNT_CLEARANCE = WORKSPACE_ACCOUNT_MENU_SHELL_CLEARANCE;
+const STAFF_TOP_BAR_ACCOUNT_CLEARANCE =
+  "pr-[4.5rem] sm:pr-[17rem] lg:pr-[21rem] xl:pr-[24rem] 2xl:pr-[26rem]";
 const STAFF_HEADER_ALERT_VISIBILITY =
-  "hidden md:flex max-w-[7rem] lg:max-w-[8.5rem] xl:max-w-[10rem] 2xl:max-w-[11.5rem]";
+  "hidden md:flex max-w-[6.5rem] lg:max-w-[8rem] xl:max-w-[9.5rem] 2xl:max-w-[11rem]";
 
 /* ─────────────────────────────────────────────────────────── */
 /*  MOCK DATA                                                   */
@@ -2496,7 +2498,7 @@ export function FigmaStaffCommandCenter({
     <div className="min-h-screen bg-background flex flex-col" style={{ fontFamily:"'Plus Jakarta Sans', system-ui, sans-serif" }}>
       {/* Top Bar */}
       <header className="bg-sidebar border-b border-sidebar-border flex-shrink-0 z-30 relative">
-        <div className={`flex h-12 items-center gap-4 overflow-hidden px-5 sm:gap-6 ${STAFF_HEADER_ACCOUNT_CLEARANCE}`}>
+        <div className={`flex h-12 items-center gap-4 overflow-hidden px-5 sm:gap-6 ${STAFF_TOP_BAR_ACCOUNT_CLEARANCE}`}>
           {/* Logo */}
           <a
             href={buildStaffShellHref("chapters", pathname, searchParams.toString())}
@@ -2547,7 +2549,7 @@ export function FigmaStaffCommandCenter({
 
       {/* Page Header */}
       {!isEmbeddedAdminOpen && (
-        <div className={`flex flex-shrink-0 items-center justify-between border-b border-border bg-white px-6 py-3 ${STAFF_HEADER_ACCOUNT_CLEARANCE}`}>
+        <div className={`flex flex-shrink-0 items-center justify-between border-b border-border bg-white px-6 py-3 ${STAFF_PAGE_HEADER_ACCOUNT_CLEARANCE}`}>
           <div className="min-w-0">
             <h1 className="text-base font-bold text-foreground">{adminPreviewTitle ?? SCREEN_TITLES[activeScreen]}</h1>
             <div className="mt-0.5 text-xs text-muted-foreground">
