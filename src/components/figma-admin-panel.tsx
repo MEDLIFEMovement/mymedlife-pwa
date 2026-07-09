@@ -17,6 +17,10 @@ type ModuleStatus = "enabled" | "disabled" | "staging-only" | "mock-only" | "int
 type UserStatus = "active" | "inactive" | "pending";
 type EmbeddedChapterReadback = {
   chapterContext: string;
+  school: string | null;
+  region: string | null;
+  coach: string | null;
+  members: string | null;
   events: string | null;
   rsvps: string | null;
   attendance: string | null;
@@ -448,7 +452,7 @@ function getEmbeddedAdminDisplayBackLabel(
   }
 
   if (normalized === "this chapter" || normalized === "chapters") {
-    return chapterContext ?? backLabel;
+    return "Chapters";
   }
 
   return backLabel;
@@ -769,14 +773,17 @@ function UsersPage() {
 function ChaptersPage({
   embeddedReadback,
   embeddedBackHref,
+  embeddedChapterHref,
 }: {
   embeddedReadback?: EmbeddedChapterReadback | null;
   embeddedBackHref?: string;
+  embeddedChapterHref?: string;
 }) {
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<AdminChapterRecord | null>(() =>
     embeddedReadback ? buildEmbeddedReadbackChapter(embeddedReadback) : null,
   );
+  const resolvedEmbeddedChapterHref = embeddedChapterHref ?? embeddedBackHref;
 
   const filtered = CHAPTERS_DATA.filter((c) =>
     c.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -801,14 +808,52 @@ function ChaptersPage({
             </div>
             <div className="grid grid-cols-4 gap-2">
               {[
-                { label: "Events", value: embeddedReadback.events ?? "—" },
-                { label: "RSVPs", value: embeddedReadback.rsvps ?? "—" },
+                { label: "Events / Month", value: embeddedReadback.events ?? "—" },
+                { label: "RSVP Totals", value: embeddedReadback.rsvps ?? "—" },
                 { label: "Attendance", value: embeddedReadback.attendance ?? "—" },
-                { label: "Points", value: embeddedReadback.points ?? "—" },
+                { label: "Points / Year", value: embeddedReadback.points ?? "—" },
               ].map(({ label, value }) => (
                 <div key={label} className="rounded border border-sky-500/10 bg-[#0d1117]/50 px-3 py-2">
                   <div className="text-[10px] text-sky-400/70 font-mono uppercase tracking-wider">{label}</div>
                   <div className="mt-1 text-[14px] font-mono font-semibold text-slate-100">{value}</div>
+                </div>
+              ))}
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              {[
+                {
+                  label: "Event readiness",
+                  value: embeddedReadback.events
+                    ? `${embeddedReadback.events} events this month`
+                    : "No event snapshot",
+                  note: "Review-only embedded snapshot",
+                },
+                {
+                  label: "RSVP totals",
+                  value: embeddedReadback.rsvps
+                    ? `${embeddedReadback.rsvps} RSVPs`
+                    : "No RSVP snapshot",
+                  note: "Carry the same chapter context back out",
+                },
+                {
+                  label: "Attendance context",
+                  value: embeddedReadback.attendance
+                    ? `${embeddedReadback.attendance} attended`
+                    : "No attendance snapshot",
+                  note: "No attendance correction path runs here",
+                },
+                {
+                  label: "Weekly points posture",
+                  value: embeddedReadback.pointsWeek
+                    ? `+${embeddedReadback.pointsWeek} this week`
+                    : "No weekly points snapshot",
+                  note: "Points posture stays oversight-only",
+                },
+              ].map(({ label, value, note }) => (
+                <div key={label} className="rounded border border-sky-500/10 bg-[#0d1117]/50 px-3 py-2">
+                  <div className="text-[10px] text-sky-400/70 font-mono uppercase tracking-wider">{label}</div>
+                  <div className="mt-1 text-[13px] font-mono font-semibold text-slate-100">{value}</div>
+                  <div className="mt-1 text-[10px] leading-relaxed text-slate-400">{note}</div>
                 </div>
               ))}
             </div>
@@ -891,8 +936,8 @@ function ChaptersPage({
               {[
                 { label: "Coach", value: selected.coach },
                 { label: "Active Members", value: String(selected.members) },
-                { label: "Upcoming Events", value: String(selected.upcomingEvents) },
-                { label: "Total Points", value: selected.points.toLocaleString() },
+                { label: "Events This Month", value: String(selected.upcomingEvents) },
+                { label: "Points This Year", value: selected.points.toLocaleString() },
                 { label: "RSVPs", value: String(selected.rsvps) },
                 { label: "Attendance", value: String(selected.attendance) },
               ].map(({ label, value }) => (
@@ -918,23 +963,28 @@ function ChaptersPage({
             </div>
 
             <div className="flex flex-wrap gap-2">
-              <button disabled title="Chapter event drill-in is handled by the staff events view" className="px-3 py-1.5 bg-sky-500/12 text-sky-400 border border-sky-500/20 rounded text-[12px] hover:bg-sky-500/20 transition-colors">View Events</button>
-              <button disabled title="Module edits require the secure module-management workflow" className="px-3 py-1.5 bg-white/[0.04] text-slate-300 border border-white/[0.08] rounded text-[12px] hover:bg-white/[0.07] transition-colors">Edit Modules</button>
-              <button disabled title="Audit drill-in is available from the audit log surface" className="px-3 py-1.5 bg-white/[0.04] text-slate-300 border border-white/[0.08] rounded text-[12px] hover:bg-white/[0.07] transition-colors">Audit History</button>
-              {embeddedReadback && embeddedBackHref ? (
+              <button disabled title="Chapter event readiness stays read-only here; use the staff events view for the route-backed drill-in." className="px-3 py-1.5 bg-sky-500/12 text-sky-400 border border-sky-500/20 rounded text-[12px] hover:bg-sky-500/20 transition-colors">Event readback only</button>
+              <button disabled title="Module edits remain blocked until the secure module-management workflow is approved." className="px-3 py-1.5 bg-white/[0.04] text-slate-300 border border-white/[0.08] rounded text-[12px] hover:bg-white/[0.07] transition-colors">Module edits blocked</button>
+              <button disabled title="Audit history remains a readback surface; use the audit log route for the full review trail." className="px-3 py-1.5 bg-white/[0.04] text-slate-300 border border-white/[0.08] rounded text-[12px] hover:bg-white/[0.07] transition-colors">Audit readback only</button>
+              {embeddedReadback && resolvedEmbeddedChapterHref ? (
                 <a
-                  href={embeddedBackHref}
-                  title={`Return to ${embeddedReadback.chapterContext} in the same Command Center review loop after this Admin readback.`}
+                  href={resolvedEmbeddedChapterHref}
+                  title={`Return to Chapters with ${embeddedReadback.chapterContext} reopened in the same Command Center review loop after this Admin readback.`}
                   className="px-3 py-1.5 bg-sky-500/12 text-sky-300 border border-sky-500/20 rounded text-[12px] hover:bg-sky-500/20 transition-colors"
                 >
-                  {`Return to ${embeddedReadback.chapterContext}`}
+                  Return to Chapters
                 </a>
               ) : null}
             </div>
             {embeddedReadback ? (
-              <p className="text-[11px] leading-relaxed text-sky-300/80">
-                {`After this Admin readback, return to ${embeddedReadback.chapterContext} in the same Command Center review loop to keep the chapter oversight context intact.`}
-              </p>
+              <div className="space-y-2">
+                <p className="text-[11px] leading-relaxed text-slate-300">
+                  RSVP totals, attendance context, event readiness, and points posture remain review-only in this embedded Admin drawer. Use this readback before requesting any chapter correction path.
+                </p>
+                <p className="text-[11px] leading-relaxed text-sky-300/80">
+                  {`After this Admin readback, return to Chapters with ${embeddedReadback.chapterContext} still selected in the same Command Center review loop to keep the chapter oversight context intact.`}
+                </p>
+              </div>
             ) : null}
           </div>
         )}
@@ -948,10 +998,16 @@ function buildEmbeddedReadbackChapter(embeddedReadback: EmbeddedChapterReadback)
   return {
     id: -1,
     name: embeddedReadback.chapterContext,
-    school: isTestContext ? "TEST Embedded staff oversight context" : "Embedded staff oversight context",
-    region: isTestContext ? "TEST Command Center" : "Command Center",
-    coach: isTestContext ? "TEST Read-only staff context" : "Read-only staff context",
-    members: 0,
+    school:
+      embeddedReadback.school ??
+      (isTestContext ? "TEST Embedded staff oversight context" : "Embedded staff oversight context"),
+    region:
+      embeddedReadback.region ??
+      (isTestContext ? "TEST Command Center" : "Command Center"),
+    coach:
+      embeddedReadback.coach ??
+      (isTestContext ? "TEST Read-only staff context" : "Read-only staff context"),
+    members: Number(embeddedReadback.members ?? 0),
     upcomingEvents: Number(embeddedReadback.events ?? 0),
     rsvps: Number(embeddedReadback.rsvps ?? 0),
     attendance: Number(embeddedReadback.attendance ?? 0),
@@ -4030,11 +4086,13 @@ export function FigmaAdminPanel({
   onBack,
   embeddedBackLabel = "staff preview",
   embeddedBackHref,
+  embeddedChapterHref,
 }: {
   initialActive?: string;
   onBack?: () => void;
   embeddedBackLabel?: string;
   embeddedBackHref?: string;
+  embeddedChapterHref?: string;
 }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -4049,6 +4107,10 @@ export function FigmaAdminPanel({
     pathname.startsWith("/staff") && embeddedChapterContext
       ? {
           chapterContext: embeddedChapterContext,
+          school: searchParams.get("chapterSchool"),
+          region: searchParams.get("chapterRegionName"),
+          coach: searchParams.get("chapterCoachName"),
+          members: searchParams.get("chapterMembers"),
           events: searchParams.get("chapterEvents"),
           rsvps: searchParams.get("chapterRsvps"),
           attendance: searchParams.get("chapterAttendance"),
@@ -4071,7 +4133,7 @@ export function FigmaAdminPanel({
     switch (active) {
       case "overview": return <OverviewPage />;
       case "users": return <UsersPage />;
-      case "chapters": return <ChaptersPage embeddedReadback={embeddedChapterReadback} embeddedBackHref={embeddedBackHref} />;
+      case "chapters": return <ChaptersPage embeddedReadback={embeddedChapterReadback} embeddedBackHref={embeddedBackHref} embeddedChapterHref={embeddedChapterHref} />;
       case "modules": return <ModulesPage />;
       case "luma": return <LumaPage />;
       case "points": return <PointsPage />;
