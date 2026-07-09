@@ -199,18 +199,17 @@ describe("Figma missing route placeholders", () => {
     );
 
     expect(html).toContain("Command Center");
-    expect(html).toContain("Return to Chapters");
+    expect(html).toContain("Return to TEST Boston College in Chapters");
     expect(html).toContain("Chapter review handoff");
     expect(html).toContain("Embedded Chapter Review");
-    expect(html).toContain("Return: Chapters");
+    expect(html).toContain("Return: TEST Boston College in Chapters");
     expect(html).toContain("Chapter review");
-    expect(html).toContain("Chapter context: TEST Boston College");
-    expect(html).toContain("Context: TEST Boston College");
+    expect(html).toContain("Chapter: TEST Boston College");
     expect(html).toContain(
       "Use this Admin readback to confirm event readiness, RSVP totals, attendance context, and points posture for TEST Boston College before requesting any blocked-control follow-through or correction path.",
     );
-    expect(html).toContain("Return with Command Center after this chapter review pass for TEST Boston College");
-    expect(html).toContain("Return with Command Center after this chapter review pass");
+    expect(html).toContain("Return with Command Center to TEST Boston College in Chapters after this chapter review pass");
+    expect(html).toContain("Return with Command Center to TEST Boston College in Chapters");
     expect(html).toContain("Overview");
     expect(html).toContain("Users");
     expect(html).toContain("Chapters");
@@ -302,7 +301,7 @@ describe("Figma missing route placeholders", () => {
     const chaptersHtml = renderToStaticMarkup(<FigmaAdminPanel initialActive="chapters" />);
     expect(chaptersHtml).toContain("This chapter directory is preview-only.");
     expect(source).toContain("Chapter metrics, module access, and risk posture shown here are preview/readback data.");
-    expect(source).toContain("Module edits remain blocked until the secure module-management workflow is approved.");
+    expect(source).toContain("Module edits for ${selected.name} remain blocked until the secure module-management workflow is approved.");
   });
 
   it("keeps /slt-prep visible as a source-backed traveler readiness preview", async () => {

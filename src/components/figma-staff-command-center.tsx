@@ -565,22 +565,22 @@ export function ChapterDetailDrawer({
               {
                 label: "Event readiness",
                 value: `${chapter.eventsThisMonth} events this month`,
-                note: "Read-only chapter snapshot",
+                note: `Read-only ${chapter.name} readback`,
               },
               {
                 label: "RSVP totals",
                 value: `${chapter.rsvps.toLocaleString()} RSVPs`,
-                note: "Carry this context into Admin",
+                note: `Carry ${chapter.name} into embedded Admin`,
               },
               {
                 label: "Attendance context",
                 value: `${chapter.attendance.toLocaleString()} attended`,
-                note: "Review before any correction request",
+                note: `Review ${chapter.name} before any correction request`,
               },
               {
                 label: "Weekly points posture",
                 value: `+${chapter.pointsWeek.toLocaleString()} this week`,
-                note: "Preview-only oversight signal",
+                note: `${chapter.name} points posture stays preview-only`,
               },
             ].map((item) => (
               <div key={item.label} className="rounded-xl border border-slate-200 bg-slate-50/70 px-3 py-2.5">
@@ -598,21 +598,21 @@ export function ChapterDetailDrawer({
                 <RiskPill level={chapter.risk} />
               </div>
               <div className="mt-1 text-[10px] leading-relaxed text-slate-600">
-                Carry the same chapter risk context into the embedded Admin readback.
+                {`Carry ${chapter.name}'s risk context into the embedded Admin readback.`}
               </div>
             </div>
             <div className="rounded-xl border border-slate-200 bg-slate-50/70 px-3 py-2.5">
               <div className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">Handoff source</div>
               <div className="mt-1 text-sm font-semibold text-slate-900">Staff chapter drawer</div>
               <div className="mt-1 text-[10px] leading-relaxed text-slate-600">
-                Keep this same oversight context visible in Admin.
+                {`Keep ${chapter.name} visible in embedded Admin.`}
               </div>
             </div>
             <div className="rounded-xl border border-slate-200 bg-slate-50/70 px-3 py-2.5">
               <div className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">Return target</div>
               <div className="mt-1 text-sm font-semibold text-slate-900">{chapter.name} in Chapters</div>
               <div className="mt-1 text-[10px] leading-relaxed text-slate-600">
-                Return to the same selected chapter after the Admin readback closes.
+                {`Return to ${chapter.name} in Chapters after the Admin readback closes.`}
               </div>
             </div>
           </div>
@@ -2309,6 +2309,32 @@ function resolveStaffAdminReadbackRisk(value: string | null): RiskLevel | null {
   return value === "healthy" || value === "at-risk" || value === "intervene" ? value : null;
 }
 
+function enrichStaffAdminChapterReadback(
+  readback: StaffAdminChapterReadback,
+): StaffAdminChapterReadback {
+  const matchedChapter = resolveStaffSelectedChapter(
+    null,
+    readback.chapterContext,
+    readback.school,
+  );
+
+  if (!matchedChapter) return readback;
+
+  return {
+    chapterContext: matchedChapter.name,
+    school: readback.school ?? matchedChapter.school,
+    region: readback.region ?? matchedChapter.medlifeRegion,
+    coach: readback.coach ?? matchedChapter.coach,
+    members: readback.members ?? String(matchedChapter.activeMembers),
+    risk: readback.risk ?? matchedChapter.risk,
+    events: readback.events ?? String(matchedChapter.eventsThisMonth),
+    rsvps: readback.rsvps ?? String(matchedChapter.rsvps),
+    attendance: readback.attendance ?? String(matchedChapter.attendance),
+    points: readback.points ?? String(matchedChapter.totalPointsYear),
+    pointsWeek: readback.pointsWeek ?? String(matchedChapter.pointsWeek),
+  };
+}
+
 function AdminRouteBlocked({
   onBack,
   backHref,
@@ -2324,15 +2350,28 @@ function AdminRouteBlocked({
   proofQueueContext?: string | null;
   chapterReadback?: StaffAdminChapterReadback | null;
 }) {
-  const contextLabel = getStaffAdminContextLabel(backLabel, chapterContext, proofQueueContext);
-  const returnLoopLabel = getStaffAdminReturnLoopLabel(backLabel, chapterContext, proofQueueContext);
+  const displayChapterContext = chapterReadback?.chapterContext ?? chapterContext;
+  const contextLabel = getStaffAdminContextLabel(
+    backLabel,
+    displayChapterContext,
+    proofQueueContext,
+  );
+  const returnLoopLabel = getStaffAdminReturnLoopLabel(
+    backLabel,
+    displayChapterContext,
+    proofQueueContext,
+  );
   const chapterReturnTarget =
     chapterReadback?.chapterContext && returnLoopLabel === "Chapters"
       ? `${chapterReadback.chapterContext} in Chapters`
       : `Return to ${returnLoopLabel}`;
+  const chapterReturnButtonLabel =
+    chapterReadback?.chapterContext && returnLoopLabel === "Chapters"
+      ? `Return to ${chapterReadback.chapterContext} in Chapters`
+      : `Return to ${returnLoopLabel}`;
   const oversightReadbackNote =
-    backLabel === "this chapter" && chapterContext
-      ? `Chapter oversight for ${chapterContext} stays read-only here: event readiness, RSVP totals, attendance readback, and points posture should be reviewed in Admin before any blocked-control follow-through or correction request.`
+    backLabel === "this chapter" && displayChapterContext
+      ? `Chapter oversight for ${displayChapterContext} stays read-only here: event readiness, RSVP totals, attendance readback, and points posture should be reviewed in Admin before any blocked-control follow-through or correction request.`
       : null;
   return (
     <div className="flex-1 flex items-center justify-center bg-[#0d1117]">
@@ -2385,7 +2424,7 @@ function AdminRouteBlocked({
                 <div>
                   <div className="text-[10px] text-slate-600 font-mono uppercase tracking-wider">Risk posture</div>
                   <div className="mt-1 text-[11px] leading-relaxed text-slate-400">
-                    Carry the same chapter risk context through this blocked Admin handoff before requesting any blocked-control follow-through or correction path.
+                    {`Carry ${displayChapterContext}'s risk context through this blocked Admin handoff before requesting any blocked-control follow-through or correction path.`}
                   </div>
                 </div>
                 {chapterReadback.risk ? <RiskPill level={chapterReadback.risk} /> : null}
@@ -2405,37 +2444,45 @@ function AdminRouteBlocked({
                 {[
                   {
                     label: "Event readiness",
-                    value: chapterReadback.events ? `${chapterReadback.events} events this month` : "No event snapshot",
+                    value: chapterReadback.events ? `${chapterReadback.events} events this month` : "No event readback",
+                    note: `Review-only ${displayChapterContext} readback`,
                   },
                   {
                     label: "RSVP totals",
-                    value: chapterReadback.rsvps ? `${chapterReadback.rsvps} RSVPs` : "No RSVP snapshot",
+                    value: chapterReadback.rsvps ? `${chapterReadback.rsvps} RSVPs` : "No RSVP readback",
+                    note: `Carry ${displayChapterContext} back out to Chapters`,
                   },
                   {
                     label: "Attendance context",
-                    value: chapterReadback.attendance ? `${chapterReadback.attendance} attended` : "No attendance snapshot",
+                    value: chapterReadback.attendance ? `${chapterReadback.attendance} attended` : "No attendance readback",
+                    note: `No attendance correction path runs here for ${displayChapterContext}`,
                   },
                   {
                     label: "Weekly points posture",
-                    value: chapterReadback.pointsWeek ? `+${chapterReadback.pointsWeek} this week` : "No weekly points snapshot",
+                    value: chapterReadback.pointsWeek ? `+${chapterReadback.pointsWeek} this week` : "No weekly points readback",
+                    note: `${displayChapterContext} points posture stays oversight-only`,
                   },
                   {
                     label: "Points this year",
                     value: chapterReadback.points
                       ? Number(chapterReadback.points).toLocaleString()
-                      : "No annual points snapshot",
+                      : "No annual points readback",
+                    note: `Keep ${displayChapterContext} in the same review loop before any correction request`,
                   },
-                ].map(({ label, value }) => (
+                ].map(({ label, value, note }) => (
                   <div key={label} className="rounded-lg border border-white/[0.06] bg-[#0d1117]/70 px-3 py-2">
                     <div className="text-[10px] text-slate-600 font-mono uppercase tracking-wider">{label}</div>
                     <div className="mt-1 text-[12px] font-mono font-semibold text-slate-200">{value}</div>
+                    <div className="mt-1 text-[10px] leading-relaxed text-slate-400">{note}</div>
                   </div>
                 ))}
               </div>
             </div>
           ) : null}
           <p className="mt-3 text-[11px] leading-relaxed text-slate-500">
-            {`When DS Admin access is available, return to ${returnLoopLabel} in the same Command Center review loop after the Admin readback closes.`}
+            {chapterReadback?.chapterContext && returnLoopLabel === "Chapters"
+              ? `When DS Admin access is available, return to ${chapterReadback.chapterContext} in Chapters in the same Command Center review loop after the Admin readback closes.`
+              : `When DS Admin access is available, return to ${returnLoopLabel} in the same Command Center review loop after the Admin readback closes.`}
           </p>
         </div>
 
@@ -2447,7 +2494,7 @@ function AdminRouteBlocked({
           }}
           className="block w-full rounded-lg bg-slate-800 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-slate-700"
         >
-          {`Return to ${returnLoopLabel}`}
+          {chapterReturnButtonLabel}
         </a>
       </div>
     </div>
@@ -2472,15 +2519,28 @@ function AdminRoleGate({
   chapterReadback?: StaffAdminChapterReadback | null;
 }) {
   const [picked, setPicked] = useState<AdminRole>("ds-admin");
-  const contextLabel = getStaffAdminContextLabel(backLabel, chapterContext, proofQueueContext);
-  const returnLoopLabel = getStaffAdminReturnLoopLabel(backLabel, chapterContext, proofQueueContext);
+  const displayChapterContext = chapterReadback?.chapterContext ?? chapterContext;
+  const contextLabel = getStaffAdminContextLabel(
+    backLabel,
+    displayChapterContext,
+    proofQueueContext,
+  );
+  const returnLoopLabel = getStaffAdminReturnLoopLabel(
+    backLabel,
+    displayChapterContext,
+    proofQueueContext,
+  );
   const chapterReturnTarget =
     chapterReadback?.chapterContext && returnLoopLabel === "Chapters"
       ? `${chapterReadback.chapterContext} in Chapters`
       : `Return to ${returnLoopLabel}`;
+  const chapterReturnButtonLabel =
+    chapterReadback?.chapterContext && returnLoopLabel === "Chapters"
+      ? `Return to ${chapterReadback.chapterContext} in Chapters`
+      : `Return to ${returnLoopLabel}`;
   const oversightReadbackNote =
-    backLabel === "this chapter" && chapterContext
-      ? `Open Admin preview to read back event readiness, RSVP totals, attendance context, and points posture for ${chapterContext} before requesting any blocked-control follow-through or correction path.`
+    backLabel === "this chapter" && displayChapterContext
+      ? `Open Admin preview to read back event readiness, RSVP totals, attendance context, and points posture for ${displayChapterContext} before requesting any blocked-control follow-through or correction path.`
       : null;
 
   return (
@@ -2531,7 +2591,7 @@ function AdminRoleGate({
               <div>
                 <div className="text-[10px] text-slate-600 font-mono uppercase tracking-wider">Risk posture</div>
                 <div className="mt-1 text-[11px] leading-relaxed text-slate-400">
-                  Carry the same chapter risk context through this Admin gate before requesting any blocked-control follow-through or correction path.
+                  {`Carry ${displayChapterContext}'s risk context through this Admin gate before requesting any blocked-control follow-through or correction path.`}
                 </div>
               </div>
               {chapterReadback.risk ? <RiskPill level={chapterReadback.risk} /> : null}
@@ -2551,30 +2611,36 @@ function AdminRoleGate({
               {[
                 {
                   label: "Event readiness",
-                  value: chapterReadback.events ? `${chapterReadback.events} events this month` : "No event snapshot",
+                  value: chapterReadback.events ? `${chapterReadback.events} events this month` : "No event readback",
+                  note: `Review-only ${displayChapterContext} readback`,
                 },
                 {
                   label: "RSVP totals",
-                  value: chapterReadback.rsvps ? `${chapterReadback.rsvps} RSVPs` : "No RSVP snapshot",
+                  value: chapterReadback.rsvps ? `${chapterReadback.rsvps} RSVPs` : "No RSVP readback",
+                  note: `Carry ${displayChapterContext} back out to Chapters`,
                 },
                 {
                   label: "Attendance context",
-                  value: chapterReadback.attendance ? `${chapterReadback.attendance} attended` : "No attendance snapshot",
+                  value: chapterReadback.attendance ? `${chapterReadback.attendance} attended` : "No attendance readback",
+                  note: `No attendance correction path runs here for ${displayChapterContext}`,
                 },
                 {
                   label: "Weekly points posture",
-                  value: chapterReadback.pointsWeek ? `+${chapterReadback.pointsWeek} this week` : "No weekly points snapshot",
+                  value: chapterReadback.pointsWeek ? `+${chapterReadback.pointsWeek} this week` : "No weekly points readback",
+                  note: `${displayChapterContext} points posture stays oversight-only`,
                 },
                 {
                   label: "Points this year",
                   value: chapterReadback.points
                     ? Number(chapterReadback.points).toLocaleString()
-                    : "No annual points snapshot",
+                    : "No annual points readback",
+                  note: `Keep ${displayChapterContext} in the same review loop before any correction request`,
                 },
-              ].map(({ label, value }) => (
+              ].map(({ label, value, note }) => (
                 <div key={label} className="rounded-lg border border-white/[0.06] bg-[#161b22] px-3 py-2">
                   <div className="text-[10px] text-slate-600 font-mono uppercase tracking-wider">{label}</div>
                   <div className="mt-1 text-[12px] font-mono font-semibold text-slate-200">{value}</div>
+                  <div className="mt-1 text-[10px] leading-relaxed text-slate-400">{note}</div>
                 </div>
               ))}
             </div>
@@ -2618,7 +2684,9 @@ function AdminRoleGate({
         </button>
 
         <p className="text-[11px] leading-relaxed text-slate-600">
-          {`After the Admin readback, return to ${returnLoopLabel} in the same Command Center review loop.`}
+          {chapterReadback?.chapterContext && returnLoopLabel === "Chapters"
+            ? `After the Admin readback, return to ${chapterReadback.chapterContext} in Chapters in the same Command Center review loop.`
+            : `After the Admin readback, return to ${returnLoopLabel} in the same Command Center review loop.`}
         </p>
 
         <p className="text-[11px] text-slate-700">
@@ -2631,7 +2699,7 @@ function AdminRoleGate({
             }}
             className="text-slate-500 underline underline-offset-2"
           >
-            {`Return to ${returnLoopLabel}`}
+            {chapterReturnButtonLabel}
           </a>
         </p>
       </div>
@@ -2694,9 +2762,11 @@ export function FigmaStaffCommandCenter({
     searchParams.get(key) ?? initialRouteParams?.[key] ?? null;
   const activeScreen = resolveStaffShellScreen(getRouteParam("view") ?? initialView ?? null);
   const selectedChapterId = getRouteParam("chapter");
+  const selectedChapterContext = getRouteParam("chapterContext");
+  const selectedChapterSchool = getRouteParam("chapterSchool");
   const selectedChapter =
-    activeScreen === "chapters" && selectedChapterId
-      ? CHAPTERS.find((chapter) => chapter.id === selectedChapterId) ?? null
+    activeScreen === "chapters" && (selectedChapterId || selectedChapterContext || selectedChapterSchool)
+      ? resolveStaffSelectedChapter(selectedChapterId, selectedChapterContext, selectedChapterSchool)
       : null;
   const adminReturnScreen =
     activeScreen === "admin" ? resolveStaffAdminReturnScreen(getRouteParam("returnView")) : "chapters";
@@ -2705,7 +2775,7 @@ export function FigmaStaffCommandCenter({
   const adminChapterContext = activeScreen === "admin" ? getRouteParam("chapterContext") : null;
   const adminChapterReadback =
     activeScreen === "admin" && adminReturnScreen === "chapters" && adminChapterContext
-      ? {
+      ? enrichStaffAdminChapterReadback({
           chapterContext: adminChapterContext,
           school: getRouteParam("chapterSchool"),
           region: getRouteParam("chapterRegionName"),
@@ -2717,18 +2787,23 @@ export function FigmaStaffCommandCenter({
           attendance: getRouteParam("chapterAttendance"),
           points: getRouteParam("chapterPoints"),
           pointsWeek: getRouteParam("chapterPointsWeek"),
-        }
+        })
       : null;
   const adminProofQueueContext =
     activeScreen === "admin"
       ? getEmbeddedProofQueueContext(getRouteParam("proofStatus"), getRouteParam("proofPlatform"))
       : null;
+  const adminDisplayChapterContext = adminChapterReadback?.chapterContext ?? adminChapterContext;
   const adminPreviewTitle =
     activeScreen === "admin" ? getStaffAdminPreviewTitle(getRouteParam("adminView")) : null;
   const adminBackLabel = getStaffAdminReturnLabel(adminReturnScreen, adminReturnChapterId);
   const adminHeaderSubtitle =
     activeScreen === "admin"
-      ? getStaffAdminHeaderSubtitle(adminBackLabel, adminChapterContext, adminProofQueueContext)
+      ? getStaffAdminHeaderSubtitle(
+          adminBackLabel,
+          adminDisplayChapterContext,
+          adminProofQueueContext,
+        )
       : null;
   const initialProofStatusFilter = resolveProofQueueStatusFilter(getRouteParam("proofStatus"));
   const initialProofPlatformFilter = resolveProofQueuePlatformFilter(getRouteParam("proofPlatform"));
@@ -2892,7 +2967,7 @@ export function FigmaStaffCommandCenter({
               onBack={handleAdminBack}
               backHref={adminReturnHref ?? undefined}
               backLabel={adminBackLabel}
-              chapterContext={adminChapterContext}
+              chapterContext={adminDisplayChapterContext}
               proofQueueContext={adminProofQueueContext}
               chapterReadback={adminChapterReadback}
             />
@@ -2901,7 +2976,7 @@ export function FigmaStaffCommandCenter({
               onBack={handleAdminBack}
               backHref={adminReturnHref ?? undefined}
               backLabel={adminBackLabel}
-              chapterContext={adminChapterContext}
+              chapterContext={adminDisplayChapterContext}
               proofQueueContext={adminProofQueueContext}
               chapterReadback={adminChapterReadback}
             />
@@ -3204,6 +3279,38 @@ function buildStaffShellQueryFromInitialRouteParams(
   }
 
   return params.toString();
+}
+
+function normalizeStaffChapterContext(value: string | null | undefined) {
+  return value?.trim().toLowerCase().replace(/^test\s+/, "") ?? null;
+}
+
+function resolveStaffSelectedChapter(
+  chapterId: string | null,
+  chapterContext: string | null,
+  chapterSchool: string | null,
+) {
+  if (chapterId) {
+    const matchedById = CHAPTERS.find((chapter) => chapter.id === chapterId);
+    if (matchedById) return matchedById;
+  }
+
+  const normalizedChapterContext = normalizeStaffChapterContext(chapterContext);
+  const normalizedChapterSchool = normalizeStaffChapterContext(chapterSchool);
+  if (!normalizedChapterContext && !normalizedChapterSchool) return null;
+
+  return (
+    CHAPTERS.find((chapter) => {
+      const name = normalizeStaffChapterContext(chapter.name);
+      const school = normalizeStaffChapterContext(chapter.school);
+      return (
+        (normalizedChapterContext !== null &&
+          (name === normalizedChapterContext || school === normalizedChapterContext)) ||
+        (normalizedChapterSchool !== null &&
+          (name === normalizedChapterSchool || school === normalizedChapterSchool))
+      );
+    }) ?? null
+  );
 }
 
 function resolveStaffCampaignTab(campaign: string | null) {
