@@ -4154,11 +4154,26 @@ function getMemberProfileNavigationOptions(
     searchQuery: string;
     source: ChapterLeaderCommandCenterSource | null;
   },
-) {
+) : {
+  source: ChapterLeaderCommandCenterSource | null;
+  memberId: string;
+  quickAction?: ChapterLeaderQuickActionState;
+  bestPracticeChapterId: string | null;
+  eventCommitteeFilter: ChapterLeaderEventCommitteeFilterKey;
+  eventId: string | null;
+  feedPostId: string | null;
+  leaderboardMetric: ChapterLeaderLeaderboardMetricKey;
+  leaderboardRegion: ChapterLeaderLeaderboardRegionKey;
+  pipelineFilter: ChapterLeaderPipelineFilter;
+  searchQuery: string;
+} {
+  const preservedQuickAction: ChapterLeaderQuickActionState | undefined =
+    context.activeQuickAction === "assign_action" ? "assign_action" : undefined;
+
   return {
     source: context.source,
     memberId,
-    quickAction: context.activeQuickAction === "assign_action" ? "assign_action" : undefined,
+    quickAction: preservedQuickAction,
     bestPracticeChapterId:
       context.source === "leaderboard" ? context.bestPracticeChapterId : null,
     eventCommitteeFilter: context.eventCommitteeFilter,

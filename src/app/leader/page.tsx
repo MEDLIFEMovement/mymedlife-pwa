@@ -123,8 +123,22 @@ export default async function LeaderPage({ searchParams }: LeaderPageProps) {
           | undefined,
         searchQuery: resolvedSearchParams?.q,
         eventId: resolvedSearchParams?.event,
-        leaderboardMetric: resolvedSearchParams?.leaderboardMetric,
-        leaderboardRegion: resolvedSearchParams?.region,
+        leaderboardMetric: resolvedSearchParams?.leaderboardMetric as
+          | "chapter_health"
+          | "events_created"
+          | "active_members"
+          | "attendance"
+          | "evidence"
+          | "bridge_videos"
+          | "funds_raised"
+          | "slt_participants"
+          | undefined,
+        leaderboardRegion: resolvedSearchParams?.region as
+          | "all"
+          | "current_region"
+          | "united_states"
+          | "canada"
+          | undefined,
         bestPracticeChapterId: resolvedSearchParams?.benchmark,
         quickAction:
           resolvedSearchParams?.quickAction === "assign_action"
