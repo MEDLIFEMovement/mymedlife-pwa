@@ -457,7 +457,7 @@ describe("staff page", () => {
     expect(html).toContain("Chapter review context: TEST Boston College");
     expect(html).toContain(">Chapters</h1>");
     expect(html).toContain(
-      "Chapter oversight for TEST Boston College stays read-only here: event readiness, RSVP totals, attendance readback, and points posture should be reviewed in Admin before any correction request.",
+      "Chapter oversight for TEST Boston College stays read-only here: event readiness, RSVP totals, attendance readback, and points posture should be reviewed in Admin before any blocked-control follow-through or correction request.",
     );
     expect(html).toContain("When DS Admin access is available, return to Chapters in the same Command Center review loop after the Admin readback closes.");
     expect(html).toContain("Return to Chapters");
@@ -551,7 +551,7 @@ describe("staff page", () => {
     expect(html).toContain("Chapter context: TEST Stanford University");
     expect(html).toContain("Embedded Chapter Review");
     expect(html).toContain(
-      "Use this Admin readback to confirm event readiness, RSVP totals, attendance context, and points posture for TEST Stanford University before requesting any correction path.",
+      "Use this Admin readback to confirm event readiness, RSVP totals, attendance context, and points posture for TEST Stanford University before requesting any blocked-control follow-through or correction path.",
     );
     expect(html).toContain(
       "After this Admin readback, return to Chapters with TEST Stanford University still selected in the same Command Center review loop to keep the chapter oversight context intact.",
