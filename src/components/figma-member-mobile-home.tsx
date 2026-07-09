@@ -2323,6 +2323,14 @@ function EventsScreen({
       : source === "points"
         ? { eyebrow: "Opened from Points & Recognition", title: "Move from TEST points readback into the next event.", body: "The member loop should not stop at the leaderboard. Use this route-backed return path to find the next event, preview RSVP or check-in, and come back to points when the chapter moment is done.", href: pointsReturnHref ?? "/app/points?source=events", cta: "Back to Points" }
         : null;
+  const previewFallback =
+    source === "home"
+      ? { href: "/app", cta: "Return to Home instead" }
+      : source === "profile"
+        ? { href: profileReturnHref, cta: "Return to Profile instead" }
+        : source === "points"
+          ? { href: pointsReturnHref ?? "/app/points?source=events", cta: "Return to Points instead" }
+          : { href: buildEventsHref({ source, campaign: activeCampaign, profileSource }), cta: "Stay in this TEST campaign list" };
 
   return (
     <div className="pb-28">
@@ -2434,13 +2442,23 @@ function EventsScreen({
               </div>
               <div className="flex gap-2">
                 <Link
-                  href={getMemberEventRsvpHref(featuredEvent.id, source)}
+                  href={getMemberEventRsvpHref(
+                    featuredEvent.id,
+                    source,
+                    activeCampaign,
+                    profileSource,
+                  )}
                   className="flex flex-1 items-center justify-center rounded-xl bg-primary py-2.5 text-sm font-bold text-white transition-opacity hover:opacity-90"
                 >
                   RSVP
                 </Link>
                 <Link
-                  href={getMemberEventDetailHref(featuredEvent.id, source)}
+                  href={getMemberEventDetailHref(
+                    featuredEvent.id,
+                    source,
+                    activeCampaign,
+                    profileSource,
+                  )}
                   className="flex flex-1 items-center justify-center rounded-xl bg-secondary py-2.5 text-sm font-bold text-primary transition-colors hover:bg-muted"
                 >
                   View Details
@@ -2512,6 +2530,13 @@ function EventsScreen({
                             <p className="mt-1 text-[11px] font-medium text-muted-foreground">
                               Detail stays in this TEST campaign list preview for now.
                             </p>
+                            <Link
+                              href={previewFallback.href}
+                              className="mt-2 inline-flex items-center gap-1 text-[11px] font-semibold text-primary"
+                            >
+                              <ChevronLeft size={12} />
+                              {previewFallback.cta}
+                            </Link>
                           </div>
                         </div>
                       )}

@@ -258,6 +258,7 @@ describe("member mobile shell routes", () => {
       'href="/app/events?source=profile&amp;profileSource=points&amp;campaign=Spring+Showcase"',
     );
     expect(getBottomNavHtml(html)).not.toContain('href="/app/points?source=profile&amp;campaign=Spring%20Showcase"');
+    expect(html).toContain("Return to Profile instead");
   });
   it("renders the Points route through the shared Figma member shell", async () => {
     const actorModule = await import("@/services/local-actor-context");
