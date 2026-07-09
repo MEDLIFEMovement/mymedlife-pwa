@@ -1722,8 +1722,12 @@ describe("chapter leader command center", () => {
     expect(commandCenter.navigationMemberId).toBeNull();
     expect(markup).toContain("Choose a member from Chapter Home follow-through first");
     expect(markup).toContain("Back to Chapter Home");
+    expect(markup).toContain("Open attendance review");
     expect(markup).toContain(
       "href=\"/leader?view=overview&amp;source=overview&amp;eventCommittee=events&amp;event=bc-event-moving-mountains-kickoff&amp;pipeline=follow_up&amp;q=Ivy&amp;quickAction=assign_action\"",
+    );
+    expect(markup).toContain(
+      "href=\"/leader?view=events&amp;source=overview&amp;eventCommittee=events&amp;event=bc-event-moving-mountains-kickoff&amp;quickAction=assign_action\"",
     );
   });
 

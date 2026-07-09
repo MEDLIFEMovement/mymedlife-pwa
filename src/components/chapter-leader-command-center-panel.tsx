@@ -1236,14 +1236,17 @@ function renderView(
               preservesAttendanceReturnContext) ||
               (commandCenter.selectedSource === "leaderboard" &&
                 preservesAttendanceReturnContext)) &&
-            commandCenter.sourceContext?.actions?.[0] ? (
-              <div className="mt-4">
-                <Link
-                  href={commandCenter.sourceContext.actions[0].href}
-                  className="inline-flex rounded-full border border-[#bfdbfe] bg-white px-4 py-2 text-sm font-semibold text-[#1d4ed8]"
-                >
-                  {commandCenter.sourceContext.actions[0].label}
-                </Link>
+            commandCenter.sourceContext?.actions?.length ? (
+              <div className="mt-4 flex flex-wrap gap-2">
+                {commandCenter.sourceContext.actions.map((action) => (
+                  <Link
+                    key={`${action.label}-${action.href}`}
+                    href={action.href}
+                    className="inline-flex rounded-full border border-[#bfdbfe] bg-white px-4 py-2 text-sm font-semibold text-[#1d4ed8]"
+                  >
+                    {action.label}
+                  </Link>
+                ))}
               </div>
             ) : null}
           </SectionCard>
