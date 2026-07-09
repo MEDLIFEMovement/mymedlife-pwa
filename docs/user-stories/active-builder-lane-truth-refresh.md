@@ -20,12 +20,14 @@ without rereading the whole story package.
 - PR `#619` is merged.
 - PR `#618` is merged.
 - PR `#621` is merged.
-- PR `#624` is now the new member front candidate; it is open, draft,
-  mergeable, and green on checks.
+- PR `#624` is merged.
+- No new member, leader, or staff/admin front PR is promoted by this packet yet;
+  use the next Coordinator queue correction before treating older parked PRs as
+  active front work.
 - The active planning layer still separates implementation truth from
   Figma/exported-source acceptance shape.
-- Open PR board noise and older parked branches should not outrank the active
-  `#624` first-pass watch state unless Coordinator gives a fresher queue
+- Open PR board noise and older parked branches should not outrank the
+  post-`#624` merged-main truth unless Coordinator gives a fresher queue
   correction.
 - TEST/sandbox/Figma-derived visible people, chapters, events, stories, proof
   cards, metrics, placeholder owners, and audit actors must keep visible `TEST`
@@ -59,8 +61,8 @@ Live PR signal:
 - `gh pr view 619` confirmed merged.
 - `gh pr view 618` confirmed merged.
 - `gh pr view 621` confirmed merged.
-- `gh pr view 624` shows an open, draft, mergeable member front candidate with
-  green checks.
+- `gh pr view 624` confirmed merged at `2026-07-09T15:30:58Z` with merge commit
+  `e098074e938623967170416b422b0ae917f0c1bf`.
 - This packet captures planning order and acceptance boundaries only; it should
   not be read as approval for older parked branches.
 
@@ -70,8 +72,7 @@ Live PR signal:
 
 Next safest slice:
 
-1. Treat PR `#624` as the member front candidate that is green but still draft;
-   clear draft/merge posture before starting the next member PR behind it.
+1. Stop treating PR `#624` as active queue work; it is merged.
 2. Keep the next local member seam focused on source-backed member loop
    continuity instead of broad member redesign.
 3. Preserve the existing profile, Stories, events/detail, points, and bottom-nav
@@ -158,9 +159,9 @@ What does not count:
 Next safest slice:
 
 - PR `#620` is now merged, so stop describing its staff/admin seam as pending.
-- Shape the next staff/admin seam locally while member `#624` is in first-pass
-  watch: chapter oversight honesty, embedded Admin context, and visible
-  TEST-label coverage without claiming rollout proof.
+- Shape the next staff/admin seam locally after the `#624` member merge:
+  chapter oversight honesty, embedded Admin context, and visible TEST-label
+  coverage without claiming rollout proof.
 
 Current steering correction:
 
