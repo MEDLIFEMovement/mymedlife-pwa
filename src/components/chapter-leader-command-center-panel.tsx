@@ -1463,6 +1463,25 @@ function renderView(
                 >
                   Open Leaderboard
                 </Link>
+                <Link
+                  href={buildChapterLeaderCommandCenterHref("leaderboard", {
+                    source:
+                      commandCenter.selectedSource === "leaderboard"
+                        ? "leaderboard"
+                        : "events",
+                    memberId: commandCenter.navigationMemberId,
+                    bestPracticeChapterId: commandCenter.selectedBestPracticeChapterId,
+                    pipelineFilter: commandCenter.selectedPipelineFilter,
+                    searchQuery: commandCenter.pipelineSearchQuery,
+                    eventCommitteeFilter: commandCenter.selectedEventCommitteeFilter,
+                    eventId: commandCenter.selectedEventId,
+                    leaderboardMetric: "attendance",
+                    leaderboardRegion: commandCenter.selectedLeaderboardRegion,
+                  })}
+                  className="inline-flex rounded-full border border-[#bfdbfe] bg-white px-4 py-2 text-sm font-semibold text-[#1d4ed8]"
+                >
+                  Open Leaderboard
+                </Link>
               </div>
             </SectionCard>
           ) : null}
@@ -1658,6 +1677,9 @@ function renderView(
                       href={buildChapterLeaderCommandCenterHref("events", {
                         source: commandCenter.selectedSource,
                         memberId: commandCenter.navigationMemberId,
+                        bestPracticeChapterId: commandCenter.selectedBestPracticeChapterId,
+                        leaderboardMetric: commandCenter.selectedLeaderboardMetric,
+                        leaderboardRegion: commandCenter.selectedLeaderboardRegion,
                         pipelineFilter: commandCenter.selectedPipelineFilter,
                         searchQuery: commandCenter.pipelineSearchQuery,
                         eventCommitteeFilter: commandCenter.selectedEventCommitteeFilter,
@@ -1670,13 +1692,18 @@ function renderView(
                     </Link>
                     <Link
                       href={buildChapterLeaderCommandCenterHref("leaderboard", {
-                        source: "events",
+                        source:
+                          commandCenter.selectedSource === "leaderboard"
+                            ? "leaderboard"
+                            : "events",
                         memberId: commandCenter.navigationMemberId,
+                        bestPracticeChapterId: commandCenter.selectedBestPracticeChapterId,
                         pipelineFilter: commandCenter.selectedPipelineFilter,
                         searchQuery: commandCenter.pipelineSearchQuery,
                         eventCommitteeFilter: commandCenter.selectedEventCommitteeFilter,
                         eventId: commandCenter.selectedEvent.id,
                         leaderboardMetric: "attendance",
+                        leaderboardRegion: commandCenter.selectedLeaderboardRegion,
                       })}
                       className="inline-flex rounded-full border border-[#bfdbfe] bg-white px-4 py-2 text-sm font-semibold text-[#1d4ed8]"
                     >

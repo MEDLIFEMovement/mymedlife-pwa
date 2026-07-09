@@ -2294,7 +2294,10 @@ export function buildChapterLeaderCommandCenterHref(
     options.source === "leaderboard" ||
     Boolean(options.bestPracticeChapterId);
   const shouldPreserveEventContext =
-    view === "events" || options.source === "events" || options.source === "overview";
+    view === "events" ||
+    view === "leaderboard" ||
+    options.source === "events" ||
+    options.source === "overview";
   const shouldPreserveFeedPostContext =
     view === "feed_analytics" ||
     view === "bridge_videos" ||
