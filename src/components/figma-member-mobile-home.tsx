@@ -3704,7 +3704,7 @@ function getPointsBottomNavProfileHref(
   source: MemberLoopSource,
   returnEventId: string | null,
 ) {
-  if (source === "points" && returnEventId) {
+  if (returnEventId) {
     return `/profile?source=points&event=${returnEventId}`;
   }
 

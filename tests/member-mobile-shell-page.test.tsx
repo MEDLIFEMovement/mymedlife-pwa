@@ -242,6 +242,9 @@ describe("member mobile shell routes", () => {
     expect(getBottomNavHtml(html)).toContain(
       'href="/app/events/chapter-event-ucla-kickoff?source=points"',
     );
+    expect(getBottomNavHtml(html)).toContain(
+      'href="/profile?source=points&amp;event=chapter-event-ucla-kickoff"',
+    );
   });
 
   it("keeps the member points route connected to the profile walkthrough when opened from profile", async () => {
@@ -327,6 +330,9 @@ describe("member mobile shell routes", () => {
     expect(html).toContain('href="/app/events/chapter-event-ucla-kickoff?source=home&amp;step=checkin"');
     expect(getBottomNavHtml(html)).toContain(
       'href="/app/events/chapter-event-ucla-kickoff?source=home"',
+    );
+    expect(getBottomNavHtml(html)).toContain(
+      'href="/profile?source=points&amp;event=chapter-event-ucla-kickoff"',
     );
   });
 
