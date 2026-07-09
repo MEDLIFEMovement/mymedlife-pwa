@@ -2388,6 +2388,9 @@ export function buildChapterLeaderCommandCenterHref(
 export function buildChapterLeaderAssignmentFlowHref(options: {
   source?: ChapterLeaderCommandCenterSource | null;
   memberId?: string | null;
+  bestPracticeChapterId?: string | null;
+  leaderboardMetric?: ChapterLeaderLeaderboardMetricKey;
+  leaderboardRegion?: ChapterLeaderLeaderboardRegionKey;
   pipelineFilter?: ChapterLeaderPipelineFilter;
   searchQuery?: string;
   eventCommitteeFilter?: ChapterLeaderEventCommitteeFilterKey;
@@ -2399,6 +2402,10 @@ export function buildChapterLeaderAssignmentFlowHref(options: {
   const returnTo = buildChapterLeaderCommandCenterHref(returnView, {
     source: options.source,
     memberId: options.memberId,
+    bestPracticeChapterId:
+      options.source === "leaderboard" ? options.bestPracticeChapterId : null,
+    leaderboardMetric: options.leaderboardMetric,
+    leaderboardRegion: options.leaderboardRegion,
     pipelineFilter: options.pipelineFilter,
     searchQuery: options.searchQuery,
     eventCommitteeFilter: returnView === "events" ? options.eventCommitteeFilter : undefined,

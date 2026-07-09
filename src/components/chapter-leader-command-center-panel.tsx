@@ -1437,6 +1437,9 @@ function renderView(
                   href={buildChapterLeaderAssignmentFlowHref({
                     source: commandCenter.selectedSource,
                     memberId: commandCenter.navigationMemberId,
+                    bestPracticeChapterId: commandCenter.selectedBestPracticeChapterId,
+                    leaderboardMetric: commandCenter.selectedLeaderboardMetric,
+                    leaderboardRegion: commandCenter.selectedLeaderboardRegion,
                     pipelineFilter: commandCenter.selectedPipelineFilter,
                     searchQuery: commandCenter.pipelineSearchQuery,
                     eventCommitteeFilter: commandCenter.selectedEventCommitteeFilter,
