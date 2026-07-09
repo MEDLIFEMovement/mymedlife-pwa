@@ -784,6 +784,36 @@ describe("chapter leader command center", () => {
     );
   });
 
+  it("keeps attendance-confirmation posture attached when member review opens from the leader event shell", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "member_profile",
+      source: "events",
+      memberId: "member-ivy",
+      eventCommittee: "events",
+      eventId: "bc-event-moving-mountains-kickoff",
+      quickAction: "assign_action",
+    });
+    const markup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
+    );
+
+    expect(commandCenter.selectedMember?.backToContextLabel).toBe("Back to Attendance Review");
+    expect(commandCenter.selectedMember?.backToContextHref).toBe(
+      "/leader?view=events&source=events&member=member-ivy&eventCommittee=events&event=bc-event-moving-mountains-kickoff&quickAction=assign_action",
+    );
+    expect(commandCenter.selectedMember?.reviewContext).toMatchObject({
+      eyebrow: "Event review follow-through",
+      actionLabel: "Back to attendance review",
+      actionHref:
+        "/leader?view=events&source=events&member=member-ivy&eventCommittee=events&event=bc-event-moving-mountains-kickoff&quickAction=assign_action",
+    });
+    expect(markup).toContain("Back to Attendance Review");
+    expect(markup).toContain(
+      "href=\"/leader?view=events&amp;source=events&amp;member=member-ivy&amp;eventCommittee=events&amp;event=bc-event-moving-mountains-kickoff&amp;quickAction=assign_action\"",
+    );
+  });
+
   it("keeps leaderboard readback attached when a member profile is opened from the leaderboard", () => {
     const actor = getMockLocalActorContext("leader.a@mymedlife.test");
     const commandCenter = getChapterLeaderCommandCenter(actor, data, {
