@@ -923,6 +923,32 @@ describe("chapter leader command center", () => {
     expect(markup).not.toContain("Leaderboard review in focus");
     expect(markup).not.toContain("through attendance-backed points");
   });
+
+  it("keeps attendance-review posture attached when leaderboard readback opens without a selected member", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = {
+      ...getChapterLeaderCommandCenter(actor, data, {
+        view: "leaderboard",
+        source: "events",
+        eventCommittee: "events",
+        eventId: "bc-event-moving-mountains-kickoff",
+        leaderboardMetric: "attendance",
+        quickAction: "assign_action",
+      }),
+      selectedMember: null,
+      navigationMemberId: null,
+    };
+    const markup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
+    );
+
+    expect(markup).toContain("Opened from attendance review into leaderboard follow-through");
+    expect(markup).toContain("Back to attendance review");
+    expect(markup).toContain(
+      "href=\"/leader?view=events&amp;source=events&amp;eventCommittee=events&amp;event=bc-event-moving-mountains-kickoff&amp;quickAction=assign_action\"",
+    );
+    expect(markup).not.toContain("Leaderboard review in focus");
+  });
   it("opens review members as a chapter-owned member-pipeline state before the person-level review", () => {
     const actor = getMockLocalActorContext("leader.a@mymedlife.test");
     const commandCenter = getChapterLeaderCommandCenter(actor, data, {
@@ -1182,6 +1208,31 @@ describe("chapter leader command center", () => {
       "Choose a member from the pipeline first so this profile can show leadership context, history, and next-step ownership.",
     );
     expect(markup).not.toContain("Open event context");
+  });
+
+  it("keeps attendance-review return posture visible while member review waits for a selected person", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = {
+      ...getChapterLeaderCommandCenter(actor, data, {
+        view: "member_profile",
+        source: "events",
+        eventCommittee: "events",
+        eventId: "bc-event-moving-mountains-kickoff",
+        leaderboardMetric: "attendance",
+        quickAction: "assign_action",
+      }),
+      selectedMember: null,
+    };
+    const markup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
+    );
+
+    expect(commandCenter.selectedMember).toBeNull();
+    expect(markup).toContain("Choose a member from attendance review first");
+    expect(markup).toContain("Back to attendance review");
+    expect(markup).toContain(
+      "href=\"/leader?view=events&amp;source=events&amp;eventCommittee=events&amp;event=bc-event-moving-mountains-kickoff&amp;quickAction=assign_action\"",
+    );
   });
 
   it("keeps the member-profile header compact so the person workbench leads the viewport", () => {

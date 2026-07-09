@@ -1161,8 +1161,23 @@ function renderView(
         ) : (
           <SectionCard eyebrow="Member profile" title="Select a member">
             <p className="text-sm leading-6 text-slate-600">
-              Choose a member from the pipeline first so this profile can show leadership context, history, and next-step ownership.
+              {commandCenter.selectedSource === "events" &&
+              commandCenter.activeQuickAction === "assign_action"
+                ? "Choose a member from attendance review first so this profile stays attached to the same TEST event, readback, and next-step ownership."
+                : "Choose a member from the pipeline first so this profile can show leadership context, history, and next-step ownership."}
             </p>
+            {commandCenter.selectedSource === "events" &&
+            commandCenter.activeQuickAction === "assign_action" &&
+            commandCenter.sourceContext?.actions?.[0] ? (
+              <div className="mt-4">
+                <Link
+                  href={commandCenter.sourceContext.actions[0].href}
+                  className="inline-flex rounded-full border border-[#bfdbfe] bg-white px-4 py-2 text-sm font-semibold text-[#1d4ed8]"
+                >
+                  {commandCenter.sourceContext.actions[0].label}
+                </Link>
+              </div>
+            ) : null}
           </SectionCard>
         )
       );
