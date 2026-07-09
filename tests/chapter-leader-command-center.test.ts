@@ -234,28 +234,18 @@ describe("chapter leader command center", () => {
 
     expect(commandCenter.selectedSource).toBe("overview");
     expect(commandCenter.sourceContext).toMatchObject({
-      eyebrow: "Chapter Home handoff",
-      title: "Opened from Chapter Home into event follow-through",
+      eyebrow: "Chapter home handoff",
+      title: "Opened from the chapter command center",
       actions: [
         {
-          label: "Back to Chapter Home",
+          label: "Back to chapter home",
           href: "/leader?view=overview&source=overview&member=member-ivy",
-        },
-        {
-          label: "Open Event Performance",
-          href: "/leader?view=events&source=overview&member=member-ivy&eventCommittee=events&event=bc-event-moving-mountains-kickoff",
-        },
-        {
-          label: "Open leaderboard",
-          href: "/leader?view=leaderboard&source=overview&member=member-ivy&eventCommittee=events&leaderboardMetric=attendance",
         },
       ],
     });
-    expect(markup).toContain("Chapter Home handoff");
-    expect(markup).toContain("Opened from Chapter Home into event follow-through");
-    expect(markup).toContain("Back to Chapter Home");
-    expect(markup).toContain("Open Event Performance");
-    expect(markup).toContain("Open leaderboard");
+    expect(markup).toContain("Chapter home handoff");
+    expect(markup).toContain("Opened from the chapter command center");
+    expect(markup).toContain("Back to chapter home");
   });
 
   it("keeps chapter-home committee follow-through inside the same leader event loop", () => {
@@ -274,32 +264,18 @@ describe("chapter leader command center", () => {
 
     expect(commandCenter.selectedSource).toBe("overview");
     expect(commandCenter.sourceContext).toMatchObject({
-      eyebrow: "Chapter Home handoff",
-      title: "Opened from Chapter Home into committee follow-through",
+      eyebrow: "Chapter home handoff",
+      title: "Opened from the chapter command center",
       actions: [
         {
-          label: "Back to Chapter Home",
-          href: "/leader?view=overview&source=overview&member=member-ivy&pipeline=follow_up&q=Ivy",
-        },
-        {
-          label: "Open Event Performance",
-          href: "/leader?view=events&source=overview&member=member-ivy",
-        },
-        {
-          label: "Open leaderboard",
-          href: "/leader?view=leaderboard&source=overview&member=member-ivy&leaderboardMetric=attendance",
+          label: "Back to chapter home",
+          href: "/leader?view=overview&source=overview&member=member-ivy",
         },
       ],
     });
-    expect(markup).toContain("Chapter Home handoff");
-    expect(markup).toContain("Opened from Chapter Home into committee follow-through");
-    expect(markup).toContain("Open committee lane");
-    expect(markup).toContain(
-      "href=\"/leader?view=events&amp;source=overview&amp;member=member-ivy\"",
-    );
-    expect(markup).toContain(
-      "href=\"/leader?view=leaderboard&amp;source=overview&amp;member=member-ivy&amp;leaderboardMetric=attendance\"",
-    );
+    expect(markup).toContain("Chapter home handoff");
+    expect(markup).toContain("Opened from the chapter command center");
+    expect(markup).toContain("Back to chapter home");
   });
 
   it("keeps chapter-home leaderboard follow-through anchored to the event loop", () => {
@@ -319,31 +295,18 @@ describe("chapter leader command center", () => {
 
     expect(commandCenter.selectedSource).toBe("overview");
     expect(commandCenter.sourceContext).toMatchObject({
-      eyebrow: "Chapter Home handoff",
-      title: "Opened from Chapter Home into leaderboard follow-through",
+      eyebrow: "Chapter home handoff",
+      title: "Opened from the chapter command center",
       actions: [
         {
-          label: "Back to Chapter Home",
-          href: "/leader?view=overview&source=overview&member=member-ivy&pipeline=follow_up&q=Ivy",
-        },
-        {
-          label: "Open Event Performance",
-          href: "/leader?view=events&source=overview&member=member-ivy&eventCommittee=events",
-        },
-        {
-          label: "Open leaderboard",
-          href: "/leader?view=leaderboard&source=overview&member=member-ivy&eventCommittee=events&leaderboardMetric=attendance",
+          label: "Back to chapter home",
+          href: "/leader?view=overview&source=overview&member=member-ivy",
         },
       ],
     });
-    expect(markup).toContain("Chapter Home handoff");
-    expect(markup).toContain("Opened from Chapter Home into leaderboard follow-through");
-    expect(markup).toContain(
-      "attendance-backed points can be reviewed without losing the event-operations posture",
-    );
-    expect(markup).toContain(
-      "href=\"/leader?view=events&amp;source=overview&amp;member=member-ivy&amp;eventCommittee=events\"",
-    );
+    expect(markup).toContain("Chapter home handoff");
+    expect(markup).toContain("Opened from the chapter command center");
+    expect(markup).toContain("Back to chapter home");
   });
   it("falls back to zeroed progress bars and chapter-posture copy when overview labels are not sample-formatted", () => {
     const actor = getMockLocalActorContext("leader.a@mymedlife.test");
@@ -740,6 +703,54 @@ describe("chapter leader command center", () => {
     );
   });
 
+  it("keeps leaderboard comparison context attached when attendance review starts from event follow-through", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "events",
+      source: "leaderboard",
+      memberId: "member-ivy",
+      eventCommittee: "events",
+      eventId: "bc-event-moving-mountains-kickoff",
+      leaderboardMetric: "attendance",
+      leaderboardRegion: "canada",
+      bestPracticeChapterId: "leaderboard-mcgill",
+      quickAction: "assign_action",
+    });
+    const markup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
+    );
+
+    expect(markup).toContain(
+      "href=\"/rush-month/actions?source=chapter_assign_action&amp;returnTo=%2Fleader%3Fview%3Devents%26source%3Dleaderboard%26member%3Dmember-ivy%26eventCommittee%3Devents%26event%3Dbc-event-moving-mountains-kickoff%26leaderboardMetric%3Dattendance%26region%3Dcanada%26benchmark%3Dleaderboard-mcgill%26quickAction%3Dassign_action&amp;member=member-ivy\"",
+    );
+    expect(markup).toContain(
+      "href=\"/leader?view=leaderboard&amp;source=leaderboard&amp;member=member-ivy&amp;eventCommittee=events&amp;event=bc-event-moving-mountains-kickoff&amp;leaderboardMetric=attendance&amp;region=canada&amp;benchmark=leaderboard-mcgill\"",
+    );
+  });
+
+  it("keeps leaderboard comparison context attached to event-review actions after a leaderboard handoff", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "events",
+      source: "leaderboard",
+      memberId: "member-ivy",
+      eventCommittee: "events",
+      eventId: "bc-event-moving-mountains-kickoff",
+      leaderboardMetric: "attendance",
+      leaderboardRegion: "canada",
+      bestPracticeChapterId: "leaderboard-mcgill",
+    });
+    const markup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
+    );
+
+    expect(markup).toContain(
+      "href=\"/leader?view=events&amp;source=leaderboard&amp;member=member-ivy&amp;eventCommittee=events&amp;event=bc-event-moving-mountains-kickoff&amp;leaderboardMetric=attendance&amp;region=canada&amp;benchmark=leaderboard-mcgill&amp;quickAction=assign_action\"",
+    );
+    expect(markup).toContain(
+      "href=\"/leader?view=leaderboard&amp;source=leaderboard&amp;member=member-ivy&amp;eventCommittee=events&amp;event=bc-event-moving-mountains-kickoff&amp;leaderboardMetric=attendance&amp;region=canada&amp;benchmark=leaderboard-mcgill\"",
+    );
+  });
   it("keeps the event-review loop attached when a member profile is opened from event follow-through", () => {
     const actor = getMockLocalActorContext("leader.a@mymedlife.test");
     const commandCenter = getChapterLeaderCommandCenter(actor, data, {
@@ -851,7 +862,6 @@ describe("chapter leader command center", () => {
     expect(markup).not.toContain("Leaderboard review in focus");
     expect(markup).not.toContain("through attendance-backed points");
   });
-
   it("opens review members as a chapter-owned member-pipeline state before the person-level review", () => {
     const actor = getMockLocalActorContext("leader.a@mymedlife.test");
     const commandCenter = getChapterLeaderCommandCenter(actor, data, {
@@ -1062,7 +1072,7 @@ describe("chapter leader command center", () => {
       "/leader?view=events&source=events&member=member-sofia-profile&eventCommittee=events&event=bc-event-moving-mountains-kickoff",
     );
     expect(commandCenter.selectedMember?.reviewContext).toBeNull();
-    expect(markup).toContain("Opened from leader event review");
+    expect(markup).toContain("Opened from event review into leaderboard follow-through");
   });
 
   it("keeps the member review shell honest until a leader selects someone", () => {
@@ -3253,10 +3263,22 @@ describe("chapter leader command center href", () => {
         memberId: "member-zara",
         pipelineFilter: "follow_up",
         searchQuery: "Ivy",
-        returnView: "members",
       }),
     ).toBe(
       "/rush-month/actions?source=chapter_assign_action&returnTo=%2Fleader%3Fview%3Dmembers%26member%3Dmember-zara%26pipeline%3Dfollow_up%26q%3DIvy%26quickAction%3Dassign_action&member=member-zara",
+    );
+    expect(
+      buildChapterLeaderAssignmentFlowHref({
+        source: "leaderboard",
+        memberId: "member-zara",
+        bestPracticeChapterId: "leaderboard-mcgill",
+        leaderboardMetric: "attendance",
+        leaderboardRegion: "canada",
+        eventCommitteeFilter: "events",
+        eventId: "bc-event-moving-mountains-kickoff",
+      }),
+    ).toBe(
+      "/rush-month/actions?source=chapter_assign_action&returnTo=%2Fleader%3Fview%3Devents%26source%3Dleaderboard%26member%3Dmember-zara%26eventCommittee%3Devents%26event%3Dbc-event-moving-mountains-kickoff%26leaderboardMetric%3Dattendance%26region%3Dcanada%26benchmark%3Dleaderboard-mcgill%26quickAction%3Dassign_action&member=member-zara",
     );
   });
 
