@@ -1068,6 +1068,11 @@ describe("chapter leader command center", () => {
     expect(markup).toContain(
       "href=\"/leader?view=leaderboard&amp;source=leaderboard&amp;member=member-ivy&amp;eventCommittee=events&amp;event=bc-event-moving-mountains-kickoff&amp;leaderboardMetric=attendance&amp;region=canada&amp;quickAction=assign_action\"",
     );
+    expect(markup).toContain("Back to Leaderboard");
+    expect(markup).toContain("Open attendance review");
+    expect(markup).toContain(
+      "href=\"/leader?view=events&amp;source=leaderboard&amp;member=member-ivy&amp;eventCommittee=events&amp;event=bc-event-moving-mountains-kickoff&amp;leaderboardMetric=attendance&amp;region=canada&amp;quickAction=assign_action\"",
+    );
   });
 
   it("keeps benchmark attendance-review posture attached when member review reopens leaderboard readback", () => {
@@ -1677,8 +1682,12 @@ describe("chapter leader command center", () => {
     );
     expect(markup).toContain("Choose a member from leaderboard readback first");
     expect(markup).toContain("Back to leaderboard");
+    expect(markup).toContain("Open attendance review");
     expect(markup).toContain(
       "href=\"/leader?view=leaderboard&amp;source=leaderboard&amp;eventCommittee=events&amp;event=bc-event-moving-mountains-kickoff&amp;leaderboardMetric=attendance&amp;region=canada&amp;quickAction=assign_action\"",
+    );
+    expect(markup).toContain(
+      "href=\"/leader?view=events&amp;source=leaderboard&amp;eventCommittee=events&amp;event=bc-event-moving-mountains-kickoff&amp;leaderboardMetric=attendance&amp;region=canada&amp;quickAction=assign_action\"",
     );
   });
 
