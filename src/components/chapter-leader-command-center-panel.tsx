@@ -3843,6 +3843,7 @@ function renderMemberProfileQuickActionState(
     leaderboardRegion: commandCenter.selectedLeaderboardRegion,
     pipelineFilter: commandCenter.selectedPipelineFilter,
     searchQuery: commandCenter.pipelineSearchQuery,
+    returnQuickAction: commandCenter.returnQuickAction,
   });
 
   const successionHref = buildChapterLeaderCommandCenterHref("succession", {
