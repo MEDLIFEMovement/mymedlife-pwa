@@ -742,7 +742,7 @@ function getEventDetailNavHrefOverrides(
   };
 
   if (source === "home") {
-    overrides.profile = "/profile?source=home";
+    overrides.profile = `/profile?source=home&event=${eventId}`;
   } else if (source === "points") {
     overrides.profile = `/profile?source=points&event=${eventId}`;
   } else if (source === "profile" && profileSource === "points") {
