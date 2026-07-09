@@ -122,9 +122,9 @@ type Screen = "chapters" | "campaigns" | "events" | "ugc" | "reports" | "admin" 
 
 const STAFF_PAGE_HEADER_ACCOUNT_CLEARANCE = WORKSPACE_ACCOUNT_MENU_SHELL_CLEARANCE;
 const STAFF_TOP_BAR_ACCOUNT_CLEARANCE =
-  "pr-[4.5rem] sm:pr-[17rem] lg:pr-[21rem] xl:pr-[24rem] 2xl:pr-[26rem]";
+  "pr-[4.5rem] sm:pr-[14rem] lg:pr-[14rem] xl:pr-[13rem] 2xl:pr-[13rem]";
 const STAFF_HEADER_ALERT_VISIBILITY =
-  "hidden md:flex max-w-[6.5rem] lg:max-w-[8rem] xl:max-w-[9.5rem] 2xl:max-w-[11rem]";
+  "hidden md:flex max-w-[7.5rem] lg:max-w-[9rem] xl:max-w-[11rem] 2xl:max-w-[12.5rem]";
 
 /* ─────────────────────────────────────────────────────────── */
 /*  MOCK DATA                                                   */
@@ -448,20 +448,22 @@ export function ChapterDetailDrawer({
   chapter,
   onClose,
   adminPreviewHref,
+  chapterReturnHref,
   proofQueueContext,
   proofQueueReturnHref,
 }: {
   chapter: Chapter;
   onClose: () => void;
   adminPreviewHref?: string;
+  chapterReturnHref?: string;
   proofQueueContext?: string | null;
   proofQueueReturnHref?: string | null;
 }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [showSurvey, setShowSurvey] = useState(false);
-  const chapterReturnLabel = `Return to ${chapter.name}`;
-  const chapterReturnTitle = `Return to ${chapter.name} in the same chapters review loop after this preview readback`;
+  const chapterReturnLabel = "Return to Chapters";
+  const chapterReturnTitle = `Return to Chapters with ${chapter.name} still selected in the same chapters review loop after this preview readback`;
   const resolvedProofQueueContext =
     proofQueueContext ??
     getEmbeddedProofQueueContext(
@@ -470,7 +472,7 @@ export function ChapterDetailDrawer({
     );
   const resolvedProofQueueReturnHref = proofQueueReturnHref ??
     (resolvedProofQueueContext
-      ? buildStaffProofHref(pathname, searchParams.toString())
+      ? buildStaffProofHref(pathname, searchParams.toString(), searchParams.get("ugcCard"))
       : null);
   const resolvedAdminPreviewHref =
     adminPreviewHref ??
@@ -479,6 +481,8 @@ export function ChapterDetailDrawer({
       pathname,
       searchParams.toString(),
     );
+  const resolvedChapterReturnHref =
+    chapterReturnHref ?? buildStaffShellHref("chapters", pathname, searchParams.toString());
 
   const recentEvents = [
     { name:"TEST Rush Month Info Night",   date:"Jun 14",  attendees: chapter.attendance,                  nps: chapter.avgNpsScore },
@@ -498,7 +502,9 @@ export function ChapterDetailDrawer({
             </div>
             <h2 className="text-base font-bold text-foreground">{chapter.name}</h2>
             <div className="text-xs text-muted-foreground">{chapter.school}</div>
-            <div className="mt-1 text-[11px] text-amber-700">Preview readback only - no chapter writes, owner changes, or outreach sends run from this drawer. Use the Admin preview for DS directory and audit review.</div>
+            <div className="mt-1 text-[11px] text-amber-700">
+              Preview readback only - no chapter writes, owner changes, or outreach sends run from this drawer. Use the Admin preview for DS directory readback, event readiness, RSVP totals, attendance context, points posture, and audit review.
+            </div>
             <div className="flex items-center gap-3 mt-1.5 text-xs text-muted-foreground">
               <span className="flex items-center gap-1"><Globe className="w-3 h-3" />{chapter.country}</span>
               <span className="flex items-center gap-1"><Users className="w-3 h-3" />{chapter.activeMembers} members</span>
@@ -553,6 +559,37 @@ export function ChapterDetailDrawer({
             <div className="border-t border-border bg-slate-50/80 px-4 py-2 text-[10px] leading-relaxed text-slate-600">
               Event, RSVP, attendance, and points figures stay read-only in this chapter drawer. Use the embedded Admin preview to verify event readiness, RSVP totals, attendance context, and points posture before requesting any attendance correction, point adjustment, or event-status write.
             </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            {[
+              {
+                label: "Event readiness",
+                value: `${chapter.eventsThisMonth} events this month`,
+                note: "Read-only chapter snapshot",
+              },
+              {
+                label: "RSVP totals",
+                value: `${chapter.rsvps.toLocaleString()} RSVPs`,
+                note: "Carry this context into Admin",
+              },
+              {
+                label: "Attendance context",
+                value: `${chapter.attendance.toLocaleString()} attended`,
+                note: "Review before any correction request",
+              },
+              {
+                label: "Weekly points posture",
+                value: `+${chapter.pointsWeek.toLocaleString()} this week`,
+                note: "Preview-only oversight signal",
+              },
+            ].map((item) => (
+              <div key={item.label} className="rounded-xl border border-slate-200 bg-slate-50/70 px-3 py-2.5">
+                <div className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">{item.label}</div>
+                <div className="mt-1 text-sm font-semibold text-slate-900">{item.value}</div>
+                <div className="mt-1 text-[10px] leading-relaxed text-slate-600">{item.note}</div>
+              </div>
+            ))}
           </div>
 
           {/* Post-Event NPS */}
@@ -692,7 +729,7 @@ export function ChapterDetailDrawer({
           </button>
           <a
             href={resolvedAdminPreviewHref}
-            title="Open the embedded Admin preview for DS directory readback and audit review"
+            title="Open the embedded Admin preview for DS directory readback, event readiness, RSVP totals, attendance context, points posture, and audit review"
             className="flex items-center gap-1.5 rounded-lg bg-muted px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted/70"
           >
             <Shield className="w-3.5 h-3.5" />
@@ -708,14 +745,18 @@ export function ChapterDetailDrawer({
               <span>Return to Proof / UGC</span>
             </a>
           ) : null}
-          <button
-            onClick={onClose}
+          <a
+            href={resolvedChapterReturnHref}
+            onClick={(event) => {
+              event.preventDefault();
+              onClose();
+            }}
             title={chapterReturnTitle}
             className="flex items-center gap-1.5 rounded-lg border border-border bg-white px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted/40"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
-            <span className="max-w-[10rem] truncate">{chapterReturnLabel}</span>
-          </button>
+            <span>{chapterReturnLabel}</span>
+          </a>
         </div>
       </div>
 
@@ -1802,7 +1843,12 @@ function ProofUGCQueue({
                 </a>
                 {selectedCardChapter ? (
                   <a
-                    href={buildStaffChapterHref(selectedCardChapter.id, pathname, currentSearch)}
+                    href={buildStaffChapterHref(
+                      selectedCardChapter.id,
+                      pathname,
+                      currentSearch,
+                      selectedCard.id,
+                    )}
                     title={`Open ${selectedCardChapter.name} in Chapters without dropping the current Proof / UGC review context.`}
                     className="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[10px] font-semibold text-emerald-700 hover:bg-emerald-100"
                   >
@@ -2220,18 +2266,33 @@ function AdminHealth() {
 
 type AdminRole = "ds-admin" | "super-admin";
 
+type StaffAdminChapterReadback = {
+  chapterContext: string;
+  school: string | null;
+  region: string | null;
+  coach: string | null;
+  members: string | null;
+  events: string | null;
+  rsvps: string | null;
+  attendance: string | null;
+  points: string | null;
+  pointsWeek: string | null;
+};
+
 function AdminRouteBlocked({
   onBack,
   backHref,
   backLabel,
   chapterContext,
   proofQueueContext,
+  chapterReadback,
 }: {
   onBack: () => void;
   backHref?: string;
   backLabel: string;
   chapterContext?: string | null;
   proofQueueContext?: string | null;
+  chapterReadback?: StaffAdminChapterReadback | null;
 }) {
   const contextLabel = getStaffAdminContextLabel(backLabel, chapterContext, proofQueueContext);
   const returnLoopLabel = getStaffAdminReturnLoopLabel(backLabel, chapterContext, proofQueueContext);
@@ -2271,6 +2332,43 @@ function AdminRouteBlocked({
               {oversightReadbackNote}
             </p>
           ) : null}
+          {chapterReadback ? (
+            <div className="mt-3 grid grid-cols-2 gap-2">
+              {[
+                { label: "School", value: chapterReadback.school ?? chapterReadback.chapterContext },
+                { label: "Region", value: chapterReadback.region ?? "Read-only" },
+                { label: "Coach", value: chapterReadback.coach ?? "Read-only" },
+                { label: "Active Members", value: chapterReadback.members ?? "0" },
+                {
+                  label: "Event readiness",
+                  value: chapterReadback.events ? `${chapterReadback.events} events this month` : "No event snapshot",
+                },
+                {
+                  label: "RSVP totals",
+                  value: chapterReadback.rsvps ? `${chapterReadback.rsvps} RSVPs` : "No RSVP snapshot",
+                },
+                {
+                  label: "Attendance context",
+                  value: chapterReadback.attendance ? `${chapterReadback.attendance} attended` : "No attendance snapshot",
+                },
+                {
+                  label: "Weekly points posture",
+                  value: chapterReadback.pointsWeek ? `+${chapterReadback.pointsWeek} this week` : "No weekly points snapshot",
+                },
+                {
+                  label: "Points this year",
+                  value: chapterReadback.points
+                    ? Number(chapterReadback.points).toLocaleString()
+                    : "No annual points snapshot",
+                },
+              ].map(({ label, value }) => (
+                <div key={label} className="rounded-lg border border-white/[0.06] bg-[#0d1117]/70 px-3 py-2">
+                  <div className="text-[10px] text-slate-600 font-mono uppercase tracking-wider">{label}</div>
+                  <div className="mt-1 text-[12px] font-mono font-semibold text-slate-200">{value}</div>
+                </div>
+              ))}
+            </div>
+          ) : null}
           <p className="mt-3 text-[11px] leading-relaxed text-slate-500">
             {`When DS Admin access is available, return to ${returnLoopLabel} in the same Command Center review loop after the Admin readback closes.`}
           </p>
@@ -2298,6 +2396,7 @@ function AdminRoleGate({
   backLabel,
   chapterContext,
   proofQueueContext,
+  chapterReadback,
 }: {
   onGrant: (role: AdminRole) => void;
   onBack: () => void;
@@ -2305,6 +2404,7 @@ function AdminRoleGate({
   backLabel: string;
   chapterContext?: string | null;
   proofQueueContext?: string | null;
+  chapterReadback?: StaffAdminChapterReadback | null;
 }) {
   const [picked, setPicked] = useState<AdminRole>("ds-admin");
   const contextLabel = getStaffAdminContextLabel(backLabel, chapterContext, proofQueueContext);
@@ -2342,6 +2442,44 @@ function AdminRoleGate({
             </p>
           ) : null}
         </div>
+
+        {chapterReadback ? (
+          <div className="grid grid-cols-2 gap-2 text-left">
+            {[
+              { label: "School", value: chapterReadback.school ?? chapterReadback.chapterContext },
+              { label: "Region", value: chapterReadback.region ?? "Read-only" },
+              { label: "Coach", value: chapterReadback.coach ?? "Read-only" },
+              { label: "Active Members", value: chapterReadback.members ?? "0" },
+              {
+                label: "Event readiness",
+                value: chapterReadback.events ? `${chapterReadback.events} events this month` : "No event snapshot",
+              },
+              {
+                label: "RSVP totals",
+                value: chapterReadback.rsvps ? `${chapterReadback.rsvps} RSVPs` : "No RSVP snapshot",
+              },
+              {
+                label: "Attendance context",
+                value: chapterReadback.attendance ? `${chapterReadback.attendance} attended` : "No attendance snapshot",
+              },
+              {
+                label: "Weekly points posture",
+                value: chapterReadback.pointsWeek ? `+${chapterReadback.pointsWeek} this week` : "No weekly points snapshot",
+              },
+              {
+                label: "Points this year",
+                value: chapterReadback.points
+                  ? Number(chapterReadback.points).toLocaleString()
+                  : "No annual points snapshot",
+              },
+            ].map(({ label, value }) => (
+              <div key={label} className="rounded-lg border border-white/[0.06] bg-[#161b22] px-3 py-2">
+                <div className="text-[10px] text-slate-600 font-mono uppercase tracking-wider">{label}</div>
+                <div className="mt-1 text-[12px] font-mono font-semibold text-slate-200">{value}</div>
+              </div>
+            ))}
+          </div>
+        ) : null}
 
         {/* Role selector */}
         <div className="bg-[#161b22] border border-white/[0.08] rounded-xl p-5 text-left space-y-3">
@@ -2435,7 +2573,7 @@ type FigmaStaffCommandCenterProps = {
   initialCampaign?: string | null;
   initialRouteParams?: Partial<
     Record<
-      "view" | "campaign" | "chapter" | "ugcCard" | "adminView" | "returnView" | "chapterContext" | "proofStatus" | "proofPlatform" | "chapterSearch" | "chapterRegion" | "chapterCoach" | "chapterType" | "chapterSort",
+      "view" | "campaign" | "chapter" | "ugcCard" | "adminView" | "returnView" | "chapterContext" | "chapterSchool" | "chapterRegionName" | "chapterCoachName" | "chapterMembers" | "chapterEvents" | "chapterRsvps" | "chapterAttendance" | "chapterPoints" | "chapterPointsWeek" | "proofStatus" | "proofPlatform" | "chapterSearch" | "chapterRegion" | "chapterCoach" | "chapterType" | "chapterSort",
       string | null | undefined
     >
   >;
@@ -2451,7 +2589,7 @@ export function FigmaStaffCommandCenter({
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const getRouteParam = (
-    key: "view" | "campaign" | "chapter" | "ugcCard" | "adminView" | "returnView" | "chapterContext" | "proofStatus" | "proofPlatform" | "chapterSearch" | "chapterRegion" | "chapterCoach" | "chapterType" | "chapterSort",
+    key: "view" | "campaign" | "chapter" | "ugcCard" | "adminView" | "returnView" | "chapterContext" | "chapterSchool" | "chapterRegionName" | "chapterCoachName" | "chapterMembers" | "chapterEvents" | "chapterRsvps" | "chapterAttendance" | "chapterPoints" | "chapterPointsWeek" | "proofStatus" | "proofPlatform" | "chapterSearch" | "chapterRegion" | "chapterCoach" | "chapterType" | "chapterSort",
   ) =>
     searchParams.get(key) ?? initialRouteParams?.[key] ?? null;
   const activeScreen = resolveStaffShellScreen(getRouteParam("view") ?? initialView ?? null);
@@ -2465,6 +2603,21 @@ export function FigmaStaffCommandCenter({
   const adminReturnChapterId =
     activeScreen === "admin" && adminReturnScreen === "chapters" ? getRouteParam("chapter") : null;
   const adminChapterContext = activeScreen === "admin" ? getRouteParam("chapterContext") : null;
+  const adminChapterReadback =
+    activeScreen === "admin" && adminReturnScreen === "chapters" && adminChapterContext
+      ? {
+          chapterContext: adminChapterContext,
+          school: getRouteParam("chapterSchool"),
+          region: getRouteParam("chapterRegionName"),
+          coach: getRouteParam("chapterCoachName"),
+          members: getRouteParam("chapterMembers"),
+          events: getRouteParam("chapterEvents"),
+          rsvps: getRouteParam("chapterRsvps"),
+          attendance: getRouteParam("chapterAttendance"),
+          points: getRouteParam("chapterPoints"),
+          pointsWeek: getRouteParam("chapterPointsWeek"),
+        }
+      : null;
   const adminProofQueueContext =
     activeScreen === "admin"
       ? getEmbeddedProofQueueContext(getRouteParam("proofStatus"), getRouteParam("proofPlatform"))
@@ -2494,6 +2647,15 @@ export function FigmaStaffCommandCenter({
         : adminReturnScreen === "ugc"
           ? buildStaffProofHref(pathname, currentRouteSearch, getRouteParam("ugcCard"))
           : null
+      : null;
+  const adminChapterReturnHref =
+    activeScreen === "admin" && adminReturnChapterId
+      ? buildStaffChapterHref(
+          adminReturnChapterId,
+          pathname,
+          currentRouteSearch,
+          adminProofQueueContext ? getRouteParam("ugcCard") : null,
+        )
       : null;
   const chapterDrawerProofQueueContext =
     activeScreen === "chapters"
@@ -2553,7 +2715,7 @@ export function FigmaStaffCommandCenter({
           </a>
 
           {/* Nav */}
-          <nav className="flex min-w-0 flex-1 items-center gap-0.5">
+          <nav className="flex min-w-0 flex-1 items-center gap-0.5 overflow-hidden">
             {NAV_ITEMS.map((item) => (
               <a
                 key={item.key}
@@ -2562,14 +2724,14 @@ export function FigmaStaffCommandCenter({
                   event.preventDefault();
                   handleNavChange(item.key);
                 }}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                className={`flex min-w-0 shrink items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold transition-all lg:px-3 ${
                   activeScreen === item.key
                     ? "bg-sidebar-accent text-white"
                     : "text-sidebar-foreground/70 hover:text-white hover:bg-sidebar-accent/50"
                 }`}
               >
                 {item.icon}
-                {item.label}
+                <span className="truncate">{item.label}</span>
               </a>
             ))}
           </nav>
@@ -2631,6 +2793,7 @@ export function FigmaStaffCommandCenter({
               backLabel={adminBackLabel}
               chapterContext={adminChapterContext}
               proofQueueContext={adminProofQueueContext}
+              chapterReadback={adminChapterReadback}
             />
           ) : (
             <AdminRouteBlocked
@@ -2639,6 +2802,7 @@ export function FigmaStaffCommandCenter({
               backLabel={adminBackLabel}
               chapterContext={adminChapterContext}
               proofQueueContext={adminProofQueueContext}
+              chapterReadback={adminChapterReadback}
             />
           )
         )}
@@ -2679,6 +2843,7 @@ export function FigmaStaffCommandCenter({
             onBack={handleAdminBack}
             embeddedBackLabel={adminBackLabel}
             embeddedBackHref={adminReturnHref ?? undefined}
+            embeddedChapterHref={adminChapterReturnHref ?? undefined}
           />
         </div>
       )}
@@ -2699,10 +2864,11 @@ export function FigmaStaffCommandCenter({
                 pathname,
                 currentRouteSearch,
               )}
+              chapterReturnHref={buildStaffShellHref("chapters", pathname, currentRouteSearch)}
               proofQueueContext={chapterDrawerProofQueueContext}
               proofQueueReturnHref={
                 chapterDrawerProofQueueContext
-                  ? buildStaffProofHref(pathname, currentRouteSearch)
+                  ? buildStaffProofHref(pathname, currentRouteSearch, getRouteParam("ugcCard"))
                   : null
               }
             />
@@ -2902,7 +3068,7 @@ function getStaffAdminReturnLoopLabel(
   }
 
   if (backLabel === "this chapter") {
-    return chapterContext ?? "this chapter";
+    return "Chapters";
   }
 
   return backLabel;
@@ -2924,7 +3090,7 @@ function getStaffShellViewParam(screen: Screen): string {
 function buildStaffShellQueryFromInitialRouteParams(
   initialRouteParams?: Partial<
     Record<
-      "view" | "campaign" | "chapter" | "ugcCard" | "adminView" | "returnView" | "chapterContext" | "proofStatus" | "proofPlatform" | "chapterSearch" | "chapterRegion" | "chapterCoach" | "chapterType" | "chapterSort",
+      "view" | "campaign" | "chapter" | "ugcCard" | "adminView" | "returnView" | "chapterContext" | "chapterSchool" | "chapterRegionName" | "chapterCoachName" | "chapterMembers" | "chapterEvents" | "chapterRsvps" | "chapterAttendance" | "chapterPoints" | "chapterPointsWeek" | "proofStatus" | "proofPlatform" | "chapterSearch" | "chapterRegion" | "chapterCoach" | "chapterType" | "chapterSort",
       string | null | undefined
     >
   >,
@@ -3004,11 +3170,20 @@ function buildStaffShellHref(screen: Screen, pathname: string, search: string): 
   return query ? `${pathname}?${query}` : pathname;
 }
 
-function buildStaffChapterHref(chapterId: string, pathname: string, search: string): string {
+function buildStaffChapterHref(
+  chapterId: string,
+  pathname: string,
+  search: string,
+  selectedProofCardId?: string | null,
+): string {
   const params = new URLSearchParams(search);
   params.set("view", "chapters");
   params.set("chapter", chapterId);
-  params.delete("ugcCard");
+  if (selectedProofCardId) {
+    params.set("ugcCard", selectedProofCardId);
+  } else {
+    params.delete("ugcCard");
+  }
   params.delete("adminView");
   params.delete("returnView");
   const query = params.toString();
@@ -3030,6 +3205,10 @@ function buildStaffChapterAdminHref(
   params.set("returnView", proofQueueContext ? "proof_ugc" : "chapters");
   params.set("chapter", chapter.id);
   params.set("chapterContext", chapter.name);
+  params.set("chapterSchool", chapter.school);
+  params.set("chapterRegionName", chapter.medlifeRegion);
+  params.set("chapterCoachName", chapter.coach);
+  params.set("chapterMembers", String(chapter.activeMembers));
   params.set("chapterEvents", String(chapter.eventsThisMonth));
   params.set("chapterRsvps", String(chapter.rsvps));
   params.set("chapterAttendance", String(chapter.attendance));
