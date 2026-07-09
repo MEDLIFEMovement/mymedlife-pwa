@@ -37,9 +37,7 @@ export function MemberProfilePanel({
   recognition,
 }: MemberProfilePanelProps) {
   const launchLanePointsHref = buildProfilePointsHref(entrySource, entryEventId);
-  const launchLaneEventsHref = entryEventId
-    ? `/app/events/${entryEventId}?source=profile`
-    : "/app/events?source=profile";
+  const launchLaneEventsHref = buildProfileEventsHref(entrySource, entryEventId);
   const testDisplayName = ensureVisibleTestLabel(displayName);
   const testChapterName = ensureVisibleTestLabel(chapterName);
   const visibleBadges = getProfileBadges(recognition);
@@ -342,6 +340,23 @@ function buildProfilePointsHref(
 
   if (entryEventId) {
     url.searchParams.set("event", entryEventId);
+  }
+
+  return `${url.pathname}${url.search}`;
+}
+
+function buildProfileEventsHref(
+  entrySource: "home" | "points" | null,
+  entryEventId: string | null,
+) {
+  if (!entryEventId) {
+    return "/app/events?source=profile";
+  }
+
+  const url = new URL(`https://mymedlife.local/app/events/${entryEventId}?source=profile`);
+
+  if (entrySource === "points") {
+    url.searchParams.set("profileSource", "points");
   }
 
   return `${url.pathname}${url.search}`;

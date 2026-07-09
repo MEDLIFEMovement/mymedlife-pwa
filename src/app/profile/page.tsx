@@ -77,15 +77,30 @@ export default async function ProfilePage(props: ProfilePageProps) {
         <MemberBottomNav
           activeTab="profile"
           hrefOverrides={{
-            events: profileEventId
-              ? `/app/events/${profileEventId}?source=profile`
-              : "/app/events?source=profile",
+            events: buildProfileEventsHref(profileSource, profileEventId),
             points: buildProfilePointsHref(profileSource, profileEventId),
           }}
         />
       </div>
     </main>
   );
+}
+
+function buildProfileEventsHref(
+  source: "home" | "points" | null,
+  eventId: string | null,
+) {
+  if (!eventId) {
+    return "/app/events?source=profile";
+  }
+
+  const url = new URL(`https://mymedlife.local/app/events/${eventId}?source=profile`);
+
+  if (source === "points") {
+    url.searchParams.set("profileSource", "points");
+  }
+
+  return `${url.pathname}${url.search}`;
 }
 
 function buildProfilePointsHref(

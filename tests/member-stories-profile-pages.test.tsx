@@ -255,7 +255,9 @@ describe("member stories and profile pages", () => {
     expect(html).toContain("Back to Points");
     expect(html).toContain("Back to TEST event detail");
     expect(html).toContain('href="/app/points?source=points&amp;event=chapter-event-ucla-kickoff"');
-    expect(html).toContain('href="/app/events/chapter-event-ucla-kickoff?source=profile"');
+    expect(html).toContain(
+      'href="/app/events/chapter-event-ucla-kickoff?source=profile&amp;profileSource=points"',
+    );
   });
 
   it("redirects signed-out actors to login before rendering the member profile shell", async () => {
