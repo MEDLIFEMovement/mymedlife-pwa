@@ -1471,6 +1471,40 @@ describe("chapter leader command center", () => {
     expect(markup).toContain('name="returnQuickAction" value="assign_action"');
   });
 
+  it("keeps leaderboard attendance member-review entry inside the leader loop when no member is selected", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = {
+      ...getChapterLeaderCommandCenter(actor, data, {
+        view: "members",
+        source: "leaderboard",
+        memberId: "member-ivy",
+        eventCommittee: "events",
+        eventId: "bc-event-moving-mountains-kickoff",
+        leaderboardMetric: "attendance",
+        leaderboardRegion: "canada",
+        bestPracticeChapterId: "leaderboard-mcgill",
+        pipeline: "follow_up",
+        search: "Ivy",
+        quickAction: "review_members",
+        returnQuickAction: "assign_action",
+      }),
+      selectedMember: null,
+      selectedMemberId: null,
+      navigationMemberId: null,
+    };
+    const markup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
+    );
+
+    expect(commandCenter.pipelineRows[0]?.profileHref).toBe(
+      "/leader?view=member_profile&source=leaderboard&member=member-ivy&eventCommittee=events&event=bc-event-moving-mountains-kickoff&leaderboardMetric=attendance&region=canada&benchmark=leaderboard-mcgill&pipeline=follow_up&q=Ivy&quickAction=assign_action",
+    );
+    expect(markup).toContain("Open member review");
+    expect(markup).toContain(
+      "href=\"/leader?view=member_profile&amp;source=leaderboard&amp;member=member-ivy&amp;eventCommittee=events&amp;event=bc-event-moving-mountains-kickoff&amp;leaderboardMetric=attendance&amp;region=canada&amp;benchmark=leaderboard-mcgill&amp;pipeline=follow_up&amp;q=Ivy&amp;quickAction=assign_action\"",
+    );
+  });
+
   it("builds a route-driven member profile workbench with leadership actions and timeline context", () => {
     const actor = getMockLocalActorContext("leader.a@mymedlife.test");
     const commandCenter = getChapterLeaderCommandCenter(actor, data, {
