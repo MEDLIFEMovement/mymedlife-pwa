@@ -21,9 +21,12 @@ without rereading the whole story package.
 - PR `#618` is merged.
 - PR `#621` is merged.
 - PR `#624` is merged.
-- No new member, leader, or staff/admin front PR is promoted by this packet yet;
-  use the next Coordinator queue correction before treating older parked PRs as
-  active front work.
+- PR `#625` is the current draft member front candidate for member Stories,
+  events, and points continuity; first-pass checks are still in flight, so treat
+  it as active watch, not merge-ready proof.
+- No new leader or staff/admin front PR is promoted by this packet yet; use the
+  next Coordinator queue correction before treating older parked PRs as active
+  front work.
 - The active planning layer still separates implementation truth from
   Figma/exported-source acceptance shape.
 - Open PR board noise and older parked branches should not outrank the
@@ -63,6 +66,8 @@ Live PR signal:
 - `gh pr view 621` confirmed merged.
 - `gh pr view 624` confirmed merged at `2026-07-09T15:30:58Z` with merge commit
   `e098074e938623967170416b422b0ae917f0c1bf`.
+- `gh pr view 625` confirmed open draft, mergeable, and running first-pass
+  checks on head `35c93311cb16d41504bafef262c6bacf553cfd21`.
 - This packet captures planning order and acceptance boundaries only; it should
   not be read as approval for older parked branches.
 
@@ -73,8 +78,8 @@ Live PR signal:
 Next safest slice:
 
 1. Stop treating PR `#624` as active queue work; it is merged.
-2. Keep the next local member seam focused on source-backed member loop
-   continuity instead of broad member redesign.
+2. Treat PR `#625` as the current draft member front candidate for source-backed
+   Stories, events, and points continuity while checks run.
 3. Preserve the existing profile, Stories, events/detail, points, and bottom-nav
    acceptance contracts while the queue clears.
 

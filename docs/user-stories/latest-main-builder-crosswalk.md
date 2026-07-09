@@ -17,15 +17,18 @@ next live branch:
    merge. Do not keep its staff/admin seam in the pending queue.
 4. `#621` is merged.
 5. `#624` is merged; do not keep it in the active queue.
-6. `#2` should return to local leader follow-on shaping after the `#619`
+6. `#625` is the current draft member front candidate for member Stories,
+   events, and points continuity. Treat it as active watch while first-pass
+   checks run, not as merge-ready proof.
+7. `#2` should return to local leader follow-on shaping after the `#619`
    landing, keeping attendance, member review, and simple-leaderboard continuity
    narrow.
-7. `#3` should shape the next staff/admin seam locally after the `#624` member
+8. `#3` should shape the next staff/admin seam locally after the `#624` member
    merge, with emphasis on chapter oversight honesty, embedded Admin context,
    and visible TEST-label coverage.
-8. `#4` should wait for the next promoted front PR before treating older parked
-   branches as active queue work. `#6` should stay quiet unless real proof
-   artifacts appear.
+9. `#4` should watch `#625` as the promoted member front candidate and keep
+   older parked branches out of the active queue. `#6` should stay quiet unless
+   real proof artifacts appear.
 
 Rollout-proof truth is unchanged. Shell merges, public no-write smoke, green CI,
 and TEST/sandbox rows may support `Scope/UI` or `QA/Ops` discussion, but they do
@@ -49,6 +52,8 @@ readiness, or rollout approval.
   - `#621` merged.
   - `#624` merged at `2026-07-09T15:30:58Z` with merge commit
     `e098074e938623967170416b422b0ae917f0c1bf`.
+  - `#625` is open draft, mergeable, and running first-pass checks on head
+    `35c93311cb16d41504bafef262c6bacf553cfd21`.
 - Coordinator-reported public no-write smoke: 11/11 passed after `#620`.
 
 ## How To Use This Crosswalk
