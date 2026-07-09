@@ -1269,6 +1269,90 @@ describe("chapter leader command center", () => {
     );
   });
 
+  it("keeps attendance-backed event context when review-members opens member review without a visible selected member", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "members",
+      source: "events",
+      eventCommittee: "events",
+      eventId: "bc-event-moving-mountains-kickoff",
+      quickAction: "review_members",
+      returnQuickAction: "assign_action",
+      search: "No matching member",
+    });
+    const markup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
+    );
+
+    expect(commandCenter.selectedMember).toBeNull();
+    expect(commandCenter.pipelineRows).toHaveLength(0);
+    expect(markup).toContain("Open member review");
+    expect(markup).toContain('href="/leader?view=member_profile');
+    expect(markup).toContain("&amp;source=events");
+    expect(markup).toContain("&amp;eventCommittee=events");
+    expect(markup).toContain("&amp;event=bc-event-moving-mountains-kickoff");
+    expect(markup).toContain("&amp;q=No+matching+member");
+    expect(markup).toContain("&amp;returnQuickAction=assign_action");
+  });
+
+  it("keeps attendance-backed chapter-home context when review-members opens member review without a visible selected member", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "members",
+      source: "overview",
+      eventCommittee: "events",
+      eventId: "bc-event-moving-mountains-kickoff",
+      pipeline: "follow_up",
+      quickAction: "review_members",
+      returnQuickAction: "assign_action",
+      search: "No matching member",
+    });
+    const markup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
+    );
+
+    expect(commandCenter.selectedMember).toBeNull();
+    expect(commandCenter.pipelineRows).toHaveLength(0);
+    expect(markup).toContain("Open member review");
+    expect(markup).toContain('href="/leader?view=member_profile');
+    expect(markup).toContain("&amp;source=overview");
+    expect(markup).toContain("&amp;eventCommittee=events");
+    expect(markup).toContain("&amp;event=bc-event-moving-mountains-kickoff");
+    expect(markup).toContain("&amp;pipeline=follow_up");
+    expect(markup).toContain("&amp;q=No+matching+member");
+    expect(markup).toContain("&amp;returnQuickAction=assign_action");
+  });
+
+  it("keeps attendance-backed leaderboard context when review-members opens member review without a visible selected member", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "members",
+      source: "leaderboard",
+      eventCommittee: "events",
+      eventId: "bc-event-moving-mountains-kickoff",
+      leaderboardMetric: "attendance",
+      leaderboardRegion: "canada",
+      quickAction: "review_members",
+      returnQuickAction: "assign_action",
+      search: "No matching member",
+    });
+    const markup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
+    );
+
+    expect(commandCenter.selectedMember).toBeNull();
+    expect(commandCenter.pipelineRows).toHaveLength(0);
+    expect(markup).toContain("Open member review");
+    expect(markup).toContain('href="/leader?view=member_profile');
+    expect(markup).toContain("&amp;source=leaderboard");
+    expect(markup).toContain("&amp;eventCommittee=events");
+    expect(markup).toContain("&amp;event=bc-event-moving-mountains-kickoff");
+    expect(markup).toContain("&amp;leaderboardMetric=attendance");
+    expect(markup).toContain("&amp;region=canada");
+    expect(markup).toContain("&amp;q=No+matching+member");
+    expect(markup).toContain("&amp;returnQuickAction=assign_action");
+  });
+
   it("opens export members as a chapter-owned member-pipeline state before the broader membership lane", () => {
     const actor = getMockLocalActorContext("leader.a@mymedlife.test");
     const commandCenter = getChapterLeaderCommandCenter(actor, data, {
