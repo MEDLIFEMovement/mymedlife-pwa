@@ -551,7 +551,7 @@ export function ChapterDetailDrawer({
               ))}
             </div>
             <div className="border-t border-border bg-slate-50/80 px-4 py-2 text-[10px] leading-relaxed text-slate-600">
-              Event, RSVP, attendance, and points figures stay read-only in this chapter drawer. Use the embedded Admin preview for DS audit readback before requesting any attendance correction, point adjustment, or event-status write.
+              Event, RSVP, attendance, and points figures stay read-only in this chapter drawer. Use the embedded Admin preview to verify event readiness, RSVP totals, attendance context, and points posture before requesting any attendance correction, point adjustment, or event-status write.
             </div>
           </div>
 
@@ -668,7 +668,7 @@ export function ChapterDetailDrawer({
               rows={3}
             />
             <p className="mt-2 text-[10px] leading-relaxed text-amber-700">
-              Chapter support notes stay visible for coach review. Next step: open the Admin preview for DS directory readback, audit, and blocked-control follow-through before requesting any write path. Return to this chapter in the same Command Center loop after the Admin readback closes.
+              Chapter support notes stay visible for coach review. Next step: open the Admin preview for DS directory readback, event readiness, RSVP totals, attendance context, points posture, and blocked-control follow-through before requesting any write path. Return to this chapter in the same Command Center loop after the Admin readback closes.
             </p>
             {resolvedProofQueueContext ? (
               <p className="mt-1 text-[10px] leading-relaxed text-slate-600">

@@ -626,8 +626,8 @@ describe("staff page", () => {
     expect(html).toContain("Survey sending is blocked in this preview");
     expect(html).toContain("Coach notes stay preview-only in this chapter drawer");
     expect(html).toContain("Event, RSVP, attendance, and points figures stay read-only in this chapter drawer.");
-    expect(html).toContain("Use the embedded Admin preview for DS audit readback before requesting any attendance correction, point adjustment, or event-status write.");
-    expect(html).toContain("Next step: open the Admin preview for DS directory readback, audit, and blocked-control follow-through before requesting any write path.");
+    expect(html).toContain("Use the embedded Admin preview to verify event readiness, RSVP totals, attendance context, and points posture before requesting any attendance correction, point adjustment, or event-status write.");
+    expect(html).toContain("Next step: open the Admin preview for DS directory readback, event readiness, RSVP totals, attendance context, points posture, and blocked-control follow-through before requesting any write path.");
     expect(html).toContain("Return to this chapter in the same Command Center loop after the Admin readback closes.");
     expect(html).toContain('href="/staff?view=admin&amp;adminView=chapters&amp;returnView=chapters&amp;chapter=chapter-test&amp;chapterContext=Boston+College&amp;chapterEvents=2&amp;chapterRsvps=30&amp;chapterAttendance=24&amp;chapterPoints=7800&amp;chapterPointsWeek=620"');
     expect(html).toContain("Open Admin preview");
