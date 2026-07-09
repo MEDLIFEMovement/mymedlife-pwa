@@ -65,11 +65,18 @@ export function ChapterLeaderCommandCenterPanel({
       commandCenter.selectedSource === "leaderboard"
         ? commandCenter.selectedBestPracticeChapterId
         : null,
+    eventCommitteeFilter: commandCenter.selectedEventCommitteeFilter,
+    eventId: commandCenter.selectedEventId,
     leaderboardMetric: commandCenter.selectedLeaderboardMetric,
     leaderboardRegion: commandCenter.selectedLeaderboardRegion,
     pipelineFilter: commandCenter.selectedPipelineFilter,
     searchQuery: commandCenter.pipelineSearchQuery,
     feedPostId: commandCenter.selectedFeedPostId,
+    quickAction:
+      commandCenter.activeQuickAction === "assign_action" ||
+      commandCenter.returnQuickAction === "assign_action"
+        ? "assign_action"
+        : undefined,
   } as const;
   const chapterHomeWorkflowSource = commandCenter.selectedSource ?? "overview";
   const createEventHref = buildChapterLeaderCommandCenterHref("events", {
@@ -560,11 +567,14 @@ function renderView(
     source: ChapterLeaderCommandCenter["selectedSource"];
     memberId: string | null;
     bestPracticeChapterId: string | null;
+    eventCommitteeFilter: ChapterLeaderCommandCenter["selectedEventCommitteeFilter"];
+    eventId: string | null;
     leaderboardMetric: ChapterLeaderCommandCenter["selectedLeaderboardMetric"];
     leaderboardRegion: ChapterLeaderCommandCenter["selectedLeaderboardRegion"];
     pipelineFilter: ChapterLeaderCommandCenter["selectedPipelineFilter"];
     searchQuery: string;
     feedPostId: string | null;
+    quickAction?: "assign_action";
   },
 ) {
   const selectedMemberAddNoteAction = commandCenter.selectedMember?.leadershipActions.find(
@@ -594,11 +604,14 @@ function renderView(
     source: chapterHomeSource,
     memberId: leadershipReviewMemberId,
     bestPracticeChapterId: preservedChapterState.bestPracticeChapterId,
+    eventCommitteeFilter: preservedChapterState.eventCommitteeFilter,
+    eventId: preservedChapterState.eventId,
     leaderboardMetric: preservedChapterState.leaderboardMetric,
     leaderboardRegion: preservedChapterState.leaderboardRegion,
     pipelineFilter: preservedChapterState.pipelineFilter,
     searchQuery: preservedChapterState.searchQuery,
     feedPostId: preservedChapterState.feedPostId,
+    quickAction: preservedChapterState.quickAction,
   });
 
   switch (commandCenter.selectedView) {

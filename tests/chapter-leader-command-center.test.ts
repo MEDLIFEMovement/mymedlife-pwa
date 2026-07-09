@@ -1840,6 +1840,9 @@ describe("chapter leader command center", () => {
     expect(markup.indexOf("Back to Attendance Review")).toBeLessThan(
       markup.indexOf("Open chair review"),
     );
+    expect(markup).toContain(
+      "href=\"/leader?view=overview&amp;source=events&amp;member=member-ivy&amp;eventCommittee=events&amp;event=bc-event-moving-mountains-kickoff&amp;quickAction=assign_action\"",
+    );
   });
 
   it("keeps chapter-home attendance return context visible on direct load of blocked follow-through", () => {
@@ -1866,6 +1869,9 @@ describe("chapter leader command center", () => {
     expect(markup).toContain("Open chair review");
     expect(markup.indexOf("Back to Chapter Home")).toBeLessThan(
       markup.indexOf("Open chair review"),
+    );
+    expect(markup).toContain(
+      "href=\"/leader?view=overview&amp;source=overview&amp;member=member-ivy&amp;eventCommittee=events&amp;event=bc-event-moving-mountains-kickoff&amp;pipeline=follow_up&amp;q=Ivy&amp;quickAction=assign_action\"",
     );
   });
 
@@ -1991,6 +1997,9 @@ describe("chapter leader command center", () => {
     expect(markup).toContain("Open chair review");
     expect(markup.indexOf("Back to Leaderboard")).toBeLessThan(
       markup.indexOf("Open chair review"),
+    );
+    expect(markup).toContain(
+      "href=\"/leader?view=overview&amp;source=leaderboard&amp;member=member-ivy&amp;eventCommittee=events&amp;event=bc-event-moving-mountains-kickoff&amp;leaderboardMetric=attendance&amp;region=canada&amp;quickAction=assign_action\"",
     );
   });
 
