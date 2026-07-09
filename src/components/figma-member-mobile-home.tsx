@@ -2090,6 +2090,38 @@ function PointsLeaderboard({
 
 type CampaignTag = "Rush Month" | "Spring Showcase" | "Safe Homes Fundraiser" | "Community Health Fair";
 
+function resolveEventsCampaign(value?: string | null): CampaignTag | "All" {
+  if (!value || value === "All") {
+    return "All";
+  }
+
+  return CAMPAIGNS.some((campaign) => campaign.name === value)
+    ? (value as CampaignTag)
+    : "All";
+}
+
+function buildEventsHref({
+  source,
+  campaign,
+}: {
+  source: MemberLoopSource;
+  campaign?: CampaignTag | "All";
+}) {
+  const params = new URLSearchParams();
+
+  if (source !== "events") {
+    params.set("source", source);
+  }
+
+  if (campaign && campaign !== "All") {
+    params.set("campaign", campaign);
+  }
+
+  const query = params.toString();
+
+  return query ? `/app/events?${query}` : "/app/events";
+}
+
 type EventType =
   | "GBM" | "Fundraising" | "Local Volunteering" | "Growing the Movement"
   | "Meet People / Social" | "MED Talk" | "Pre-MED" | "Pre-Dental"
@@ -2220,8 +2252,16 @@ function getMemberEventStepHref(
   const detailHref = getMemberEventDetailHref(eventId, source);
   return detailHref.includes("?") ? `${detailHref}&step=${step}` : `${detailHref}?step=${step}`;
 }
-function EventsScreen({ navigate, source }: { navigate: (s: Screen) => void; source: MemberLoopSource }) {
-  const [activeCampaign, setActiveCampaign] = useState<CampaignTag | "All">("All");
+function EventsScreen({
+  navigate,
+  source,
+  initialCampaign,
+}: {
+  navigate: (s: Screen) => void;
+  source: MemberLoopSource;
+  initialCampaign?: string | null;
+}) {
+  const activeCampaign = resolveEventsCampaign(initialCampaign);
   const rsvpdIds = [2];
   const visibleEvents = activeCampaign === "All" ? ALL_EVENTS : ALL_EVENTS.filter((e) => e.campaign === activeCampaign);
   const featuredEvent = visibleEvents.find((e) => e.featured);
@@ -2245,8 +2285,9 @@ function EventsScreen({ navigate, source }: { navigate: (s: Screen) => void; sou
       </div>
       <div className="bg-primary px-4 pb-4">
         <div className="flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
-          <button
-            onClick={() => setActiveCampaign("All")}
+          <Link
+            href={buildEventsHref({ source, campaign: "All" })}
+            aria-label="Show all TEST event campaigns"
             className={cn(
               "flex-shrink-0 px-3.5 py-1.5 rounded-full text-xs font-bold border transition-all",
               activeCampaign === "All"
@@ -2255,11 +2296,12 @@ function EventsScreen({ navigate, source }: { navigate: (s: Screen) => void; sou
             )}
           >
             All Events
-          </button>
+          </Link>
           {CAMPAIGNS.map((c) => (
-            <button
+            <Link
               key={c.name}
-              onClick={() => setActiveCampaign(c.name)}
+              href={buildEventsHref({ source, campaign: c.name })}
+              aria-label={`Filter TEST events by ${c.name}`}
               className={cn(
                 "flex-shrink-0 px-3.5 py-1.5 rounded-full text-xs font-bold border transition-all whitespace-nowrap",
                 activeCampaign === c.name
@@ -2268,7 +2310,7 @@ function EventsScreen({ navigate, source }: { navigate: (s: Screen) => void; sou
               )}
             >
               {c.name}
-            </button>
+            </Link>
           ))}
         </div>
       </div>
@@ -3538,6 +3580,7 @@ export function FigmaMemberMobileHome({
   sltPrepEntry = null,
   initialStoriesFilter = null,
   initialStoryId = null,
+  initialEventsCampaign = null,
   pointsSource = "points",
   pointsReturnEventId = null,
   eventsSource = "events",
@@ -3546,6 +3589,7 @@ export function FigmaMemberMobileHome({
   sltPrepEntry?: MemberSltPrepEntry | null;
   initialStoriesFilter?: string | null;
   initialStoryId?: string | null;
+  initialEventsCampaign?: string | null;
   pointsSource?: MemberLoopSource;
   pointsReturnEventId?: string | null;
   eventsSource?: MemberLoopSource;
@@ -3585,7 +3629,14 @@ export function FigmaMemberMobileHome({
       case "evidence": return <EvidenceSubmission navigate={navigate} />;
       case "confirm": return <Confirmation navigate={navigate} />;
       case "points": return <PointsLeaderboard source={pointsSource} returnEventId={pointsReturnEventId} />;
-      case "events": return <EventsScreen navigate={navigate} source={eventsSource} />;
+      case "events":
+        return (
+          <EventsScreen
+            navigate={navigate}
+            source={eventsSource}
+            initialCampaign={initialEventsCampaign}
+          />
+        );
       case "event-detail": return <EventDetailScreen navigate={navigate} />;
       case "rsvp-confirm": return <RsvpConfirmScreen navigate={navigate} />;
       case "checkin": return <CheckInScreen navigate={navigate} />;
