@@ -119,6 +119,7 @@ describe("member mobile shell routes", () => {
     expect(html).toContain('href="/app/points?source=events"');
     expect(html).toContain("Back to Points");
     expect(getBottomNavHtml(html)).toContain('href="/app/points?source=events"');
+    expect(getBottomNavHtml(html)).toContain('href="/profile?source=points"');
     expect(html).toContain('href="/app/events/chapter-event-ucla-kickoff?source=points&amp;step=rsvp"');
     expect(html).toContain('href="/app/events/chapter-event-ucla-kickoff?source=points"');
   });
@@ -142,6 +143,7 @@ describe("member mobile shell routes", () => {
     expect(html).toContain('href="/app"');
     expect(html).toContain("Back to Home");
     expect(getBottomNavHtml(html)).toContain('href="/app/points?source=home"');
+    expect(getBottomNavHtml(html)).toContain('href="/profile?source=home"');
     expect(html).toContain('href="/app/events/chapter-event-ucla-kickoff?source=home&amp;step=rsvp"');
     expect(html).toContain('href="/app/events/chapter-event-ucla-kickoff?source=home"');
   });
@@ -240,6 +242,9 @@ describe("member mobile shell routes", () => {
     expect(getBottomNavHtml(html)).toContain(
       'href="/app/events/chapter-event-ucla-kickoff?source=points"',
     );
+    expect(getBottomNavHtml(html)).toContain(
+      'href="/profile?source=points&amp;event=chapter-event-ucla-kickoff"',
+    );
   });
 
   it("keeps the member points route connected to the profile walkthrough when opened from profile", async () => {
@@ -279,6 +284,28 @@ describe("member mobile shell routes", () => {
     expect(html).toContain('href="/profile?source=points"');
   });
 
+  it("keeps the member points route connected to the exact TEST profile context when points already knows the event handoff", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("member.a@mymedlife.test"),
+    );
+
+    const { default: PointsPage } = await import("@/app/app/points/page");
+    const html = renderToStaticMarkup(
+      await PointsPage({
+        searchParams: Promise.resolve({
+          source: "points",
+          event: "chapter-event-ucla-kickoff",
+        }),
+      }),
+    );
+
+    expect(getBottomNavHtml(html)).toContain(
+      'href="/profile?source=points&amp;event=chapter-event-ucla-kickoff"',
+    );
+  });
+
   it("returns the member points route to the exact TEST event detail when the home walkthrough opens a specific event", async () => {
     const actorModule = await import("@/services/local-actor-context");
 
@@ -303,6 +330,9 @@ describe("member mobile shell routes", () => {
     expect(html).toContain('href="/app/events/chapter-event-ucla-kickoff?source=home&amp;step=checkin"');
     expect(getBottomNavHtml(html)).toContain(
       'href="/app/events/chapter-event-ucla-kickoff?source=home"',
+    );
+    expect(getBottomNavHtml(html)).toContain(
+      'href="/profile?source=points&amp;event=chapter-event-ucla-kickoff"',
     );
   });
 
@@ -329,7 +359,7 @@ describe("member mobile shell routes", () => {
     expect(html).toContain('href="/app/events/chapter-event-ucla-kickoff?source=profile&amp;step=rsvp"');
     expect(html).toContain('href="/app/events/chapter-event-ucla-kickoff?source=profile&amp;step=checkin"');
     expect(getBottomNavHtml(html)).toContain(
-      'href="/app/events/chapter-event-ucla-kickoff?source=profile"',
+      'href="/app/events/chapter-event-ucla-kickoff?source=profile&amp;profileSource=points"',
     );
   });
 
