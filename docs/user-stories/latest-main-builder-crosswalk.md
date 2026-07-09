@@ -12,18 +12,19 @@ Use this queue overlay before the older backlog table below when assigning the
 next live branch:
 
 1. `#619` is merged, so stop treating it as active queue work.
-2. `#618` is the remaining open front branch and is now draft, mergeable, and
-   green on the listed checks. `#1` should clear draft/merge posture before
-   starting another member PR.
+2. `#618` is merged, so stop treating it as active queue work.
 3. `#620` is merged and public no-write smoke stayed `11/11` green after the
    merge. Do not keep its staff/admin seam in the pending queue.
-4. `#2` should return to local leader follow-on shaping after the `#619`
+4. `#621` exists as the next member follow-on, but it is still blocked by a
+   Browser smoke failure and should not be treated as the clean front branch
+   yet.
+5. `#2` should return to local leader follow-on shaping after the `#619`
    landing, keeping attendance, member review, and simple-leaderboard continuity
    narrow.
-5. `#3` should shape the next staff/admin seam locally while `#618` clears,
-   with emphasis on chapter oversight honesty, embedded Admin context, and
-   visible TEST-label coverage.
-6. `#4` should watch `#618` for scope, TEST labels, route evidence, and no
+6. `#3` should shape the next staff/admin seam locally while the member `#621`
+   blocker is resolved, with emphasis on chapter oversight honesty, embedded
+   Admin context, and visible TEST-label coverage.
+7. `#4` should watch `#621` for scope, TEST labels, route evidence, and no
    rollout-proof inflation. `#6` should stay quiet unless real proof artifacts
    appear.
 
@@ -45,7 +46,8 @@ readiness, or rollout approval.
   - `#617` merged.
   - `#620` merged.
   - `#619` merged.
-  - `#618` open, draft, mergeable, and green as the remaining front branch.
+  - `#618` merged.
+  - `#621` open with Browser smoke failure.
 - Coordinator-reported public no-write smoke: 11/11 passed after `#620`.
 
 ## How To Use This Crosswalk
