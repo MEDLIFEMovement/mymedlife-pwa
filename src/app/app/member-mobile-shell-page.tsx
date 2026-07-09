@@ -18,6 +18,7 @@ export async function renderMemberMobileShellPage({
   redirectPath,
   initialStoriesFilter,
   initialStoryId,
+  initialEventsCampaign,
   pointsSource,
   pointsReturnEventId,
   eventsSource,
@@ -26,6 +27,7 @@ export async function renderMemberMobileShellPage({
   redirectPath: string;
   initialStoriesFilter?: string | null;
   initialStoryId?: string | null;
+  initialEventsCampaign?: string | null;
   pointsSource?: "events" | "home" | "profile" | "points";
   pointsReturnEventId?: string | null;
   eventsSource?: "events" | "home" | "profile" | "points";
@@ -64,6 +66,7 @@ export async function renderMemberMobileShellPage({
         sltPrepEntry={sltPrepEntry}
         initialStoriesFilter={initialStoriesFilter}
         initialStoryId={initialStoryId}
+        initialEventsCampaign={initialEventsCampaign}
         pointsSource={pointsSource}
         pointsReturnEventId={pointsReturnEventId}
         eventsSource={eventsSource}

@@ -7,6 +7,7 @@ export const dynamic = "force-dynamic";
 type AppEventsPageProps = {
   searchParams?: Promise<{
     source?: string;
+    campaign?: string;
   }>;
 };
 
@@ -19,11 +20,14 @@ function getEventsSource(source?: string): "events" | "home" | "profile" | "poin
 }
 
 export default async function AppEventsPage({ searchParams }: AppEventsPageProps) {
-  const resolvedSearchParams: { source?: string } = await (searchParams ?? Promise.resolve({}));
+  const resolvedSearchParams: { source?: string; campaign?: string } = await (
+    searchParams ?? Promise.resolve({})
+  );
 
   return renderMemberMobileShellPage({
     initialScreen: "events",
     redirectPath: "/app/events",
+    initialEventsCampaign: resolvedSearchParams.campaign ?? null,
     eventsSource: getEventsSource(resolvedSearchParams.source),
   });
 }

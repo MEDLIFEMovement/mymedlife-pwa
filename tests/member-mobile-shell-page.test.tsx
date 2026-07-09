@@ -98,6 +98,31 @@ describe("member mobile shell routes", () => {
     expect(html).toContain('href="/app/events/chapter-event-ucla-kickoff?source=events&amp;step=rsvp"');
     expect(html).toContain('href="/app/events/chapter-event-ucla-kickoff?source=events"');
     expect(html).toContain('href="/app/events/chapter-event-lakeside-welcome?source=events"');
+    expect(html).toContain('href="/app/events?campaign=Rush+Month"');
+    expect(html).toContain('href="/app/events?campaign=Spring+Showcase"');
+    expect(html).toContain('href="/app/events?campaign=Safe+Homes+Fundraiser"');
+    expect(html).toContain('href="/app/events?campaign=Community+Health+Fair"');
+    expect(html).toContain('aria-label="Show all TEST event campaigns"');
+  });
+
+  it("keeps the events route campaign filter route-backed inside the member shell", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("member.a@mymedlife.test"),
+    );
+
+    const { default: EventsPage } = await import("@/app/app/events/page");
+    const html = renderToStaticMarkup(
+      await EventsPage({
+        searchParams: Promise.resolve({ campaign: "Spring Showcase" }),
+      }),
+    );
+
+    expect(html).toContain("Spring Showcase");
+    expect(html).toContain("TEST Spring Showcase Kickoff");
+    expect(html).toContain('href="/app/events"');
+    expect(html).toContain('href="/app/events?campaign=Spring+Showcase"');
   });
 
   it("keeps the events route tied to the member points handoff when opened from points", async () => {
@@ -122,6 +147,7 @@ describe("member mobile shell routes", () => {
     expect(getBottomNavHtml(html)).toContain('href="/profile?source=points"');
     expect(html).toContain('href="/app/events/chapter-event-ucla-kickoff?source=points&amp;step=rsvp"');
     expect(html).toContain('href="/app/events/chapter-event-ucla-kickoff?source=points"');
+    expect(html).toContain('href="/app/events?source=points&amp;campaign=Rush+Month"');
   });
 
   it("keeps the events route tied to the home walkthrough when opened from home", async () => {
