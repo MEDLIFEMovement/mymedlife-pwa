@@ -18,18 +18,19 @@ next live branch:
 4. `#621` is merged.
 5. `#624` is merged; do not keep it in the active queue.
 6. `#625` is the current draft member front candidate for member Stories,
-   events, and points continuity. Treat it as active repair/watch because App
-   checks are blocked on the `tests/home-page.test.tsx` copied-Figma shell size
-   guard (`4091 > 4004`), not as merge-ready proof.
+   events, and points continuity. It is `CLEAN` with App checks, Browser smoke,
+   Supabase RLS, Vercel, Claude, Analyze, Dependency Review, and Codecov green,
+   but it remains draft/open and should not be described as merged or rollout
+   proof.
 7. `#2` should return to local leader follow-on shaping after the `#619`
    landing, keeping attendance, member review, and simple-leaderboard continuity
    narrow.
 8. `#3` should shape the next staff/admin seam locally after the `#624` member
    merge, with emphasis on chapter oversight honesty, embedded Admin context,
    and visible TEST-label coverage.
-9. `#4` should watch `#625` as the promoted member front repair/watch candidate
-   and keep older parked branches out of the active queue. `#6` should stay
-   quiet unless real proof artifacts appear.
+9. `#4` should watch `#625` as the promoted member front candidate and keep
+   older parked branches out of the active queue. `#6` should stay quiet unless
+   real proof artifacts appear.
 
 Rollout-proof truth is unchanged. Shell merges, public no-write smoke, green CI,
 and TEST/sandbox rows may support `Scope/UI` or `QA/Ops` discussion, but they do
@@ -53,11 +54,10 @@ readiness, or rollout approval.
   - `#621` merged.
   - `#624` merged at `2026-07-09T15:30:58Z` with merge commit
     `e098074e938623967170416b422b0ae917f0c1bf`.
-  - `#625` is open draft and mergeable on head
-    `35c93311cb16d41504bafef262c6bacf553cfd21`; App checks are blocked on
-    `tests/home-page.test.tsx`, copied-Figma shell size guard `4091 > 4004`,
-    while Browser smoke, Supabase RLS, Vercel, Claude, Analyze, and Dependency
-    Review are green.
+  - `#625` is open draft, mergeable, and `CLEAN` on head
+    `60b05825919350d1675bf5eb9662402160aa3a81`; App checks, Browser smoke,
+    Supabase RLS, Vercel, Claude, Analyze, Dependency Review, and Codecov are
+    green.
 - Coordinator-reported public no-write smoke: 11/11 passed after `#620`.
 
 ## How To Use This Crosswalk
