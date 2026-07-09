@@ -868,6 +868,53 @@ function renderView(
                   {commandCenter.selectedSource ? (
                     <input type="hidden" name="source" value={commandCenter.selectedSource} />
                   ) : null}
+                  {commandCenter.selectedEventCommitteeFilter !== "all" ? (
+                    <input
+                      type="hidden"
+                      name="eventCommittee"
+                      value={commandCenter.selectedEventCommitteeFilter}
+                    />
+                  ) : null}
+                  {commandCenter.selectedEventId ? (
+                    <input type="hidden" name="event" value={commandCenter.selectedEventId} />
+                  ) : null}
+                  {commandCenter.selectedSource === "leaderboard" ? (
+                    <input
+                      type="hidden"
+                      name="leaderboardMetric"
+                      value={commandCenter.selectedLeaderboardMetric}
+                    />
+                  ) : null}
+                  {commandCenter.selectedSource === "leaderboard" &&
+                  commandCenter.selectedLeaderboardRegion !== "all" ? (
+                    <input
+                      type="hidden"
+                      name="region"
+                      value={commandCenter.selectedLeaderboardRegion}
+                    />
+                  ) : null}
+                  {commandCenter.selectedSource === "leaderboard" &&
+                  commandCenter.selectedBestPracticeChapterId ? (
+                    <input
+                      type="hidden"
+                      name="benchmark"
+                      value={commandCenter.selectedBestPracticeChapterId}
+                    />
+                  ) : null}
+                  {commandCenter.activeQuickAction ? (
+                    <input
+                      type="hidden"
+                      name="quickAction"
+                      value={commandCenter.activeQuickAction}
+                    />
+                  ) : null}
+                  {commandCenter.returnQuickAction ? (
+                    <input
+                      type="hidden"
+                      name="returnQuickAction"
+                      value={commandCenter.returnQuickAction}
+                    />
+                  ) : null}
                 </form>
 
                 <ChapterLeaderPipelineFilterSelect
