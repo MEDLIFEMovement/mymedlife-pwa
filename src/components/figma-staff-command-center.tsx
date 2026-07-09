@@ -2236,6 +2236,10 @@ function AdminRouteBlocked({
 }) {
   const contextLabel = getStaffAdminContextLabel(backLabel, chapterContext, proofQueueContext);
   const returnLoopLabel = getStaffAdminReturnLoopLabel(backLabel, chapterContext, proofQueueContext);
+  const oversightReadbackNote =
+    backLabel === "this chapter" && chapterContext
+      ? `Chapter oversight for ${chapterContext} stays read-only here: event readiness, RSVP totals, attendance readback, and points posture should be reviewed in Admin before any correction request.`
+      : null;
   return (
     <div className="flex-1 flex items-center justify-center bg-[#0d1117]">
       <div className="w-full max-w-sm text-center space-y-6">
@@ -2262,6 +2266,11 @@ function AdminRouteBlocked({
             <div className="mt-3 rounded-lg border border-sky-500/15 bg-sky-500/10 px-3 py-2 text-[11px] text-sky-300">
               {contextLabel}
             </div>
+          ) : null}
+          {oversightReadbackNote ? (
+            <p className="mt-3 text-[11px] leading-relaxed text-slate-400">
+              {oversightReadbackNote}
+            </p>
           ) : null}
           <p className="mt-3 text-[11px] leading-relaxed text-slate-500">
             {`When DS Admin access is available, return to ${returnLoopLabel} in the same Command Center review loop after the Admin readback closes.`}
@@ -2301,6 +2310,10 @@ function AdminRoleGate({
   const [picked, setPicked] = useState<AdminRole>("ds-admin");
   const contextLabel = getStaffAdminContextLabel(backLabel, chapterContext, proofQueueContext);
   const returnLoopLabel = getStaffAdminReturnLoopLabel(backLabel, chapterContext, proofQueueContext);
+  const oversightReadbackNote =
+    backLabel === "this chapter" && chapterContext
+      ? `Open Admin preview to read back event readiness, RSVP totals, attendance context, and points posture for ${chapterContext} before requesting any correction path.`
+      : null;
 
   return (
     <div className="flex-1 flex items-center justify-center bg-[#0d1117]">
@@ -2323,6 +2336,11 @@ function AdminRoleGate({
             <div className="mt-3 inline-flex max-w-full items-center rounded-full border border-sky-500/15 bg-sky-500/10 px-3 py-1 text-[10px] font-mono text-sky-300">
               {contextLabel}
             </div>
+          ) : null}
+          {oversightReadbackNote ? (
+            <p className="mt-3 text-[11px] leading-relaxed text-slate-500">
+              {oversightReadbackNote}
+            </p>
           ) : null}
         </div>
 
