@@ -443,9 +443,41 @@ describe("staff page", () => {
 
     expect(html).toContain("Chapter review context: TEST Boston College");
     expect(html).toContain(">Chapters</h1>");
+    expect(html).toContain(
+      "Chapter oversight for TEST Boston College stays read-only here: event readiness, RSVP totals, attendance readback, and points posture should be reviewed in Admin before any correction request.",
+    );
     expect(html).toContain("When DS Admin access is available, return to TEST Boston College in the same Command Center review loop after the Admin readback closes.");
     expect(html).toContain("Return to TEST Boston College");
     expect(html).toContain('href="/staff?view=chapters&amp;chapter=chapter-test&amp;chapterContext=TEST+Boston+College"');
+  });
+
+  it("keeps chapter oversight readback visible in the admin role gate before opening the embedded admin shell", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("super.admin@mymedlife.test"),
+    );
+
+    const { default: StaffPage } = await import("@/app/staff/page");
+    const html = renderToStaticMarkup(
+      await StaffPage({
+        searchParams: Promise.resolve({
+          view: "admin",
+          adminView: "chapters",
+          returnView: "chapters",
+          chapter: "ch13",
+          chapterContext: "TEST Stanford University",
+        }),
+      }),
+    );
+
+    expect(html).toContain("Restricted Preview Access");
+    expect(html).toContain("Chapter review context: TEST Stanford University");
+    expect(html).toContain(
+      "Open Admin preview to read back event readiness, RSVP totals, attendance context, and points posture for TEST Stanford University before requesting any correction path.",
+    );
+    expect(html).toContain("After the Admin readback, return to TEST Stanford University in the same Command Center review loop.");
+    expect(html).toContain("Return to TEST Stanford University");
   });
 
   it("keeps a route-backed chapter return visible inside the embedded admin review surface", async () => {
