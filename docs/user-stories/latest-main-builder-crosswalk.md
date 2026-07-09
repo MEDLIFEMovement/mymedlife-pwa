@@ -15,15 +15,15 @@ next live branch:
 2. `#618` is merged, so stop treating it as active queue work.
 3. `#620` is merged and public no-write smoke stayed `11/11` green after the
    merge. Do not keep its staff/admin seam in the pending queue.
-4. `#621` exists as the next member follow-on, but it is still blocked by a
-   Browser smoke failure and should not be treated as the clean front branch
-   yet.
+4. `#621` exists as the next member follow-on and is now refreshed/rerunning;
+   treat it as rerun-watch, not as a clean front branch or a completed product
+   failure.
 5. `#2` should return to local leader follow-on shaping after the `#619`
    landing, keeping attendance, member review, and simple-leaderboard continuity
    narrow.
 6. `#3` should shape the next staff/admin seam locally while the member `#621`
-   blocker is resolved, with emphasis on chapter oversight honesty, embedded
-   Admin context, and visible TEST-label coverage.
+   rerun settles, with emphasis on chapter oversight honesty, embedded Admin
+   context, and visible TEST-label coverage.
 7. `#4` should watch `#621` for scope, TEST labels, route evidence, and no
    rollout-proof inflation. `#6` should stay quiet unless real proof artifacts
    appear.
@@ -47,7 +47,7 @@ readiness, or rollout approval.
   - `#620` merged.
   - `#619` merged.
   - `#618` merged.
-  - `#621` open with Browser smoke failure.
+  - `#621` open with checks rerunning after refresh.
 - Coordinator-reported public no-write smoke: 11/11 passed after `#620`.
 
 ## How To Use This Crosswalk
