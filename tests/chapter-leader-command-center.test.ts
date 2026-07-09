@@ -1505,6 +1505,80 @@ describe("chapter leader command center", () => {
     );
   });
 
+  it("reuses the event-shell member-review route in the review-members CTA when no member is selected", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = {
+      ...getChapterLeaderCommandCenter(actor, data, {
+        view: "members",
+        source: "events",
+        memberId: "member-ivy",
+        eventCommittee: "events",
+        eventId: "bc-event-moving-mountains-kickoff",
+        pipeline: "follow_up",
+        search: "Ivy",
+        quickAction: "review_members",
+        returnQuickAction: "assign_action",
+      }),
+      selectedMember: null,
+      selectedMemberId: null,
+      navigationMemberId: null,
+    };
+    const markup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
+    );
+    const escapedHref =
+      "href=\"/leader?view=member_profile&amp;source=events&amp;member=member-ivy&amp;eventCommittee=events&amp;event=bc-event-moving-mountains-kickoff&amp;pipeline=follow_up&amp;q=Ivy&amp;quickAction=assign_action\"";
+    const reviewMembersCardStart = markup.indexOf(
+      "Start from the member pipeline, then open the right member review.",
+    );
+    const reviewMembersCardMarkup = markup.slice(
+      reviewMembersCardStart,
+      markup.indexOf("Member Leaderboard", reviewMembersCardStart),
+    );
+
+    expect(commandCenter.pipelineRows[0]?.profileHref).toBe(
+      "/leader?view=member_profile&source=events&member=member-ivy&eventCommittee=events&event=bc-event-moving-mountains-kickoff&pipeline=follow_up&q=Ivy&quickAction=assign_action",
+    );
+    expect(reviewMembersCardMarkup).toContain(escapedHref);
+  });
+
+  it("reuses the chapter-home member-review route in the review-members CTA when no member is selected", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = {
+      ...getChapterLeaderCommandCenter(actor, data, {
+        view: "members",
+        source: "overview",
+        memberId: "member-ivy",
+        eventCommittee: "events",
+        eventId: "bc-event-moving-mountains-kickoff",
+        pipeline: "follow_up",
+        search: "Ivy",
+        quickAction: "review_members",
+        returnQuickAction: "assign_action",
+      }),
+      selectedMember: null,
+      selectedMemberId: null,
+      navigationMemberId: null,
+    };
+    const markup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
+    );
+    const escapedHref =
+      "href=\"/leader?view=member_profile&amp;source=overview&amp;member=member-ivy&amp;eventCommittee=events&amp;event=bc-event-moving-mountains-kickoff&amp;pipeline=follow_up&amp;q=Ivy&amp;quickAction=assign_action\"";
+    const reviewMembersCardStart = markup.indexOf(
+      "Start from the member pipeline, then open the right member review.",
+    );
+    const reviewMembersCardMarkup = markup.slice(
+      reviewMembersCardStart,
+      markup.indexOf("Member Leaderboard", reviewMembersCardStart),
+    );
+
+    expect(commandCenter.pipelineRows[0]?.profileHref).toBe(
+      "/leader?view=member_profile&source=overview&member=member-ivy&eventCommittee=events&event=bc-event-moving-mountains-kickoff&pipeline=follow_up&q=Ivy&quickAction=assign_action",
+    );
+    expect(reviewMembersCardMarkup).toContain(escapedHref);
+  });
+
   it("builds a route-driven member profile workbench with leadership actions and timeline context", () => {
     const actor = getMockLocalActorContext("leader.a@mymedlife.test");
     const commandCenter = getChapterLeaderCommandCenter(actor, data, {

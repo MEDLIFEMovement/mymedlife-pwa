@@ -785,6 +785,7 @@ function renderView(
                 <Link
                   href={
                     commandCenter.selectedMember?.profileHref ??
+                    commandCenter.pipelineRows[0]?.profileHref ??
                     buildChapterLeaderCommandCenterHref("member_profile", {
                       source: commandCenter.selectedSource,
                       memberId: commandCenter.selectedMemberId,
