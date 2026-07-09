@@ -311,43 +311,6 @@ describe("member event detail route", () => {
     expect(html).toContain('href="/app/points?source=profile&amp;event=chapter-event-ucla-kickoff"');
   });
 
-  it("preserves selected campaign context through the event detail loop when opened from profile after points", async () => {
-    const actorModule = await import("@/services/local-actor-context");
-    const dataModule = await import("@/services/read-only-app-data");
-
-    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
-      getSignedInActor("member.a@mymedlife.test"),
-    );
-    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
-      getMockReadOnlyAppData("Testing member event detail selected campaign continuity."),
-    );
-
-    const { default: EventDetailPage } = await import("@/app/app/events/[eventId]/page");
-    const html = renderToStaticMarkup(
-      await EventDetailPage({
-        params: Promise.resolve({ eventId: "chapter-event-ucla-kickoff" }),
-        searchParams: Promise.resolve({
-          source: "profile",
-          profileSource: "points",
-          campaign: "Spring Showcase",
-        }),
-      }),
-    );
-
-    expect(html).toContain(
-      'href="/profile?source=points&amp;event=chapter-event-ucla-kickoff&amp;campaign=Spring%20Showcase"',
-    );
-    expect(html).toContain(
-      'href="/app/events?source=profile&amp;profileSource=points&amp;campaign=Spring%20Showcase"',
-    );
-    expect(html).toContain(
-      'href="/app/points?source=profile&amp;event=chapter-event-ucla-kickoff&amp;campaign=Spring+Showcase"',
-    );
-    expect(html).toContain(
-      'href="/app/events/chapter-event-ucla-kickoff?source=profile&amp;step=rsvp&amp;profileSource=points&amp;campaign=Spring+Showcase"',
-    );
-  });
-
   it("preserves the exact event handoff when profile opens event points impact", async () => {
     const actorModule = await import("@/services/local-actor-context");
     const dataModule = await import("@/services/read-only-app-data");
@@ -368,6 +331,84 @@ describe("member event detail route", () => {
     );
 
     expect(html).toContain('href="/app/points?source=profile&amp;event=chapter-event-ucla-kickoff"');
+  });
+
+  it("preserves selected campaign context when points opens event detail", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const dataModule = await import("@/services/read-only-app-data");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("member.a@mymedlife.test"),
+    );
+    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
+      getMockReadOnlyAppData("Testing member event detail campaign continuity from points."),
+    );
+
+    const { default: EventDetailPage } = await import("@/app/app/events/[eventId]/page");
+    const html = renderToStaticMarkup(
+      await EventDetailPage({
+        params: Promise.resolve({ eventId: "chapter-event-ucla-kickoff" }),
+        searchParams: Promise.resolve({ source: "points", campaign: "Rush Month" }),
+      }),
+    );
+
+    expect(html).toContain('href="/app/points?source=events&amp;event=chapter-event-ucla-kickoff&amp;campaign=Rush+Month"');
+    expect(html).toContain('href="/app/events?source=points&amp;campaign=Rush+Month"');
+    expect(html).toContain('href="/profile?source=points&amp;event=chapter-event-ucla-kickoff&amp;campaign=Rush+Month"');
+    expect(html).toContain('href="/app/events/chapter-event-ucla-kickoff?source=points&amp;step=rsvp&amp;campaign=Rush+Month"');
+  });
+
+  it("preserves selected campaign context when profile opens event detail via points", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const dataModule = await import("@/services/read-only-app-data");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("member.a@mymedlife.test"),
+    );
+    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
+      getMockReadOnlyAppData("Testing member event detail campaign continuity from profile."),
+    );
+
+    const { default: EventDetailPage } = await import("@/app/app/events/[eventId]/page");
+    const html = renderToStaticMarkup(
+      await EventDetailPage({
+        params: Promise.resolve({ eventId: "chapter-event-ucla-kickoff" }),
+        searchParams: Promise.resolve({
+          source: "profile",
+          profileSource: "points",
+          campaign: "Rush Month",
+        }),
+      }),
+    );
+
+    expect(html).toContain('href="/profile?source=points&amp;event=chapter-event-ucla-kickoff&amp;campaign=Rush+Month"');
+    expect(html).toContain('href="/app/events?source=profile&amp;profileSource=points&amp;campaign=Rush+Month"');
+    expect(html).toContain('href="/app/points?source=profile&amp;event=chapter-event-ucla-kickoff&amp;campaign=Rush+Month"');
+    expect(html).toContain('href="/app/events/chapter-event-ucla-kickoff?source=profile&amp;step=rsvp&amp;profileSource=points&amp;campaign=Rush+Month"');
+  });
+
+  it("keeps bottom-nav profile continuity when event detail was opened from a filtered profile loop", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const dataModule = await import("@/services/read-only-app-data");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("member.a@mymedlife.test"),
+    );
+    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
+      getMockReadOnlyAppData("Testing filtered profile loop continuity from event detail."),
+    );
+
+    const { default: EventDetailPage } = await import("@/app/app/events/[eventId]/page");
+    const html = renderToStaticMarkup(
+      await EventDetailPage({
+        params: Promise.resolve({ eventId: "chapter-event-ucla-kickoff" }),
+        searchParams: Promise.resolve({ source: "profile", campaign: "Rush Month" }),
+      }),
+    );
+
+    expect(html).toContain('href="/profile?campaign=Rush+Month"');
+    expect(html).toContain('href="/app/events?source=profile&amp;campaign=Rush+Month"');
+    expect(html).toContain('href="/app/points?source=profile&amp;event=chapter-event-ucla-kickoff&amp;campaign=Rush+Month"');
   });
 
   it("falls back to the member events list when the event detail source is unknown", async () => {

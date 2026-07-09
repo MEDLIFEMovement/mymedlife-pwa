@@ -345,7 +345,7 @@ function buildProfilePointsHref(
     url.searchParams.set("event", entryEventId);
   }
 
-  if (entryCampaign && entryCampaign !== "All") {
+  if (entryCampaign) {
     url.searchParams.set("campaign", entryCampaign);
   }
 
@@ -357,21 +357,15 @@ function buildProfileEventsHref(
   entryEventId: string | null,
   entryCampaign: string | null,
 ) {
-  if (!entryEventId) {
-    const url = new URL("https://mymedlife.local/app/events?source=profile");
-    if (entryCampaign && entryCampaign !== "All") {
-      url.searchParams.set("campaign", entryCampaign);
-    }
-    return `${url.pathname}${url.search}`;
-  }
-
-  const url = new URL(`https://mymedlife.local/app/events/${entryEventId}?source=profile`);
+  const url = new URL(
+    `https://mymedlife.local${entryEventId ? `/app/events/${entryEventId}?source=profile` : "/app/events?source=profile"}`,
+  );
 
   if (entrySource === "points") {
     url.searchParams.set("profileSource", "points");
   }
 
-  if (entryCampaign && entryCampaign !== "All") {
+  if (entryCampaign) {
     url.searchParams.set("campaign", entryCampaign);
   }
 

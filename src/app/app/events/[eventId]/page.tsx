@@ -55,12 +55,7 @@ export default async function AppEventDetailPage({
   params,
   searchParams,
 }: AppEventDetailPageProps) {
-  const emptySearchParams: {
-    source?: string;
-    step?: string;
-    profileSource?: string;
-    campaign?: string;
-  } = {};
+  const emptySearchParams: { source?: string; step?: string; profileSource?: string; campaign?: string } = {};
   const [{ eventId }, resolvedSearchParams, actor, data] = await Promise.all([
     params,
     searchParams ?? Promise.resolve(emptySearchParams),
@@ -86,12 +81,35 @@ export default async function AppEventDetailPage({
   const step = getEventDetailStep(resolvedSearchParams.step);
   const backHref =
     step === "detail"
-      ? getEventReturnHref(eventId, resolvedSearchParams.source, resolvedSearchParams.profileSource)
+      ? getEventReturnHref(
+          eventId,
+          resolvedSearchParams.source,
+          resolvedSearchParams.profileSource,
+          resolvedSearchParams.campaign,
+        )
       : step === "rsvp"
-        ? buildEventStepHref(eventId, "detail", resolvedSearchParams.source, resolvedSearchParams.profileSource)
+        ? buildEventStepHref(
+            eventId,
+            "detail",
+            resolvedSearchParams.source,
+            resolvedSearchParams.profileSource,
+            resolvedSearchParams.campaign,
+          )
         : step === "checkin"
-          ? buildEventStepHref(eventId, "rsvp", resolvedSearchParams.source, resolvedSearchParams.profileSource)
-          : buildEventStepHref(eventId, "checkin", resolvedSearchParams.source, resolvedSearchParams.profileSource);
+          ? buildEventStepHref(
+              eventId,
+              "rsvp",
+              resolvedSearchParams.source,
+              resolvedSearchParams.profileSource,
+              resolvedSearchParams.campaign,
+            )
+          : buildEventStepHref(
+              eventId,
+              "checkin",
+              resolvedSearchParams.source,
+              resolvedSearchParams.profileSource,
+              resolvedSearchParams.campaign,
+            );
   const activeTab = getEventDetailActiveTab(step);
   const navHrefOverrides = getEventDetailNavHrefOverrides(
     eventId,
@@ -119,6 +137,7 @@ export default async function AppEventDetailPage({
               backHref={backHref}
               source={resolvedSearchParams.source}
               profileSource={resolvedSearchParams.profileSource}
+              campaign={resolvedSearchParams.campaign}
             />
           ) : step === "checkin" ? (
             <EventCheckInView
@@ -127,6 +146,7 @@ export default async function AppEventDetailPage({
               backHref={backHref}
               source={resolvedSearchParams.source}
               profileSource={resolvedSearchParams.profileSource}
+              campaign={resolvedSearchParams.campaign}
             />
           ) : (
             <EventPointsImpactView
@@ -135,6 +155,7 @@ export default async function AppEventDetailPage({
               backHref={backHref}
               source={resolvedSearchParams.source}
               profileSource={resolvedSearchParams.profileSource}
+              campaign={resolvedSearchParams.campaign}
             />
           )}
         </div>
@@ -383,15 +404,17 @@ function EventRsvpConfirmView({
   backHref,
   source,
   profileSource,
+  campaign,
 }: {
   event: NonNullable<ReturnType<typeof getMemberLaunchLaneEventRowById>>;
   snapshot: NonNullable<ReturnType<typeof getLaunchLaneEventSnapshotById>>;
   backHref: string;
   source?: string;
   profileSource?: string;
+  campaign?: string;
 }) {
   const visibleLocationLabel = ensureVisibleTestLabel(snapshot.memberLocationLabel);
-  const returnHref = getEventReturnHref(event.id, source, profileSource);
+  const returnHref = getEventReturnHref(event.id, source, profileSource, campaign);
   const returnLabel = getEventReturnLabel(source);
   return (
     <StepShell backHref={backHref} title="">
@@ -437,7 +460,7 @@ function EventRsvpConfirmView({
 
         <div className="w-full space-y-2.5">
           <PrimaryLink
-            href={buildEventStepHref(event.id, "checkin", source, profileSource)}
+            href={buildEventStepHref(event.id, "checkin", source, profileSource, campaign)}
             label="Go to Check-In"
             icon={<QrCode size={16} />}
           />
@@ -454,12 +477,14 @@ function EventCheckInView({
   backHref,
   source,
   profileSource,
+  campaign,
 }: {
   event: NonNullable<ReturnType<typeof getMemberLaunchLaneEventRowById>>;
   snapshot: NonNullable<ReturnType<typeof getLaunchLaneEventSnapshotById>>;
   backHref: string;
   source?: string;
   profileSource?: string;
+  campaign?: string;
 }) {
   const visibleEventTitle = ensureVisibleTestLabel(event.title);
   return (
@@ -497,7 +522,7 @@ function EventCheckInView({
         </div>
 
         <PrimaryLink
-          href={buildEventStepHref(event.id, "points", source, profileSource)}
+          href={buildEventStepHref(event.id, "points", source, profileSource, campaign)}
           label="Confirm Check-In"
           icon={<UserCheck size={20} />}
         />
@@ -512,15 +537,17 @@ function EventPointsImpactView({
   backHref,
   source,
   profileSource,
+  campaign,
 }: {
   event: NonNullable<ReturnType<typeof getMemberLaunchLaneEventRowById>>;
   snapshot: NonNullable<ReturnType<typeof getLaunchLaneEventSnapshotById>>;
   backHref: string;
   source?: string;
   profileSource?: string;
+  campaign?: string;
 }) {
   const visibleChapterName = ensureVisibleTestLabel(snapshot.chapterName);
-  const returnHref = getEventReturnHref(event.id, source, profileSource);
+  const returnHref = getEventReturnHref(event.id, source, profileSource, campaign);
   const returnLabel = getEventReturnLabel(source);
   const chapterRows = [
     { rank: "🥇", name: "TEST Aisha N.", points: 220 },
@@ -573,7 +600,7 @@ function EventPointsImpactView({
 
         <div className="mt-6 w-full space-y-2.5">
           <PrimaryLink
-            href={getLaunchLaneEventPointsHref(event.id, source)}
+            href={getLaunchLaneEventPointsHref(event.id, source, campaign)}
             label="View leaderboard impact"
             icon={<Star size={15} />}
           />
@@ -742,30 +769,27 @@ function getEventDetailNavHrefOverrides(
   profileSource?: string,
   campaign?: string,
 ): Partial<Record<MemberBottomNavTab, string>> {
-  const campaignSuffix =
-    campaign && campaign !== "All"
-      ? `&campaign=${encodeURIComponent(campaign)}`
-      : "";
   const overrides: Partial<Record<MemberBottomNavTab, string>> = {
     events:
       source === "profile"
-        ? `/app/events?source=profile${profileSource === "points" ? "&profileSource=points" : ""}${campaignSuffix}`
+        ? buildEventsListHref("profile", campaign, profileSource)
         : source === "points"
-          ? `/app/events?source=points${campaignSuffix}`
-          : campaignSuffix
-            ? `/app/events?${campaignSuffix.slice(1)}`
-            : "/app/events",
+          ? buildEventsListHref("points", campaign)
+          : source === "home"
+            ? buildEventsListHref("home", campaign)
+            : buildEventsListHref("events", campaign),
     points: getLaunchLaneEventPointsHref(eventId, source, campaign),
   };
 
   if (source === "home") {
-    overrides.profile = `/profile?source=home&event=${eventId}${campaignSuffix}`;
+    overrides.profile = buildProfileReturnHref(eventId, "home", campaign);
   } else if (source === "points") {
-    overrides.profile = `/profile?source=points&event=${eventId}${campaignSuffix}`;
-  } else if (source === "profile" && profileSource === "points") {
-    overrides.profile = `/profile?source=points&event=${eventId}${campaignSuffix}`;
-  } else if (source === "profile" && campaignSuffix) {
-    overrides.profile = `/profile?${campaignSuffix.slice(1)}`;
+    overrides.profile = buildProfileReturnHref(eventId, "points", campaign);
+  } else if (source === "profile") {
+    overrides.profile =
+      profileSource === "points"
+        ? buildProfileReturnHref(eventId, "points", campaign)
+        : buildProfileReturnHref(null, null, campaign);
   }
 
   return overrides;
@@ -801,36 +825,23 @@ function buildEventStepHref(
     url.searchParams.set("profileSource", "points");
   }
 
-  if (campaign && campaign !== "All") {
+  if (campaign) {
     url.searchParams.set("campaign", campaign);
   }
 
   return `${url.pathname}${url.search}`;
 }
 
-function getEventReturnHref(
-  eventId: string,
-  source?: string,
-  profileSource?: string,
-  campaign?: string,
-) {
-  const campaignSuffix =
-    campaign && campaign !== "All"
-      ? `&campaign=${encodeURIComponent(campaign)}`
-      : "";
+function getEventReturnHref(eventId: string, source?: string, profileSource?: string, campaign?: string) {
   return source === "home"
     ? "/app"
     : source === "profile"
       ? profileSource === "points"
-        ? `/profile?source=points&event=${eventId}${campaignSuffix}`
-        : campaignSuffix
-          ? `/profile?${campaignSuffix.slice(1)}`
-          : "/profile"
+        ? buildProfileReturnHref(eventId, "points", campaign)
+        : buildProfileReturnHref(null, null, campaign)
       : source === "points"
         ? getLaunchLaneEventPointsHref(eventId, source, campaign)
-        : campaignSuffix
-          ? `/app/events?${campaignSuffix.slice(1)}`
-          : "/app/events";
+        : buildEventsListHref("events", campaign);
 }
 
 function getEventReturnLabel(source?: string) {
@@ -847,12 +858,7 @@ function getEventPointsSource(source?: string) {
   return source === "home" || source === "profile" ? source : "events";
 }
 
-function getEventSourceContext(
-  eventId: string,
-  source?: string,
-  profileSource?: string,
-  campaign?: string,
-) {
+function getEventSourceContext(eventId: string, source?: string, profileSource?: string, campaign?: string) {
   if (source === "home") {
     return {
       eyebrow: "Opened from the TEST home walkthrough",
@@ -872,12 +878,8 @@ function getEventSourceContext(
         "Your TEST profile sent you here so the next chapter moment stays route-backed. Open the event flow, preview RSVP or attendance, then step back into points when you are ready.",
       href:
         profileSource === "points"
-          ? `/profile?source=points&event=${eventId}${
-              campaign && campaign !== "All" ? `&campaign=${encodeURIComponent(campaign)}` : ""
-            }`
-          : campaign && campaign !== "All"
-            ? `/profile?campaign=${encodeURIComponent(campaign)}`
-            : "/profile",
+          ? buildProfileReturnHref(eventId, "points", campaign)
+          : buildProfileReturnHref(null, null, campaign),
       cta: "Back to Profile",
     };
   }
@@ -910,7 +912,55 @@ function getLaunchLaneEventPointsHref(eventId: string, source?: string, campaign
     url.searchParams.set("event", eventId);
   }
 
-  if (campaign && campaign !== "All") {
+  if (campaign) {
+    url.searchParams.set("campaign", campaign);
+  }
+
+  return `${url.pathname}${url.search}`;
+}
+
+function buildProfileReturnHref(
+  eventId: string | null,
+  source: "home" | "points" | null,
+  campaign?: string,
+) {
+  const url = new URL(
+    `https://mymedlife.local${
+      source === "home"
+        ? "/profile?source=home"
+        : source === "points"
+          ? "/profile?source=points"
+          : "/profile"
+    }`,
+  );
+
+  if (eventId) {
+    url.searchParams.set("event", eventId);
+  }
+
+  if (campaign) {
+    url.searchParams.set("campaign", campaign);
+  }
+
+  return `${url.pathname}${url.search}`;
+}
+
+function buildEventsListHref(
+  source: "events" | "home" | "profile" | "points",
+  campaign?: string,
+  profileSource?: string,
+) {
+  const url = new URL(`https://mymedlife.local/app/events`);
+
+  if (source !== "events") {
+    url.searchParams.set("source", source);
+  }
+
+  if (source === "profile" && profileSource === "points") {
+    url.searchParams.set("profileSource", "points");
+  }
+
+  if (campaign) {
     url.searchParams.set("campaign", campaign);
   }
 
