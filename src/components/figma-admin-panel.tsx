@@ -28,6 +28,62 @@ type EmbeddedChapterReadback = {
   points: string | null;
   pointsWeek: string | null;
 };
+
+const EMBEDDED_CHAPTER_FALLBACKS: Record<string, Omit<EmbeddedChapterReadback, "chapterContext">> = {
+  "test stanford university": {
+    school: "TEST Stanford University",
+    region: "West",
+    coach: "TEST James Okafor",
+    members: "52",
+    risk: "healthy",
+    events: "5",
+    rsvps: "80",
+    attendance: "68",
+    points: "22100",
+    pointsWeek: "1890",
+  },
+  "test boston college": {
+    school: "TEST Boston College",
+    region: "New England",
+    coach: "TEST Maria Santos",
+    members: "32",
+    risk: "healthy",
+    events: "2",
+    rsvps: "30",
+    attendance: "24",
+    points: "7800",
+    pointsWeek: "620",
+  },
+};
+
+function enrichEmbeddedChapterReadback(
+  embeddedReadback: EmbeddedChapterReadback,
+): EmbeddedChapterReadback {
+  const chapterContext = embeddedReadback.chapterContext.trim().toLowerCase();
+  const matchedChapter = CHAPTERS_DATA.find((chapter) => {
+    const name = chapter.name.trim().toLowerCase();
+    const school = chapter.school.trim().toLowerCase();
+    return name === chapterContext || school === chapterContext;
+  });
+
+  const fallback = EMBEDDED_CHAPTER_FALLBACKS[chapterContext] ?? null;
+
+  if (!matchedChapter && !fallback) return embeddedReadback;
+
+  return {
+    ...embeddedReadback,
+    school: embeddedReadback.school ?? matchedChapter?.school ?? fallback?.school ?? null,
+    region: embeddedReadback.region ?? matchedChapter?.region ?? fallback?.region ?? null,
+    coach: embeddedReadback.coach ?? matchedChapter?.coach ?? fallback?.coach ?? null,
+    members: embeddedReadback.members ?? (matchedChapter ? String(matchedChapter.members) : fallback?.members ?? null),
+    risk: embeddedReadback.risk ?? matchedChapter?.risk ?? fallback?.risk ?? null,
+    events: embeddedReadback.events ?? (matchedChapter ? String(matchedChapter.upcomingEvents) : fallback?.events ?? null),
+    rsvps: embeddedReadback.rsvps ?? (matchedChapter ? String(matchedChapter.rsvps) : fallback?.rsvps ?? null),
+    attendance: embeddedReadback.attendance ?? (matchedChapter ? String(matchedChapter.attendance) : fallback?.attendance ?? null),
+    points: embeddedReadback.points ?? (matchedChapter ? String(matchedChapter.points) : fallback?.points ?? null),
+    pointsWeek: embeddedReadback.pointsWeek ?? fallback?.pointsWeek ?? null,
+  };
+}
 type AdminChapterRecord = typeof CHAPTERS_DATA[0];
 
 // ─── Mock Data ─────────────────────────────────────────────────────────────────
@@ -4162,7 +4218,7 @@ export function FigmaAdminPanel({
   const embeddedChapterContext = pathname.startsWith("/staff") ? searchParams.get("chapterContext") : null;
   const embeddedChapterReadback =
     pathname.startsWith("/staff") && embeddedChapterContext
-      ? {
+      ? enrichEmbeddedChapterReadback({
           chapterContext: embeddedChapterContext,
           school: searchParams.get("chapterSchool"),
           region: searchParams.get("chapterRegionName"),
@@ -4174,7 +4230,7 @@ export function FigmaAdminPanel({
           attendance: searchParams.get("chapterAttendance"),
           points: searchParams.get("chapterPoints"),
           pointsWeek: searchParams.get("chapterPointsWeek"),
-        }
+        })
       : null;
   const embeddedProofQueueContext = pathname.startsWith("/staff")
     ? getEmbeddedProofQueueContext(searchParams.get("proofStatus"), searchParams.get("proofPlatform"))

@@ -561,6 +561,10 @@ describe("staff page", () => {
     expect(html).toContain(
       "Use this Admin readback to confirm event readiness, RSVP totals, attendance context, and points posture for TEST Stanford University before requesting any blocked-control follow-through or correction path.",
     );
+    expect(html).toContain(">School</div><div class=\"mt-1 text-[13px] font-mono font-semibold text-slate-100\">TEST Stanford University</div>");
+    expect(html).toContain(">Region</div><div class=\"mt-1 text-[13px] font-mono font-semibold text-slate-100\">West</div>");
+    expect(html).toContain(">Coach</div><div class=\"mt-1 text-[13px] font-mono font-semibold text-slate-100\">TEST James Okafor</div>");
+    expect(html).toContain(">Active Members</div><div class=\"mt-1 text-[13px] font-mono font-semibold text-slate-100\">52</div>");
     expect(html).toContain(
       "After this Admin readback, return to Chapters with TEST Stanford University still selected in the same Command Center review loop to keep the chapter oversight context intact.",
     );
@@ -1200,6 +1204,7 @@ describe("staff page", () => {
     expect(adminSource).toContain('attendance: searchParams.get("chapterAttendance"),');
     expect(adminSource).toContain('points: searchParams.get("chapterPoints"),');
     expect(adminSource).toContain('pointsWeek: searchParams.get("chapterPointsWeek"),');
+    expect(adminSource).toContain("function enrichEmbeddedChapterReadback");
     expect(adminSource).toContain("embeddedReadback ? buildEmbeddedReadbackChapter(embeddedReadback) : null");
     expect(adminSource).toContain("function buildEmbeddedReadbackChapter");
     expect(adminSource).toContain('risk: embeddedReadback.risk ?? "medium",');
