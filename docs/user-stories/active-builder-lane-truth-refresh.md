@@ -22,8 +22,10 @@ without rereading the whole story package.
 - PR `#621` is merged.
 - PR `#624` is merged.
 - PR `#625` is the current draft member front candidate for member Stories,
-  events, and points continuity; first-pass checks are still in flight, so treat
-  it as active watch, not merge-ready proof.
+  events, and points continuity; App checks are blocked on the
+  `tests/home-page.test.tsx` copied-Figma shell size guard
+  (`4091 > 4004`), while Browser smoke, Supabase RLS, Vercel, Claude, Analyze,
+  and Dependency Review are green.
 - No new leader or staff/admin front PR is promoted by this packet yet; use the
   next Coordinator queue correction before treating older parked PRs as active
   front work.
@@ -66,8 +68,10 @@ Live PR signal:
 - `gh pr view 621` confirmed merged.
 - `gh pr view 624` confirmed merged at `2026-07-09T15:30:58Z` with merge commit
   `e098074e938623967170416b422b0ae917f0c1bf`.
-- `gh pr view 625` confirmed open draft, mergeable, and running first-pass
-  checks on head `35c93311cb16d41504bafef262c6bacf553cfd21`.
+- `gh pr view 625` confirmed open draft, mergeable, and blocked on App checks
+  at head `35c93311cb16d41504bafef262c6bacf553cfd21`; the failing test is
+  `tests/home-page.test.tsx`, copied-Figma shell size guard
+  `4091 > 4004`.
 - This packet captures planning order and acceptance boundaries only; it should
   not be read as approval for older parked branches.
 
@@ -78,8 +82,9 @@ Live PR signal:
 Next safest slice:
 
 1. Stop treating PR `#624` as active queue work; it is merged.
-2. Treat PR `#625` as the current draft member front candidate for source-backed
-   Stories, events, and points continuity while checks run.
+2. Treat PR `#625` as the current draft member front repair candidate for
+   source-backed Stories, events, and points continuity until the copied-Figma
+   shell size guard is repaired.
 3. Preserve the existing profile, Stories, events/detail, points, and bottom-nav
    acceptance contracts while the queue clears.
 
