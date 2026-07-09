@@ -3708,6 +3708,8 @@ export function FigmaMemberMobileHome({
   const profileHref =
     screen === "home"
       ? "/profile?source=home"
+      : screen === "stories"
+        ? getStoriesBottomNavProfileHref(initialStoriesFilter)
       : screen === "points"
         ? getPointsBottomNavProfileHref(pointsSource, pointsReturnEventId, pointsReturnCampaign)
         : "/profile";
@@ -3897,6 +3899,16 @@ function getPointsBottomNavProfileHref(
   }
 
   return screenlessProfileHref(source, returnCampaign);
+}
+
+function getStoriesBottomNavProfileHref(storyFilter: string | null) {
+  const url = new URL("https://mymedlife.local/profile?source=stories");
+
+  if (storyFilter) {
+    url.searchParams.set("storyFilter", storyFilter);
+  }
+
+  return `${url.pathname}${url.search}`;
 }
 
 function screenlessProfileHref(

@@ -20,11 +20,12 @@ type ProfilePageProps = {
     source?: string;
     event?: string;
     campaign?: string;
+    storyFilter?: string;
   }>;
 };
 
-function getProfileSource(source?: string): "home" | "points" | null {
-  if (source === "home" || source === "points") {
+function getProfileSource(source?: string): "home" | "points" | "stories" | null {
+  if (source === "home" || source === "points" || source === "stories") {
     return source;
   }
 
@@ -36,12 +37,13 @@ export default async function ProfilePage(props: ProfilePageProps) {
     getLocalActorContext(),
     getReadOnlyAppData(),
   ]);
-  const resolvedSearchParams: { source?: string; event?: string; campaign?: string } = await (
+  const resolvedSearchParams: { source?: string; event?: string; campaign?: string; storyFilter?: string } = await (
     props.searchParams ?? Promise.resolve({})
   );
   const profileSource = getProfileSource(resolvedSearchParams.source);
   const profileEventId = resolvedSearchParams.event ?? null;
   const profileCampaign = resolvedSearchParams.campaign ?? null;
+  const profileStoryFilter = resolvedSearchParams.storyFilter ?? null;
   const workspace = getProfileWorkspace(actor, data);
   const isMemberProfile = canAccessMemberWorkspace(actor);
   const studentHome = isMemberProfile
@@ -70,6 +72,7 @@ export default async function ProfilePage(props: ProfilePageProps) {
               entrySource={profileSource}
               entryEventId={profileEventId}
               entryCampaign={profileCampaign}
+              entryStoryFilter={profileStoryFilter}
               isPreviewMode={isPreviewWorkspaceAccess(actor, "student_app")}
               workspace={workspace}
               studentHome={studentHome}
@@ -80,6 +83,7 @@ export default async function ProfilePage(props: ProfilePageProps) {
         <MemberBottomNav
           activeTab="profile"
           hrefOverrides={{
+            stories: buildProfileStoriesHref(profileSource, profileStoryFilter),
             events: buildProfileEventsHref(profileSource, profileEventId, profileCampaign),
             points: buildProfilePointsHref(profileSource, profileEventId, profileCampaign),
           }}
@@ -90,7 +94,7 @@ export default async function ProfilePage(props: ProfilePageProps) {
 }
 
 function buildProfileEventsHref(
-  source: "home" | "points" | null,
+  source: "home" | "points" | "stories" | null,
   eventId: string | null,
   campaign: string | null,
 ) {
@@ -120,7 +124,7 @@ function buildProfileEventsHref(
 }
 
 function buildProfilePointsHref(
-  source: "home" | "points" | null,
+  source: "home" | "points" | "stories" | null,
   eventId: string | null,
   campaign: string | null,
 ) {
@@ -140,6 +144,23 @@ function buildProfilePointsHref(
 
   if (campaign && campaign !== "All") {
     url.searchParams.set("campaign", campaign);
+  }
+
+  return `${url.pathname}${url.search}`;
+}
+
+function buildProfileStoriesHref(
+  source: "home" | "points" | "stories" | null,
+  storyFilter: string | null,
+) {
+  if (source !== "stories") {
+    return "/app/stories";
+  }
+
+  const url = new URL("https://mymedlife.local/app/stories");
+
+  if (storyFilter) {
+    url.searchParams.set("filter", storyFilter);
   }
 
   return `${url.pathname}${url.search}`;
