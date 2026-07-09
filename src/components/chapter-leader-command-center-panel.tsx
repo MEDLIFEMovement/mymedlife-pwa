@@ -570,6 +570,9 @@ function renderView(
   const selectedMemberAddNoteAction = commandCenter.selectedMember?.leadershipActions.find(
     (action) => action.label === "Add Note",
   );
+  const preservesAttendanceReturnContext =
+    commandCenter.activeQuickAction === "assign_action" ||
+    commandCenter.returnQuickAction === "assign_action";
   const leadershipReviewMemberId =
     commandCenter.selectedMember?.id ?? commandCenter.navigationMemberId;
   let chapterHomeSource = commandCenter.selectedSource;
@@ -1036,7 +1039,11 @@ function renderView(
                     eventId: commandCenter.selectedEventId,
                     pipelineFilter: commandCenter.selectedPipelineFilter,
                     searchQuery: commandCenter.pipelineSearchQuery,
-                    quickAction: "review_members",
+                    quickAction:
+                      commandCenter.activeQuickAction === "assign_action" ||
+                      commandCenter.returnQuickAction === "assign_action"
+                        ? "assign_action"
+                        : "review_members",
                   })}
                   className="inline-flex rounded-full bg-[#2563eb] px-4 py-2 text-sm font-semibold text-white"
                 >
@@ -1053,6 +1060,11 @@ function renderView(
                     leaderboardRegion: commandCenter.selectedLeaderboardRegion,
                     pipelineFilter: commandCenter.selectedPipelineFilter,
                     searchQuery: commandCenter.pipelineSearchQuery,
+                    quickAction:
+                      commandCenter.activeQuickAction === "assign_action" ||
+                      commandCenter.returnQuickAction === "assign_action"
+                        ? "assign_action"
+                        : undefined,
                   })}
                   className="inline-flex rounded-full border border-[#bfdbfe] bg-white px-4 py-2 text-sm font-semibold text-[#1d4ed8] transition hover:border-[#93c5fd] hover:bg-[#eef5ff]"
                 >
@@ -1162,21 +1174,21 @@ function renderView(
           <SectionCard eyebrow="Member profile" title="Select a member">
             <p className="text-sm leading-6 text-slate-600">
               {commandCenter.selectedSource === "events" &&
-              commandCenter.activeQuickAction === "assign_action"
+              preservesAttendanceReturnContext
                 ? "Choose a member from attendance review first so this profile stays attached to the same TEST event, readback, and next-step ownership."
                 : commandCenter.selectedSource === "overview" &&
-                    commandCenter.activeQuickAction === "assign_action"
+                    preservesAttendanceReturnContext
                   ? "Choose a member from Chapter Home follow-through first so this profile stays attached to the same TEST event, attendance posture, and next-step ownership."
                 : commandCenter.selectedSource === "leaderboard" &&
-                    commandCenter.activeQuickAction === "assign_action"
+                    preservesAttendanceReturnContext
                   ? "Choose a member from leaderboard readback first so this profile stays attached to the same TEST event, attendance posture, and next-step ownership."
                   : "Choose a member from the pipeline first so this profile can show leadership context, history, and next-step ownership."}
             </p>
             {(((commandCenter.selectedSource === "events" ||
               commandCenter.selectedSource === "overview") &&
-              commandCenter.activeQuickAction === "assign_action") ||
+              preservesAttendanceReturnContext) ||
               (commandCenter.selectedSource === "leaderboard" &&
-                commandCenter.activeQuickAction === "assign_action")) &&
+                preservesAttendanceReturnContext)) &&
             commandCenter.sourceContext?.actions?.[0] ? (
               <div className="mt-4">
                 <Link
@@ -1538,6 +1550,7 @@ function renderView(
                     eventCommitteeFilter: commandCenter.selectedEventCommitteeFilter,
                     eventId: commandCenter.selectedEventId,
                     leaderboardMetric: "attendance",
+                    quickAction: "assign_action",
                   })}
                   className="inline-flex rounded-full border border-[#bfdbfe] bg-white px-4 py-2 text-sm font-semibold text-[#1d4ed8]"
                 >
@@ -1557,6 +1570,7 @@ function renderView(
                     eventId: commandCenter.selectedEventId,
                     leaderboardMetric: "attendance",
                     leaderboardRegion: commandCenter.selectedLeaderboardRegion,
+                    quickAction: "assign_action",
                   })}
                   className="inline-flex rounded-full border border-[#bfdbfe] bg-white px-4 py-2 text-sm font-semibold text-[#1d4ed8]"
                 >

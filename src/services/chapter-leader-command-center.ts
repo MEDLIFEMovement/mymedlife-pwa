@@ -589,6 +589,7 @@ export type ChapterLeaderCommandCenter = {
   pipelineSearchQuery: string;
   pipelineTotalCount: number;
   activeQuickAction: ChapterLeaderQuickActionState | null;
+  returnQuickAction: ChapterLeaderQuickActionState | null;
   viewOptions: ChapterLeaderCommandCenterViewOption[];
   navGroups: ChapterLeaderCommandCenterNavGroup[];
   pipelineFilterOptions: ChapterLeaderPipelineFilterOption[];
@@ -662,6 +663,7 @@ export type ChapterLeaderCommandCenterOptions = {
   bridgeVideoId?: string;
   feedPostId?: string;
   quickAction?: string;
+  returnQuickAction?: string;
 };
 
 const mockLeaderProfileId = "member-sofia-profile";
@@ -1374,6 +1376,7 @@ export function getChapterLeaderCommandCenter(
   const selectedBridgeVideoFilter = parseBridgeVideoFilter(options.bridgeFilter);
   const selectedFeedPostId = parseSelectedFeedPostId(options.feedPostId);
   const activeQuickAction = parseQuickActionState(options.quickAction);
+  const returnQuickAction = parseQuickActionState(options.returnQuickAction);
   const pipelineSearchQuery = options.search?.trim() ?? "";
   const requestedBestPracticeChapterId = options.bestPracticeChapterId ?? null;
   const requestedEventId = options.eventId ?? null;
@@ -1387,12 +1390,14 @@ export function getChapterLeaderCommandCenter(
     commandCenterMembers,
     recognition.leaderboard,
     {
+      activeQuickAction,
       bestPracticeChapterId: requestedBestPracticeChapterId,
       eventCommitteeFilter: selectedEventCommitteeFilter,
       eventId: requestedEventId,
       filter: selectedPipelineFilter,
       leaderboardMetric: selectedLeaderboardMetric,
       leaderboardRegion: selectedLeaderboardRegion,
+      returnQuickAction,
       searchQuery: pipelineSearchQuery,
       source: selectedSource,
       selectedMemberId: null,
@@ -1407,22 +1412,35 @@ export function getChapterLeaderCommandCenter(
     unselectedPipelineRows,
     fallbackSelectedMemberId,
   );
-  const selectedMemberProfileId =
+  const hasExplicitMockLeaderProfileRequest =
+    options.memberId === mockLeaderProfileId && data.source.mode === "mock";
+  const shouldKeepMemberProfileShellEmpty =
     selectedView === "member_profile" &&
-    data.source.mode === "mock" &&
-    !requestedMemberId
-      ? mockLeaderProfileId
-      : visiblePipelineMemberId;
+    !requestedMemberId &&
+    !hasExplicitMockLeaderProfileRequest &&
+    (selectedSource === "events" ||
+      selectedSource === "overview" ||
+      selectedSource === "leaderboard");
+  const selectedMemberProfileId =
+    shouldKeepMemberProfileShellEmpty
+      ? undefined
+      : selectedView === "member_profile" &&
+          data.source.mode === "mock" &&
+          !requestedMemberId
+        ? mockLeaderProfileId
+        : visiblePipelineMemberId;
   const pipelineRows = getPipelineRows(
     commandCenterMembers,
     recognition.leaderboard,
     {
+      activeQuickAction,
       bestPracticeChapterId: requestedBestPracticeChapterId,
       eventCommitteeFilter: selectedEventCommitteeFilter,
       eventId: requestedEventId,
       filter: selectedPipelineFilter,
       leaderboardMetric: selectedLeaderboardMetric,
       leaderboardRegion: selectedLeaderboardRegion,
+      returnQuickAction,
       searchQuery: pipelineSearchQuery,
       source: selectedSource,
       selectedMemberId: selectedView === "members" ? visiblePipelineMemberId ?? null : null,
@@ -1441,6 +1459,7 @@ export function getChapterLeaderCommandCenter(
       filter: selectedPipelineFilter,
       leaderboardMetric: selectedLeaderboardMetric,
       leaderboardRegion: selectedLeaderboardRegion,
+      returnQuickAction,
       searchQuery: pipelineSearchQuery,
       source: selectedSource,
       sourceMode: data.source.mode,
@@ -1635,6 +1654,7 @@ export function getChapterLeaderCommandCenter(
   const eventsOverview = getEventsOverview(data.source.mode, eventCards);
   const sourceContext = getChapterLeaderSourceContext(selectedSource, {
     activeQuickAction,
+    returnQuickAction,
     originChapterName: data.chapter.name,
     selectedView,
     eventCommitteeFilter: selectedEventCommitteeFilter,
@@ -1698,6 +1718,7 @@ export function getChapterLeaderCommandCenter(
     pipelineSearchQuery,
     pipelineTotalCount: commandCenterMembers.length,
     activeQuickAction,
+    returnQuickAction,
     viewOptions: getViewOptions({
       source: selectedSource,
       memberId: navigationMemberId,
@@ -1706,6 +1727,7 @@ export function getChapterLeaderCommandCenter(
       eventCommitteeFilter: selectedEventCommitteeFilter,
       eventId: selectedEventId,
       activeQuickAction,
+      returnQuickAction,
       leaderboardMetric: selectedLeaderboardMetric,
       leaderboardRegion: selectedLeaderboardRegion,
       bestPracticeChapterId: selectedBestPracticeChapterId,
@@ -1748,6 +1770,7 @@ export function getChapterLeaderCommandCenter(
         bestPracticeChapterId: selectedBestPracticeChapterId,
         feedPostId: selectedFeedPostId,
         quickAction: activeQuickAction,
+        returnQuickAction,
       },
     ),
     leaderboardFilters: getLeaderboardFilters(data.source.mode, selectedLeaderboardMetric, {
@@ -1759,6 +1782,7 @@ export function getChapterLeaderCommandCenter(
       searchQuery: pipelineSearchQuery,
       leaderboardRegion: selectedLeaderboardRegion,
       quickAction: activeQuickAction,
+      returnQuickAction,
     }),
     leaderboardIdeaNote: getLeaderboardIdeaNote(data.source.mode, selectedLeaderboardMetric),
     leaderboardChapters,
@@ -1867,6 +1891,7 @@ function getChapterLeaderSourceContext(
   source: ChapterLeaderCommandCenterSource | null,
   context: {
     activeQuickAction: ChapterLeaderQuickActionState | null;
+    returnQuickAction: ChapterLeaderQuickActionState | null;
     originChapterName: string;
     selectedView: ChapterLeaderCommandCenterView;
     eventCommitteeFilter: ChapterLeaderEventCommitteeFilterKey;
@@ -1895,7 +1920,7 @@ function getChapterLeaderSourceContext(
 ): ChapterLeaderCommandCenterSourceContext | null {
   switch (source) {
     case "overview": {
-      const isAttendanceReview = context.activeQuickAction === "assign_action";
+      const isAttendanceReview = isAttendanceReturnActive(context);
       return {
         eyebrow: "Chapter home handoff",
         title:
@@ -1952,7 +1977,7 @@ function getChapterLeaderSourceContext(
       };
     }
     case "events":
-      const isAttendanceReview = context.activeQuickAction === "assign_action";
+      const isAttendanceReview = isAttendanceReturnActive(context);
       return {
         eyebrow: "Event review handoff",
         title: isAttendanceReview
@@ -2323,7 +2348,7 @@ function getChapterLeaderSourceContext(
       };
     case "leaderboard": {
       const chapterName = getBestPracticeChapterName(context.bestPracticeChapterId);
-      const isAttendanceReview = context.activeQuickAction === "assign_action";
+      const isAttendanceReview = isAttendanceReturnActive(context);
       return {
         eyebrow: "Leaderboard handoff",
         title: chapterName
@@ -2394,6 +2419,7 @@ export function buildChapterLeaderCommandCenterHref(
     bridgeVideoId?: string | null;
     feedPostId?: string | null;
     quickAction?: ChapterLeaderQuickActionState | null;
+    returnQuickAction?: ChapterLeaderQuickActionState | null;
   } = {},
 ) {
   const searchParams = new URLSearchParams();
@@ -2492,6 +2518,10 @@ export function buildChapterLeaderCommandCenterHref(
 
   if (options.quickAction) {
     searchParams.set("quickAction", options.quickAction);
+  }
+
+  if (options.returnQuickAction && options.returnQuickAction !== options.quickAction) {
+    searchParams.set("returnQuickAction", options.returnQuickAction);
   }
 
   const query = searchParams.toString();
@@ -2814,6 +2844,7 @@ function emptyCommandCenter(): ChapterLeaderCommandCenter {
     pipelineSearchQuery: "",
     pipelineTotalCount: 0,
     activeQuickAction: null,
+    returnQuickAction: null,
     viewOptions: getViewOptions({
       memberId: null,
       defaultProfileMemberId: null,
@@ -2821,6 +2852,7 @@ function emptyCommandCenter(): ChapterLeaderCommandCenter {
       eventCommitteeFilter: "all",
       eventId: null,
       activeQuickAction: null,
+      returnQuickAction: null,
       leaderboardMetric: "chapter_health",
       leaderboardRegion: "all",
       bestPracticeChapterId: null,
@@ -2917,6 +2949,7 @@ function getViewOptions(input: {
   eventCommitteeFilter: ChapterLeaderEventCommitteeFilterKey;
   eventId?: string | null;
   activeQuickAction: ChapterLeaderQuickActionState | null;
+  returnQuickAction: ChapterLeaderQuickActionState | null;
   leaderboardMetric: ChapterLeaderLeaderboardMetricKey;
   leaderboardRegion: ChapterLeaderLeaderboardRegionKey;
   bestPracticeChapterId: string | null;
@@ -2929,6 +2962,20 @@ function getViewOptions(input: {
   const visibleEntries = Object.entries(commandCenterViewLabels) as Array<
     [ChapterLeaderCommandCenterView, string]
   >;
+  const preservedAttendanceQuickAction = isAttendanceReturnActive({
+    activeQuickAction: input.activeQuickAction,
+    returnQuickAction: input.returnQuickAction,
+  })
+    ? "assign_action"
+    : undefined;
+  const shouldPreserveEventContextAcrossViews =
+    input.source === "events" ||
+    input.source === "leaderboard" ||
+    (input.source === "overview" && Boolean(preservedAttendanceQuickAction));
+  const preservedLeaderboardMetric =
+    preservedAttendanceQuickAction && input.leaderboardMetric === "chapter_health"
+      ? "attendance"
+      : input.leaderboardMetric;
 
   return visibleEntries.map(([key, label]) => ({
     key,
@@ -2938,16 +2985,16 @@ function getViewOptions(input: {
       memberId: key === "member_profile" ? input.defaultProfileMemberId : input.memberId,
       committeeId: key === "committees" ? input.committeeId : null,
       eventCommitteeFilter:
-        input.source === "events" || input.source === "leaderboard" || key === "events"
+        shouldPreserveEventContextAcrossViews || key === "events"
           ? input.eventCommitteeFilter
           : "all",
       eventId:
-        input.source === "events" || input.source === "leaderboard" || key === "events"
+        shouldPreserveEventContextAcrossViews || key === "events"
           ? input.eventId
           : null,
       leaderboardMetric:
         input.source === "leaderboard" || key === "leaderboard"
-          ? input.leaderboardMetric
+          ? preservedLeaderboardMetric
           : "chapter_health",
       leaderboardRegion:
         input.source === "leaderboard" || key === "leaderboard"
@@ -2959,7 +3006,7 @@ function getViewOptions(input: {
       pipelineFilter: input.pipelineFilter,
       searchQuery: input.searchQuery,
       bridgeVideoFilter: key === "bridge_videos" ? input.bridgeVideoFilter : "all",
-      quickAction: input.activeQuickAction === "assign_action" ? "assign_action" : undefined,
+      quickAction: preservedAttendanceQuickAction,
     }),
   }));
 }
@@ -3063,11 +3110,19 @@ function getLeaderboardRegionOptions(
     bestPracticeChapterId: string | null;
     feedPostId: string | null;
     quickAction?: ChapterLeaderQuickActionState | null;
+    returnQuickAction?: ChapterLeaderQuickActionState | null;
   },
 ): ChapterLeaderCommandCenterLeaderboardRegionOption[] {
   if (sourceMode !== "mock") {
     return [];
   }
+
+  const preservedAttendanceQuickAction = isAttendanceReturnActive({
+    activeQuickAction: context.quickAction ?? null,
+    returnQuickAction: context.returnQuickAction ?? null,
+  })
+    ? "assign_action"
+    : undefined;
 
   const keys: ChapterLeaderLeaderboardRegionKey[] = [
     "all",
@@ -3091,7 +3146,7 @@ function getLeaderboardRegionOptions(
       leaderboardRegion: key,
       bestPracticeChapterId: context.bestPracticeChapterId,
       feedPostId: context.feedPostId,
-      quickAction: context.quickAction,
+      quickAction: preservedAttendanceQuickAction,
     }),
   }));
 }
@@ -3108,9 +3163,16 @@ function getLeaderboardFilters(
     searchQuery: string;
     leaderboardRegion: ChapterLeaderLeaderboardRegionKey;
     quickAction?: ChapterLeaderQuickActionState | null;
+    returnQuickAction?: ChapterLeaderQuickActionState | null;
   },
 ): ChapterLeaderCommandCenterLeaderboardFilter[] {
   if (sourceMode === "mock") {
+    const preservedAttendanceQuickAction = isAttendanceReturnActive({
+      activeQuickAction: context.quickAction ?? null,
+      returnQuickAction: context.returnQuickAction ?? null,
+    })
+      ? "assign_action"
+      : undefined;
     const metricKeys: ChapterLeaderLeaderboardMetricKey[] = [
       "chapter_health",
       "events_created",
@@ -3135,7 +3197,7 @@ function getLeaderboardFilters(
         searchQuery: context.searchQuery,
         leaderboardMetric: key,
         leaderboardRegion: context.leaderboardRegion,
-        quickAction: context.quickAction,
+        quickAction: preservedAttendanceQuickAction,
       }),
     }));
   }
@@ -3787,6 +3849,7 @@ function getSelectedMemberProfile(
     filter: ChapterLeaderPipelineFilter;
     leaderboardMetric: ChapterLeaderLeaderboardMetricKey;
     leaderboardRegion: ChapterLeaderLeaderboardRegionKey;
+    returnQuickAction: ChapterLeaderQuickActionState | null;
     searchQuery: string;
     source: ChapterLeaderCommandCenterSource | null;
     sourceMode: ReadOnlyAppData["source"]["mode"];
@@ -3863,6 +3926,7 @@ function getMockLeaderProfile(context: {
   filter: ChapterLeaderPipelineFilter;
   leaderboardMetric: ChapterLeaderLeaderboardMetricKey;
   leaderboardRegion: ChapterLeaderLeaderboardRegionKey;
+  returnQuickAction: ChapterLeaderQuickActionState | null;
   searchQuery: string;
   source: ChapterLeaderCommandCenterSource | null;
 }): ChapterLeaderCommandCenterMemberProfile {
@@ -3996,13 +4060,14 @@ function getMemberReviewContext(
     filter: ChapterLeaderPipelineFilter;
     leaderboardMetric: ChapterLeaderLeaderboardMetricKey;
     leaderboardRegion: ChapterLeaderLeaderboardRegionKey;
+    returnQuickAction: ChapterLeaderQuickActionState | null;
     searchQuery: string;
     source: ChapterLeaderCommandCenterSource | null;
   },
   backToPipelineHref: string,
 ) {
   if (context.source === "events") {
-    const isAttendanceReview = context.activeQuickAction === "assign_action";
+    const isAttendanceReview = isAttendanceReturnActive(context);
     return {
       eyebrow: "Event review follow-through",
       title: "Attendance review context is active",
@@ -4021,7 +4086,7 @@ function getMemberReviewContext(
   }
 
   if (context.source === "leaderboard") {
-    const isAttendanceReview = context.activeQuickAction === "assign_action";
+    const isAttendanceReview = isAttendanceReturnActive(context);
     return {
       eyebrow: "Leaderboard follow-through",
       title: "Points readback context is active",
@@ -4041,7 +4106,7 @@ function getMemberReviewContext(
   }
 
   if (context.source === "overview") {
-    const isAttendanceReview = context.activeQuickAction === "assign_action";
+    const isAttendanceReview = isAttendanceReturnActive(context);
     return {
       eyebrow: "Chapter home follow-through",
       title: isAttendanceReview
@@ -4116,6 +4181,7 @@ function getMemberLeadershipActionHref(
     filter: ChapterLeaderPipelineFilter;
     leaderboardMetric: ChapterLeaderLeaderboardMetricKey;
     leaderboardRegion: ChapterLeaderLeaderboardRegionKey;
+    returnQuickAction: ChapterLeaderQuickActionState | null;
     searchQuery: string;
     source: ChapterLeaderCommandCenterSource | null;
   },
@@ -4159,12 +4225,14 @@ function getPipelineRows(
   members: ChapterMemberRow[],
   leaderboard: LeaderboardRow[],
   context: {
+    activeQuickAction: ChapterLeaderQuickActionState | null;
     bestPracticeChapterId: string | null;
     eventCommitteeFilter: ChapterLeaderEventCommitteeFilterKey;
     eventId: string | null;
     filter: ChapterLeaderPipelineFilter;
     leaderboardMetric: ChapterLeaderLeaderboardMetricKey;
     leaderboardRegion: ChapterLeaderLeaderboardRegionKey;
+    returnQuickAction: ChapterLeaderQuickActionState | null;
     searchQuery: string;
     source: ChapterLeaderCommandCenterSource | null;
     selectedMemberId: string | null;
@@ -4172,6 +4240,12 @@ function getPipelineRows(
 ): ChapterLeaderCommandCenterPipelineRow[] {
   const totalPoints = members.reduce((sum, member) => sum + member.points, 0);
   const selectedMemberId = context.selectedMemberId;
+  const preservedAttendanceQuickAction = isAttendanceReturnActive({
+    activeQuickAction: context.activeQuickAction,
+    returnQuickAction: context.returnQuickAction,
+  })
+    ? "assign_action"
+    : undefined;
 
   return [...members]
     .sort((left, right) => getSuccessionCandidateScore(right) - getSuccessionCandidateScore(left))
@@ -4225,6 +4299,7 @@ function getPipelineRows(
           eventId: context.eventId,
           pipelineFilter: context.filter,
           searchQuery: context.searchQuery,
+          quickAction: preservedAttendanceQuickAction,
         }),
         profileHref: buildChapterLeaderCommandCenterHref("member_profile", {
           source: context.source,
@@ -4237,6 +4312,7 @@ function getPipelineRows(
           eventId: context.eventId,
           pipelineFilter: context.filter,
           searchQuery: context.searchQuery,
+          quickAction: preservedAttendanceQuickAction,
         }),
         isSelected: member.id === selectedMemberId,
       };
@@ -4252,6 +4328,16 @@ function getInitials(value: string) {
     .toUpperCase();
 }
 
+function isAttendanceReturnActive(context: {
+  activeQuickAction: ChapterLeaderQuickActionState | null;
+  returnQuickAction: ChapterLeaderQuickActionState | null;
+}) {
+  return (
+    context.activeQuickAction === "assign_action" ||
+    context.returnQuickAction === "assign_action"
+  );
+}
+
 function getMemberProfileNavigationOptions(
   memberId: string,
   context: {
@@ -4263,6 +4349,7 @@ function getMemberProfileNavigationOptions(
     filter: ChapterLeaderPipelineFilter;
     leaderboardMetric: ChapterLeaderLeaderboardMetricKey;
     leaderboardRegion: ChapterLeaderLeaderboardRegionKey;
+    returnQuickAction: ChapterLeaderQuickActionState | null;
     searchQuery: string;
     source: ChapterLeaderCommandCenterSource | null;
   },
@@ -4270,6 +4357,7 @@ function getMemberProfileNavigationOptions(
   source: ChapterLeaderCommandCenterSource | null;
   memberId: string;
   quickAction?: ChapterLeaderQuickActionState;
+  returnQuickAction?: ChapterLeaderQuickActionState;
   bestPracticeChapterId: string | null;
   eventCommitteeFilter: ChapterLeaderEventCommitteeFilterKey;
   eventId: string | null;
@@ -4279,13 +4367,18 @@ function getMemberProfileNavigationOptions(
   pipelineFilter: ChapterLeaderPipelineFilter;
   searchQuery: string;
 } {
-  const preservedQuickAction: ChapterLeaderQuickActionState | undefined =
-    context.activeQuickAction === "assign_action" ? "assign_action" : undefined;
+  const preservedAttendanceQuickAction = isAttendanceReturnActive(context)
+    ? "assign_action"
+    : undefined;
 
   return {
     source: context.source,
     memberId,
-    quickAction: preservedQuickAction,
+    quickAction:
+      context.activeQuickAction === "assign_action"
+        ? "assign_action"
+        : undefined,
+    returnQuickAction: preservedAttendanceQuickAction,
     bestPracticeChapterId:
       context.source === "leaderboard" ? context.bestPracticeChapterId : null,
     eventCommitteeFilter: context.eventCommitteeFilter,
@@ -4309,6 +4402,7 @@ function getMemberBackToContext(
     filter: ChapterLeaderPipelineFilter;
     leaderboardMetric: ChapterLeaderLeaderboardMetricKey;
     leaderboardRegion: ChapterLeaderLeaderboardRegionKey;
+    returnQuickAction: ChapterLeaderQuickActionState | null;
     searchQuery: string;
     source: ChapterLeaderCommandCenterSource | null;
   },
@@ -4326,11 +4420,11 @@ function getMemberBackToContext(
           leaderboardRegion: context.leaderboardRegion,
           pipelineFilter: context.filter,
           searchQuery: context.searchQuery,
-          quickAction: context.activeQuickAction === "assign_action" ? "assign_action" : undefined,
+          quickAction: isAttendanceReturnActive(context) ? "assign_action" : undefined,
         }),
       };
     case "events":
-      const isAttendanceReview = context.activeQuickAction === "assign_action";
+      const isAttendanceReview = isAttendanceReturnActive(context);
       return {
         label: isAttendanceReview ? "Back to Attendance Review" : "Back to Event Performance",
         href: buildChapterLeaderCommandCenterHref("events", {
@@ -4344,8 +4438,7 @@ function getMemberBackToContext(
         }),
       };
     case "leaderboard":
-      const isLeaderboardAttendanceReview =
-        context.activeQuickAction === "assign_action";
+      const isLeaderboardAttendanceReview = isAttendanceReturnActive(context);
       return {
         label: "Back to Leaderboard",
         href: buildChapterLeaderCommandCenterHref("leaderboard", {
