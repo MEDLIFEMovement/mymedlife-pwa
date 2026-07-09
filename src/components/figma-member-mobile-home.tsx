@@ -2410,45 +2410,78 @@ function EventsScreen({
               {listEvents.map((ev) => {
                 const isRsvpd = rsvpdIds.includes(ev.id);
                 const typeCfg = EVENT_TYPE_CONFIG[ev.eventType];
+                const detailHref = getMemberEventDetailHref(ev.id, source, activeCampaign, profileSource);
+                const rsvpHref = getMemberEventRsvpHref(ev.id, source, activeCampaign, profileSource);
+                const hasDetailRoute = isMemberEventDetailHref(detailHref);
                 return (
                   <div
                     key={ev.id}
-                    className="bg-card rounded-2xl border border-border overflow-hidden cursor-pointer active:scale-[0.99] transition-transform hover:border-primary/20"
+                    className={cn(
+                      "bg-card rounded-2xl border border-border overflow-hidden transition-transform",
+                      hasDetailRoute ? "cursor-pointer active:scale-[0.99] hover:border-primary/20" : "cursor-default",
+                    )}
                     style={{ borderLeft: `4px solid ${typeCfg.color}` }}
                   >
                     <div className="flex items-start gap-3 p-4">
                       {/* Color-matched icon */}
-                      <Link href={getMemberEventDetailHref(ev.id, source)} className="flex min-w-0 flex-1 items-start gap-3">
-                        <div
-                          className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5"
-                          style={{ background: typeCfg.bg }}
+                      {hasDetailRoute ? (
+                        <Link
+                          href={detailHref}
+                          className="flex min-w-0 flex-1 items-start gap-3"
                         >
-                          <CalendarDays size={18} style={{ color: typeCfg.color }} />
-                        </div>
+                          <div
+                            className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5"
+                            style={{ background: typeCfg.bg }}
+                          >
+                            <CalendarDays size={18} style={{ color: typeCfg.color }} />
+                          </div>
 
-                        <div className="flex-1 min-w-0">
-                          {/* Type pill on its own line — instantly scannable */}
-                          <EventTypePill type={ev.eventType} />
-                          <p className="text-sm font-bold text-foreground leading-snug mt-1">{ev.title}</p>
-                          <p className="text-xs text-muted-foreground mt-0.5">{ev.date}</p>
-                          <p className="text-xs text-muted-foreground flex items-center gap-0.5 mt-0.5">
-                            <MapPin size={9} className="flex-shrink-0" />{ev.loc}
-                          </p>
+                          <div className="flex-1 min-w-0">
+                            <EventTypePill type={ev.eventType} />
+                            <p className="text-sm font-bold text-foreground leading-snug mt-1">{ev.title}</p>
+                            <p className="text-xs text-muted-foreground mt-0.5">{ev.date}</p>
+                            <p className="text-xs text-muted-foreground flex items-center gap-0.5 mt-0.5">
+                              <MapPin size={9} className="flex-shrink-0" />{ev.loc}
+                            </p>
+                          </div>
+                        </Link>
+                      ) : (
+                        <div className="flex min-w-0 flex-1 items-start gap-3">
+                          <div
+                            className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5"
+                            style={{ background: typeCfg.bg }}
+                          >
+                            <CalendarDays size={18} style={{ color: typeCfg.color }} />
+                          </div>
+
+                          <div className="flex-1 min-w-0">
+                            <EventTypePill type={ev.eventType} />
+                            <p className="text-sm font-bold text-foreground leading-snug mt-1">{ev.title}</p>
+                            <p className="text-xs text-muted-foreground mt-0.5">{ev.date}</p>
+                            <p className="text-xs text-muted-foreground flex items-center gap-0.5 mt-0.5">
+                              <MapPin size={9} className="flex-shrink-0" />{ev.loc}
+                            </p>
+                            <p className="mt-1 text-[11px] font-medium text-muted-foreground">
+                              Detail stays in this TEST campaign list preview for now.
+                            </p>
+                          </div>
                         </div>
-                      </Link>
+                      )}
 
                       <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
                         <PointsPill pts={ev.pts} />
                         {isRsvpd ? (
                           <Pill label="RSVP'd" variant="green" />
-                        ) : ev.status === "RSVP Open" ? (
+                        ) : ev.status === "RSVP Open" && hasDetailRoute ? (
                           <Link
-                            href={getMemberEventRsvpHref(ev.id, source)}
+                            href={rsvpHref}
                             className="text-[10px] font-bold px-2.5 py-1 rounded-full border hover:opacity-80"
                             style={{ color: typeCfg.text, borderColor: `${typeCfg.color}50`, background: typeCfg.bg }}
                           >
                             RSVP
                           </Link>
+                        ) : ev.status === "RSVP Open" ? (
+                          <Pill label="List preview" variant="gray" />
                         ) : (
                           <Pill label="Upcoming" variant="gray" />
                         )}

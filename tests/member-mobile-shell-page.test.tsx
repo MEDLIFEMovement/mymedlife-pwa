@@ -121,8 +121,17 @@ describe("member mobile shell routes", () => {
 
     expect(html).toContain("Spring Showcase");
     expect(html).toContain("TEST Spring Showcase Kickoff");
+    expect(html).toContain("TEST Showcase Planning Meeting");
+    expect(html).toContain("Detail stays in this TEST campaign list preview for now.");
+    expect(html).toContain("Upcoming");
     expect(html).toContain('href="/app/events"');
     expect(html).toContain('href="/app/events?campaign=Spring+Showcase"');
+    expect(html).toContain(
+      'href="/app/events/chapter-event-mcgill-coffee-chat?source=events&amp;campaign=Spring+Showcase"',
+    );
+    expect(html).not.toContain(
+      'href="/app/events/test-showcase-planning-meeting?source=events&amp;campaign=Spring+Showcase"',
+    );
   });
 
   it("keeps the events route tied to the member points handoff when opened from points", async () => {
