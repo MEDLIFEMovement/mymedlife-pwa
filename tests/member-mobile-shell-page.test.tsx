@@ -119,6 +119,7 @@ describe("member mobile shell routes", () => {
     expect(html).toContain('href="/app/points?source=events"');
     expect(html).toContain("Back to Points");
     expect(getBottomNavHtml(html)).toContain('href="/app/points?source=events"');
+    expect(getBottomNavHtml(html)).toContain('href="/profile?source=points"');
     expect(html).toContain('href="/app/events/chapter-event-ucla-kickoff?source=points&amp;step=rsvp"');
     expect(html).toContain('href="/app/events/chapter-event-ucla-kickoff?source=points"');
   });
@@ -142,6 +143,7 @@ describe("member mobile shell routes", () => {
     expect(html).toContain('href="/app"');
     expect(html).toContain("Back to Home");
     expect(getBottomNavHtml(html)).toContain('href="/app/points?source=home"');
+    expect(getBottomNavHtml(html)).toContain('href="/profile?source=home"');
     expect(html).toContain('href="/app/events/chapter-event-ucla-kickoff?source=home&amp;step=rsvp"');
     expect(html).toContain('href="/app/events/chapter-event-ucla-kickoff?source=home"');
   });

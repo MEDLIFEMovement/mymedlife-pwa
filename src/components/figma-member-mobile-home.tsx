@@ -3664,6 +3664,12 @@ function getMemberBottomNavHrefOverrides({
     if (pointsHref) {
       overrides.points = pointsHref;
     }
+
+    const profileHref = getEventsBottomNavProfileHref(eventsSource);
+
+    if (profileHref) {
+      overrides.profile = profileHref;
+    }
   }
 
   return Object.keys(overrides).length > 0 ? overrides : undefined;
@@ -3720,6 +3726,18 @@ function getEventsBottomNavPointsHref(source: MemberLoopSource) {
 
   if (source === "profile") {
     return "/app/points?source=profile";
+  }
+
+  return undefined;
+}
+
+function getEventsBottomNavProfileHref(source: MemberLoopSource) {
+  if (source === "home") {
+    return "/profile?source=home";
+  }
+
+  if (source === "points") {
+    return "/profile?source=points";
   }
 
   return undefined;

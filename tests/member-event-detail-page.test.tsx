@@ -231,6 +231,7 @@ describe("member event detail route", () => {
     expect(html).toContain("Move from TEST points readback into the next event.");
     expect(html).toContain("The member loop should not stop at the leaderboard.");
     expect(html).toContain('href="/app/events/chapter-event-ucla-kickoff?source=points&amp;step=rsvp"');
+    expect(html).toContain('href="/profile?source=points&amp;event=chapter-event-ucla-kickoff"');
   });
 
   it("returns event detail to profile when the walkthrough starts from the member profile", async () => {
