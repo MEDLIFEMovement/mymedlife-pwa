@@ -1752,8 +1752,12 @@ describe("chapter leader command center", () => {
     expect(commandCenter.navigationMemberId).toBeNull();
     expect(markup).toContain("Choose a member from leaderboard readback first");
     expect(markup).toContain("Back to leaderboard");
+    expect(markup).toContain("Open attendance review");
     expect(markup).toContain(
       "href=\"/leader?view=leaderboard&amp;source=leaderboard&amp;eventCommittee=events&amp;event=bc-event-moving-mountains-kickoff&amp;leaderboardMetric=attendance&amp;region=canada&amp;quickAction=assign_action\"",
+    );
+    expect(markup).toContain(
+      "href=\"/leader?view=events&amp;source=leaderboard&amp;eventCommittee=events&amp;event=bc-event-moving-mountains-kickoff&amp;leaderboardMetric=attendance&amp;region=canada&amp;quickAction=assign_action\"",
     );
   });
 
@@ -2240,7 +2244,11 @@ describe("chapter leader command center", () => {
     expect(markup).toContain(
       "href=\"/leader?view=leaderboard&amp;source=leaderboard&amp;member=member-ivy&amp;eventCommittee=events&amp;event=bc-event-moving-mountains-kickoff&amp;leaderboardMetric=attendance&amp;region=canada&amp;quickAction=assign_action\"",
     );
+    expect(markup).toContain(
+      "href=\"/leader?view=events&amp;source=leaderboard&amp;member=member-ivy&amp;eventCommittee=events&amp;event=bc-event-moving-mountains-kickoff&amp;leaderboardMetric=attendance&amp;region=canada&amp;quickAction=assign_action\"",
+    );
     expect(markup).toContain("Back to Leaderboard");
+    expect(markup).toContain("Open attendance review");
     expect(markup).toContain("Open chair review");
     expect(markup.indexOf("Back to Leaderboard")).toBeLessThan(
       markup.indexOf("Open chair review"),
@@ -2325,6 +2333,10 @@ describe("chapter leader command center", () => {
         {
           label: "Back to leaderboard",
           href: "/leader?view=leaderboard&source=leaderboard&member=member-ivy&eventCommittee=events&event=bc-event-moving-mountains-kickoff&leaderboardMetric=attendance&region=canada&quickAction=assign_action",
+        },
+        {
+          label: "Open attendance review",
+          href: "/leader?view=events&source=leaderboard&member=member-ivy&eventCommittee=events&event=bc-event-moving-mountains-kickoff&leaderboardMetric=attendance&region=canada&quickAction=assign_action",
         },
       ],
     });

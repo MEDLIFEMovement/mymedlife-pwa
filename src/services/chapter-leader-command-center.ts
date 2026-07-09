@@ -2373,6 +2373,25 @@ function getChapterLeaderSourceContext(
               quickAction: isAttendanceReview ? "assign_action" : undefined,
             }),
           },
+          ...(isAttendanceReview
+            ? [
+                {
+                  label: "Open attendance review",
+                  href: buildChapterLeaderCommandCenterHref("events", {
+                    source: "leaderboard",
+                    memberId: context.memberId,
+                    eventCommitteeFilter: context.eventCommitteeFilter,
+                    eventId: context.eventId,
+                    bestPracticeChapterId: context.bestPracticeChapterId ?? null,
+                    leaderboardMetric: context.leaderboardMetric,
+                    leaderboardRegion: context.leaderboardRegion,
+                    pipelineFilter: context.pipelineFilter,
+                    searchQuery: context.searchQuery,
+                    quickAction: "assign_action",
+                  }),
+                },
+              ]
+            : []),
         ],
       };
     }
