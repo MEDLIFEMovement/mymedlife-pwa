@@ -1149,6 +1149,8 @@ describe("staff page", () => {
     expect(html).toContain("Risk posture");
     expect(html).toContain("Carry the same chapter risk context through this Admin readback before requesting any correction path.");
     expect(html).toContain(">HEALTHY</span>");
+    expect(html).toContain(">Handoff source</div><div class=\"mt-1 text-[13px] font-mono font-semibold text-slate-100\">Staff chapter drawer</div>");
+    expect(html).toContain(">Return target</div><div class=\"mt-1 text-[13px] font-mono font-semibold text-slate-100\">TEST Stanford University in Chapters</div>");
     expect(html).toContain("Chapter Detail");
     expect(html).toContain("TEST Stanford University · West");
     expect(html).toContain("TEST James Okafor");

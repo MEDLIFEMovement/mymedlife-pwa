@@ -846,6 +846,23 @@ function ChaptersPage({
                 label={(embeddedReadback.risk ?? "unknown").toUpperCase()}
               />
             </div>
+            <div className="grid grid-cols-2 gap-2">
+              {[
+                {
+                  label: "Handoff source",
+                  value: "Staff chapter drawer",
+                },
+                {
+                  label: "Return target",
+                  value: `${embeddedReadback.chapterContext} in Chapters`,
+                },
+              ].map(({ label, value }) => (
+                <div key={label} className="rounded border border-sky-500/10 bg-[#0d1117]/50 px-3 py-2">
+                  <div className="text-[10px] text-sky-400/70 font-mono uppercase tracking-wider">{label}</div>
+                  <div className="mt-1 text-[13px] font-mono font-semibold text-slate-100">{value}</div>
+                </div>
+              ))}
+            </div>
             <div className="grid grid-cols-4 gap-2">
               {[
                 { label: "Events / Month", value: embeddedReadback.events ?? "—" },
