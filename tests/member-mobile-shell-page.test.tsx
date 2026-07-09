@@ -206,6 +206,59 @@ describe("member mobile shell routes", () => {
     expect(html).toContain('href="/app/events/chapter-event-ucla-kickoff?source=profile"');
   });
 
+  it("keeps the filtered events route tied back to profile when opened from profile", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("member.a@mymedlife.test"),
+    );
+
+    const { default: EventsPage } = await import("@/app/app/events/page");
+    const html = renderToStaticMarkup(
+      await EventsPage({
+        searchParams: Promise.resolve({
+          source: "profile",
+          campaign: "Spring Showcase",
+        }),
+      }),
+    );
+
+    expect(getBottomNavHtml(html)).toContain('href="/app/points?source=profile&amp;campaign=Spring%20Showcase"');
+    expect(getBottomNavHtml(html)).toContain('href="/profile?campaign=Spring%20Showcase"');
+    expect(html).toContain('href="/profile?campaign=Spring+Showcase"');
+  });
+
+  it("preserves exact profile-to-points continuity when the filtered events loop was opened from profile after points", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("member.a@mymedlife.test"),
+    );
+
+    const { default: EventsPage } = await import("@/app/app/events/page");
+    const html = renderToStaticMarkup(
+      await EventsPage({
+        searchParams: Promise.resolve({
+          source: "profile",
+          profileSource: "points",
+          campaign: "Spring Showcase",
+        }),
+      }),
+    );
+
+    expect(html).toContain("Opened from Points &amp; Recognition via your TEST profile");
+    expect(html).toContain('href="/profile?source=points&amp;campaign=Spring+Showcase"');
+    expect(getBottomNavHtml(html)).toContain('href="/app/points?source=points&amp;campaign=Spring%20Showcase"');
+    expect(getBottomNavHtml(html)).toContain('href="/profile?source=points&amp;campaign=Spring%20Showcase"');
+    expect(html).toContain('href="/profile?source=points&amp;campaign=Spring+Showcase"');
+    expect(html).toContain(
+      'href="/app/events/chapter-event-mcgill-coffee-chat?source=profile&amp;profileSource=points&amp;campaign=Spring+Showcase"',
+    );
+    expect(html).toContain(
+      'href="/app/events?source=profile&amp;profileSource=points&amp;campaign=Spring+Showcase"',
+    );
+    expect(getBottomNavHtml(html)).not.toContain('href="/app/points?source=profile&amp;campaign=Spring%20Showcase"');
+  });
   it("renders the Points route through the shared Figma member shell", async () => {
     const actorModule = await import("@/services/local-actor-context");
 

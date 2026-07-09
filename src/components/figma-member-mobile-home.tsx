@@ -2267,13 +2267,20 @@ function EventsScreen({
   const featuredEvent = visibleEvents.find((e) => e.featured);
   const listEvents = visibleEvents.filter((e) => !e.featured);
   const activeCampaignData = activeCampaign !== "All" ? CAMPAIGNS.find((c) => c.name === activeCampaign) : null;
+  const pointsReturnHref = getEventsBottomNavPointsHref(source, activeCampaign, profileSource);
+  const profileReturnHref =
+    buildEventsProfileReturnHref(profileSource, activeCampaign) ??
+    getEventsBottomNavProfileHref(source, activeCampaign, profileSource) ??
+    "/profile";
   const eventsReturnCard =
     source === "home"
       ? { eyebrow: "Opened from the TEST home walkthrough", title: "Keep home, events, and points in one member loop.", body: "Home sent you into this TEST event list so you can open the next chapter moment, preview RSVP or attendance, and return to points without leaving the student shell.", href: "/app", cta: "Back to Home" }
+      : source === "profile" && profileSource === "points"
+      ? { eyebrow: "Opened from Points & Recognition via your TEST profile", title: "Keep profile, points, and events in one member loop.", body: "Your TEST profile carried exact points context into this event list. Open the next chapter moment, preview RSVP or attendance, then step back through the same profile-to-points loop without leaving the student shell.", href: profileReturnHref, cta: "Back to Profile" }
       : source === "profile"
-      ? { eyebrow: "Opened from your TEST profile", title: "Keep profile, events, and points in one member loop.", body: "Your TEST profile sent you here so the next chapter moment stays route-backed. Open an event, preview RSVP or attendance, then step back into points when you are ready.", href: "/profile", cta: "Back to Profile" }
+      ? { eyebrow: "Opened from your TEST profile", title: "Keep profile, events, and points in one member loop.", body: "Your TEST profile sent you here so the next chapter moment stays route-backed. Open an event, preview RSVP or attendance, then step back into points when you are ready.", href: profileReturnHref, cta: "Back to Profile" }
       : source === "points"
-        ? { eyebrow: "Opened from Points & Recognition", title: "Move from TEST points readback into the next event.", body: "The member loop should not stop at the leaderboard. Use this route-backed return path to find the next event, preview RSVP or check-in, and come back to points when the chapter moment is done.", href: "/app/points?source=events", cta: "Back to Points" }
+        ? { eyebrow: "Opened from Points & Recognition", title: "Move from TEST points readback into the next event.", body: "The member loop should not stop at the leaderboard. Use this route-backed return path to find the next event, preview RSVP or check-in, and come back to points when the chapter moment is done.", href: pointsReturnHref ?? "/app/points?source=events", cta: "Back to Points" }
         : null;
 
   return (
@@ -2286,7 +2293,7 @@ function EventsScreen({
       <div className="bg-primary px-4 pb-4">
         <div className="flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
           <Link
-            href={buildEventsHref({ source, campaign: "All" })}
+            href={buildEventsHref({ source, campaign: "All", profileSource })}
             aria-label="Show all TEST event campaigns"
             className={cn(
               "flex-shrink-0 px-3.5 py-1.5 rounded-full text-xs font-bold border transition-all",
@@ -2300,7 +2307,7 @@ function EventsScreen({
           {CAMPAIGNS.map((c) => (
             <Link
               key={c.name}
-              href={buildEventsHref({ source, campaign: c.name })}
+              href={buildEventsHref({ source, campaign: c.name, profileSource })}
               aria-label={`Filter TEST events by ${c.name}`}
               className={cn(
                 "flex-shrink-0 px-3.5 py-1.5 rounded-full text-xs font-bold border transition-all whitespace-nowrap",
@@ -3739,17 +3746,29 @@ function getMemberBottomNavHrefOverrides({
   const overrides: Partial<Record<MemberBottomNavTab, string>> = {};
 
   if (screen === "points") {
-    overrides.events = getPointsBottomNavEventsHref(pointsSource, pointsReturnEventId);
+    overrides.events = getPointsBottomNavEventsHref(
+      pointsSource,
+      pointsReturnEventId,
+      pointsReturnCampaign,
+    );
   }
 
   if (screen === "events") {
-    const pointsHref = getEventsBottomNavPointsHref(eventsSource);
+    const pointsHref = getEventsBottomNavPointsHref(
+      eventsSource,
+      eventsCampaign,
+      eventsProfileSource,
+    );
 
     if (pointsHref) {
       overrides.points = pointsHref;
     }
 
-    const profileHref = getEventsBottomNavProfileHref(eventsSource);
+    const profileHref = getEventsBottomNavProfileHref(
+      eventsSource,
+      eventsCampaign,
+      eventsProfileSource,
+    );
 
     if (profileHref) {
       overrides.profile = profileHref;
@@ -3762,65 +3781,117 @@ function getMemberBottomNavHrefOverrides({
 function getPointsBottomNavEventsHref(
   source: MemberLoopSource,
   returnEventId: string | null,
+  returnCampaign: string | null,
 ) {
+  const campaignSuffix =
+    returnCampaign && returnCampaign !== "All"
+      ? `&campaign=${encodeURIComponent(returnCampaign)}`
+      : "";
+
   if (source === "events") {
     return returnEventId
-      ? `/app/events/${returnEventId}?source=points`
-      : "/app/events?source=points";
+      ? `/app/events/${returnEventId}?source=points${campaignSuffix}`
+      : `/app/events?source=points${campaignSuffix}`;
   }
 
   if (source === "home") {
     return returnEventId
-      ? `/app/events/${returnEventId}?source=home`
-      : "/app/events?source=home";
+      ? `/app/events/${returnEventId}?source=home${campaignSuffix}`
+      : `/app/events?source=home${campaignSuffix}`;
   }
 
   if (source === "profile") {
     return returnEventId
-      ? `/app/events/${returnEventId}?source=profile&profileSource=points`
-      : "/app/events?source=profile";
+      ? `/app/events/${returnEventId}?source=profile&profileSource=points${campaignSuffix}`
+      : `/app/events?source=profile${campaignSuffix}`;
   }
 
-  return "/app/events";
+  return campaignSuffix ? `/app/events?source=points${campaignSuffix}` : "/app/events";
 }
 
 function getPointsBottomNavProfileHref(
   source: MemberLoopSource,
   returnEventId: string | null,
+  returnCampaign: string | null,
 ) {
+  const campaignSuffix =
+    returnCampaign && returnCampaign !== "All"
+      ? `&campaign=${encodeURIComponent(returnCampaign)}`
+      : "";
+
   if (returnEventId) {
-    return `/profile?source=points&event=${returnEventId}`;
+    return `/profile?source=points&event=${returnEventId}${campaignSuffix}`;
   }
 
-  return screenlessProfileHref(source);
+  return screenlessProfileHref(source, returnCampaign);
 }
 
-function screenlessProfileHref(source: MemberLoopSource) {
-  return source === "home" ? "/profile?source=home" : "/profile?source=points";
+function screenlessProfileHref(
+  source: MemberLoopSource,
+  campaign: string | null = null,
+) {
+  const url = new URL(
+    `https://mymedlife.local${source === "home" ? "/profile?source=home" : "/profile?source=points"}`,
+  );
+
+  if (campaign && campaign !== "All") {
+    url.searchParams.set("campaign", campaign);
+  }
+
+  return `${url.pathname}${url.search}`;
 }
 
-function getEventsBottomNavPointsHref(source: MemberLoopSource) {
+function getEventsBottomNavPointsHref(
+  source: MemberLoopSource,
+  campaign: string | null,
+  profileSource: "points" | null = null,
+) {
+  const campaignSuffix =
+    campaign && campaign !== "All"
+      ? `&campaign=${encodeURIComponent(campaign)}`
+      : "";
   if (source === "points") {
-    return "/app/points?source=events";
+    return `/app/points?source=events${campaignSuffix}`;
   }
 
   if (source === "home") {
-    return "/app/points?source=home";
+    return `/app/points?source=home${campaignSuffix}`;
   }
 
   if (source === "profile") {
-    return "/app/points?source=profile";
+    return `/app/points?source=${profileSource === "points" ? "points" : "profile"}${campaignSuffix}`;
   }
 
   return undefined;
 }
 
-function getEventsBottomNavProfileHref(source: MemberLoopSource) {
+function getEventsBottomNavProfileHref(
+  source: MemberLoopSource,
+  campaign: string | null,
+  profileSource: "points" | null,
+) {
+  const campaignSuffix =
+    campaign && campaign !== "All"
+      ? `&campaign=${encodeURIComponent(campaign)}`
+      : "";
+
   if (source === "home") {
-    return "/profile?source=home";
+    return `/profile?source=home${campaignSuffix}`;
   }
 
   if (source === "points") {
+    return `/profile?source=points${campaignSuffix}`;
+  }
+
+  if (source === "profile" && campaignSuffix) {
+    if (profileSource === "points") {
+      return `/profile?source=points${campaignSuffix}`;
+    }
+
+    return `/profile?campaign=${encodeURIComponent(campaign ?? "")}`;
+  }
+
+  if (source === "profile" && profileSource === "points") {
     return "/profile?source=points";
   }
 
