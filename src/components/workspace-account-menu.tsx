@@ -68,7 +68,7 @@ export function WorkspaceAccountMenu({
                   <span>{workspace.label}</span>
                   {workspace.readOnly ? (
                     <span className="ml-2 rounded-full bg-[#eef5ff] px-2 py-0.5 text-[10px] font-black uppercase tracking-wide text-[#1B4B8E]">
-                      Preview
+                      TEST Preview
                     </span>
                   ) : null}
                 </a>
