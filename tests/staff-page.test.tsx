@@ -133,12 +133,13 @@ describe("staff page", () => {
     expect(html).toContain("Needs Review");
     expect(html).toContain("Export blocked");
     expect(html).toContain("pr-[4.5rem]");
-    expect(html).toContain("sm:pr-[16rem]");
-    expect(html).toContain("lg:pr-[19rem]");
-    expect(html).toContain("xl:pr-[21rem]");
+    expect(html).toContain("sm:pr-[17rem]");
+    expect(html).toContain("lg:pr-[21rem]");
+    expect(html).toContain("xl:pr-[24rem]");
+    expect(html).toContain("2xl:pr-[26rem]");
     expect(html).toContain("pointer-events-none");
     expect(html).toContain(
-      "pointer-events-none ml-auto min-w-0 flex-none items-center justify-end hidden md:flex max-w-[7rem] lg:max-w-[8.5rem] xl:max-w-[10rem] 2xl:max-w-[11.5rem]",
+      "pointer-events-none ml-auto min-w-0 flex-none items-center justify-end hidden md:flex max-w-[6.5rem] lg:max-w-[8rem] xl:max-w-[9.5rem] 2xl:max-w-[11rem]",
     );
     expect(html).toContain("truncate text-xs font-semibold text-red-300");
     expect(html).not.toContain("w-7 h-7 rounded-full bg-accent flex items-center justify-center text-xs font-bold text-sidebar");
@@ -865,9 +866,11 @@ describe("staff page", () => {
     const accountMenuSource = readFileSync("src/components/workspace-account-menu.tsx", "utf8");
 
     expect(accountMenuSource).toContain("export const WORKSPACE_ACCOUNT_MENU_SHELL_CLEARANCE");
-    expect(staffSource).toContain("const STAFF_HEADER_ACCOUNT_CLEARANCE = WORKSPACE_ACCOUNT_MENU_SHELL_CLEARANCE;");
+    expect(staffSource).toContain("const STAFF_PAGE_HEADER_ACCOUNT_CLEARANCE = WORKSPACE_ACCOUNT_MENU_SHELL_CLEARANCE;");
+    expect(staffSource).toContain('const STAFF_TOP_BAR_ACCOUNT_CLEARANCE =');
+    expect(staffSource).toContain('"pr-[4.5rem] sm:pr-[17rem] lg:pr-[21rem] xl:pr-[24rem] 2xl:pr-[26rem]"');
     expect(staffSource).toContain(
-      'hidden md:flex max-w-[7rem] lg:max-w-[8.5rem] xl:max-w-[10rem] 2xl:max-w-[11.5rem]',
+      'hidden md:flex max-w-[6.5rem] lg:max-w-[8rem] xl:max-w-[9.5rem] 2xl:max-w-[11rem]',
     );
   });
 
