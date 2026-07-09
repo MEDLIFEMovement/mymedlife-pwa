@@ -634,6 +634,15 @@ function renderView(
               ))}
             </div>
           </SectionCard>
+
+          {commandCenter.selectedMember ? (
+            <SelectedMemberContextBanner
+              eyebrow="Leaderboard review in focus"
+              title={`Reviewing ${toVisibleTestLabel(commandCenter.selectedMember.displayName)} through attendance-backed points`}
+              summary="Keep the selected member visible while you compare attendance-backed points, chapter rank, and the active event loop. No awards, promotions, or point writes go live from this leaderboard shell."
+              member={commandCenter.selectedMember}
+            />
+          ) : null}
         </section>
       );
     case "members":
@@ -986,6 +995,8 @@ function renderView(
                   href={buildChapterLeaderEventFlowHref({
                     source: commandCenter.selectedSource,
                     memberId: commandCenter.selectedMember.id,
+                    eventCommitteeFilter: commandCenter.selectedEventCommitteeFilter,
+                    eventId: commandCenter.selectedEventId,
                     pipelineFilter: commandCenter.selectedPipelineFilter,
                     searchQuery: commandCenter.pipelineSearchQuery,
                     quickAction: "review_members",

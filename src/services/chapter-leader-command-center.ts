@@ -2290,6 +2290,7 @@ export function buildChapterLeaderCommandCenterHref(
   const searchParams = new URLSearchParams();
   const shouldPreserveLeaderboardContext =
     view === "leaderboard" ||
+    view === "member_profile" ||
     options.source === "leaderboard" ||
     Boolean(options.bestPracticeChapterId);
   const shouldPreserveEventContext =
@@ -3714,8 +3715,13 @@ function getMockLeaderProfile(context: {
 }): ChapterLeaderCommandCenterMemberProfile {
   const backToPipelineHref = buildChapterLeaderCommandCenterHref("members", {
     source: context.source,
+    bestPracticeChapterId: context.bestPracticeChapterId,
+    eventCommitteeFilter: context.eventCommitteeFilter,
+    eventId: context.eventId,
     feedPostId: context.feedPostId,
     pipelineFilter: context.filter,
+    leaderboardMetric: context.leaderboardMetric,
+    leaderboardRegion: context.leaderboardRegion,
     searchQuery: context.searchQuery,
   });
   const backToContext = getMemberBackToContext(mockLeaderProfileId, context);
