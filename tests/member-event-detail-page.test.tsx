@@ -206,6 +206,28 @@ describe("member event detail route", () => {
     expect(html).toContain("Back to Home");
   });
 
+  it("preserves exact home-to-profile continuity when event detail opens profile from a TEST home event", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const dataModule = await import("@/services/read-only-app-data");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("member.a@mymedlife.test"),
+    );
+    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
+      getMockReadOnlyAppData("Testing member event detail home profile continuity."),
+    );
+
+    const { default: EventDetailPage } = await import("@/app/app/events/[eventId]/page");
+    const html = renderToStaticMarkup(
+      await EventDetailPage({
+        params: Promise.resolve({ eventId: "chapter-event-ucla-kickoff" }),
+        searchParams: Promise.resolve({ source: "home" }),
+      }),
+    );
+
+    expect(html).toContain('href="/profile?source=home&amp;event=chapter-event-ucla-kickoff"');
+  });
+
   it("returns event detail to points when the event loop starts from the member leaderboard", async () => {
     const actorModule = await import("@/services/local-actor-context");
     const dataModule = await import("@/services/read-only-app-data");

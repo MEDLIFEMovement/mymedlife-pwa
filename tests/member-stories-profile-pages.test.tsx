@@ -205,6 +205,34 @@ describe("member stories and profile pages", () => {
     expect(html).toContain('href="/app"');
   });
 
+  it("preserves exact TEST home-event continuity when profile opens from an event detail handoff", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const dataModule = await import("@/services/read-only-app-data");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("member.a@mymedlife.test"),
+    );
+    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
+      getMockReadOnlyAppData("Testing exact home event continuity through profile."),
+    );
+
+    const { default: ProfilePage } = await import("@/app/profile/page");
+    const html = renderToStaticMarkup(
+      await ProfilePage({
+        searchParams: Promise.resolve({
+          source: "home",
+          event: "chapter-event-ucla-kickoff",
+        }),
+      }),
+    );
+
+    expect(html).toContain("Opened from the TEST home walkthrough");
+    expect(html).toContain("Back to Home");
+    expect(html).toContain("Back to TEST event detail");
+    expect(html).toContain('href="/app/points?source=home&amp;event=chapter-event-ucla-kickoff"');
+    expect(html).toContain('href="/app/events/chapter-event-ucla-kickoff?source=home"');
+  });
+
   it("keeps points-to-profile continuity inside the mobile member shell", async () => {
     const actorModule = await import("@/services/local-actor-context");
     const dataModule = await import("@/services/read-only-app-data");

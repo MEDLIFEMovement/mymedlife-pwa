@@ -94,7 +94,9 @@ function buildProfileEventsHref(
     return "/app/events?source=profile";
   }
 
-  const url = new URL(`https://mymedlife.local/app/events/${eventId}?source=profile`);
+  const url = new URL(
+    `https://mymedlife.local/app/events/${eventId}?source=${source === "home" ? "home" : "profile"}`,
+  );
 
   if (source === "points") {
     url.searchParams.set("profileSource", "points");
@@ -108,7 +110,13 @@ function buildProfilePointsHref(
   eventId: string | null,
 ) {
   const url = new URL(
-    `https://mymedlife.local${source === "points" ? "/app/points?source=points" : "/app/points?source=profile"}`,
+    `https://mymedlife.local${
+      source === "points"
+        ? "/app/points?source=points"
+        : source === "home"
+          ? "/app/points?source=home"
+          : "/app/points?source=profile"
+    }`,
   );
 
   if (eventId) {

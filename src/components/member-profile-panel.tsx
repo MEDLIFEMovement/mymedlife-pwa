@@ -154,7 +154,7 @@ export function MemberProfilePanel({
                 <ChevronLeft size={14} />
                 {continuityCard.cta}
               </a>
-              {entrySource === "points" && entryEventId ? (
+              {(entrySource === "points" || entrySource === "home") && entryEventId ? (
                 <a
                   href={launchLaneEventsHref}
                   className="mt-2 inline-flex items-center gap-1.5 text-sm font-semibold text-slate-700"
