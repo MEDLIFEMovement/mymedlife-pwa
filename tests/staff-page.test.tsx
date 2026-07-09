@@ -629,7 +629,7 @@ describe("staff page", () => {
     expect(html).toContain("Use the embedded Admin preview for DS audit readback before requesting any attendance correction, point adjustment, or event-status write.");
     expect(html).toContain("Next step: open the Admin preview for DS directory readback, audit, and blocked-control follow-through before requesting any write path.");
     expect(html).toContain("Return to this chapter in the same Command Center loop after the Admin readback closes.");
-    expect(html).toContain('href="/staff?view=admin&amp;adminView=chapters&amp;returnView=chapters&amp;chapter=chapter-test&amp;chapterContext=Boston+College"');
+    expect(html).toContain('href="/staff?view=admin&amp;adminView=chapters&amp;returnView=chapters&amp;chapter=chapter-test&amp;chapterContext=Boston+College&amp;chapterEvents=2&amp;chapterRsvps=30&amp;chapterAttendance=24&amp;chapterPoints=7800&amp;chapterPointsWeek=620"');
     expect(html).toContain("Open Admin preview");
     expect(html).toContain("Return to Boston College");
     expect(html).toContain("Return to Boston College in the same chapters review loop after this preview readback");
@@ -844,10 +844,15 @@ describe("staff page", () => {
     );
     const source = readFileSync("src/components/figma-staff-command-center.tsx", "utf8");
 
-    expect(html).toContain('href="/staff?view=admin&amp;chapter=ch13&amp;chapterRegion=West&amp;chapterSort=points&amp;adminView=chapters&amp;returnView=chapters&amp;chapterContext=TEST+Stanford+University"');
+    expect(html).toContain('href="/staff?view=admin&amp;chapter=ch13&amp;chapterRegion=West&amp;chapterSort=points&amp;adminView=chapters&amp;returnView=chapters&amp;chapterContext=TEST+Stanford+University&amp;chapterEvents=5&amp;chapterRsvps=80&amp;chapterAttendance=68&amp;chapterPoints=22100&amp;chapterPointsWeek=1890"');
     expect(source).toContain("buildStaffChapterAdminHref(");
-    expect(source).toContain('params.set("chapterContext", chapterContext);');
+    expect(source).toContain('params.set("chapterContext", chapter.name);');
     expect(source).toContain('params.set("adminView", "chapters");');
+    expect(source).toContain('params.set("chapterEvents", String(chapter.eventsThisMonth));');
+    expect(source).toContain('params.set("chapterRsvps", String(chapter.rsvps));');
+    expect(source).toContain('params.set("chapterAttendance", String(chapter.attendance));');
+    expect(source).toContain('params.set("chapterPoints", String(chapter.totalPointsYear));');
+    expect(source).toContain('params.set("chapterPointsWeek", String(chapter.pointsWeek));');
   });
 
   it("keeps proof queue return context when the chapter drawer opens an admin chapter review handoff", async () => {
@@ -870,10 +875,63 @@ describe("staff page", () => {
     );
     const source = readFileSync("src/components/figma-staff-command-center.tsx", "utf8");
 
-    expect(html).toContain('href="/staff?view=admin&amp;chapter=ch13&amp;proofStatus=pending&amp;proofPlatform=instagram&amp;adminView=chapters&amp;returnView=proof_ugc&amp;chapterContext=TEST+Stanford+University"');
+    expect(html).toContain('href="/staff?view=admin&amp;chapter=ch13&amp;proofStatus=pending&amp;proofPlatform=instagram&amp;adminView=chapters&amp;returnView=proof_ugc&amp;chapterContext=TEST+Stanford+University&amp;chapterEvents=5&amp;chapterRsvps=80&amp;chapterAttendance=68&amp;chapterPoints=22100&amp;chapterPointsWeek=1890"');
     expect(source).toContain('params.set("returnView", proofQueueContext ? "proof_ugc" : "chapters");');
     expect(source).toContain("const proofQueueContext = getEmbeddedProofQueueContext(");
     expect(source).toContain("if (!proofQueueContext) {");
+  });
+
+  it("keeps chapter oversight readback visible inside the embedded admin chapters surface", async () => {
+    mockPathname = "/staff";
+    mockSearchParams = new URLSearchParams({
+      view: "admin",
+      adminView: "chapters",
+      returnView: "chapters",
+      chapter: "ch13",
+      chapterContext: "TEST Stanford University",
+      chapterEvents: "5",
+      chapterRsvps: "80",
+      chapterAttendance: "68",
+      chapterPoints: "22100",
+      chapterPointsWeek: "1890",
+    });
+
+    const { FigmaAdminPanel } = await import("@/components/figma-admin-panel");
+    const html = renderToStaticMarkup(
+      <FigmaAdminPanel
+        initialActive="chapters"
+        onBack={vi.fn()}
+        embeddedBackLabel="this chapter"
+        embeddedBackHref="/staff?view=chapters&chapter=ch13"
+      />,
+    );
+    const adminSource = readFileSync("src/components/figma-admin-panel.tsx", "utf8");
+
+    expect(html).toContain("Embedded chapter oversight readback");
+    expect(html).toContain(
+      "Use this Admin readback to verify event readiness, RSVP totals, attendance context, and points posture for TEST Stanford University before requesting any correction path.",
+    );
+    expect(html).toContain(">5</div>");
+    expect(html).toContain(">80</div>");
+    expect(html).toContain(">68</div>");
+    expect(html).toContain(">22100</div>");
+    expect(html).toContain(
+      "Points posture stays read-only here: 1890 weekly points remain review context only until an approved correction workflow exists.",
+    );
+    expect(html).toContain("Chapter Detail");
+    expect(html).toContain("TEST Embedded staff oversight context · TEST Command Center");
+    expect(html).toContain("TEST Read-only staff context");
+    expect(html).toContain(">Upcoming Events</div><div class=\"text-[14px] text-slate-200 font-mono font-semibold\">5</div>");
+    expect(html).toContain(">RSVPs</div><div class=\"text-[14px] text-slate-200 font-mono font-semibold\">80</div>");
+    expect(html).toContain(">Attendance</div><div class=\"text-[14px] text-slate-200 font-mono font-semibold\">68</div>");
+    expect(html).toContain(">Total Points</div><div class=\"text-[14px] text-slate-200 font-mono font-semibold\">22,100</div>");
+    expect(adminSource).toContain('events: searchParams.get("chapterEvents"),');
+    expect(adminSource).toContain('rsvps: searchParams.get("chapterRsvps"),');
+    expect(adminSource).toContain('attendance: searchParams.get("chapterAttendance"),');
+    expect(adminSource).toContain('points: searchParams.get("chapterPoints"),');
+    expect(adminSource).toContain('pointsWeek: searchParams.get("chapterPointsWeek"),');
+    expect(adminSource).toContain("embeddedReadback ? buildEmbeddedReadbackChapter(embeddedReadback) : null");
+    expect(adminSource).toContain("function buildEmbeddedReadbackChapter");
   });
 
   it("keeps a proof queue return path visible when a chapter drawer opens from Proof / UGC context", async () => {

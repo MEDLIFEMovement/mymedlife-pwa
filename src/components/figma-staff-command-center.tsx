@@ -475,8 +475,7 @@ export function ChapterDetailDrawer({
   const resolvedAdminPreviewHref =
     adminPreviewHref ??
     buildStaffChapterAdminHref(
-      chapter.id,
-      chapter.name,
+      chapter,
       pathname,
       searchParams.toString(),
     );
@@ -2696,8 +2695,7 @@ export function FigmaStaffCommandCenter({
               chapter={selectedChapter}
               onClose={handleCloseChapterDrawer}
               adminPreviewHref={buildStaffChapterAdminHref(
-                selectedChapter.id,
-                selectedChapter.name,
+                selectedChapter,
                 pathname,
                 currentRouteSearch,
               )}
@@ -3018,8 +3016,7 @@ function buildStaffChapterHref(chapterId: string, pathname: string, search: stri
 }
 
 function buildStaffChapterAdminHref(
-  chapterId: string,
-  chapterContext: string,
+  chapter: Chapter,
   pathname: string,
   search: string,
 ): string {
@@ -3031,8 +3028,13 @@ function buildStaffChapterAdminHref(
   params.set("view", "admin");
   params.set("adminView", "chapters");
   params.set("returnView", proofQueueContext ? "proof_ugc" : "chapters");
-  params.set("chapter", chapterId);
-  params.set("chapterContext", chapterContext);
+  params.set("chapter", chapter.id);
+  params.set("chapterContext", chapter.name);
+  params.set("chapterEvents", String(chapter.eventsThisMonth));
+  params.set("chapterRsvps", String(chapter.rsvps));
+  params.set("chapterAttendance", String(chapter.attendance));
+  params.set("chapterPoints", String(chapter.totalPointsYear));
+  params.set("chapterPointsWeek", String(chapter.pointsWeek));
   if (!proofQueueContext) {
     params.delete("ugcCard");
     params.delete("proofStatus");
