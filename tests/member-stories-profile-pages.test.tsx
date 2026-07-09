@@ -75,11 +75,13 @@ describe("member stories and profile pages", () => {
     expect(html).toContain("TEST @uconn");
     expect(html).toContain('href="/app/stories?filter=For+You&amp;story=1"');
     expect(html).toContain('href="/app/stories?filter=For+You&amp;story=2"');
+    expect(html).toContain('href="/app/stories?filter=My+Chapter"');
+    expect(html).toContain('href="/app/stories?filter=Trip+Moments"');
+    expect(html).toContain('href="/app/stories?filter=Events"');
     expect(html).toContain('aria-label="Apply story filter: My Chapter"');
     expect(html).toContain('aria-label="Apply story filter: Trip Moments"');
     expect(html).toContain('aria-label="Apply story filter: Events"');
-    expect(html).toContain('aria-pressed="false"');
-    expect(html).toContain('aria-pressed="true"');
+    expect(html).toContain('aria-current="true"');
     expect(html).toContain("Preview-only reaction. Likes are not saved, synced, or counted as production proof.");
     expect(html).toContain("preview likes");
     expect(html).toContain("Preview only - comments open the reader; shares and saves stay blocked.");
@@ -113,6 +115,8 @@ describe("member stories and profile pages", () => {
     expect(html).toContain("TEST UConn MEDLIFE chapter packed the room at their intro event");
     expect(html).toContain("TEST Over 90 students showed up to learn about MEDLIFE&#x27;s mission.");
     expect(html).toContain('href="/app/stories?filter=Events"');
+    expect(html).toContain('aria-label="Back to stories feed"');
+    expect(html).toContain('aria-label="Close story reader"');
     expect(html).toContain("External source links are blocked in this preview until feed-sharing approval is complete");
     expect(html).toContain("Story saving is blocked in this preview");
     expect(html).toContain("Save");
@@ -123,6 +127,31 @@ describe("member stories and profile pages", () => {
     expect(html).toContain("Instagram");
     expect(html).toContain("Preview only - reactions, save preview, and source previews stay blocked in this reader.");
     expect(html).toContain("TEST UConn");
+  });
+
+  it("keeps the stories reader tied to the active filter when the query picks a mismatched story", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("member.a@mymedlife.test"),
+    );
+
+    const { default: AppStoriesPage } = await import("@/app/app/stories/page");
+    const html = renderToStaticMarkup(
+      await AppStoriesPage({
+        searchParams: Promise.resolve({
+          filter: "Events",
+          story: "1",
+        }),
+      }),
+    );
+
+    expect(html).toContain('href="/app/stories?filter=Events"');
+    expect(html).toContain("TEST UConn MEDLIFE chapter packed the room at their intro event");
+    expect(html).toContain("TEST Community health fair draws 300+ in Managua");
+    expect(html).not.toContain('aria-label="Back to stories feed"');
+    expect(html).not.toContain("TEST Students in Lima joined a Mobile Clinic this weekend");
+    expect(html).not.toContain("Preview only - reactions, save preview, and source previews stay blocked in this reader.");
   });
 
   it("keeps profile route-backed and explicitly read-only", async () => {
