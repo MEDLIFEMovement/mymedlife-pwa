@@ -1,6 +1,6 @@
 # Active Builder Lane Truth Refresh
 
-Date: 2026-07-08
+Date: 2026-07-09
 Owner lane: `#5` MVP Story + Production Planning, docs/spec only
 
 ## Purpose
@@ -14,17 +14,22 @@ without rereading the whole story package.
 
 ## Current Repo / Queue Truth Used
 
-- PR `#546` is merged and green.
-- The member profile body rhythm and Stories IG-feed acceptance maps are now
-  landed planning truth.
+- PR `#617` is merged.
+- PR `#620` is merged; Coordinator reported public no-write smoke stayed
+  `11/11` green after the merge.
+- PR `#619` is merged.
+- PR `#618` is now the remaining open front branch after `#619`; refresh and
+  land it before starting another member PR.
 - The active planning layer still separates implementation truth from
   Figma/exported-source acceptance shape.
-- Open PR board noise is mostly older draft or behind-only branches; use the
-  landed acceptance maps below for next-slice steering unless Coordinator gives
-  a fresher PR-specific blocker.
+- Open PR board noise and older parked branches should not outrank `#618`
+  unless Coordinator gives a fresher PR-specific blocker.
 - TEST/sandbox/Figma-derived visible people, chapters, events, stories, proof
   cards, metrics, placeholder owners, and audit actors must keep visible `TEST`
   labels until replaced by approved real data or hidden.
+- Rollout-proof truth is unchanged: shell merges, public smoke, green CI, and
+  TEST/sandbox rows do not prove owner data, signed-in production authority,
+  provider writes, pilot readiness, or rollout approval.
 
 ## Sources Inspected
 
@@ -46,9 +51,12 @@ Current acceptance maps:
 
 Live PR signal:
 
-- `gh pr view 546` confirmed merged.
-- Current open PR list shows many behind-only/draft branches; this packet
-  should not be read as merge approval for those branches.
+- `gh pr view 617` confirmed merged.
+- `gh pr view 620` confirmed merged.
+- `gh pr view 619` confirmed merged.
+- `gh pr view 618` shows the remaining open front branch.
+- This packet should not be read as merge approval for `#618`; it only
+  captures planning order and acceptance boundaries.
 
 ## Builder Truth Refresh
 
@@ -56,12 +64,11 @@ Live PR signal:
 
 Next safest slice:
 
-1. Finish any already-active profile route-shell fix first.
-2. If the route shell is clean, use
-   `member-profile-body-rhythm-acceptance-map.md` for the next profile body
-   density/hierarchy pass.
-3. After profile settles, use `member-stories-ig-feed-acceptance-map.md` for
-   Stories feed/reader fidelity.
+1. Refresh and land PR `#618` as the current front queue item.
+2. Keep the next local member seam focused on source-backed member loop
+   continuity instead of broad member redesign.
+3. Preserve the existing profile, Stories, events/detail, points, and bottom-nav
+   acceptance contracts while the queue clears.
 
 Likely source-backed surfaces:
 
@@ -98,9 +105,9 @@ What does not count:
 
 Next safest slice:
 
-- Use `leader-cross-route-continuity-acceptance-map.md` for the next leader
-  continuity pass across Chapter Home, Member Profile, Current Leaders,
-  Succession, Values, and Leadership Training.
+- PR `#619` is merged, so stop describing it as active queue work.
+- Keep the next local seam narrow: leader attendance,
+  member-review, and simple-leaderboard return-path continuity.
 
 Current steering correction:
 
@@ -143,9 +150,10 @@ What does not count:
 
 Next safest slice:
 
-- Use `staff-embedded-admin-return-loop-acceptance-map.md` for chapter drawer
-  -> embedded Admin -> Chapters and Proof / UGC -> embedded Admin -> review
-  context continuity.
+- PR `#620` is now merged, so stop describing its staff/admin seam as pending.
+- Shape the next staff/admin seam locally while `#618` clears: chapter oversight
+  honesty, embedded Admin context, and visible TEST-label coverage without
+  claiming rollout proof.
 
 Current steering correction:
 

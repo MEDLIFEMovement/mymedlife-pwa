@@ -1,27 +1,51 @@
 # myMEDLIFE Latest-Main Builder Crosswalk
 
-Date: 2026-07-07
+Date: 2026-07-09
 Owner lane: myMEDLIFE #5, planning/docs only
 Purpose: give Coordinator a compact, latest-main steering view for the active
 three-shell builders without re-reading the full story inventory, delivery
 backlog, and story-to-test traceability map.
 
+## Current MED-512 Queue Overlay
+
+Use this queue overlay before the older backlog table below when assigning the
+next live branch:
+
+1. `#619` is merged, so stop treating it as active queue work.
+2. `#618` is the remaining open front branch. `#1` should refresh and land it
+   before starting another member PR.
+3. `#620` is merged and public no-write smoke stayed `11/11` green after the
+   merge. Do not keep its staff/admin seam in the pending queue.
+4. `#2` should return to local leader follow-on shaping after the `#619`
+   landing, keeping attendance, member review, and simple-leaderboard continuity
+   narrow.
+5. `#3` should shape the next staff/admin seam locally while `#618` clears,
+   with emphasis on chapter oversight honesty, embedded Admin context, and
+   visible TEST-label coverage.
+6. `#4` should watch `#618` for scope, TEST labels, route evidence, and no
+   rollout-proof inflation. `#6` should stay quiet unless real proof artifacts
+   appear.
+
+Rollout-proof truth is unchanged. Shell merges, public no-write smoke, green CI,
+and TEST/sandbox rows may support `Scope/UI` or `QA/Ops` discussion, but they do
+not prove owner data, signed-in production authority, provider writes, pilot
+readiness, or rollout approval.
+
 ## Sources Inspected
 
-- Repo `origin/main` at `80f3259` (`[codex] Tighten staff review flow parity (#440)`)
+- Repo `origin/main` after the `#620` merge.
 - Merged planning docs:
   - `docs/user-stories/master-user-story-inventory.md`
   - `docs/user-stories/narrow-launch-mvp-stories.md`
   - `docs/user-stories/user-story-gap-report.md`
   - `docs/user-stories/delivery-backlog.md`
   - `docs/user-stories/story-to-test-traceability.md`
-- Latest merged shell wave since the delivery backlog base:
-  - `#436` leader roster preview honesty
-  - `#438` member stories filter routing
-  - `#439` story-to-test traceability
-  - `#440` staff review flow parity
-- Coordinator-reported post-merge public no-write smoke: 11/11 passed after the
-  merge wave.
+- Current queue evidence:
+  - `#617` merged.
+  - `#620` merged.
+  - `#619` merged.
+  - `#618` open and green as the remaining front branch.
+- Coordinator-reported public no-write smoke: 11/11 passed after `#620`.
 
 ## How To Use This Crosswalk
 
