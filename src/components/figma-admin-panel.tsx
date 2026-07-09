@@ -21,6 +21,7 @@ type EmbeddedChapterReadback = {
   region: string | null;
   coach: string | null;
   members: string | null;
+  risk: string | null;
   events: string | null;
   rsvps: string | null;
   attendance: string | null;
@@ -107,6 +108,8 @@ const STATUS_CLASSES: Record<string, string> = {
   "internal-only": "bg-indigo-500/15 text-indigo-400 border-indigo-500/25",
   "emergency-disabled": "bg-red-500/15 text-red-400 border-red-500/25",
   healthy: "bg-emerald-500/15 text-emerald-400 border-emerald-500/25",
+  "at-risk": "bg-amber-500/15 text-amber-400 border-amber-500/25",
+  intervene: "bg-red-500/15 text-red-400 border-red-500/25",
   degraded: "bg-amber-500/15 text-amber-400 border-amber-500/25",
   down: "bg-red-500/15 text-red-400 border-red-500/25",
   unknown: "bg-slate-700/30 text-slate-500 border-slate-600/20",
@@ -1013,7 +1016,7 @@ function buildEmbeddedReadbackChapter(embeddedReadback: EmbeddedChapterReadback)
     attendance: Number(embeddedReadback.attendance ?? 0),
     points: Number(embeddedReadback.points ?? 0),
     modules: ["Events", "RSVP", "Attendance", "Points"],
-    risk: "medium",
+    risk: embeddedReadback.risk ?? "medium",
   };
 }
 
@@ -4111,6 +4114,7 @@ export function FigmaAdminPanel({
           region: searchParams.get("chapterRegionName"),
           coach: searchParams.get("chapterCoachName"),
           members: searchParams.get("chapterMembers"),
+          risk: searchParams.get("chapterRisk"),
           events: searchParams.get("chapterEvents"),
           rsvps: searchParams.get("chapterRsvps"),
           attendance: searchParams.get("chapterAttendance"),

@@ -2573,7 +2573,7 @@ type FigmaStaffCommandCenterProps = {
   initialCampaign?: string | null;
   initialRouteParams?: Partial<
     Record<
-      "view" | "campaign" | "chapter" | "ugcCard" | "adminView" | "returnView" | "chapterContext" | "chapterSchool" | "chapterRegionName" | "chapterCoachName" | "chapterMembers" | "chapterEvents" | "chapterRsvps" | "chapterAttendance" | "chapterPoints" | "chapterPointsWeek" | "proofStatus" | "proofPlatform" | "chapterSearch" | "chapterRegion" | "chapterCoach" | "chapterType" | "chapterSort",
+      "view" | "campaign" | "chapter" | "ugcCard" | "adminView" | "returnView" | "chapterContext" | "chapterSchool" | "chapterRegionName" | "chapterCoachName" | "chapterMembers" | "chapterRisk" | "chapterEvents" | "chapterRsvps" | "chapterAttendance" | "chapterPoints" | "chapterPointsWeek" | "proofStatus" | "proofPlatform" | "chapterSearch" | "chapterRegion" | "chapterCoach" | "chapterType" | "chapterSort",
       string | null | undefined
     >
   >;
@@ -2589,7 +2589,7 @@ export function FigmaStaffCommandCenter({
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const getRouteParam = (
-    key: "view" | "campaign" | "chapter" | "ugcCard" | "adminView" | "returnView" | "chapterContext" | "chapterSchool" | "chapterRegionName" | "chapterCoachName" | "chapterMembers" | "chapterEvents" | "chapterRsvps" | "chapterAttendance" | "chapterPoints" | "chapterPointsWeek" | "proofStatus" | "proofPlatform" | "chapterSearch" | "chapterRegion" | "chapterCoach" | "chapterType" | "chapterSort",
+    key: "view" | "campaign" | "chapter" | "ugcCard" | "adminView" | "returnView" | "chapterContext" | "chapterSchool" | "chapterRegionName" | "chapterCoachName" | "chapterMembers" | "chapterRisk" | "chapterEvents" | "chapterRsvps" | "chapterAttendance" | "chapterPoints" | "chapterPointsWeek" | "proofStatus" | "proofPlatform" | "chapterSearch" | "chapterRegion" | "chapterCoach" | "chapterType" | "chapterSort",
   ) =>
     searchParams.get(key) ?? initialRouteParams?.[key] ?? null;
   const activeScreen = resolveStaffShellScreen(getRouteParam("view") ?? initialView ?? null);
@@ -2611,6 +2611,7 @@ export function FigmaStaffCommandCenter({
           region: getRouteParam("chapterRegionName"),
           coach: getRouteParam("chapterCoachName"),
           members: getRouteParam("chapterMembers"),
+          risk: getRouteParam("chapterRisk"),
           events: getRouteParam("chapterEvents"),
           rsvps: getRouteParam("chapterRsvps"),
           attendance: getRouteParam("chapterAttendance"),
@@ -3209,6 +3210,7 @@ function buildStaffChapterAdminHref(
   params.set("chapterRegionName", chapter.medlifeRegion);
   params.set("chapterCoachName", chapter.coach);
   params.set("chapterMembers", String(chapter.activeMembers));
+  params.set("chapterRisk", chapter.risk);
   params.set("chapterEvents", String(chapter.eventsThisMonth));
   params.set("chapterRsvps", String(chapter.rsvps));
   params.set("chapterAttendance", String(chapter.attendance));
