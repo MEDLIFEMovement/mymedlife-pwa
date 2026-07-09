@@ -23,6 +23,7 @@ type EmbeddedChapterReadback = {
   points: string | null;
   pointsWeek: string | null;
 };
+type AdminChapterRecord = typeof CHAPTERS_DATA[0];
 
 // ─── Mock Data ─────────────────────────────────────────────────────────────────
 const USERS_DATA = [
@@ -771,7 +772,9 @@ function ChaptersPage({
   embeddedReadback?: EmbeddedChapterReadback | null;
 }) {
   const [search, setSearch] = useState("");
-  const [selected, setSelected] = useState<typeof CHAPTERS_DATA[0] | null>(null);
+  const [selected, setSelected] = useState<AdminChapterRecord | null>(() =>
+    embeddedReadback ? buildEmbeddedReadbackChapter(embeddedReadback) : null,
+  );
 
   const filtered = CHAPTERS_DATA.filter((c) =>
     c.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -922,6 +925,24 @@ function ChaptersPage({
       </Drawer>
     </>
   );
+}
+
+function buildEmbeddedReadbackChapter(embeddedReadback: EmbeddedChapterReadback): AdminChapterRecord {
+  const isTestContext = embeddedReadback.chapterContext.toUpperCase().includes("TEST");
+  return {
+    id: -1,
+    name: embeddedReadback.chapterContext,
+    school: isTestContext ? "TEST Embedded staff oversight context" : "Embedded staff oversight context",
+    region: isTestContext ? "TEST Command Center" : "Command Center",
+    coach: isTestContext ? "TEST Read-only staff context" : "Read-only staff context",
+    members: 0,
+    upcomingEvents: Number(embeddedReadback.events ?? 0),
+    rsvps: Number(embeddedReadback.rsvps ?? 0),
+    attendance: Number(embeddedReadback.attendance ?? 0),
+    points: Number(embeddedReadback.points ?? 0),
+    modules: ["Events", "RSVP", "Attendance", "Points"],
+    risk: "medium",
+  };
 }
 
 // ─── Modules / Feature Flags ────────────────────────────────────────────────────

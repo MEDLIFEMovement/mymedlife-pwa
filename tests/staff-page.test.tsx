@@ -918,11 +918,20 @@ describe("staff page", () => {
     expect(html).toContain(
       "Points posture stays read-only here: 1890 weekly points remain review context only until an approved correction workflow exists.",
     );
+    expect(html).toContain("Chapter Detail");
+    expect(html).toContain("TEST Embedded staff oversight context · TEST Command Center");
+    expect(html).toContain("TEST Read-only staff context");
+    expect(html).toContain(">Upcoming Events</div><div class=\"text-[14px] text-slate-200 font-mono font-semibold\">5</div>");
+    expect(html).toContain(">RSVPs</div><div class=\"text-[14px] text-slate-200 font-mono font-semibold\">80</div>");
+    expect(html).toContain(">Attendance</div><div class=\"text-[14px] text-slate-200 font-mono font-semibold\">68</div>");
+    expect(html).toContain(">Total Points</div><div class=\"text-[14px] text-slate-200 font-mono font-semibold\">22,100</div>");
     expect(adminSource).toContain('events: searchParams.get("chapterEvents"),');
     expect(adminSource).toContain('rsvps: searchParams.get("chapterRsvps"),');
     expect(adminSource).toContain('attendance: searchParams.get("chapterAttendance"),');
     expect(adminSource).toContain('points: searchParams.get("chapterPoints"),');
     expect(adminSource).toContain('pointsWeek: searchParams.get("chapterPointsWeek"),');
+    expect(adminSource).toContain("embeddedReadback ? buildEmbeddedReadbackChapter(embeddedReadback) : null");
+    expect(adminSource).toContain("function buildEmbeddedReadbackChapter");
   });
 
   it("keeps a proof queue return path visible when a chapter drawer opens from Proof / UGC context", async () => {
