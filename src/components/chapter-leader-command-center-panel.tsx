@@ -83,7 +83,11 @@ export function ChapterLeaderCommandCenterPanel({
   const assignActionHref = buildChapterLeaderCommandCenterHref("events", {
     source: chapterHomeWorkflowSource,
     memberId: preservedChapterState.memberId,
+    bestPracticeChapterId: commandCenter.selectedBestPracticeChapterId,
+    leaderboardMetric: commandCenter.selectedLeaderboardMetric,
+    leaderboardRegion: commandCenter.selectedLeaderboardRegion,
     eventCommitteeFilter: commandCenter.selectedEventCommitteeFilter,
+    eventId: commandCenter.selectedEventId,
     pipelineFilter: preservedChapterState.pipelineFilter,
     searchQuery: preservedChapterState.searchQuery,
     quickAction: "assign_action",
@@ -628,6 +632,28 @@ function renderView(
               </p>
             </div>
 
+            {commandCenter.selectedMember ? (
+              <div className="mt-4 rounded-[1.2rem] border border-[#bfdbfe] bg-[#eef5ff] p-4">
+                <div className="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
+                  <div>
+                    <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-[#1d4ed8]">
+                      Leaderboard review in focus
+                    </p>
+                    <p className="mt-2 text-sm leading-6 text-slate-700">
+                      Keep {commandCenter.selectedMember.displayName} tied to this points readback
+                      so leader follow-through stays attached to the same attendance-backed context.
+                    </p>
+                  </div>
+                  <Link
+                    href={commandCenter.selectedMember.profileHref}
+                    className="inline-flex rounded-full border border-[#bfdbfe] bg-white px-4 py-2 text-sm font-semibold text-[#1d4ed8]"
+                  >
+                    Open member review
+                  </Link>
+                </div>
+              </div>
+            ) : null}
+
             <div className="mt-4 grid gap-4">
               {commandCenter.leaderboardChapters.map((chapter) => (
                 <ChapterBenchmarkCard key={chapter.id} chapter={chapter} />
@@ -864,12 +890,23 @@ function renderView(
           <section className="grid gap-4">
             <section className="grid gap-2 px-1">
               <p className="app-eyebrow">Member Profile</p>
-              <Link
-                href={commandCenter.selectedMember.backToContextHref}
-                className="inline-flex w-fit text-sm font-semibold text-slate-600 hover:text-slate-950"
-              >
-                {commandCenter.selectedMember.backToContextLabel}
-              </Link>
+              <div className="flex flex-wrap items-center gap-3">
+                {commandCenter.selectedMember.backToContextHref &&
+                commandCenter.selectedMember.backToContextLabel ? (
+                  <Link
+                    href={commandCenter.selectedMember.backToContextHref}
+                    className="inline-flex w-fit text-sm font-semibold text-slate-700 hover:text-slate-950"
+                  >
+                    {commandCenter.selectedMember.backToContextLabel}
+                  </Link>
+                ) : null}
+                <Link
+                  href={commandCenter.selectedMember.backToPipelineHref}
+                  className="inline-flex w-fit text-sm font-semibold text-slate-600 hover:text-slate-950"
+                >
+                  Back to Member Pipeline
+                </Link>
+              </div>
             </section>
 
             {renderMemberProfileQuickActionState(commandCenter)}
@@ -1440,6 +1477,8 @@ function renderView(
                     bestPracticeChapterId: commandCenter.selectedBestPracticeChapterId,
                     leaderboardMetric: commandCenter.selectedLeaderboardMetric,
                     leaderboardRegion: commandCenter.selectedLeaderboardRegion,
+                    eventCommitteeFilter: commandCenter.selectedEventCommitteeFilter,
+                    eventId: commandCenter.selectedEventId,
                     pipelineFilter: commandCenter.selectedPipelineFilter,
                     searchQuery: commandCenter.pipelineSearchQuery,
                     eventCommitteeFilter: commandCenter.selectedEventCommitteeFilter,
