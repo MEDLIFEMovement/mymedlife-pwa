@@ -68,16 +68,37 @@ const MEMBER_EVENT_DETAIL_HREFS: Record<number, string> = {
   5: "/app/events/chapter-event-mcgill-coffee-chat?source=events",
 };
 
-function getMemberEventDetailHref(eventId: number, source: MemberLoopSource = "events") {
+function getMemberEventDetailHref(
+  eventId: number,
+  source: MemberLoopSource = "events",
+  campaign: string | null = null,
+  profileSource: "points" | null = null,
+) {
   const detailHref = MEMBER_EVENT_DETAIL_HREFS[eventId] ?? "/app/events";
+  const url = new URL(`https://mymedlife.local${detailHref}`);
 
-  return source === "events"
-    ? detailHref
-    : detailHref.replace("source=events", `source=${source}`);
+  if (source !== "events") {
+    url.searchParams.set("source", source);
+  }
+
+  if (source === "profile" && profileSource === "points") {
+    url.searchParams.set("profileSource", "points");
+  }
+
+  if (campaign && campaign !== "All") {
+    url.searchParams.set("campaign", campaign);
+  }
+
+  return `${url.pathname}${url.search}`;
 }
 
-function getMemberEventRsvpHref(eventId: number, source: MemberLoopSource = "events") {
-  const detailHref = getMemberEventDetailHref(eventId, source);
+function getMemberEventRsvpHref(
+  eventId: number,
+  source: MemberLoopSource = "events",
+  campaign: string | null = null,
+  profileSource: "points" | null = null,
+) {
+  const detailHref = getMemberEventDetailHref(eventId, source, campaign, profileSource);
   return detailHref.includes("?") ? `${detailHref}&step=rsvp` : `${detailHref}?step=rsvp`;
 }
 
@@ -87,6 +108,10 @@ function getMemberEventHomeRsvpHref(eventId: number) {
 
 function getMemberEventHomeDetailHref(eventId: number) {
   return getMemberEventDetailHref(eventId, "home");
+}
+
+function isMemberEventDetailHref(href: string) {
+  return href.startsWith("/app/events/chapter-event-");
 }
 
 type MemberLoopSource = "events" | "home" | "profile" | "points";
@@ -1843,9 +1868,11 @@ function AdminDashboard({ navigate }: { navigate: (s: Screen) => void }) {
 function PointsLeaderboard({
   source,
   returnEventId,
+  returnCampaign = null,
 }: {
   source: MemberLoopSource;
   returnEventId?: string | null;
+  returnCampaign?: string | null;
 }) {
   const badges = [
     { name: "TEST Rush Starter", desc: "Complete your first TEST Rush Month action", earned: true },
@@ -1883,12 +1910,16 @@ function PointsLeaderboard({
   const returnLoopSource: MemberLoopSource = source === "events" ? "points" : source;
   const returnEventDetailHref =
     returnEvent && returnEvent.routeId
-      ? getMemberEventDetailHref(returnEvent.id, returnLoopSource)
+      ? getMemberEventDetailHref(returnEvent.id, returnLoopSource, returnCampaign)
       : continuity[1];
   const returnEventRsvpHref =
-    returnEvent ? getMemberEventStepHref(returnEvent.id, returnLoopSource, "rsvp") : null;
+    returnEvent
+      ? getMemberEventStepHref(returnEvent.id, returnLoopSource, "rsvp", returnCampaign)
+      : null;
   const returnEventCheckInHref =
-    returnEvent ? getMemberEventStepHref(returnEvent.id, returnLoopSource, "checkin") : null;
+    returnEvent
+      ? getMemberEventStepHref(returnEvent.id, returnLoopSource, "checkin", returnCampaign)
+      : null;
 
   return (
     <div className="pb-24">
@@ -2103,14 +2134,20 @@ function resolveEventsCampaign(value?: string | null): CampaignTag | "All" {
 function buildEventsHref({
   source,
   campaign,
+  profileSource,
 }: {
   source: MemberLoopSource;
   campaign?: CampaignTag | "All";
+  profileSource?: "points" | null;
 }) {
   const params = new URLSearchParams();
 
   if (source !== "events") {
     params.set("source", source);
+  }
+
+  if (source === "profile" && profileSource === "points") {
+    params.set("profileSource", "points");
   }
 
   if (campaign && campaign !== "All") {
@@ -2248,18 +2285,22 @@ function getMemberEventStepHref(
   eventId: number,
   source: MemberLoopSource,
   step: "rsvp" | "checkin",
+  campaign: string | null = null,
+  profileSource: "points" | null = null,
 ) {
-  const detailHref = getMemberEventDetailHref(eventId, source);
+  const detailHref = getMemberEventDetailHref(eventId, source, campaign, profileSource);
   return detailHref.includes("?") ? `${detailHref}&step=${step}` : `${detailHref}?step=${step}`;
 }
 function EventsScreen({
   navigate,
   source,
   initialCampaign,
+  profileSource = null,
 }: {
   navigate: (s: Screen) => void;
   source: MemberLoopSource;
   initialCampaign?: string | null;
+  profileSource?: "points" | null;
 }) {
   const activeCampaign = resolveEventsCampaign(initialCampaign);
   const rsvpdIds = [2];
@@ -3623,7 +3664,9 @@ export function FigmaMemberMobileHome({
   initialEventsCampaign = null,
   pointsSource = "points",
   pointsReturnEventId = null,
+  pointsReturnCampaign = null,
   eventsSource = "events",
+  eventsProfileSource = null,
 }: {
   initialScreen?: MemberMobileLaunchScreen;
   sltPrepEntry?: MemberSltPrepEntry | null;
@@ -3632,7 +3675,9 @@ export function FigmaMemberMobileHome({
   initialEventsCampaign?: string | null;
   pointsSource?: MemberLoopSource;
   pointsReturnEventId?: string | null;
+  pointsReturnCampaign?: string | null;
   eventsSource?: MemberLoopSource;
+  eventsProfileSource?: "points" | null;
 }) {
   const [screen, setScreen] = useState<Screen>(initialScreen);
   const [role, setRole] = useState<Role>("student");
@@ -3653,13 +3698,16 @@ export function FigmaMemberMobileHome({
     screen === "home"
       ? "/profile?source=home"
       : screen === "points"
-        ? getPointsBottomNavProfileHref(pointsSource, pointsReturnEventId)
+        ? getPointsBottomNavProfileHref(pointsSource, pointsReturnEventId, pointsReturnCampaign)
         : "/profile";
   const bottomNavHrefOverrides = getMemberBottomNavHrefOverrides({
     screen,
+    eventsCampaign: initialEventsCampaign,
     pointsSource,
     pointsReturnEventId,
+    pointsReturnCampaign,
     eventsSource,
+    eventsProfileSource,
   });
   const content = () => {
     switch (screen) {
@@ -3668,13 +3716,21 @@ export function FigmaMemberMobileHome({
       case "action": return <ActionDetail navigate={navigate} />;
       case "evidence": return <EvidenceSubmission navigate={navigate} />;
       case "confirm": return <Confirmation navigate={navigate} />;
-      case "points": return <PointsLeaderboard source={pointsSource} returnEventId={pointsReturnEventId} />;
+      case "points":
+        return (
+          <PointsLeaderboard
+            source={pointsSource}
+            returnEventId={pointsReturnEventId}
+            returnCampaign={pointsReturnCampaign}
+          />
+        );
       case "events":
         return (
           <EventsScreen
             navigate={navigate}
             source={eventsSource}
             initialCampaign={initialEventsCampaign}
+            profileSource={eventsProfileSource}
           />
         );
       case "event-detail": return <EventDetailScreen navigate={navigate} />;
@@ -3734,14 +3790,20 @@ export function FigmaMemberMobileHome({
 
 function getMemberBottomNavHrefOverrides({
   screen,
+  eventsCampaign,
   pointsSource,
   pointsReturnEventId,
+  pointsReturnCampaign,
   eventsSource,
+  eventsProfileSource,
 }: {
   screen: Screen;
+  eventsCampaign: string | null;
   pointsSource: MemberLoopSource;
   pointsReturnEventId: string | null;
+  pointsReturnCampaign: string | null;
   eventsSource: MemberLoopSource;
+  eventsProfileSource: "points" | null;
 }): Partial<Record<MemberBottomNavTab, string>> | undefined {
   const overrides: Partial<Record<MemberBottomNavTab, string>> = {};
 
@@ -3839,6 +3901,23 @@ function screenlessProfileHref(
   }
 
   return `${url.pathname}${url.search}`;
+}
+
+function buildEventsProfileReturnHref(
+  profileSource: "points" | null,
+  campaign: string | null,
+) {
+  if (profileSource === "points") {
+    return screenlessProfileHref("points", campaign);
+  }
+
+  if (campaign && campaign !== "All") {
+    const url = new URL("https://mymedlife.local/profile");
+    url.searchParams.set("campaign", campaign);
+    return `${url.pathname}${url.search}`;
+  }
+
+  return null;
 }
 
 function getEventsBottomNavPointsHref(

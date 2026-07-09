@@ -21,7 +21,9 @@ export async function renderMemberMobileShellPage({
   initialEventsCampaign,
   pointsSource,
   pointsReturnEventId,
+  pointsReturnCampaign,
   eventsSource,
+  eventsProfileSource,
 }: {
   initialScreen?: MemberMobileLaunchScreen;
   redirectPath: string;
@@ -30,7 +32,9 @@ export async function renderMemberMobileShellPage({
   initialEventsCampaign?: string | null;
   pointsSource?: "events" | "home" | "profile" | "points";
   pointsReturnEventId?: string | null;
+  pointsReturnCampaign?: string | null;
   eventsSource?: "events" | "home" | "profile" | "points";
+  eventsProfileSource?: "points" | null;
 }) {
   const actor = await getLocalActorContext();
   const landingRoute = getLandingRouteForActor(actor);
@@ -69,7 +73,9 @@ export async function renderMemberMobileShellPage({
         initialEventsCampaign={initialEventsCampaign}
         pointsSource={pointsSource}
         pointsReturnEventId={pointsReturnEventId}
+        pointsReturnCampaign={pointsReturnCampaign}
         eventsSource={eventsSource}
+        eventsProfileSource={eventsProfileSource}
       />
     </>
   );
