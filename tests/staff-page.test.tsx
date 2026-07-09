@@ -723,7 +723,7 @@ describe("staff page", () => {
     expect(html).toContain("+620 this week");
     expect(html).toContain("Next step: open the Admin preview for DS directory readback, event readiness, RSVP totals, attendance context, points posture, and blocked-control follow-through before requesting any write path.");
     expect(html).toContain("Return to this chapter in the same Command Center loop after the Admin readback closes.");
-    expect(html).toContain('href="/staff?view=admin&amp;adminView=chapters&amp;returnView=chapters&amp;chapter=chapter-test&amp;chapterContext=Boston+College&amp;chapterSchool=Boston+College&amp;chapterRegionName=New+England&amp;chapterCoachName=Maria+Santos&amp;chapterMembers=32&amp;chapterEvents=2&amp;chapterRsvps=30&amp;chapterAttendance=24&amp;chapterPoints=7800&amp;chapterPointsWeek=620"');
+    expect(html).toContain('href="/staff?view=admin&amp;adminView=chapters&amp;returnView=chapters&amp;chapter=chapter-test&amp;chapterContext=Boston+College&amp;chapterSchool=Boston+College&amp;chapterRegionName=New+England&amp;chapterCoachName=Maria+Santos&amp;chapterMembers=32&amp;chapterRisk=healthy&amp;chapterEvents=2&amp;chapterRsvps=30&amp;chapterAttendance=24&amp;chapterPoints=7800&amp;chapterPointsWeek=620"');
     expect(html).toContain("Open Admin preview");
     expect(html).toContain("Return to Chapters");
     expect(html).toContain("Return to Chapters with Boston College still selected in the same chapters review loop after this preview readback");
@@ -1008,13 +1008,14 @@ describe("staff page", () => {
     );
     const source = readFileSync("src/components/figma-staff-command-center.tsx", "utf8");
 
-    expect(html).toContain('href="/staff?view=admin&amp;chapter=ch13&amp;chapterRegion=West&amp;chapterSort=points&amp;adminView=chapters&amp;returnView=chapters&amp;chapterContext=TEST+Stanford+University&amp;chapterSchool=TEST+Stanford+University&amp;chapterRegionName=West&amp;chapterCoachName=TEST+James+Okafor&amp;chapterMembers=52&amp;chapterEvents=5&amp;chapterRsvps=80&amp;chapterAttendance=68&amp;chapterPoints=22100&amp;chapterPointsWeek=1890"');
+    expect(html).toContain('href="/staff?view=admin&amp;chapter=ch13&amp;chapterRegion=West&amp;chapterSort=points&amp;adminView=chapters&amp;returnView=chapters&amp;chapterContext=TEST+Stanford+University&amp;chapterSchool=TEST+Stanford+University&amp;chapterRegionName=West&amp;chapterCoachName=TEST+James+Okafor&amp;chapterMembers=52&amp;chapterRisk=healthy&amp;chapterEvents=5&amp;chapterRsvps=80&amp;chapterAttendance=68&amp;chapterPoints=22100&amp;chapterPointsWeek=1890"');
     expect(source).toContain("buildStaffChapterAdminHref(");
     expect(source).toContain('params.set("chapterContext", chapter.name);');
     expect(source).toContain('params.set("chapterSchool", chapter.school);');
     expect(source).toContain('params.set("chapterRegionName", chapter.medlifeRegion);');
     expect(source).toContain('params.set("chapterCoachName", chapter.coach);');
     expect(source).toContain('params.set("chapterMembers", String(chapter.activeMembers));');
+    expect(source).toContain('params.set("chapterRisk", chapter.risk);');
     expect(source).toContain('params.set("adminView", "chapters");');
     expect(source).toContain('params.set("chapterEvents", String(chapter.eventsThisMonth));');
     expect(source).toContain('params.set("chapterRsvps", String(chapter.rsvps));');
@@ -1093,7 +1094,7 @@ describe("staff page", () => {
     );
     const source = readFileSync("src/components/figma-staff-command-center.tsx", "utf8");
 
-    expect(html).toContain('href="/staff?view=admin&amp;chapter=ch13&amp;proofStatus=pending&amp;proofPlatform=instagram&amp;adminView=chapters&amp;returnView=proof_ugc&amp;chapterContext=TEST+Stanford+University&amp;chapterSchool=TEST+Stanford+University&amp;chapterRegionName=West&amp;chapterCoachName=TEST+James+Okafor&amp;chapterMembers=52&amp;chapterEvents=5&amp;chapterRsvps=80&amp;chapterAttendance=68&amp;chapterPoints=22100&amp;chapterPointsWeek=1890"');
+    expect(html).toContain('href="/staff?view=admin&amp;chapter=ch13&amp;proofStatus=pending&amp;proofPlatform=instagram&amp;adminView=chapters&amp;returnView=proof_ugc&amp;chapterContext=TEST+Stanford+University&amp;chapterSchool=TEST+Stanford+University&amp;chapterRegionName=West&amp;chapterCoachName=TEST+James+Okafor&amp;chapterMembers=52&amp;chapterRisk=healthy&amp;chapterEvents=5&amp;chapterRsvps=80&amp;chapterAttendance=68&amp;chapterPoints=22100&amp;chapterPointsWeek=1890"');
     expect(source).toContain('params.set("returnView", proofQueueContext ? "proof_ugc" : "chapters");');
     expect(source).toContain("const proofQueueContext = getEmbeddedProofQueueContext(");
     expect(source).toContain("if (!proofQueueContext) {");
@@ -1111,6 +1112,7 @@ describe("staff page", () => {
       chapterRegionName: "West",
       chapterCoachName: "TEST James Okafor",
       chapterMembers: "52",
+      chapterRisk: "healthy",
       chapterEvents: "5",
       chapterRsvps: "80",
       chapterAttendance: "68",
@@ -1144,6 +1146,7 @@ describe("staff page", () => {
     expect(html).toContain("Chapter Detail");
     expect(html).toContain("TEST Stanford University · West");
     expect(html).toContain("TEST James Okafor");
+    expect(html).toContain(">HEALTHY</span>");
     expect(html).toContain(">Active Members</div><div class=\"text-[14px] text-slate-200 font-mono font-semibold\">52</div>");
     expect(html).toContain(">Events This Month</div><div class=\"text-[14px] text-slate-200 font-mono font-semibold\">5</div>");
     expect(html).toContain(">RSVPs</div><div class=\"text-[14px] text-slate-200 font-mono font-semibold\">80</div>");
@@ -1172,12 +1175,14 @@ describe("staff page", () => {
     expect(adminSource).toContain('region: searchParams.get("chapterRegionName"),');
     expect(adminSource).toContain('coach: searchParams.get("chapterCoachName"),');
     expect(adminSource).toContain('members: searchParams.get("chapterMembers"),');
+    expect(adminSource).toContain('risk: searchParams.get("chapterRisk"),');
     expect(adminSource).toContain('rsvps: searchParams.get("chapterRsvps"),');
     expect(adminSource).toContain('attendance: searchParams.get("chapterAttendance"),');
     expect(adminSource).toContain('points: searchParams.get("chapterPoints"),');
     expect(adminSource).toContain('pointsWeek: searchParams.get("chapterPointsWeek"),');
     expect(adminSource).toContain("embeddedReadback ? buildEmbeddedReadbackChapter(embeddedReadback) : null");
     expect(adminSource).toContain("function buildEmbeddedReadbackChapter");
+    expect(adminSource).toContain('risk: embeddedReadback.risk ?? "medium",');
     expect(adminSource).toContain("embeddedBackHref={embeddedBackHref}");
   });
 
