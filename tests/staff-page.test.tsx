@@ -1146,10 +1146,12 @@ describe("staff page", () => {
     expect(html).toContain(">Region</div><div class=\"mt-1 text-[13px] font-mono font-semibold text-slate-100\">West</div>");
     expect(html).toContain(">Coach</div><div class=\"mt-1 text-[13px] font-mono font-semibold text-slate-100\">TEST James Okafor</div>");
     expect(html).toContain(">Active Members</div><div class=\"mt-1 text-[13px] font-mono font-semibold text-slate-100\">52</div>");
+    expect(html).toContain("Risk posture");
+    expect(html).toContain("Carry the same chapter risk context through this Admin readback before requesting any correction path.");
+    expect(html).toContain(">HEALTHY</span>");
     expect(html).toContain("Chapter Detail");
     expect(html).toContain("TEST Stanford University · West");
     expect(html).toContain("TEST James Okafor");
-    expect(html).toContain(">HEALTHY</span>");
     expect(html).toContain(">Active Members</div><div class=\"text-[14px] text-slate-200 font-mono font-semibold\">52</div>");
     expect(html).toContain(">Events This Month</div><div class=\"text-[14px] text-slate-200 font-mono font-semibold\">5</div>");
     expect(html).toContain(">RSVPs</div><div class=\"text-[14px] text-slate-200 font-mono font-semibold\">80</div>");

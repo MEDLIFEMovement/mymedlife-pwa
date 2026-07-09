@@ -834,6 +834,18 @@ function ChaptersPage({
                 </div>
               ))}
             </div>
+            <div className="flex items-center justify-between rounded border border-sky-500/10 bg-[#0d1117]/50 px-3 py-2">
+              <div>
+                <div className="text-[10px] text-sky-400/70 font-mono uppercase tracking-wider">Risk posture</div>
+                <div className="mt-1 text-[11px] leading-relaxed text-slate-400">
+                  Carry the same chapter risk context through this Admin readback before requesting any correction path.
+                </div>
+              </div>
+              <Badge
+                status={embeddedReadback.risk ?? "unknown"}
+                label={(embeddedReadback.risk ?? "unknown").toUpperCase()}
+              />
+            </div>
             <div className="grid grid-cols-4 gap-2">
               {[
                 { label: "Events / Month", value: embeddedReadback.events ?? "—" },
