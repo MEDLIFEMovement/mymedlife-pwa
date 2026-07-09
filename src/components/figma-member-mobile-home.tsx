@@ -2989,6 +2989,19 @@ function getStoryById(value?: string | null) {
   return stories.find((story) => story.id === parsed) ?? null;
 }
 
+function getStoryByIdForFilter(
+  value: string | null | undefined,
+  filter: StoryFilter,
+) {
+  const story = getStoryById(value);
+
+  if (!story || !story.filters.includes(filter)) {
+    return null;
+  }
+
+  return story;
+}
+
 function buildStoriesHref({
   filter,
   storyId,
@@ -3369,7 +3382,7 @@ function StoryModal({ story, liked, onToggleLike, closeHref }: { story: Story; l
         {story.isVideo ? (
           <div className="flex-shrink-0 relative">
             <VideoPlayer story={story} />
-            <Link href={closeHref} className="absolute top-4 left-4 w-10 h-10 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center text-white z-10">
+            <Link href={closeHref} aria-label="Back to stories feed" className="absolute top-4 left-4 w-10 h-10 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center text-white z-10">
               <ArrowLeft size={18} />
             </Link>
           </div>
@@ -3377,10 +3390,10 @@ function StoryModal({ story, liked, onToggleLike, closeHref }: { story: Story; l
           <div className="relative flex-shrink-0 bg-muted aspect-[16/9]">
             <img src={story.image} alt={story.title} className="w-full h-full object-cover" />
             <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
-            <Link href={closeHref} className="absolute top-4 left-4 w-10 h-10 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center text-white hover:bg-black/60 transition-colors">
+            <Link href={closeHref} aria-label="Back to stories feed" className="absolute top-4 left-4 w-10 h-10 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center text-white hover:bg-black/60 transition-colors">
               <ArrowLeft size={18} />
             </Link>
-            <Link href={closeHref} className="absolute top-4 right-4 w-10 h-10 rounded-full bg-black/40 backdrop-blur-sm hidden sm:flex items-center justify-center text-white hover:bg-black/60 transition-colors">
+            <Link href={closeHref} aria-label="Close story reader" className="absolute top-4 right-4 w-10 h-10 rounded-full bg-black/40 backdrop-blur-sm hidden sm:flex items-center justify-center text-white hover:bg-black/60 transition-colors">
               <X size={16} />
             </Link>
             <div className="absolute bottom-3 left-4 flex items-center gap-2 flex-wrap">
@@ -3460,11 +3473,7 @@ function StoriesScreen({
   initialStoryId?: string | null;
 }) {
   const activeFilter = resolveStoryFilter(initialFilter);
-  const selectedStory = getStoryById(initialStoryId);
-
-  const selectFilter = (filter: StoryFilter) => {
-    window.location.assign(buildStoriesHref({ filter }));
-  };
+  const selectedStory = getStoryByIdForFilter(initialStoryId, activeFilter);
 
   const toggleLike = (id: number) => {
     void id;
@@ -3498,7 +3507,7 @@ function StoriesScreen({
             {STORY_CATEGORIES.map((category) => {
               const isActive = activeFilter === category.filter;
               return (
-                <button type="button" key={category.filter} aria-label={`Apply story filter: ${category.filter}`} title={`Apply story filter: ${category.filter}`} aria-pressed={isActive} onClick={() => selectFilter(category.filter)} className={cn(
+                <Link href={buildStoriesHref({ filter: category.filter })} key={category.filter} aria-label={`Apply story filter: ${category.filter}`} title={`Apply story filter: ${category.filter}`} aria-current={isActive ? "true" : undefined} className={cn(
                   "flex-shrink-0 whitespace-nowrap rounded-full border px-2.5 py-1 text-xs font-semibold transition-all",
                   isActive ? "border-black bg-black text-white" : "border-gray-300 bg-white text-gray-500"
                 )}>
@@ -3510,7 +3519,7 @@ function StoriesScreen({
                     {category.emoji}
                   </span>
                   {category.short}
-                </button>
+                </Link>
               );
             })}
           </div>
