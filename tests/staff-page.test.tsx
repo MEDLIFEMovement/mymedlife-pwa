@@ -457,7 +457,7 @@ describe("staff page", () => {
     expect(html).toContain("Chapter review context: TEST Boston College");
     expect(html).toContain(">Chapters</h1>");
     expect(html).toContain(
-      "Chapter oversight for TEST Boston College stays read-only here: event readiness, RSVP totals, attendance readback, and points posture should be reviewed in Admin before any blocked-control follow-through or correction request.",
+      "Chapter oversight for TEST Boston College stays read-only here: event readiness, RSVP totals, attendance readback, and points posture should be reviewed in Admin before any correction request.",
     );
     expect(html).toContain("When DS Admin access is available, return to TEST Boston College in Chapters in the same Command Center review loop after the Admin readback closes.");
     expect(html).toContain("Return to TEST Boston College in Chapters");
@@ -506,7 +506,7 @@ describe("staff page", () => {
     expect(html).toContain("Chapter review context: TEST Stanford University");
     expect(html).toContain("TEST Stanford University");
     expect(html).toContain(
-      "Chapter oversight for TEST Stanford University stays read-only here: event readiness, RSVP totals, attendance readback, and points posture should be reviewed in Admin before any blocked-control follow-through or correction request.",
+      "Chapter oversight for TEST Stanford University stays read-only here: event readiness, RSVP totals, attendance readback, and points posture should be reviewed in Admin before any correction request.",
     );
     expect(html).toContain("West");
     expect(html).toContain("TEST James Okafor");
@@ -561,7 +561,7 @@ describe("staff page", () => {
     expect(html).toContain("Restricted Preview Access");
     expect(html).toContain("Chapter review context: TEST Stanford University");
     expect(html).toContain(
-      "Open Admin preview to read back event readiness, RSVP totals, attendance context, and points posture for TEST Stanford University before requesting any blocked-control follow-through or correction path.",
+      "Open Admin preview to read back event readiness, RSVP totals, attendance context, and points posture for TEST Stanford University before requesting any correction path.",
     );
     expect(html).toContain(
       "After the Admin readback, return to TEST Stanford University in Chapters in the same Command Center review loop.",
@@ -617,7 +617,7 @@ describe("staff page", () => {
     );
     expect(html).toContain("Embedded Chapter Review");
     expect(html).toContain(
-      "Use this Admin readback to confirm event readiness, RSVP totals, attendance context, and points posture for TEST Stanford University before requesting any blocked-control follow-through or correction path.",
+      "Use this Admin readback to confirm event readiness, RSVP totals, attendance context, and points posture for TEST Stanford University before requesting any correction path.",
     );
     expect(html).toContain(">School</div><div class=\"mt-1 text-[13px] font-mono font-semibold text-slate-100\">TEST Stanford University</div>");
     expect(html).toContain(">Region</div><div class=\"mt-1 text-[13px] font-mono font-semibold text-slate-100\">West</div>");
@@ -1732,7 +1732,7 @@ describe("staff page", () => {
 
     expect(gateHtml).toContain("Restricted Preview Access");
     expect(gateHtml).toContain(
-      "Open Admin preview to read back event readiness, RSVP totals, attendance context, and points posture for TEST Boston College before requesting any blocked-control follow-through or correction path.",
+      "Open Admin preview to read back event readiness, RSVP totals, attendance context, and points posture for TEST Boston College before requesting any correction path.",
     );
     expect(gateHtml).toContain(
       "After the Admin readback, return to TEST Boston College in Chapters in the same Command Center review loop.",
