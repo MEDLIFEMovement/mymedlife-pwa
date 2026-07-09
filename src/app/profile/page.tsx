@@ -18,6 +18,7 @@ export const dynamic = "force-dynamic";
 type ProfilePageProps = {
   searchParams?: Promise<{
     source?: string;
+    event?: string;
   }>;
 };
 
@@ -34,10 +35,11 @@ export default async function ProfilePage(props: ProfilePageProps) {
     getLocalActorContext(),
     getReadOnlyAppData(),
   ]);
-  const resolvedSearchParams: { source?: string } = await (
+  const resolvedSearchParams: { source?: string; event?: string } = await (
     props.searchParams ?? Promise.resolve({})
   );
   const profileSource = getProfileSource(resolvedSearchParams.source);
+  const profileEventId = resolvedSearchParams.event ?? null;
   const workspace = getProfileWorkspace(actor, data);
   const isMemberProfile = canAccessMemberWorkspace(actor);
   const studentHome = isMemberProfile
@@ -64,6 +66,7 @@ export default async function ProfilePage(props: ProfilePageProps) {
               chapterName={studentHome.chapterName}
               displayName={actor.user.displayName}
               entrySource={profileSource}
+              entryEventId={profileEventId}
               isPreviewMode={isPreviewWorkspaceAccess(actor, "student_app")}
               workspace={workspace}
               studentHome={studentHome}
@@ -74,14 +77,28 @@ export default async function ProfilePage(props: ProfilePageProps) {
         <MemberBottomNav
           activeTab="profile"
           hrefOverrides={{
-            events: "/app/events?source=profile",
-            points:
-              profileSource === "points"
-                ? "/app/points?source=points"
-                : "/app/points?source=profile",
+            events: profileEventId
+              ? `/app/events/${profileEventId}?source=profile`
+              : "/app/events?source=profile",
+            points: buildProfilePointsHref(profileSource, profileEventId),
           }}
         />
       </div>
     </main>
   );
+}
+
+function buildProfilePointsHref(
+  source: "home" | "points" | null,
+  eventId: string | null,
+) {
+  const url = new URL(
+    `https://mymedlife.local${source === "points" ? "/app/points?source=points" : "/app/points?source=profile"}`,
+  );
+
+  if (eventId) {
+    url.searchParams.set("event", eventId);
+  }
+
+  return `${url.pathname}${url.search}`;
 }

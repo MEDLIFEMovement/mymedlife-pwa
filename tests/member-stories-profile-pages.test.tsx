@@ -230,6 +230,34 @@ describe("member stories and profile pages", () => {
     expect(html).toContain('href="/app/events?source=profile"');
   });
 
+  it("preserves exact TEST event continuity when points opens profile from an event detail handoff", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const dataModule = await import("@/services/read-only-app-data");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("member.a@mymedlife.test"),
+    );
+    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
+      getMockReadOnlyAppData("Testing exact event continuity through profile."),
+    );
+
+    const { default: ProfilePage } = await import("@/app/profile/page");
+    const html = renderToStaticMarkup(
+      await ProfilePage({
+        searchParams: Promise.resolve({
+          source: "points",
+          event: "chapter-event-ucla-kickoff",
+        }),
+      }),
+    );
+
+    expect(html).toContain("exact event context");
+    expect(html).toContain("Back to Points");
+    expect(html).toContain("Back to TEST event detail");
+    expect(html).toContain('href="/app/points?source=points&amp;event=chapter-event-ucla-kickoff"');
+    expect(html).toContain('href="/app/events/chapter-event-ucla-kickoff?source=profile"');
+  });
+
   it("redirects signed-out actors to login before rendering the member profile shell", async () => {
     const actorModule = await import("@/services/local-actor-context");
     const dataModule = await import("@/services/read-only-app-data");
