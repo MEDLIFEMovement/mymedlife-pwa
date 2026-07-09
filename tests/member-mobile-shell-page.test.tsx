@@ -104,6 +104,39 @@ describe("member mobile shell routes", () => {
     expect(getBottomNavHtml(html)).toContain('href="/profile?source=stories&amp;storyFilter=Events"');
   });
 
+  it("keeps the events route tied to the filtered stories feed when opened from stories", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("member.a@mymedlife.test"),
+    );
+
+    const { default: EventsPage } = await import("@/app/app/events/page");
+    const html = renderToStaticMarkup(
+      await EventsPage({
+        searchParams: Promise.resolve({
+          source: "stories",
+          storyFilter: "Events",
+          campaign: "Spring Showcase",
+        }),
+      }),
+    );
+
+    expect(html).toContain("Opened from the TEST stories feed");
+    expect(html).toContain("Keep stories, events, and points in one member loop.");
+    expect(html).toContain('href="/app/stories?filter=Events"');
+    expect(html).toContain('href="/app/events?source=stories&amp;storyFilter=Events"');
+    expect(html).toContain(
+      'href="/app/events?source=stories&amp;storyFilter=Events&amp;campaign=Spring+Showcase"',
+    );
+    expect(getBottomNavHtml(html)).toContain(
+      'href="/app/points?source=stories&amp;campaign=Spring+Showcase&amp;storyFilter=Events"',
+    );
+    expect(getBottomNavHtml(html)).toContain(
+      'href="/profile?source=stories&amp;storyFilter=Events"',
+    );
+  });
+
   it("renders the Events route through the shared Figma member shell", async () => {
     const actorModule = await import("@/services/local-actor-context");
 
@@ -437,6 +470,35 @@ describe("member mobile shell routes", () => {
       'href="/profile?source=points&amp;campaign=Spring+Showcase"',
     );
     expect(getBottomNavHtml(html)).not.toContain('href="/profile?source=points"></a>');
+  });
+
+  it("keeps the points route tied to the filtered stories feed when opened from stories", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("member.a@mymedlife.test"),
+    );
+
+    const { default: PointsPage } = await import("@/app/app/points/page");
+    const html = renderToStaticMarkup(
+      await PointsPage({
+        searchParams: Promise.resolve({
+          source: "stories",
+          storyFilter: "Events",
+          campaign: "Spring Showcase",
+        }),
+      }),
+    );
+
+    expect(html).toContain("Opened from the TEST stories feed");
+    expect(html).toContain("Back to Stories");
+    expect(html).toContain('href="/app/stories?filter=Events"');
+    expect(getBottomNavHtml(html)).toContain(
+      'href="/app/events?source=stories&amp;campaign=Spring+Showcase&amp;storyFilter=Events"',
+    );
+    expect(getBottomNavHtml(html)).toContain(
+      'href="/profile?source=stories&amp;storyFilter=Events"',
+    );
   });
   it("keeps the member points route connected to the profile walkthrough when opened from profile", async () => {
     const actorModule = await import("@/services/local-actor-context");

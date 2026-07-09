@@ -114,7 +114,7 @@ function isMemberEventDetailHref(href: string) {
   return href.startsWith("/app/events/chapter-event-");
 }
 
-type MemberLoopSource = "events" | "home" | "profile" | "points";
+type MemberLoopSource = "events" | "home" | "profile" | "points" | "stories";
 
 // ─── Primitives ────────────────────────────────────────────────────────────
 
@@ -1869,10 +1869,12 @@ function PointsLeaderboard({
   source,
   returnEventId,
   returnCampaign = null,
+  storyFilter = null,
 }: {
   source: MemberLoopSource;
   returnEventId?: string | null;
   returnCampaign?: string | null;
+  storyFilter?: string | null;
 }) {
   const badges = [
     { name: "TEST Rush Starter", desc: "Complete your first TEST Rush Month action", earned: true },
@@ -1885,6 +1887,7 @@ function PointsLeaderboard({
     home: { title: "Opened from the TEST home walkthrough", detail: "This route-backed readback keeps the home-to-events-to-points student flow visible. Recognition stays preview-only and does not claim a live award, reward, or provider update." },
     profile: { title: "Opened from your TEST profile", detail: "This profile-to-points handoff stays route-backed and read-only. Recognition stays visible here while profile can hand you back into the next chapter event." },
     points: { title: "Preview-only recognition readback", detail: "This route shows TEST leaderboard and approved-action readback only. No live points awards, reward claims, or share sends run from this screen." },
+    stories: { title: "Opened from the TEST stories feed", detail: "This route-backed readback keeps the stories-to-events-to-points loop visible. Recognition stays preview-only, and the mobile member shell keeps the same story context instead of dropping you into a generic fallback." },
   };
   const continuityMap: Record<MemberLoopSource, readonly [string, string, string]> = {
     events: [
@@ -1904,12 +1907,18 @@ function PointsLeaderboard({
         : screenlessProfileHref("points", returnCampaign),
       returnEventId ? "Back to the TEST event detail" : "Back to your TEST profile",
     ],
+    stories: [
+      "TEST points stay preview-only here, and this route keeps the stories-to-events handoff visible instead of dropping the member feed context on the floor.",
+      storyFilter ? `/app/stories?filter=${encodeURIComponent(storyFilter)}` : "/app/stories",
+      "Back to Stories",
+    ],
     points: ["TEST points in this member shell are a read-only preview of the event, RSVP, attendance, and action loop. They do not write to a live leaderboard, rewards system, or provider integration.", "/app/events?source=points", "See how to earn more points"],
   };
   const preview = previewReadback[source];
   const continuity = continuityMap[source];
   const returnEvent = getMemberLoopEventByRouteId(returnEventId ?? null);
-  const returnLoopSource: MemberLoopSource = source === "events" ? "points" : source;
+  const returnLoopSource: MemberLoopSource =
+    source === "events" ? "points" : source === "stories" ? "events" : source;
   const returnEventDetailHref =
     returnEvent && returnEvent.routeId
       ? getMemberEventDetailHref(returnEvent.id, returnLoopSource, returnCampaign)
@@ -2137,10 +2146,12 @@ function buildEventsHref({
   source,
   campaign,
   profileSource,
+  storyFilter,
 }: {
   source: MemberLoopSource;
   campaign?: CampaignTag | "All";
   profileSource?: "points" | null;
+  storyFilter?: string | null;
 }) {
   const params = new URLSearchParams();
 
@@ -2150,6 +2161,10 @@ function buildEventsHref({
 
   if (source === "profile" && profileSource === "points") {
     params.set("profileSource", "points");
+  }
+
+  if (source === "stories" && storyFilter) {
+    params.set("storyFilter", storyFilter);
   }
 
   if (campaign && campaign !== "All") {
@@ -2298,11 +2313,13 @@ function EventsScreen({
   source,
   initialCampaign,
   profileSource = null,
+  storyFilter = null,
 }: {
   navigate: (s: Screen) => void;
   source: MemberLoopSource;
   initialCampaign?: string | null;
   profileSource?: "points" | null;
+  storyFilter?: string | null;
 }) {
   const activeCampaign = resolveEventsCampaign(initialCampaign);
   const rsvpdIds = [2];
@@ -2310,10 +2327,16 @@ function EventsScreen({
   const featuredEvent = visibleEvents.find((e) => e.featured);
   const listEvents = visibleEvents.filter((e) => !e.featured);
   const activeCampaignData = activeCampaign !== "All" ? CAMPAIGNS.find((c) => c.name === activeCampaign) : null;
-  const pointsReturnHref = getEventsBottomNavPointsHref(source, activeCampaign, profileSource);
+  const detailLoopSource: MemberLoopSource = source === "stories" ? "events" : source;
+  const pointsReturnHref = getEventsBottomNavPointsHref(
+    source,
+    activeCampaign,
+    profileSource,
+    storyFilter,
+  );
   const profileReturnHref =
     buildEventsProfileReturnHref(profileSource, activeCampaign) ??
-    getEventsBottomNavProfileHref(source, activeCampaign, profileSource) ??
+    getEventsBottomNavProfileHref(source, activeCampaign, profileSource, storyFilter) ??
     "/profile";
   const eventsReturnCard =
     source === "home"
@@ -2322,6 +2345,8 @@ function EventsScreen({
       ? { eyebrow: "Opened from Points & Recognition via your TEST profile", title: "Keep profile, points, and events in one member loop.", body: "Your TEST profile carried exact points context into this event list. Open the next chapter moment, preview RSVP or attendance, then step back through the same profile-to-points loop without leaving the student shell.", href: profileReturnHref, cta: "Back to Profile" }
       : source === "profile"
       ? { eyebrow: "Opened from your TEST profile", title: "Keep profile, events, and points in one member loop.", body: "Your TEST profile sent you here so the next chapter moment stays route-backed. Open an event, preview RSVP or attendance, then step back into points when you are ready.", href: profileReturnHref, cta: "Back to Profile" }
+      : source === "stories"
+        ? { eyebrow: "Opened from the TEST stories feed", title: "Keep stories, events, and points in one member loop.", body: "Your TEST stories feed sent you into this event list so you can stay inside the same mobile shell, preview the next chapter moment, and step back without losing the feed context.", href: storyFilter ? `/app/stories?filter=${encodeURIComponent(storyFilter)}` : "/app/stories", cta: "Back to Stories" }
       : source === "points"
         ? { eyebrow: "Opened from Points & Recognition", title: "Move from TEST points readback into the next event.", body: "The member loop should not stop at the leaderboard. Use this route-backed return path to find the next event, preview RSVP or check-in, and come back to points when the chapter moment is done.", href: pointsReturnHref ?? "/app/points?source=events", cta: "Back to Points" }
         : null;
@@ -2336,7 +2361,7 @@ function EventsScreen({
       <div className="bg-primary px-4 pb-4">
         <div className="flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
           <Link
-            href={buildEventsHref({ source, campaign: "All", profileSource })}
+            href={buildEventsHref({ source, campaign: "All", profileSource, storyFilter })}
             aria-label="Show all TEST event campaigns"
             className={cn(
               "flex-shrink-0 px-3.5 py-1.5 rounded-full text-xs font-bold border transition-all",
@@ -2350,7 +2375,7 @@ function EventsScreen({
           {CAMPAIGNS.map((c) => (
             <Link
               key={c.name}
-              href={buildEventsHref({ source, campaign: c.name, profileSource })}
+              href={buildEventsHref({ source, campaign: c.name, profileSource, storyFilter })}
               aria-label={`Filter TEST events by ${c.name}`}
               className={cn(
                 "flex-shrink-0 px-3.5 py-1.5 rounded-full text-xs font-bold border transition-all whitespace-nowrap",
@@ -2436,13 +2461,13 @@ function EventsScreen({
               </div>
               <div className="flex gap-2">
                 <Link
-                  href={getMemberEventRsvpHref(featuredEvent.id, source)}
+                  href={getMemberEventRsvpHref(featuredEvent.id, detailLoopSource)}
                   className="flex flex-1 items-center justify-center rounded-xl bg-primary py-2.5 text-sm font-bold text-white transition-opacity hover:opacity-90"
                 >
                   RSVP
                 </Link>
                 <Link
-                  href={getMemberEventDetailHref(featuredEvent.id, source)}
+                  href={getMemberEventDetailHref(featuredEvent.id, detailLoopSource)}
                   className="flex flex-1 items-center justify-center rounded-xl bg-secondary py-2.5 text-sm font-bold text-primary transition-colors hover:bg-muted"
                 >
                   View Details
@@ -2460,8 +2485,8 @@ function EventsScreen({
               {listEvents.map((ev) => {
                 const isRsvpd = rsvpdIds.includes(ev.id);
                 const typeCfg = EVENT_TYPE_CONFIG[ev.eventType];
-                const detailHref = getMemberEventDetailHref(ev.id, source, activeCampaign, profileSource);
-                const rsvpHref = getMemberEventRsvpHref(ev.id, source, activeCampaign, profileSource);
+                const detailHref = getMemberEventDetailHref(ev.id, detailLoopSource, activeCampaign, profileSource);
+                const rsvpHref = getMemberEventRsvpHref(ev.id, detailLoopSource, activeCampaign, profileSource);
                 const hasDetailRoute = isMemberEventDetailHref(detailHref);
                 return (
                   <div
@@ -3676,8 +3701,10 @@ export function FigmaMemberMobileHome({
   pointsSource = "points",
   pointsReturnEventId = null,
   pointsReturnCampaign = null,
+  pointsStoryFilter = null,
   eventsSource = "events",
   eventsProfileSource = null,
+  eventsStoryFilter = null,
 }: {
   initialScreen?: MemberMobileLaunchScreen;
   sltPrepEntry?: MemberSltPrepEntry | null;
@@ -3687,8 +3714,10 @@ export function FigmaMemberMobileHome({
   pointsSource?: MemberLoopSource;
   pointsReturnEventId?: string | null;
   pointsReturnCampaign?: string | null;
+  pointsStoryFilter?: string | null;
   eventsSource?: MemberLoopSource;
   eventsProfileSource?: "points" | null;
+  eventsStoryFilter?: string | null;
 }) {
   const [screen, setScreen] = useState<Screen>(initialScreen);
   const [role, setRole] = useState<Role>("student");
@@ -3711,7 +3740,12 @@ export function FigmaMemberMobileHome({
       : screen === "stories"
         ? getStoriesBottomNavProfileHref(initialStoriesFilter)
       : screen === "points"
-        ? getPointsBottomNavProfileHref(pointsSource, pointsReturnEventId, pointsReturnCampaign)
+        ? getPointsBottomNavProfileHref(
+            pointsSource,
+            pointsReturnEventId,
+            pointsReturnCampaign,
+            pointsStoryFilter,
+          )
         : "/profile";
   const bottomNavHrefOverrides = getMemberBottomNavHrefOverrides({
     screen,
@@ -3719,8 +3753,10 @@ export function FigmaMemberMobileHome({
     pointsSource,
     pointsReturnEventId,
     pointsReturnCampaign,
+    pointsStoryFilter,
     eventsSource,
     eventsProfileSource,
+    eventsStoryFilter,
   });
   const content = () => {
     switch (screen) {
@@ -3735,6 +3771,7 @@ export function FigmaMemberMobileHome({
             source={pointsSource}
             returnEventId={pointsReturnEventId}
             returnCampaign={pointsReturnCampaign}
+            storyFilter={pointsStoryFilter}
           />
         );
       case "events":
@@ -3744,6 +3781,7 @@ export function FigmaMemberMobileHome({
             source={eventsSource}
             initialCampaign={initialEventsCampaign}
             profileSource={eventsProfileSource}
+            storyFilter={eventsStoryFilter}
           />
         );
       case "event-detail": return <EventDetailScreen navigate={navigate} />;
@@ -3807,16 +3845,20 @@ function getMemberBottomNavHrefOverrides({
   pointsSource,
   pointsReturnEventId,
   pointsReturnCampaign,
+  pointsStoryFilter,
   eventsSource,
   eventsProfileSource,
+  eventsStoryFilter,
 }: {
   screen: Screen;
   eventsCampaign: string | null;
   pointsSource: MemberLoopSource;
   pointsReturnEventId: string | null;
   pointsReturnCampaign: string | null;
+  pointsStoryFilter: string | null;
   eventsSource: MemberLoopSource;
   eventsProfileSource: "points" | null;
+  eventsStoryFilter: string | null;
 }): Partial<Record<MemberBottomNavTab, string>> | undefined {
   const overrides: Partial<Record<MemberBottomNavTab, string>> = {};
 
@@ -3825,6 +3867,7 @@ function getMemberBottomNavHrefOverrides({
       pointsSource,
       pointsReturnEventId,
       pointsReturnCampaign,
+      pointsStoryFilter,
     );
   }
 
@@ -3833,6 +3876,7 @@ function getMemberBottomNavHrefOverrides({
       eventsSource,
       eventsCampaign,
       eventsProfileSource,
+      eventsStoryFilter,
     );
 
     if (pointsHref) {
@@ -3843,6 +3887,7 @@ function getMemberBottomNavHrefOverrides({
       eventsSource,
       eventsCampaign,
       eventsProfileSource,
+      eventsStoryFilter,
     );
 
     if (profileHref) {
@@ -3857,6 +3902,7 @@ function getPointsBottomNavEventsHref(
   source: MemberLoopSource,
   returnEventId: string | null,
   returnCampaign: string | null,
+  storyFilter: string | null = null,
 ) {
   const campaignSuffix =
     returnCampaign && returnCampaign !== "All"
@@ -3881,6 +3927,24 @@ function getPointsBottomNavEventsHref(
       : `/app/events?source=profile${campaignSuffix}`;
   }
 
+  if (source === "stories") {
+    const url = new URL(
+      `https://mymedlife.local${
+        returnEventId ? `/app/events/${returnEventId}?source=events` : "/app/events?source=stories"
+      }`,
+    );
+
+    if (returnCampaign && returnCampaign !== "All") {
+      url.searchParams.set("campaign", returnCampaign);
+    }
+
+    if (storyFilter) {
+      url.searchParams.set("storyFilter", storyFilter);
+    }
+
+    return `${url.pathname}${url.search}`;
+  }
+
   return campaignSuffix ? `/app/events?source=points${campaignSuffix}` : "/app/events";
 }
 
@@ -3888,7 +3952,12 @@ function getPointsBottomNavProfileHref(
   source: MemberLoopSource,
   returnEventId: string | null,
   returnCampaign: string | null,
+  storyFilter: string | null = null,
 ) {
+  if (source === "stories") {
+    return getStoriesBottomNavProfileHref(storyFilter);
+  }
+
   const campaignSuffix =
     returnCampaign && returnCampaign !== "All"
       ? `&campaign=${encodeURIComponent(returnCampaign)}`
@@ -3947,6 +4016,7 @@ function getEventsBottomNavPointsHref(
   source: MemberLoopSource,
   campaign: string | null,
   profileSource: "points" | null = null,
+  storyFilter: string | null = null,
 ) {
   const campaignSuffix =
     campaign && campaign !== "All"
@@ -3964,6 +4034,20 @@ function getEventsBottomNavPointsHref(
     return `/app/points?source=${profileSource === "points" ? "points" : "profile"}${campaignSuffix}`;
   }
 
+  if (source === "stories") {
+    const url = new URL("https://mymedlife.local/app/points?source=stories");
+
+    if (campaign && campaign !== "All") {
+      url.searchParams.set("campaign", campaign);
+    }
+
+    if (storyFilter) {
+      url.searchParams.set("storyFilter", storyFilter);
+    }
+
+    return `${url.pathname}${url.search}`;
+  }
+
   return undefined;
 }
 
@@ -3971,6 +4055,7 @@ function getEventsBottomNavProfileHref(
   source: MemberLoopSource,
   campaign: string | null,
   profileSource: "points" | null,
+  storyFilter: string | null = null,
 ) {
   const campaignSuffix =
     campaign && campaign !== "All"
@@ -3983,6 +4068,10 @@ function getEventsBottomNavProfileHref(
 
   if (source === "points") {
     return `/profile?source=points${campaignSuffix}`;
+  }
+
+  if (source === "stories") {
+    return getStoriesBottomNavProfileHref(storyFilter);
   }
 
   if (source === "profile" && campaignSuffix) {

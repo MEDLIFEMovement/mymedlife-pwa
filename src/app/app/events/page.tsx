@@ -9,11 +9,12 @@ type AppEventsPageProps = {
     source?: string;
     campaign?: string;
     profileSource?: string;
+    storyFilter?: string;
   }>;
 };
 
-function getEventsSource(source?: string): "events" | "home" | "profile" | "points" {
-  if (source === "home" || source === "profile" || source === "points") {
+function getEventsSource(source?: string): "events" | "home" | "profile" | "points" | "stories" {
+  if (source === "home" || source === "profile" || source === "points" || source === "stories") {
     return source;
   }
 
@@ -25,7 +26,7 @@ function getInitialEventsCampaign(campaign?: string) {
 }
 
 export default async function AppEventsPage({ searchParams }: AppEventsPageProps) {
-  const resolvedSearchParams: { source?: string; campaign?: string; profileSource?: string } = await (
+  const resolvedSearchParams: { source?: string; campaign?: string; profileSource?: string; storyFilter?: string } = await (
     searchParams ?? Promise.resolve({})
   );
 
@@ -35,5 +36,6 @@ export default async function AppEventsPage({ searchParams }: AppEventsPageProps
     initialEventsCampaign: getInitialEventsCampaign(resolvedSearchParams.campaign),
     eventsSource: getEventsSource(resolvedSearchParams.source),
     eventsProfileSource: resolvedSearchParams.profileSource === "points" ? "points" : null,
+    eventsStoryFilter: resolvedSearchParams.storyFilter ?? null,
   });
 }
