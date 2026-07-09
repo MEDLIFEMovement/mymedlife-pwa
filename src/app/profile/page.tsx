@@ -95,7 +95,9 @@ function buildProfileEventsHref(
   campaign: string | null,
 ) {
   if (!eventId) {
-    const url = new URL("https://mymedlife.local/app/events?source=profile");
+    const url = new URL(
+      `https://mymedlife.local/app/events?source=${source === "home" ? "home" : "profile"}`,
+    );
     if (campaign && campaign !== "All") {
       url.searchParams.set("campaign", campaign);
     }

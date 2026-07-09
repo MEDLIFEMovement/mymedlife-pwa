@@ -20,6 +20,10 @@ function getPointsSource(source?: string): "events" | "home" | "profile" | "poin
   return "points";
 }
 
+function getPointsReturnCampaign(campaign?: string) {
+  return campaign && campaign !== "All" ? campaign : null;
+}
+
 export default async function AppPointsPage(props: AppPointsPageProps) {
   const resolvedSearchParams: { source?: string; event?: string; campaign?: string } = await (
     props.searchParams ?? Promise.resolve({})
@@ -30,6 +34,6 @@ export default async function AppPointsPage(props: AppPointsPageProps) {
     redirectPath: "/app/points",
     pointsSource: getPointsSource(resolvedSearchParams.source),
     pointsReturnEventId: resolvedSearchParams.event ?? null,
-    pointsReturnCampaign: resolvedSearchParams.campaign ?? null,
+    pointsReturnCampaign: getPointsReturnCampaign(resolvedSearchParams.campaign),
   });
 }

@@ -228,6 +228,30 @@ describe("member mobile shell routes", () => {
     expect(html).toContain('href="/profile?campaign=Spring+Showcase"');
   });
 
+  it("drops the generic All campaign marker when the filtered events loop returns from profile after points", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("member.a@mymedlife.test"),
+    );
+
+    const { default: EventsPage } = await import("@/app/app/events/page");
+    const html = renderToStaticMarkup(
+      await EventsPage({
+        searchParams: Promise.resolve({
+          source: "profile",
+          profileSource: "points",
+          campaign: "All",
+        }),
+      }),
+    );
+
+    expect(getBottomNavHtml(html)).toContain('href="/app/points?source=points"');
+    expect(getBottomNavHtml(html)).toContain('href="/profile?source=points"');
+    expect(html).toContain('href="/app/events?source=profile&amp;profileSource=points"');
+    expect(html).not.toContain("campaign=All");
+  });
+
   it("preserves exact profile-to-points continuity when the filtered events loop was opened from profile after points", async () => {
     const actorModule = await import("@/services/local-actor-context");
 
@@ -407,7 +431,7 @@ describe("member mobile shell routes", () => {
     );
 
     expect(html).toContain("Back to your TEST profile");
-    expect(html).toContain('href="/profile"');
+    expect(html).toContain('href="/profile?source=points"');
     expect(html).toContain("pretending profile writes are live");
     expect(getBottomNavHtml(html)).toContain('href="/app/events?source=profile"');
   });
@@ -449,6 +473,28 @@ describe("member mobile shell routes", () => {
     expect(getBottomNavHtml(html)).toContain(
       'href="/profile?source=points&amp;event=chapter-event-ucla-kickoff"',
     );
+  });
+
+  it("drops the generic All campaign marker when points returns to profile without a real filtered campaign", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("member.a@mymedlife.test"),
+    );
+
+    const { default: PointsPage } = await import("@/app/app/points/page");
+    const html = renderToStaticMarkup(
+      await PointsPage({
+        searchParams: Promise.resolve({
+          source: "points",
+          campaign: "All",
+        }),
+      }),
+    );
+
+    expect(getBottomNavHtml(html)).toContain('href="/profile?source=points"');
+    expect(html).toContain('href="/app/events?source=points"');
+    expect(html).not.toContain("campaign=All");
   });
 
   it("returns the member points route to the exact TEST event detail when the home walkthrough opens a specific event", async () => {

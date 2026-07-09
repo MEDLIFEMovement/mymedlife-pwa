@@ -358,6 +358,31 @@ describe("member event detail route", () => {
     expect(html).toContain('href="/app/events/chapter-event-ucla-kickoff?source=points&amp;step=rsvp&amp;campaign=Rush+Month"');
   });
 
+  it("drops the generic All campaign marker when points opens event detail without a real filter", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const dataModule = await import("@/services/read-only-app-data");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("member.a@mymedlife.test"),
+    );
+    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
+      getMockReadOnlyAppData("Testing member event detail generic campaign cleanup."),
+    );
+
+    const { default: EventDetailPage } = await import("@/app/app/events/[eventId]/page");
+    const html = renderToStaticMarkup(
+      await EventDetailPage({
+        params: Promise.resolve({ eventId: "chapter-event-ucla-kickoff" }),
+        searchParams: Promise.resolve({ source: "points", campaign: "All" }),
+      }),
+    );
+
+    expect(html).toContain('href="/app/points?source=events&amp;event=chapter-event-ucla-kickoff"');
+    expect(html).toContain('href="/app/events?source=points"');
+    expect(html).toContain('href="/profile?source=points&amp;event=chapter-event-ucla-kickoff"');
+    expect(html).not.toContain("campaign=All");
+  });
+
   it("preserves selected campaign context when profile opens event detail via points", async () => {
     const actorModule = await import("@/services/local-actor-context");
     const dataModule = await import("@/services/read-only-app-data");

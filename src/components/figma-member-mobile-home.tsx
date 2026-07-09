@@ -1899,7 +1899,9 @@ function PointsLeaderboard({
     ],
     profile: [
       "TEST points stay preview-only here, and this route keeps the profile-to-recognition walkthrough read-only instead of pretending profile writes are live.",
-      returnEventId ? `/app/events/${returnEventId}?source=profile` : "/profile",
+      returnEventId
+        ? `/app/events/${returnEventId}?source=profile`
+        : screenlessProfileHref("points", returnCampaign),
       returnEventId ? "Back to the TEST event detail" : "Back to your TEST profile",
     ],
     points: ["TEST points in this member shell are a read-only preview of the event, RSVP, attendance, and action loop. They do not write to a live leaderboard, rewards system, or provider integration.", "/app/events?source=points", "See how to earn more points"],
