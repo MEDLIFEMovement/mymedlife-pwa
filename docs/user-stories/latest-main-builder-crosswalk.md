@@ -15,18 +15,18 @@ next live branch:
 2. `#618` is merged, so stop treating it as active queue work.
 3. `#620` is merged and public no-write smoke stayed `11/11` green after the
    merge. Do not keep its staff/admin seam in the pending queue.
-4. `#621` exists as the next member follow-on and is now green on the listed
-   checks while still draft/open. `#1` should clear draft/merge posture before
-   starting another member PR.
+4. `#621` is merged. No new member front branch is promoted in this packet;
+   `#1` should shape the next member seam locally until Coordinator identifies
+   the next real front candidate.
 5. `#2` should return to local leader follow-on shaping after the `#619`
    landing, keeping attendance, member review, and simple-leaderboard continuity
    narrow.
-6. `#3` should shape the next staff/admin seam locally while `#621` clears
-   draft/merge posture, with emphasis on chapter oversight honesty, embedded
-   Admin context, and visible TEST-label coverage.
-7. `#4` should watch `#621` for scope, TEST labels, route evidence, and no
-   rollout-proof inflation. `#6` should stay quiet unless real proof artifacts
-   appear.
+6. `#3` should shape the next staff/admin seam locally while there is no
+   promoted member front branch, with emphasis on chapter oversight honesty,
+   embedded Admin context, and visible TEST-label coverage.
+7. `#4` should watch the next promoted front branch for scope, TEST labels,
+   route evidence, and no rollout-proof inflation. `#6` should stay quiet unless
+   real proof artifacts appear.
 
 Rollout-proof truth is unchanged. Shell merges, public no-write smoke, green CI,
 and TEST/sandbox rows may support `Scope/UI` or `QA/Ops` discussion, but they do
@@ -47,7 +47,7 @@ readiness, or rollout approval.
   - `#620` merged.
   - `#619` merged.
   - `#618` merged.
-  - `#621` open, draft, and green on the listed checks.
+  - `#621` merged.
 - Coordinator-reported public no-write smoke: 11/11 passed after `#620`.
 
 ## How To Use This Crosswalk
