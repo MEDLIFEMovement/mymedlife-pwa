@@ -21,14 +21,13 @@ without rereading the whole story package.
 - PR `#618` is merged.
 - PR `#621` is merged.
 - PR `#624` is merged.
-- PR `#625` is the current draft member front candidate for member Stories,
-  events, and points continuity. It is now `CLEAN` with App checks, Browser
-  smoke, Supabase RLS, Vercel, Claude, Analyze, Dependency Review, and
-  Codecov green, but it remains draft/open and should not be described as
-  merged or rollout proof.
-- No new leader or staff/admin front PR is promoted by this packet yet; use the
-  next Coordinator queue correction before treating older parked PRs as active
-  front work.
+- PR `#625` is merged at `2026-07-09T15:52:49Z` with merge commit
+  `c5f199ee667832cf5d10fc194d0a71616e9cdb45`; its checks were green before
+  merge. Treat the member Stories, events, and points continuity seam as landed
+  shell work, not rollout proof.
+- No new member, leader, or staff/admin front PR is promoted by this packet yet;
+  use the next Coordinator queue correction before treating older parked PRs as
+  active front work.
 - The active planning layer still separates implementation truth from
   Figma/exported-source acceptance shape.
 - Open PR board noise and older parked branches should not outrank the
@@ -68,9 +67,9 @@ Live PR signal:
 - `gh pr view 621` confirmed merged.
 - `gh pr view 624` confirmed merged at `2026-07-09T15:30:58Z` with merge commit
   `e098074e938623967170416b422b0ae917f0c1bf`.
-- `gh pr view 625` confirmed open draft, mergeable, and `CLEAN` at head
-  `60b05825919350d1675bf5eb9662402160aa3a81`; App checks, Browser smoke,
-  Supabase RLS, Vercel, Claude, Analyze, Dependency Review, and Codecov are
+- `gh pr view 625` confirmed merged at `2026-07-09T15:52:49Z` with merge commit
+  `c5f199ee667832cf5d10fc194d0a71616e9cdb45`; App checks, Browser smoke,
+  Supabase RLS, Vercel, Claude, Analyze, Dependency Review, and Codecov were
   green.
 - This packet captures planning order and acceptance boundaries only; it should
   not be read as approval for older parked branches.
@@ -82,11 +81,10 @@ Live PR signal:
 Next safest slice:
 
 1. Stop treating PR `#624` as active queue work; it is merged.
-2. Treat PR `#625` as the current draft member front candidate for
-   source-backed Stories, events, and points continuity until Coordinator
-   promotes, merges, or supersedes it.
+2. Treat PR `#625` as landed source-backed Stories, events, and points
+   continuity shell work.
 3. Preserve the existing profile, Stories, events/detail, points, and bottom-nav
-   acceptance contracts while the queue clears.
+   acceptance contracts while #1 shapes the next local member seam.
 
 Likely source-backed surfaces:
 
