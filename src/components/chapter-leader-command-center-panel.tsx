@@ -1481,8 +1481,6 @@ function renderView(
                     eventId: commandCenter.selectedEventId,
                     pipelineFilter: commandCenter.selectedPipelineFilter,
                     searchQuery: commandCenter.pipelineSearchQuery,
-                    eventCommitteeFilter: commandCenter.selectedEventCommitteeFilter,
-                    eventId: commandCenter.selectedEventId,
                   })}
                   className="inline-flex rounded-full bg-[#2563eb] px-4 py-2 text-sm font-semibold text-white"
                 >

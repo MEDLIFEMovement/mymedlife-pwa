@@ -1442,11 +1442,6 @@ export function getChapterLeaderCommandCenter(
       leaderboardRegion: selectedLeaderboardRegion,
       searchQuery: pipelineSearchQuery,
       source: selectedSource,
-      eventCommitteeFilter: selectedEventCommitteeFilter,
-      eventId: requestedEventId,
-      leaderboardMetric: selectedLeaderboardMetric,
-      leaderboardRegion: selectedLeaderboardRegion,
-      bestPracticeChapterId: requestedBestPracticeChapterId,
       sourceMode: data.source.mode,
     },
   );
@@ -1649,8 +1644,6 @@ export function getChapterLeaderCommandCenter(
     bestPracticeChapterId: selectedBestPracticeChapterId,
     leaderboardMetric: selectedLeaderboardMetric,
     leaderboardRegion: selectedLeaderboardRegion,
-    eventCommitteeFilter: selectedEventCommitteeFilter,
-    eventId: selectedEventId,
     memberId: navigationMemberId,
     pipelineFilter: selectedPipelineFilter,
     searchQuery: pipelineSearchQuery,
@@ -3708,11 +3701,6 @@ function getSelectedMemberProfile(
     leaderboardRegion: ChapterLeaderLeaderboardRegionKey;
     searchQuery: string;
     source: ChapterLeaderCommandCenterSource | null;
-    eventCommitteeFilter: ChapterLeaderEventCommitteeFilterKey;
-    eventId: string | null;
-    leaderboardMetric: ChapterLeaderLeaderboardMetricKey;
-    leaderboardRegion: ChapterLeaderLeaderboardRegionKey;
-    bestPracticeChapterId: string | null;
     sourceMode: ReadOnlyAppData["source"]["mode"];
   },
 ): ChapterLeaderCommandCenterMemberProfile | null {
@@ -4219,8 +4207,7 @@ function getMemberBackToContext(
         href: buildChapterLeaderCommandCenterHref("members", {
           source: context.source,
           memberId,
-          bestPracticeChapterId:
-            context.source === "leaderboard" ? context.bestPracticeChapterId : null,
+          bestPracticeChapterId: null,
           eventCommitteeFilter: context.eventCommitteeFilter,
           eventId: context.eventId,
           feedPostId: context.feedPostId,

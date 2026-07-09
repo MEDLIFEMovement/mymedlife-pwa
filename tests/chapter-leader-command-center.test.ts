@@ -3263,7 +3263,6 @@ describe("chapter leader command center href", () => {
         memberId: "member-zara",
         pipelineFilter: "follow_up",
         searchQuery: "Ivy",
-        returnView: "members",
       }),
     ).toBe(
       "/rush-month/actions?source=chapter_assign_action&returnTo=%2Fleader%3Fview%3Dmembers%26member%3Dmember-zara%26pipeline%3Dfollow_up%26q%3DIvy%26quickAction%3Dassign_action&member=member-zara",
