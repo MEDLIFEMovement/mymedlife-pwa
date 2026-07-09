@@ -1393,6 +1393,84 @@ describe("chapter leader command center", () => {
     expect(markup).toContain("href=\"/leader?view=members\"");
   });
 
+  it("keeps attendance-backed event context attached to member-surface follow-up actions", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "members",
+      source: "events",
+      memberId: "member-ivy",
+      eventCommittee: "events",
+      eventId: "bc-event-moving-mountains-kickoff",
+      pipeline: "follow_up",
+      search: "Ivy",
+      quickAction: "review_members",
+      returnQuickAction: "assign_action",
+    });
+    const markup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
+    );
+
+    expect(markup).toContain(
+      "href=\"/leader?view=members&amp;source=events&amp;member=member-ivy&amp;eventCommittee=events&amp;event=bc-event-moving-mountains-kickoff&amp;pipeline=follow_up&amp;q=Ivy&amp;quickAction=export_members\"",
+    );
+    expect(markup).toContain(
+      "href=\"/leader?view=members&amp;source=events&amp;member=member-ivy&amp;eventCommittee=events&amp;event=bc-event-moving-mountains-kickoff&amp;pipeline=follow_up&amp;q=Ivy&amp;quickAction=add_member\"",
+    );
+  });
+
+  it("keeps chapter-home attendance context attached to member-surface follow-up actions", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "members",
+      source: "overview",
+      memberId: "member-ivy",
+      eventCommittee: "events",
+      eventId: "bc-event-moving-mountains-kickoff",
+      pipeline: "follow_up",
+      search: "Ivy",
+      quickAction: "review_members",
+      returnQuickAction: "assign_action",
+    });
+    const markup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
+    );
+
+    expect(markup).toContain(
+      "href=\"/leader?view=members&amp;source=overview&amp;member=member-ivy&amp;eventCommittee=events&amp;event=bc-event-moving-mountains-kickoff&amp;pipeline=follow_up&amp;q=Ivy&amp;quickAction=export_members\"",
+    );
+    expect(markup).toContain(
+      "href=\"/leader?view=members&amp;source=overview&amp;member=member-ivy&amp;eventCommittee=events&amp;event=bc-event-moving-mountains-kickoff&amp;pipeline=follow_up&amp;q=Ivy&amp;quickAction=add_member\"",
+    );
+  });
+
+  it("keeps leaderboard attendance context attached to member-surface follow-up actions", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "members",
+      source: "leaderboard",
+      memberId: "member-ivy",
+      eventCommittee: "events",
+      eventId: "bc-event-moving-mountains-kickoff",
+      leaderboardMetric: "attendance",
+      leaderboardRegion: "canada",
+      bestPracticeChapterId: "leaderboard-mcgill",
+      pipeline: "follow_up",
+      search: "Ivy",
+      quickAction: "review_members",
+      returnQuickAction: "assign_action",
+    });
+    const markup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
+    );
+
+    expect(markup).toContain(
+      "href=\"/leader?view=members&amp;source=leaderboard&amp;member=member-ivy&amp;eventCommittee=events&amp;event=bc-event-moving-mountains-kickoff&amp;leaderboardMetric=attendance&amp;region=canada&amp;benchmark=leaderboard-mcgill&amp;pipeline=follow_up&amp;q=Ivy&amp;quickAction=export_members\"",
+    );
+    expect(markup).toContain(
+      "href=\"/leader?view=members&amp;source=leaderboard&amp;member=member-ivy&amp;eventCommittee=events&amp;event=bc-event-moving-mountains-kickoff&amp;leaderboardMetric=attendance&amp;region=canada&amp;benchmark=leaderboard-mcgill&amp;pipeline=follow_up&amp;q=Ivy&amp;quickAction=add_member\"",
+    );
+  });
+
   it("builds a route-driven member profile workbench with leadership actions and timeline context", () => {
     const actor = getMockLocalActorContext("leader.a@mymedlife.test");
     const commandCenter = getChapterLeaderCommandCenter(actor, data, {

@@ -842,6 +842,14 @@ function renderView(
                   href={buildChapterLeaderCommandCenterHref("members", {
                     source: commandCenter.selectedSource,
                     memberId: commandCenter.navigationMemberId,
+                    bestPracticeChapterId:
+                      commandCenter.selectedSource === "leaderboard"
+                        ? commandCenter.selectedBestPracticeChapterId
+                        : null,
+                    eventCommitteeFilter: commandCenter.selectedEventCommitteeFilter,
+                    eventId: commandCenter.selectedEventId,
+                    leaderboardMetric: commandCenter.selectedLeaderboardMetric,
+                    leaderboardRegion: commandCenter.selectedLeaderboardRegion,
                     pipelineFilter: commandCenter.selectedPipelineFilter,
                     searchQuery: commandCenter.pipelineSearchQuery,
                     quickAction: "export_members",
@@ -854,6 +862,14 @@ function renderView(
                   href={buildChapterLeaderCommandCenterHref("members", {
                     source: commandCenter.selectedSource,
                     memberId: commandCenter.navigationMemberId,
+                    bestPracticeChapterId:
+                      commandCenter.selectedSource === "leaderboard"
+                        ? commandCenter.selectedBestPracticeChapterId
+                        : null,
+                    eventCommitteeFilter: commandCenter.selectedEventCommitteeFilter,
+                    eventId: commandCenter.selectedEventId,
+                    leaderboardMetric: commandCenter.selectedLeaderboardMetric,
+                    leaderboardRegion: commandCenter.selectedLeaderboardRegion,
                     pipelineFilter: commandCenter.selectedPipelineFilter,
                     searchQuery: commandCenter.pipelineSearchQuery,
                     quickAction: "add_member",
