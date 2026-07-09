@@ -235,6 +235,38 @@ describe("leader page", () => {
     );
   });
 
+  it("keeps leaderboard comparison context when attendance is reopened from the leader readback loop", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const dataModule = await import("@/services/read-only-app-data");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("leader.a@mymedlife.test"),
+    );
+    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
+      getMockReadOnlyAppData("Testing attendance redirect from leaderboard readback."),
+    );
+
+    const { default: LeaderPage } = await import("@/app/leader/page");
+
+    await expect(
+      LeaderPage({
+        searchParams: Promise.resolve({
+          view: "attendance",
+          source: "leaderboard",
+          member: "member-ivy",
+          eventCommittee: "events",
+          event: "bc-event-moving-mountains-kickoff",
+          leaderboardMetric: "attendance",
+          region: "canada",
+          benchmark: "leaderboard-mcgill",
+          quickAction: "assign_action",
+        }),
+      }),
+    ).rejects.toThrow(
+      "NEXT_REDIRECT:/leader?view=events&source=leaderboard&member=member-ivy&eventCommittee=events&event=bc-event-moving-mountains-kickoff&leaderboardMetric=attendance&region=canada&benchmark=leaderboard-mcgill&quickAction=assign_action",
+    );
+  });
+
   it.each([
     ["members", "Member Leaderboard"],
     ["member_profile", "Member Profile"],

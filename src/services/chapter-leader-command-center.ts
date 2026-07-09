@@ -1433,6 +1433,7 @@ export function getChapterLeaderCommandCenter(
     recognition.leaderboard,
     selectedMemberProfileId,
     {
+      activeQuickAction,
       bestPracticeChapterId: requestedBestPracticeChapterId,
       eventCommitteeFilter: selectedEventCommitteeFilter,
       eventId: requestedEventId,
@@ -2345,7 +2346,8 @@ export function buildChapterLeaderCommandCenterHref(
     view === "events" ||
     view === "leaderboard" ||
     options.source === "events" ||
-    options.source === "overview";
+    options.source === "overview" ||
+    options.source === "leaderboard";
   const shouldPreserveFeedPostContext =
     view === "feed_analytics" ||
     view === "bridge_videos" ||
@@ -3692,6 +3694,7 @@ function getSelectedMemberProfile(
   leaderboard: LeaderboardRow[],
   selectedMemberId: string | undefined,
   context: {
+    activeQuickAction: ChapterLeaderQuickActionState | null;
     bestPracticeChapterId: string | null;
     eventCommitteeFilter: ChapterLeaderEventCommitteeFilterKey;
     eventId: string | null;
@@ -3767,6 +3770,7 @@ function getSelectedMemberProfile(
 }
 
 function getMockLeaderProfile(context: {
+  activeQuickAction: ChapterLeaderQuickActionState | null;
   bestPracticeChapterId: string | null;
   eventCommitteeFilter: ChapterLeaderEventCommitteeFilterKey;
   eventId: string | null;
@@ -3899,6 +3903,7 @@ function getMockLeaderProfile(context: {
 function getMemberReviewContext(
   member: ChapterMemberRow,
   context: {
+    activeQuickAction: ChapterLeaderQuickActionState | null;
     bestPracticeChapterId: string | null;
     eventCommitteeFilter: ChapterLeaderEventCommitteeFilterKey;
     eventId: string | null;
@@ -3912,11 +3917,12 @@ function getMemberReviewContext(
   backToPipelineHref: string,
 ) {
   if (context.source === "events") {
+    const isAttendanceReview = context.activeQuickAction === "assign_action";
     return {
       eyebrow: "Event review follow-through",
       title: "Attendance review context is active",
       summary: `${member.displayName} was opened from the leader event shell, so this profile should keep the active event, attendance follow-through, and point-ready readback visible before the review turns into a generic member check-in.`,
-      actionLabel: "Back to event performance",
+      actionLabel: isAttendanceReview ? "Back to attendance review" : "Back to event performance",
       actionHref: buildChapterLeaderCommandCenterHref("events", {
         source: "events",
         memberId: member.id,
@@ -3924,6 +3930,7 @@ function getMemberReviewContext(
         eventId: context.eventId,
         pipelineFilter: context.filter,
         searchQuery: context.searchQuery,
+        quickAction: isAttendanceReview ? "assign_action" : undefined,
       }),
     };
   }
@@ -3938,10 +3945,10 @@ function getMemberReviewContext(
         source: "leaderboard",
         memberId: member.id,
         bestPracticeChapterId: context.bestPracticeChapterId,
-        leaderboardMetric: context.leaderboardMetric,
-        leaderboardRegion: context.leaderboardRegion,
         eventCommitteeFilter: context.eventCommitteeFilter,
         eventId: context.eventId,
+        leaderboardMetric: context.leaderboardMetric,
+        leaderboardRegion: context.leaderboardRegion,
       }),
     };
   }
@@ -3989,6 +3996,7 @@ function getMemberLeadershipActionHref(
   action: ChapterLeaderCommandCenterMemberProfile["leadershipActions"][number],
   memberId: string,
   context: {
+    activeQuickAction: ChapterLeaderQuickActionState | null;
     bestPracticeChapterId: string | null;
     eventCommitteeFilter: ChapterLeaderEventCommitteeFilterKey;
     eventId: string | null;
@@ -4135,6 +4143,7 @@ function getInitials(value: string) {
 function getMemberProfileNavigationOptions(
   memberId: string,
   context: {
+    activeQuickAction: ChapterLeaderQuickActionState | null;
     bestPracticeChapterId: string | null;
     eventCommitteeFilter: ChapterLeaderEventCommitteeFilterKey;
     eventId: string | null;
@@ -4145,10 +4154,26 @@ function getMemberProfileNavigationOptions(
     searchQuery: string;
     source: ChapterLeaderCommandCenterSource | null;
   },
-) {
+) : {
+  source: ChapterLeaderCommandCenterSource | null;
+  memberId: string;
+  quickAction?: ChapterLeaderQuickActionState;
+  bestPracticeChapterId: string | null;
+  eventCommitteeFilter: ChapterLeaderEventCommitteeFilterKey;
+  eventId: string | null;
+  feedPostId: string | null;
+  leaderboardMetric: ChapterLeaderLeaderboardMetricKey;
+  leaderboardRegion: ChapterLeaderLeaderboardRegionKey;
+  pipelineFilter: ChapterLeaderPipelineFilter;
+  searchQuery: string;
+} {
+  const preservedQuickAction: ChapterLeaderQuickActionState | undefined =
+    context.activeQuickAction === "assign_action" ? "assign_action" : undefined;
+
   return {
     source: context.source,
     memberId,
+    quickAction: preservedQuickAction,
     bestPracticeChapterId:
       context.source === "leaderboard" ? context.bestPracticeChapterId : null,
     eventCommitteeFilter: context.eventCommitteeFilter,
@@ -4164,6 +4189,7 @@ function getMemberProfileNavigationOptions(
 function getMemberBackToContext(
   memberId: string,
   context: {
+    activeQuickAction: ChapterLeaderQuickActionState | null;
     bestPracticeChapterId: string | null;
     eventCommitteeFilter: ChapterLeaderEventCommitteeFilterKey;
     eventId: string | null;
@@ -4177,8 +4203,9 @@ function getMemberBackToContext(
 ) {
   switch (context.source) {
     case "events":
+      const isAttendanceReview = context.activeQuickAction === "assign_action";
       return {
-        label: "Back to Event Performance",
+        label: isAttendanceReview ? "Back to Attendance Review" : "Back to Event Performance",
         href: buildChapterLeaderCommandCenterHref("events", {
           source: "events",
           memberId,
@@ -4186,6 +4213,7 @@ function getMemberBackToContext(
           eventId: context.eventId,
           pipelineFilter: context.filter,
           searchQuery: context.searchQuery,
+          quickAction: isAttendanceReview ? "assign_action" : undefined,
         }),
       };
     case "leaderboard":
@@ -4194,11 +4222,11 @@ function getMemberBackToContext(
         href: buildChapterLeaderCommandCenterHref("leaderboard", {
           source: "leaderboard",
           memberId,
+          eventCommitteeFilter: context.eventCommitteeFilter,
+          eventId: context.eventId,
           bestPracticeChapterId: context.bestPracticeChapterId,
           leaderboardMetric: context.leaderboardMetric,
           leaderboardRegion: context.leaderboardRegion,
-          eventCommitteeFilter: context.eventCommitteeFilter,
-          eventId: context.eventId,
         }),
       };
     default:

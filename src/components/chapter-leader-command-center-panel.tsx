@@ -1043,6 +1043,22 @@ function renderView(
                   Open event context
                 </Link>
                 <Link
+                  href={buildChapterLeaderCommandCenterHref("leaderboard", {
+                    source: commandCenter.selectedSource,
+                    memberId: commandCenter.selectedMember.id,
+                    bestPracticeChapterId: commandCenter.selectedBestPracticeChapterId,
+                    eventCommitteeFilter: commandCenter.selectedEventCommitteeFilter,
+                    eventId: commandCenter.selectedEventId,
+                    leaderboardMetric: commandCenter.selectedLeaderboardMetric,
+                    leaderboardRegion: commandCenter.selectedLeaderboardRegion,
+                    pipelineFilter: commandCenter.selectedPipelineFilter,
+                    searchQuery: commandCenter.pipelineSearchQuery,
+                  })}
+                  className="inline-flex rounded-full border border-[#bfdbfe] bg-white px-4 py-2 text-sm font-semibold text-[#1d4ed8] transition hover:border-[#93c5fd] hover:bg-[#eef5ff]"
+                >
+                  Open leaderboard
+                </Link>
+                <Link
                   href="#member-points-history"
                   className="inline-flex rounded-full border border-[#bfdbfe] bg-white px-4 py-2 text-sm font-semibold text-[#1d4ed8] transition hover:border-[#93c5fd] hover:bg-[#eef5ff]"
                 >
