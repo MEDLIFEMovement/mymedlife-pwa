@@ -1794,6 +1794,13 @@ function ProofUGCQueue({
                 >
                   <ArrowLeft className="w-3 h-3" /> Return to Proof / UGC
                 </a>
+                <a
+                  href="/staff?view=chapters"
+                  title="Return to chapters after Admin readback to confirm the chapter follow-through in the same staff shell."
+                  className="inline-flex items-center gap-1 rounded-full border border-border bg-slate-50 px-2.5 py-1 text-[10px] font-semibold text-slate-700 hover:bg-slate-100"
+                >
+                  <ArrowLeft className="w-3 h-3" /> Return to chapters
+                </a>
                 {selectedCardChapter ? (
                   <a
                     href={buildStaffChapterHref(selectedCardChapter.id, pathname, currentSearch)}
@@ -1889,6 +1896,9 @@ function ProofUGCQueue({
                   {`Context drafting stays visible for review, but no coach note, moderation note, or caption save runs from this queue until Admin review approves the next step in the same command-center flow. Return to ${selectedCardReturnLoopLabel} after Admin readback to continue the same review loop in the staff shell.`}
                 </p>
                 <p className="mt-1 text-[10px] leading-relaxed text-slate-600">
+                  Return to chapters after Admin readback to confirm the chapter follow-through in the same staff shell.
+                </p>
+                <p className="mt-1 text-[10px] leading-relaxed text-slate-600">
                   If a chapter needs follow-up after that Admin readback, reopen the chapter drawer from this same Command Center flow instead of leaving the staff shell.
                 </p>
               </div>
@@ -1914,6 +1924,13 @@ function ProofUGCQueue({
                 className="inline-flex items-center gap-1 rounded-full border border-border bg-slate-50 px-2.5 py-1 text-[10px] font-semibold text-slate-700 hover:bg-slate-100"
               >
                 <ArrowLeft className="w-3 h-3" /> Return to Proof / UGC
+              </a>
+              <a
+                href="/staff?view=chapters"
+                title="Return to chapters after the Admin readback to confirm the chapter follow-through in the same Command Center loop."
+                className="inline-flex items-center gap-1 rounded-full border border-border bg-slate-50 px-2.5 py-1 text-[10px] font-semibold text-slate-700 hover:bg-slate-100"
+              >
+                <ArrowLeft className="w-3 h-3" /> Return to chapters
               </a>
             </div>
           </div>
@@ -1942,6 +1959,9 @@ function ProofUGCQueue({
             </p>
             <p className="mt-1 text-[10px] leading-relaxed text-muted-foreground">
               {`Return to ${proofQueueReturnLoopLabel} after the Admin readback to continue the same Command Center review loop.`}
+            </p>
+            <p className="mt-1 text-[10px] leading-relaxed text-muted-foreground">
+              Return to chapters after the Admin readback to confirm the chapter follow-through in the same Command Center loop.
             </p>
             <p className="mt-1 text-[10px] leading-relaxed text-muted-foreground">
               Reopen the chapter drawer from this queue when a story needs chapter-specific follow-through after the Admin review pass.

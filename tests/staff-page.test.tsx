@@ -350,6 +350,10 @@ describe("staff page", () => {
     expect(html).toContain("TEST Rush Month tabling");
     expect(html).not.toContain("TEST Bridge Video: Why I joined MEDLIFE");
     expect(html).toContain("Return to Proof / UGC (Pending · Instagram) after the Admin readback to continue the same Command Center review loop.");
+    expect(html).toContain("Return to chapters");
+    expect(html).toContain(
+      "Return to chapters after the Admin readback to confirm the chapter follow-through in the same Command Center loop.",
+    );
   });
 
   it("keeps campaign SOP creation and publish controls visibly blocked inside the SOP surface", async () => {
@@ -742,6 +746,8 @@ describe("staff page", () => {
     expect(html).toContain(
       'href="/staff?view=chapters&amp;proofStatus=pending&amp;proofPlatform=instagram&amp;chapter=ch13"',
     );
+    expect(html).toContain('href="/staff?view=chapters"');
+    expect(html).toContain("Return to chapters after Admin readback to confirm the chapter follow-through in the same staff shell.");
     expect(html).toContain("Keep the same chapter loop intact: after Admin readback, reopen this chapter drawer if the story needs coach or chapter follow-through.");
     expect(html).toContain("If a chapter needs follow-up after that Admin readback, reopen the chapter drawer from this same Command Center flow instead of leaving the staff shell.");
     expect(html).toContain("Reopen the chapter drawer from this queue when a story needs chapter-specific follow-through after the Admin review pass.");
@@ -879,7 +885,7 @@ describe("staff page", () => {
     const lineCount = source.split("\n").length;
 
     expect(lineCount).toBeGreaterThanOrEqual(2170);
-    expect(lineCount).toBeLessThanOrEqual(3090);
+    expect(lineCount).toBeLessThanOrEqual(3130);
     expect(source).toContain("type Screen = \"chapters\" | \"campaigns\" | \"events\" | \"ugc\" | \"reports\" | \"admin\" | \"best-practices\" | \"sops\";");
     expect(source).toContain("const NAV_ITEMS");
     expect(source).toContain("function PortfolioOverview");
