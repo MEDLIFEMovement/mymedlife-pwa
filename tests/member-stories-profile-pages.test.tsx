@@ -338,8 +338,39 @@ describe("member stories and profile pages", () => {
     expect(html).toContain("stories-to-profile handoff");
     expect(html).toContain("Back to Stories");
     expect(html).toContain('href="/app/stories?filter=Events"');
-    expect(html).toContain('href="/app/points?source=profile"');
-    expect(html).toContain('href="/app/events?source=profile"');
+    expect(html).toContain('href="/app/points?source=stories&amp;storyFilter=Events"');
+    expect(html).toContain('href="/app/events?source=stories&amp;storyFilter=Events"');
+  });
+
+  it("preserves stories event context when event detail opens profile from the stories feed", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const dataModule = await import("@/services/read-only-app-data");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("member.a@mymedlife.test"),
+    );
+    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
+      getMockReadOnlyAppData("Testing member profile stories event continuity."),
+    );
+
+    const { default: ProfilePage } = await import("@/app/profile/page");
+    const html = renderToStaticMarkup(
+      await ProfilePage({
+        searchParams: Promise.resolve({
+          source: "stories",
+          storyFilter: "Events",
+          event: "chapter-event-ucla-kickoff",
+          campaign: "Rush Month",
+        }),
+      }),
+    );
+
+    expect(html).toContain("stories-to-event-to-profile handoff");
+    expect(html).toContain("Back to Stories");
+    expect(html).toContain("Back to TEST event detail");
+    expect(html).toContain('href="/app/stories?filter=Events"');
+    expect(html).toContain('href="/app/points?source=stories&amp;event=chapter-event-ucla-kickoff&amp;campaign=Rush+Month&amp;storyFilter=Events"');
+    expect(html).toContain('href="/app/events/chapter-event-ucla-kickoff?source=stories&amp;campaign=Rush+Month&amp;storyFilter=Events"');
   });
 
   it("preserves exact TEST event continuity when points opens profile from an event detail handoff", async () => {
