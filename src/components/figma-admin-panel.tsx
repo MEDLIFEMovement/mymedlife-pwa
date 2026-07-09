@@ -15,6 +15,14 @@ import {
 type HealthStatus = "healthy" | "degraded" | "down" | "unknown";
 type ModuleStatus = "enabled" | "disabled" | "staging-only" | "mock-only" | "internal-only" | "emergency-disabled";
 type UserStatus = "active" | "inactive" | "pending";
+type EmbeddedChapterReadback = {
+  chapterContext: string;
+  events: string | null;
+  rsvps: string | null;
+  attendance: string | null;
+  points: string | null;
+  pointsWeek: string | null;
+};
 
 // ─── Mock Data ─────────────────────────────────────────────────────────────────
 const USERS_DATA = [
@@ -757,7 +765,11 @@ function UsersPage() {
 }
 
 // ─── Chapters ─────────────────────────────────────────────────────────────────────
-function ChaptersPage() {
+function ChaptersPage({
+  embeddedReadback,
+}: {
+  embeddedReadback?: EmbeddedChapterReadback | null;
+}) {
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<typeof CHAPTERS_DATA[0] | null>(null);
 
@@ -769,6 +781,40 @@ function ChaptersPage() {
   return (
     <>
       <div className="p-6 space-y-4">
+        {embeddedReadback ? (
+          <div className="bg-sky-500/8 border border-sky-500/15 rounded-lg px-4 py-3 space-y-3">
+            <div className="flex items-start gap-3">
+              <AlertCircle size={13} className="text-sky-400 flex-shrink-0 mt-0.5" />
+              <div>
+                <div className="text-[11px] font-bold uppercase tracking-[0.12em] text-sky-400">
+                  Embedded chapter oversight readback
+                </div>
+                <p className="mt-1 text-[12px] text-sky-300/80 leading-relaxed">
+                  {`Use this Admin readback to verify event readiness, RSVP totals, attendance context, and points posture for ${embeddedReadback.chapterContext} before requesting any correction path.`}
+                </p>
+              </div>
+            </div>
+            <div className="grid grid-cols-4 gap-2">
+              {[
+                { label: "Events", value: embeddedReadback.events ?? "—" },
+                { label: "RSVPs", value: embeddedReadback.rsvps ?? "—" },
+                { label: "Attendance", value: embeddedReadback.attendance ?? "—" },
+                { label: "Points", value: embeddedReadback.points ?? "—" },
+              ].map(({ label, value }) => (
+                <div key={label} className="rounded border border-sky-500/10 bg-[#0d1117]/50 px-3 py-2">
+                  <div className="text-[10px] text-sky-400/70 font-mono uppercase tracking-wider">{label}</div>
+                  <div className="mt-1 text-[14px] font-mono font-semibold text-slate-100">{value}</div>
+                </div>
+              ))}
+            </div>
+            {embeddedReadback.pointsWeek ? (
+              <p className="text-[11px] leading-relaxed text-slate-300">
+                {`Points posture stays read-only here: ${embeddedReadback.pointsWeek} weekly points remain review context only until an approved correction workflow exists.`}
+              </p>
+            ) : null}
+          </div>
+        ) : null}
+
         <div className="flex items-start gap-3 bg-amber-500/8 border border-amber-500/15 rounded-lg px-4 py-3">
           <AlertTriangle size={13} className="text-amber-400 flex-shrink-0 mt-0.5" />
           <p className="text-[12px] text-amber-300/80 leading-relaxed">
@@ -3962,6 +4008,17 @@ export function FigmaAdminPanel({
   const routeActive = routeActiveParam ? resolveAdminShellView(routeActiveParam) : null;
   const active = routeActive ?? resolveAdminShellView(initialActive);
   const embeddedChapterContext = pathname.startsWith("/staff") ? searchParams.get("chapterContext") : null;
+  const embeddedChapterReadback =
+    pathname.startsWith("/staff") && embeddedChapterContext
+      ? {
+          chapterContext: embeddedChapterContext,
+          events: searchParams.get("chapterEvents"),
+          rsvps: searchParams.get("chapterRsvps"),
+          attendance: searchParams.get("chapterAttendance"),
+          points: searchParams.get("chapterPoints"),
+          pointsWeek: searchParams.get("chapterPointsWeek"),
+        }
+      : null;
   const embeddedProofQueueContext = pathname.startsWith("/staff")
     ? getEmbeddedProofQueueContext(searchParams.get("proofStatus"), searchParams.get("proofPlatform"))
     : null;
@@ -3977,7 +4034,7 @@ export function FigmaAdminPanel({
     switch (active) {
       case "overview": return <OverviewPage />;
       case "users": return <UsersPage />;
-      case "chapters": return <ChaptersPage />;
+      case "chapters": return <ChaptersPage embeddedReadback={embeddedChapterReadback} />;
       case "modules": return <ModulesPage />;
       case "luma": return <LumaPage />;
       case "points": return <PointsPage />;
