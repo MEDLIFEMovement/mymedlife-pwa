@@ -1256,6 +1256,46 @@ describe("chapter leader command center", () => {
     expect(markup).not.toContain("Leaderboard review in focus");
   });
 
+  it("keeps benchmark attendance-backed leaderboard posture visible before a member is selected", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = {
+      ...getChapterLeaderCommandCenter(actor, data, {
+        view: "leaderboard",
+        source: "leaderboard",
+        eventCommittee: "events",
+        eventId: "bc-event-moving-mountains-kickoff",
+        leaderboardMetric: "attendance",
+        leaderboardRegion: "canada",
+        bestPracticeChapterId: "leaderboard-mcgill",
+        quickAction: "assign_action",
+      }),
+      selectedMember: null,
+      navigationMemberId: null,
+    };
+    const markup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
+    );
+
+    expect(markup).toContain("Opened from McGill MEDLIFE best practices");
+    expect(markup).toContain("Back to leaderboard");
+    expect(markup).toContain("Open attendance review");
+    expect(markup).toContain(
+      "href=\"/leader?view=leaderboard&amp;source=leaderboard&amp;eventCommittee=events&amp;event=bc-event-moving-mountains-kickoff&amp;leaderboardMetric=attendance&amp;region=canada&amp;benchmark=leaderboard-mcgill&amp;quickAction=assign_action\"",
+    );
+    expect(markup).toContain(
+      "href=\"/leader?view=events&amp;source=leaderboard&amp;eventCommittee=events&amp;event=bc-event-moving-mountains-kickoff&amp;leaderboardMetric=attendance&amp;region=canada&amp;benchmark=leaderboard-mcgill&amp;quickAction=assign_action\"",
+    );
+    expect(commandCenter.leaderboardRegionOptions.find((option) => option.key === "all")).toMatchObject({
+      href:
+        "/leader?view=leaderboard&source=leaderboard&eventCommittee=events&event=bc-event-moving-mountains-kickoff&leaderboardMetric=attendance&benchmark=leaderboard-mcgill&quickAction=assign_action",
+    });
+    expect(commandCenter.leaderboardFilters.find((filter) => filter.key === "chapter_health")).toMatchObject({
+      href:
+        "/leader?view=leaderboard&source=leaderboard&eventCommittee=events&event=bc-event-moving-mountains-kickoff&region=canada&benchmark=leaderboard-mcgill&quickAction=assign_action",
+    });
+    expect(markup).not.toContain("Leaderboard review in focus");
+  });
+
   it("keeps attendance-review context attached when leaderboard filters change inside event follow-through", () => {
     const actor = getMockLocalActorContext("leader.a@mymedlife.test");
     const commandCenter = getChapterLeaderCommandCenter(actor, data, {
