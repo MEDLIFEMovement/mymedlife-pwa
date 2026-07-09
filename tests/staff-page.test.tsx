@@ -1147,7 +1147,7 @@ describe("staff page", () => {
     expect(html).toContain(">Coach</div><div class=\"mt-1 text-[13px] font-mono font-semibold text-slate-100\">TEST James Okafor</div>");
     expect(html).toContain(">Active Members</div><div class=\"mt-1 text-[13px] font-mono font-semibold text-slate-100\">52</div>");
     expect(html).toContain("Risk posture");
-    expect(html).toContain("Carry the same chapter risk context through this Admin readback before requesting any correction path.");
+    expect(html).toContain("Carry the same chapter risk context through this Admin readback before requesting any blocked-control follow-through or correction path.");
     expect(html).toContain(">HEALTHY</span>");
     expect(html).toContain(">Handoff source</div><div class=\"mt-1 text-[13px] font-mono font-semibold text-slate-100\">Staff chapter drawer</div>");
     expect(html).toContain(">Return target</div><div class=\"mt-1 text-[13px] font-mono font-semibold text-slate-100\">TEST Stanford University in Chapters</div>");
@@ -1170,7 +1170,7 @@ describe("staff page", () => {
     expect(html).toContain("68 attended");
     expect(html).toContain("+1890 this week");
     expect(html).toContain(
-      "RSVP totals, attendance context, event readiness, and points posture remain review-only in this embedded Admin drawer. Use this readback before requesting any chapter correction path.",
+      "RSVP totals, attendance context, event readiness, and points posture remain review-only in this embedded Admin drawer. Use this readback before requesting any blocked-control follow-through or chapter correction path.",
     );
     expect(html).toContain("Return to Chapters");
     expect(html).toContain(

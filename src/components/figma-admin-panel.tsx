@@ -838,7 +838,7 @@ function ChaptersPage({
               <div>
                 <div className="text-[10px] text-sky-400/70 font-mono uppercase tracking-wider">Risk posture</div>
                 <div className="mt-1 text-[11px] leading-relaxed text-slate-400">
-                  Carry the same chapter risk context through this Admin readback before requesting any correction path.
+                  Carry the same chapter risk context through this Admin readback before requesting any blocked-control follow-through or correction path.
                 </div>
               </div>
               <Badge
@@ -1036,7 +1036,7 @@ function ChaptersPage({
             {embeddedReadback ? (
               <div className="space-y-2">
                 <p className="text-[11px] leading-relaxed text-slate-300">
-                  RSVP totals, attendance context, event readiness, and points posture remain review-only in this embedded Admin drawer. Use this readback before requesting any chapter correction path.
+                  RSVP totals, attendance context, event readiness, and points posture remain review-only in this embedded Admin drawer. Use this readback before requesting any blocked-control follow-through or chapter correction path.
                 </p>
                 <p className="text-[11px] leading-relaxed text-sky-300/80">
                   {`After this Admin readback, return to Chapters with ${embeddedReadback.chapterContext} still selected in the same Command Center review loop to keep the chapter oversight context intact.`}
