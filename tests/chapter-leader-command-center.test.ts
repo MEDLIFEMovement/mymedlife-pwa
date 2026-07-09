@@ -1018,6 +1018,30 @@ describe("chapter leader command center", () => {
     );
   });
 
+  it("keeps the mock leader profile inside the event-owned member review loop", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "member_profile",
+      source: "events",
+      memberId: "member-sofia-profile",
+      eventCommittee: "events",
+      eventId: "bc-event-moving-mountains-kickoff",
+      leaderboardMetric: "attendance",
+    });
+    const markup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
+    );
+
+    expect(commandCenter.selectedMember?.backToPipelineHref).toBe(
+      "/leader?view=members&source=events&eventCommittee=events&event=bc-event-moving-mountains-kickoff",
+    );
+    expect(commandCenter.selectedMember?.backToContextHref).toBe(
+      "/leader?view=events&source=events&member=member-sofia-profile&eventCommittee=events&event=bc-event-moving-mountains-kickoff",
+    );
+    expect(commandCenter.selectedMember?.reviewContext).toBeNull();
+    expect(markup).toContain("Opened from leader event review");
+  });
+
   it("keeps the member-profile header compact so the person workbench leads the viewport", () => {
     const actor = getMockLocalActorContext("leader.a@mymedlife.test");
     const commandCenter = getChapterLeaderCommandCenter(actor, data, {
