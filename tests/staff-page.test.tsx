@@ -1211,6 +1211,45 @@ describe("staff page", () => {
     expect(adminSource).toContain("embeddedBackHref={embeddedBackHref}");
   });
 
+  it("fills embedded admin chapter readback from TEST fallback data when the staff handoff is sparse", async () => {
+    mockPathname = "/staff";
+    mockSearchParams = new URLSearchParams({
+      view: "admin",
+      adminView: "chapters",
+      returnView: "chapters",
+      chapter: "ch2",
+      chapterContext: "TEST Boston College",
+    });
+
+    const { FigmaAdminPanel } = await import("@/components/figma-admin-panel");
+    const html = renderToStaticMarkup(
+      <FigmaAdminPanel
+        initialActive="chapters"
+        onBack={vi.fn()}
+        embeddedBackLabel="this chapter"
+        embeddedBackHref="/staff?view=chapters&chapter=ch2"
+        embeddedChapterHref="/staff?view=chapters&chapter=ch2"
+      />,
+    );
+
+    expect(html).toContain("Embedded chapter oversight readback");
+    expect(html).toContain(
+      "Use this Admin readback to verify event readiness, RSVP totals, attendance context, and points posture for TEST Boston College before requesting any blocked-control follow-through or correction path.",
+    );
+    expect(html).toContain(">School</div><div class=\"mt-1 text-[13px] font-mono font-semibold text-slate-100\">TEST Boston College</div>");
+    expect(html).toContain(">Region</div><div class=\"mt-1 text-[13px] font-mono font-semibold text-slate-100\">New England</div>");
+    expect(html).toContain(">Coach</div><div class=\"mt-1 text-[13px] font-mono font-semibold text-slate-100\">TEST Maria Santos</div>");
+    expect(html).toContain(">Active Members</div><div class=\"mt-1 text-[13px] font-mono font-semibold text-slate-100\">32</div>");
+    expect(html).toContain(">Events / Month</div><div class=\"mt-1 text-[14px] font-mono font-semibold text-slate-100\">2</div>");
+    expect(html).toContain(">RSVP Totals</div><div class=\"mt-1 text-[14px] font-mono font-semibold text-slate-100\">30</div>");
+    expect(html).toContain(">Points / Year</div><div class=\"mt-1 text-[14px] font-mono font-semibold text-slate-100\">7800</div>");
+    expect(html).toContain("+620 this week");
+    expect(html).toContain(
+      "After this Admin readback, return to Chapters with TEST Boston College still selected in the same Command Center review loop to keep the chapter oversight context intact.",
+    );
+    expect(html).toContain('href="/staff?view=chapters&amp;chapter=ch2"');
+  });
+
   it("keeps a proof queue return path visible when a chapter drawer opens from Proof / UGC context", async () => {
     const actorModule = await import("@/services/local-actor-context");
 
