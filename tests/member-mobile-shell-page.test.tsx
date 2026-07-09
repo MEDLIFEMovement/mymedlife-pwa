@@ -335,6 +335,63 @@ describe("member mobile shell routes", () => {
     );
   });
 
+  it("preserves selected campaign context through the points route return links", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("member.a@mymedlife.test"),
+    );
+
+    const { default: PointsPage } = await import("@/app/app/points/page");
+    const html = renderToStaticMarkup(
+      await PointsPage({
+        searchParams: Promise.resolve({
+          source: "events",
+          event: "chapter-event-mcgill-coffee-chat",
+          campaign: "Spring Showcase",
+        }),
+      }),
+    );
+
+    expect(html).toContain(
+      'href="/app/events/chapter-event-mcgill-coffee-chat?source=points&amp;campaign=Spring+Showcase"',
+    );
+    expect(html).toContain(
+      'href="/app/events/chapter-event-mcgill-coffee-chat?source=points&amp;campaign=Spring+Showcase&amp;step=rsvp"',
+    );
+    expect(html).toContain(
+      'href="/app/events/chapter-event-mcgill-coffee-chat?source=points&amp;campaign=Spring+Showcase&amp;step=checkin"',
+    );
+    expect(getBottomNavHtml(html)).toContain(
+      'href="/app/events/chapter-event-mcgill-coffee-chat?source=points&amp;campaign=Spring%20Showcase"',
+    );
+    expect(getBottomNavHtml(html)).toContain(
+      'href="/profile?source=points&amp;event=chapter-event-mcgill-coffee-chat&amp;campaign=Spring%20Showcase"',
+    );
+  });
+
+  it("keeps selected campaign context when points opens profile without an exact event handoff", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("member.a@mymedlife.test"),
+    );
+
+    const { default: PointsPage } = await import("@/app/app/points/page");
+    const html = renderToStaticMarkup(
+      await PointsPage({
+        searchParams: Promise.resolve({
+          source: "events",
+          campaign: "Spring Showcase",
+        }),
+      }),
+    );
+
+    expect(getBottomNavHtml(html)).toContain(
+      'href="/profile?source=points&amp;campaign=Spring+Showcase"',
+    );
+    expect(getBottomNavHtml(html)).not.toContain('href="/profile?source=points"></a>');
+  });
   it("keeps the member points route connected to the profile walkthrough when opened from profile", async () => {
     const actorModule = await import("@/services/local-actor-context");
 
