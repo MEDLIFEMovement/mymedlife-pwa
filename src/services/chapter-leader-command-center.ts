@@ -1634,6 +1634,7 @@ export function getChapterLeaderCommandCenter(
     metrics.find((metric) => metric.label === "Actions Completed") ?? null;
   const eventsOverview = getEventsOverview(data.source.mode, eventCards);
   const sourceContext = getChapterLeaderSourceContext(selectedSource, {
+    activeQuickAction,
     originChapterName: data.chapter.name,
     selectedView,
     eventCommitteeFilter: selectedEventCommitteeFilter,
@@ -1858,6 +1859,7 @@ export function getChapterLeaderCommandCenter(
 function getChapterLeaderSourceContext(
   source: ChapterLeaderCommandCenterSource | null,
   context: {
+    activeQuickAction: ChapterLeaderQuickActionState | null;
     originChapterName: string;
     selectedView: ChapterLeaderCommandCenterView;
     eventCommitteeFilter: ChapterLeaderEventCommitteeFilterKey;
@@ -1902,14 +1904,17 @@ function getChapterLeaderSourceContext(
         ],
       };
     case "events":
+      const isAttendanceReview = context.activeQuickAction === "assign_action";
       return {
         eyebrow: "Event review handoff",
-        title: "Opened from event review into leaderboard follow-through",
+        title: isAttendanceReview
+          ? "Opened from attendance review into leaderboard follow-through"
+          : "Opened from event review into leaderboard follow-through",
         summary:
           `Keep the selected TEST event, attendance posture, and chapter follow-through visible while you compare points and read back who needs the next leader move.${context.memberId ? " Leaderboard review in focus." : ""}`,
         actions: [
           {
-            label: "Back to event performance",
+            label: isAttendanceReview ? "Back to attendance review" : "Back to event performance",
             href: buildChapterLeaderCommandCenterHref("events", {
               source: "events",
               memberId: context.memberId,
@@ -1917,6 +1922,7 @@ function getChapterLeaderSourceContext(
               eventId: context.eventId,
               leaderboardMetric: context.leaderboardMetric,
               leaderboardRegion: context.leaderboardRegion,
+              quickAction: isAttendanceReview ? "assign_action" : undefined,
             }),
           },
           {
