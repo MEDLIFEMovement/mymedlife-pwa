@@ -16,14 +16,14 @@ next live branch:
 3. `#620` is merged and public no-write smoke stayed `11/11` green after the
    merge. Do not keep its staff/admin seam in the pending queue.
 4. `#621` is merged.
-5. `#624` is now the new member front candidate and is in first-pass watch with
-   checks still in progress.
+5. `#624` is now the new member front candidate; it is open, draft, mergeable,
+   and green on checks.
 6. `#2` should return to local leader follow-on shaping after the `#619`
    landing, keeping attendance, member review, and simple-leaderboard continuity
    narrow.
-7. `#3` should shape the next staff/admin seam locally while member `#624` is in
-   first-pass watch, with emphasis on chapter oversight honesty, embedded Admin
-   context, and visible TEST-label coverage.
+7. `#3` should shape the next staff/admin seam locally while member `#624`
+   clears draft/merge posture, with emphasis on chapter oversight honesty,
+   embedded Admin context, and visible TEST-label coverage.
 8. `#4` should watch `#624` for scope, TEST labels, route evidence, and no
    rollout-proof inflation. `#6` should stay quiet unless real proof artifacts
    appear.
@@ -48,7 +48,7 @@ readiness, or rollout approval.
   - `#619` merged.
   - `#618` merged.
   - `#621` merged.
-  - `#624` open, draft, and first-pass checks in progress.
+  - `#624` open, draft, mergeable, and green on checks.
 - Coordinator-reported public no-write smoke: 11/11 passed after `#620`.
 
 ## How To Use This Crosswalk
