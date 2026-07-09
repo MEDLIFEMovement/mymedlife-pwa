@@ -591,6 +591,32 @@ export function ChapterDetailDrawer({
             ))}
           </div>
 
+          <div className="grid grid-cols-3 gap-3">
+            <div className="rounded-xl border border-slate-200 bg-slate-50/70 px-3 py-2.5">
+              <div className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">Risk posture</div>
+              <div className="mt-1">
+                <RiskPill level={chapter.risk} />
+              </div>
+              <div className="mt-1 text-[10px] leading-relaxed text-slate-600">
+                Carry the same chapter risk context into the embedded Admin readback.
+              </div>
+            </div>
+            <div className="rounded-xl border border-slate-200 bg-slate-50/70 px-3 py-2.5">
+              <div className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">Handoff source</div>
+              <div className="mt-1 text-sm font-semibold text-slate-900">Staff chapter drawer</div>
+              <div className="mt-1 text-[10px] leading-relaxed text-slate-600">
+                Keep this same oversight context visible in Admin.
+              </div>
+            </div>
+            <div className="rounded-xl border border-slate-200 bg-slate-50/70 px-3 py-2.5">
+              <div className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">Return target</div>
+              <div className="mt-1 text-sm font-semibold text-slate-900">{chapter.name} in Chapters</div>
+              <div className="mt-1 text-[10px] leading-relaxed text-slate-600">
+                Return to the same selected chapter after the Admin readback closes.
+              </div>
+            </div>
+          </div>
+
           {/* Post-Event NPS */}
           <div className="bg-white border border-border rounded-xl overflow-hidden">
             <div className="px-4 py-2.5 bg-muted/30 border-b border-border flex items-center justify-between">
@@ -2295,6 +2321,10 @@ function AdminRouteBlocked({
 }) {
   const contextLabel = getStaffAdminContextLabel(backLabel, chapterContext, proofQueueContext);
   const returnLoopLabel = getStaffAdminReturnLoopLabel(backLabel, chapterContext, proofQueueContext);
+  const chapterReturnTarget =
+    chapterReadback?.chapterContext && returnLoopLabel === "Chapters"
+      ? `${chapterReadback.chapterContext} in Chapters`
+      : `Return to ${returnLoopLabel}`;
   const oversightReadbackNote =
     backLabel === "this chapter" && chapterContext
       ? `Chapter oversight for ${chapterContext} stays read-only here: event readiness, RSVP totals, attendance readback, and points posture should be reviewed in Admin before any blocked-control follow-through or correction request.`
@@ -2332,40 +2362,71 @@ function AdminRouteBlocked({
             </p>
           ) : null}
           {chapterReadback ? (
-            <div className="mt-3 grid grid-cols-2 gap-2">
-              {[
-                { label: "School", value: chapterReadback.school ?? chapterReadback.chapterContext },
-                { label: "Region", value: chapterReadback.region ?? "Read-only" },
-                { label: "Coach", value: chapterReadback.coach ?? "Read-only" },
-                { label: "Active Members", value: chapterReadback.members ?? "0" },
-                {
-                  label: "Event readiness",
-                  value: chapterReadback.events ? `${chapterReadback.events} events this month` : "No event snapshot",
-                },
-                {
-                  label: "RSVP totals",
-                  value: chapterReadback.rsvps ? `${chapterReadback.rsvps} RSVPs` : "No RSVP snapshot",
-                },
-                {
-                  label: "Attendance context",
-                  value: chapterReadback.attendance ? `${chapterReadback.attendance} attended` : "No attendance snapshot",
-                },
-                {
-                  label: "Weekly points posture",
-                  value: chapterReadback.pointsWeek ? `+${chapterReadback.pointsWeek} this week` : "No weekly points snapshot",
-                },
-                {
-                  label: "Points this year",
-                  value: chapterReadback.points
-                    ? Number(chapterReadback.points).toLocaleString()
-                    : "No annual points snapshot",
-                },
-              ].map(({ label, value }) => (
-                <div key={label} className="rounded-lg border border-white/[0.06] bg-[#0d1117]/70 px-3 py-2">
-                  <div className="text-[10px] text-slate-600 font-mono uppercase tracking-wider">{label}</div>
-                  <div className="mt-1 text-[12px] font-mono font-semibold text-slate-200">{value}</div>
+            <div className="mt-3 space-y-2">
+              <div className="grid grid-cols-2 gap-2">
+                {[
+                  { label: "School", value: chapterReadback.school ?? chapterReadback.chapterContext },
+                  { label: "Region", value: chapterReadback.region ?? "Read-only" },
+                  { label: "Coach", value: chapterReadback.coach ?? "Read-only" },
+                  { label: "Active Members", value: chapterReadback.members ?? "0" },
+                ].map(({ label, value }) => (
+                  <div key={label} className="rounded-lg border border-white/[0.06] bg-[#0d1117]/70 px-3 py-2">
+                    <div className="text-[10px] text-slate-600 font-mono uppercase tracking-wider">{label}</div>
+                    <div className="mt-1 text-[12px] font-mono font-semibold text-slate-200">{value}</div>
+                  </div>
+                ))}
+              </div>
+              <div className="flex items-center justify-between rounded-lg border border-white/[0.06] bg-[#0d1117]/70 px-3 py-2">
+                <div>
+                  <div className="text-[10px] text-slate-600 font-mono uppercase tracking-wider">Risk posture</div>
+                  <div className="mt-1 text-[11px] leading-relaxed text-slate-400">
+                    Carry the same chapter risk context through this blocked Admin handoff before requesting any blocked-control follow-through or correction path.
+                  </div>
                 </div>
-              ))}
+                {chapterReadback.risk ? <RiskPill level={chapterReadback.risk} /> : null}
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                {[
+                  { label: "Handoff source", value: "Staff chapter drawer" },
+                  { label: "Return target", value: chapterReturnTarget },
+                ].map(({ label, value }) => (
+                  <div key={label} className="rounded-lg border border-white/[0.06] bg-[#0d1117]/70 px-3 py-2">
+                    <div className="text-[10px] text-slate-600 font-mono uppercase tracking-wider">{label}</div>
+                    <div className="mt-1 text-[12px] font-mono font-semibold text-slate-200">{value}</div>
+                  </div>
+                ))}
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                {[
+                  {
+                    label: "Event readiness",
+                    value: chapterReadback.events ? `${chapterReadback.events} events this month` : "No event snapshot",
+                  },
+                  {
+                    label: "RSVP totals",
+                    value: chapterReadback.rsvps ? `${chapterReadback.rsvps} RSVPs` : "No RSVP snapshot",
+                  },
+                  {
+                    label: "Attendance context",
+                    value: chapterReadback.attendance ? `${chapterReadback.attendance} attended` : "No attendance snapshot",
+                  },
+                  {
+                    label: "Weekly points posture",
+                    value: chapterReadback.pointsWeek ? `+${chapterReadback.pointsWeek} this week` : "No weekly points snapshot",
+                  },
+                  {
+                    label: "Points this year",
+                    value: chapterReadback.points
+                      ? Number(chapterReadback.points).toLocaleString()
+                      : "No annual points snapshot",
+                  },
+                ].map(({ label, value }) => (
+                  <div key={label} className="rounded-lg border border-white/[0.06] bg-[#0d1117]/70 px-3 py-2">
+                    <div className="text-[10px] text-slate-600 font-mono uppercase tracking-wider">{label}</div>
+                    <div className="mt-1 text-[12px] font-mono font-semibold text-slate-200">{value}</div>
+                  </div>
+                ))}
+              </div>
             </div>
           ) : null}
           <p className="mt-3 text-[11px] leading-relaxed text-slate-500">
@@ -2408,6 +2469,10 @@ function AdminRoleGate({
   const [picked, setPicked] = useState<AdminRole>("ds-admin");
   const contextLabel = getStaffAdminContextLabel(backLabel, chapterContext, proofQueueContext);
   const returnLoopLabel = getStaffAdminReturnLoopLabel(backLabel, chapterContext, proofQueueContext);
+  const chapterReturnTarget =
+    chapterReadback?.chapterContext && returnLoopLabel === "Chapters"
+      ? `${chapterReadback.chapterContext} in Chapters`
+      : `Return to ${returnLoopLabel}`;
   const oversightReadbackNote =
     backLabel === "this chapter" && chapterContext
       ? `Open Admin preview to read back event readiness, RSVP totals, attendance context, and points posture for ${chapterContext} before requesting any blocked-control follow-through or correction path.`
@@ -2443,40 +2508,71 @@ function AdminRoleGate({
         </div>
 
         {chapterReadback ? (
-          <div className="grid grid-cols-2 gap-2 text-left">
-            {[
-              { label: "School", value: chapterReadback.school ?? chapterReadback.chapterContext },
-              { label: "Region", value: chapterReadback.region ?? "Read-only" },
-              { label: "Coach", value: chapterReadback.coach ?? "Read-only" },
-              { label: "Active Members", value: chapterReadback.members ?? "0" },
-              {
-                label: "Event readiness",
-                value: chapterReadback.events ? `${chapterReadback.events} events this month` : "No event snapshot",
-              },
-              {
-                label: "RSVP totals",
-                value: chapterReadback.rsvps ? `${chapterReadback.rsvps} RSVPs` : "No RSVP snapshot",
-              },
-              {
-                label: "Attendance context",
-                value: chapterReadback.attendance ? `${chapterReadback.attendance} attended` : "No attendance snapshot",
-              },
-              {
-                label: "Weekly points posture",
-                value: chapterReadback.pointsWeek ? `+${chapterReadback.pointsWeek} this week` : "No weekly points snapshot",
-              },
-              {
-                label: "Points this year",
-                value: chapterReadback.points
-                  ? Number(chapterReadback.points).toLocaleString()
-                  : "No annual points snapshot",
-              },
-            ].map(({ label, value }) => (
-              <div key={label} className="rounded-lg border border-white/[0.06] bg-[#161b22] px-3 py-2">
-                <div className="text-[10px] text-slate-600 font-mono uppercase tracking-wider">{label}</div>
-                <div className="mt-1 text-[12px] font-mono font-semibold text-slate-200">{value}</div>
+          <div className="space-y-2 text-left">
+            <div className="grid grid-cols-2 gap-2">
+              {[
+                { label: "School", value: chapterReadback.school ?? chapterReadback.chapterContext },
+                { label: "Region", value: chapterReadback.region ?? "Read-only" },
+                { label: "Coach", value: chapterReadback.coach ?? "Read-only" },
+                { label: "Active Members", value: chapterReadback.members ?? "0" },
+              ].map(({ label, value }) => (
+                <div key={label} className="rounded-lg border border-white/[0.06] bg-[#161b22] px-3 py-2">
+                  <div className="text-[10px] text-slate-600 font-mono uppercase tracking-wider">{label}</div>
+                  <div className="mt-1 text-[12px] font-mono font-semibold text-slate-200">{value}</div>
+                </div>
+              ))}
+            </div>
+            <div className="flex items-center justify-between rounded-lg border border-white/[0.06] bg-[#161b22] px-3 py-2">
+              <div>
+                <div className="text-[10px] text-slate-600 font-mono uppercase tracking-wider">Risk posture</div>
+                <div className="mt-1 text-[11px] leading-relaxed text-slate-400">
+                  Carry the same chapter risk context through this Admin gate before requesting any blocked-control follow-through or correction path.
+                </div>
               </div>
-            ))}
+              {chapterReadback.risk ? <RiskPill level={chapterReadback.risk} /> : null}
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              {[
+                { label: "Handoff source", value: "Staff chapter drawer" },
+                { label: "Return target", value: chapterReturnTarget },
+              ].map(({ label, value }) => (
+                <div key={label} className="rounded-lg border border-white/[0.06] bg-[#161b22] px-3 py-2">
+                  <div className="text-[10px] text-slate-600 font-mono uppercase tracking-wider">{label}</div>
+                  <div className="mt-1 text-[12px] font-mono font-semibold text-slate-200">{value}</div>
+                </div>
+              ))}
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              {[
+                {
+                  label: "Event readiness",
+                  value: chapterReadback.events ? `${chapterReadback.events} events this month` : "No event snapshot",
+                },
+                {
+                  label: "RSVP totals",
+                  value: chapterReadback.rsvps ? `${chapterReadback.rsvps} RSVPs` : "No RSVP snapshot",
+                },
+                {
+                  label: "Attendance context",
+                  value: chapterReadback.attendance ? `${chapterReadback.attendance} attended` : "No attendance snapshot",
+                },
+                {
+                  label: "Weekly points posture",
+                  value: chapterReadback.pointsWeek ? `+${chapterReadback.pointsWeek} this week` : "No weekly points snapshot",
+                },
+                {
+                  label: "Points this year",
+                  value: chapterReadback.points
+                    ? Number(chapterReadback.points).toLocaleString()
+                    : "No annual points snapshot",
+                },
+              ].map(({ label, value }) => (
+                <div key={label} className="rounded-lg border border-white/[0.06] bg-[#161b22] px-3 py-2">
+                  <div className="text-[10px] text-slate-600 font-mono uppercase tracking-wider">{label}</div>
+                  <div className="mt-1 text-[12px] font-mono font-semibold text-slate-200">{value}</div>
+                </div>
+              ))}
+            </div>
           </div>
         ) : null}
 
