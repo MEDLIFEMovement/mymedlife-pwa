@@ -19,6 +19,7 @@ type MemberProfilePanelProps = {
   chapterName: string;
   displayName: string;
   entrySource?: "home" | "points" | null;
+  entryEventId?: string | null;
   isPreviewMode?: boolean;
   workspace: ProfileWorkspace;
   studentHome: MvpMemberHome;
@@ -29,12 +30,14 @@ export function MemberProfilePanel({
   chapterName,
   displayName,
   entrySource = null,
+  entryEventId = null,
   isPreviewMode = false,
   workspace,
   studentHome,
   recognition,
 }: MemberProfilePanelProps) {
-  const launchLanePointsHref = "/app/points?source=profile";
+  const launchLanePointsHref = buildProfilePointsHref(entrySource, entryEventId);
+  const launchLaneEventsHref = buildProfileEventsHref(entrySource, entryEventId);
   const testDisplayName = ensureVisibleTestLabel(displayName);
   const testChapterName = ensureVisibleTestLabel(chapterName);
   const visibleBadges = getProfileBadges(recognition);
@@ -61,8 +64,10 @@ export function MemberProfilePanel({
         ? {
             eyebrow: "Opened from Points & Recognition",
             body:
-              "This profile stays inside the student shell so you can review your TEST identity and chapter standing without breaking the points-to-profile member loop.",
-            href: "/app/points?source=points",
+              entryEventId
+                ? "This profile stays inside the student shell so you can review your TEST identity, chapter standing, and exact event context without breaking the points-to-profile member loop."
+                : "This profile stays inside the student shell so you can review your TEST identity and chapter standing without breaking the points-to-profile member loop.",
+            href: buildProfilePointsHref("points", entryEventId),
             cta: "Back to Points",
           }
         : null;
@@ -149,6 +154,15 @@ export function MemberProfilePanel({
                 <ChevronLeft size={14} />
                 {continuityCard.cta}
               </a>
+              {entrySource === "points" && entryEventId ? (
+                <a
+                  href={launchLaneEventsHref}
+                  className="mt-2 inline-flex items-center gap-1.5 text-sm font-semibold text-slate-700"
+                >
+                  <ChevronRight size={14} />
+                  Back to TEST event detail
+                </a>
+              ) : null}
             </SurfacePanel>
           ) : null}
 
@@ -314,6 +328,38 @@ export function MemberProfilePanel({
       </section>
     </section>
   );
+}
+
+function buildProfilePointsHref(
+  entrySource: "home" | "points" | null,
+  entryEventId: string | null,
+) {
+  const url = new URL(
+    `https://mymedlife.local${entrySource === "points" ? "/app/points?source=points" : "/app/points?source=profile"}`,
+  );
+
+  if (entryEventId) {
+    url.searchParams.set("event", entryEventId);
+  }
+
+  return `${url.pathname}${url.search}`;
+}
+
+function buildProfileEventsHref(
+  entrySource: "home" | "points" | null,
+  entryEventId: string | null,
+) {
+  if (!entryEventId) {
+    return "/app/events?source=profile";
+  }
+
+  const url = new URL(`https://mymedlife.local/app/events/${entryEventId}?source=profile`);
+
+  if (entrySource === "points") {
+    url.searchParams.set("profileSource", "points");
+  }
+
+  return `${url.pathname}${url.search}`;
 }
 
 type ProfileBadge = {

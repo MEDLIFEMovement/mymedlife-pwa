@@ -261,6 +261,33 @@ describe("member event detail route", () => {
     expect(html).toContain("the next chapter moment stays route-backed");
   });
 
+  it("preserves exact points-to-profile continuity when event detail was opened from profile with a selected TEST event", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const dataModule = await import("@/services/read-only-app-data");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("member.a@mymedlife.test"),
+    );
+    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
+      getMockReadOnlyAppData("Testing member event detail profile return continuity."),
+    );
+
+    const { default: EventDetailPage } = await import("@/app/app/events/[eventId]/page");
+    const html = renderToStaticMarkup(
+      await EventDetailPage({
+        params: Promise.resolve({ eventId: "chapter-event-ucla-kickoff" }),
+        searchParams: Promise.resolve({ source: "profile", profileSource: "points" }),
+      }),
+    );
+
+    expect(html).toContain('href="/profile?source=points&amp;event=chapter-event-ucla-kickoff"');
+    expect(html).toContain('aria-label="Back to Profile"');
+    expect(html).toContain(
+      'href="/app/events/chapter-event-ucla-kickoff?source=profile&amp;step=rsvp&amp;profileSource=points"',
+    );
+    expect(html).toContain('href="/app/points?source=profile&amp;event=chapter-event-ucla-kickoff"');
+  });
+
   it("preserves the exact event handoff when profile opens event points impact", async () => {
     const actorModule = await import("@/services/local-actor-context");
     const dataModule = await import("@/services/read-only-app-data");
