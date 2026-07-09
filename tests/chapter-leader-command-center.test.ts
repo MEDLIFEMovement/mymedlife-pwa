@@ -2382,6 +2382,37 @@ describe("chapter leader command center", () => {
     );
   });
 
+  it("keeps benchmark leaderboard attendance empty-state posture when add-note reloads without a valid member", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "member_profile",
+      source: "leaderboard",
+      memberId: "missing-member",
+      eventCommittee: "events",
+      eventId: "bc-event-moving-mountains-kickoff",
+      leaderboardMetric: "attendance",
+      leaderboardRegion: "canada",
+      bestPracticeChapterId: "leaderboard-mcgill",
+      quickAction: "add_leader_note",
+      returnQuickAction: "assign_action",
+    });
+    const markup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
+    );
+
+    expect(commandCenter.selectedMember).toBeNull();
+    expect(commandCenter.navigationMemberId).toBeNull();
+    expect(markup).toContain("Choose a member from leaderboard readback first");
+    expect(markup).toContain("Back to leaderboard");
+    expect(markup).toContain("Open attendance review");
+    expect(markup).toContain(
+      "href=\"/leader?view=leaderboard&amp;source=leaderboard&amp;eventCommittee=events&amp;event=bc-event-moving-mountains-kickoff&amp;leaderboardMetric=attendance&amp;region=canada&amp;benchmark=leaderboard-mcgill&amp;quickAction=assign_action\"",
+    );
+    expect(markup).toContain(
+      "href=\"/leader?view=events&amp;source=leaderboard&amp;eventCommittee=events&amp;event=bc-event-moving-mountains-kickoff&amp;leaderboardMetric=attendance&amp;region=canada&amp;benchmark=leaderboard-mcgill&amp;quickAction=assign_action\"",
+    );
+  });
+
   it("keeps attendance-review return context visible while chair review is open from attendance review", () => {
     const actor = getMockLocalActorContext("leader.a@mymedlife.test");
     const commandCenter = getChapterLeaderCommandCenter(actor, data, {
