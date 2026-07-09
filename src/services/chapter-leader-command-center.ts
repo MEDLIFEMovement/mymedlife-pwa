@@ -2345,7 +2345,8 @@ export function buildChapterLeaderCommandCenterHref(
     view === "events" ||
     view === "leaderboard" ||
     options.source === "events" ||
-    options.source === "overview";
+    options.source === "overview" ||
+    options.source === "leaderboard";
   const shouldPreserveFeedPostContext =
     view === "feed_analytics" ||
     view === "bridge_videos" ||
@@ -3938,10 +3939,10 @@ function getMemberReviewContext(
         source: "leaderboard",
         memberId: member.id,
         bestPracticeChapterId: context.bestPracticeChapterId,
-        leaderboardMetric: context.leaderboardMetric,
-        leaderboardRegion: context.leaderboardRegion,
         eventCommitteeFilter: context.eventCommitteeFilter,
         eventId: context.eventId,
+        leaderboardMetric: context.leaderboardMetric,
+        leaderboardRegion: context.leaderboardRegion,
       }),
     };
   }
@@ -4194,6 +4195,8 @@ function getMemberBackToContext(
         href: buildChapterLeaderCommandCenterHref("leaderboard", {
           source: "leaderboard",
           memberId,
+          eventCommitteeFilter: context.eventCommitteeFilter,
+          eventId: context.eventId,
           bestPracticeChapterId: context.bestPracticeChapterId,
           leaderboardMetric: context.leaderboardMetric,
           leaderboardRegion: context.leaderboardRegion,
