@@ -1,5 +1,6 @@
 export type MemberActionRouteSource =
   | "home"
+  | "stories"
   | "campaigns"
   | "evidence"
   | "events"
