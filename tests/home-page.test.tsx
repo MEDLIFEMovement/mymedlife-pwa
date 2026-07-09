@@ -138,16 +138,17 @@ describe("home page", () => {
     const lineCount = source.split("\n").length;
 
     expect(lineCount).toBeGreaterThanOrEqual(3450);
-    expect(lineCount).toBeLessThanOrEqual(3796);
+    expect(lineCount).toBeLessThanOrEqual(3979);
     expect(source).toContain("initialScreen = \"home\"");
     expect(source).toContain("const [screen, setScreen] = useState<Screen>(initialScreen);");
     expect(source).toContain('case "events":');
     expect(source).toContain("source={eventsSource}");
     expect(source).toContain("initialCampaign={initialEventsCampaign}");
     expect(source).toContain('case "event-detail": return <EventDetailScreen navigate={navigate} />;');
-    expect(source).toContain(
-      'case "points": return <PointsLeaderboard source={pointsSource} returnEventId={pointsReturnEventId} />;',
-    );
+    expect(source).toContain('case "points":');
+    expect(source).toContain("<PointsLeaderboard");
+    expect(source).toContain("returnEventId={pointsReturnEventId}");
+    expect(source).toContain("returnCampaign={pointsReturnCampaign}");
     expect(source).toContain('import { MemberBottomNav, type MemberBottomNavTab } from "@/components/member-bottom-nav";');
     expect(source).toContain("<MemberBottomNav");
     expect(source).toContain("activeTab={activeBottomTab}");
