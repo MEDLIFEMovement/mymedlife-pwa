@@ -63,6 +63,7 @@ describe("member stories and profile pages", () => {
     expect(html).toContain(">Stories<");
     expect(html).toContain("Stories");
     expect(html).toContain("Read more");
+    expect(html).toContain('aria-label="Back to student home"');
     expect(html).toContain('href="/app"');
     expect(html).toContain('href="/app/stories"');
     expect(html).toContain('href="/app/events"');
@@ -74,6 +75,8 @@ describe("member stories and profile pages", () => {
     expect(html).toContain("TEST @uconn");
     expect(html).toContain('href="/app/stories?filter=For+You&amp;story=1"');
     expect(html).toContain('href="/app/stories?filter=For+You&amp;story=2"');
+    expect(html).toContain('aria-label="Apply story filter: My Chapter"');
+    expect(html).toContain('aria-label="Apply story filter: Trip Moments"');
     expect(html).toContain('aria-label="Apply story filter: Events"');
     expect(html).toContain('aria-pressed="false"');
     expect(html).toContain('aria-pressed="true"');
