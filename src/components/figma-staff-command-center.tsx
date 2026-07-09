@@ -2410,7 +2410,7 @@ function AdminRoleGate({
   const returnLoopLabel = getStaffAdminReturnLoopLabel(backLabel, chapterContext, proofQueueContext);
   const oversightReadbackNote =
     backLabel === "this chapter" && chapterContext
-      ? `Open Admin preview to read back event readiness, RSVP totals, attendance context, and points posture for ${chapterContext} before requesting any correction path.`
+      ? `Open Admin preview to read back event readiness, RSVP totals, attendance context, and points posture for ${chapterContext} before requesting any blocked-control follow-through or correction path.`
       : null;
 
   return (

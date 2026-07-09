@@ -505,7 +505,7 @@ describe("staff page", () => {
     expect(html).toContain("Restricted Preview Access");
     expect(html).toContain("Chapter review context: TEST Stanford University");
     expect(html).toContain(
-      "Open Admin preview to read back event readiness, RSVP totals, attendance context, and points posture for TEST Stanford University before requesting any correction path.",
+      "Open Admin preview to read back event readiness, RSVP totals, attendance context, and points posture for TEST Stanford University before requesting any blocked-control follow-through or correction path.",
     );
     expect(html).toContain("After the Admin readback, return to Chapters in the same Command Center review loop.");
     expect(html).toContain("Return to Chapters");
