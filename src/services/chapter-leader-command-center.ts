@@ -296,6 +296,8 @@ export type ChapterLeaderCommandCenterMemberProfile = {
     actionLabel: string;
     actionHref: string;
   } | null;
+  backToContextLabel: string;
+  backToContextHref: string;
   backToPipelineHref: string;
   profileHref: string;
 };
@@ -981,6 +983,8 @@ const memberProfileDetailById: Record<string, Omit<
   | "recognition"
   | "readinessLabel"
   | "reviewContext"
+  | "backToContextLabel"
+  | "backToContextHref"
   | "profileHref"
   | "backToPipelineHref"
 >> = {
@@ -1371,6 +1375,8 @@ export function getChapterLeaderCommandCenter(
   const selectedFeedPostId = parseSelectedFeedPostId(options.feedPostId);
   const activeQuickAction = parseQuickActionState(options.quickAction);
   const pipelineSearchQuery = options.search?.trim() ?? "";
+  const requestedBestPracticeChapterId = options.bestPracticeChapterId ?? null;
+  const requestedEventId = options.eventId ?? null;
   const visibleAssignments = getVisibleAssignmentsForActor(actor, data.assignments);
   const leaderActionsFocus = getLeaderActionsFocus(actor, data, visibleAssignments);
   const memberRoleFocus = getChapterMemberRoleFocus(actor, workspace);
@@ -1381,7 +1387,12 @@ export function getChapterLeaderCommandCenter(
     commandCenterMembers,
     recognition.leaderboard,
     {
+      bestPracticeChapterId: requestedBestPracticeChapterId,
+      eventCommitteeFilter: selectedEventCommitteeFilter,
+      eventId: requestedEventId,
       filter: selectedPipelineFilter,
+      leaderboardMetric: selectedLeaderboardMetric,
+      leaderboardRegion: selectedLeaderboardRegion,
       searchQuery: pipelineSearchQuery,
       source: selectedSource,
       selectedMemberId: null,
@@ -1406,7 +1417,12 @@ export function getChapterLeaderCommandCenter(
     commandCenterMembers,
     recognition.leaderboard,
     {
+      bestPracticeChapterId: requestedBestPracticeChapterId,
+      eventCommitteeFilter: selectedEventCommitteeFilter,
+      eventId: requestedEventId,
       filter: selectedPipelineFilter,
+      leaderboardMetric: selectedLeaderboardMetric,
+      leaderboardRegion: selectedLeaderboardRegion,
       searchQuery: pipelineSearchQuery,
       source: selectedSource,
       selectedMemberId: selectedView === "members" ? visiblePipelineMemberId ?? null : null,
@@ -1417,8 +1433,13 @@ export function getChapterLeaderCommandCenter(
     recognition.leaderboard,
     selectedMemberProfileId,
     {
+      bestPracticeChapterId: requestedBestPracticeChapterId,
+      eventCommitteeFilter: selectedEventCommitteeFilter,
+      eventId: requestedEventId,
       feedPostId: selectedFeedPostId,
       filter: selectedPipelineFilter,
+      leaderboardMetric: selectedLeaderboardMetric,
+      leaderboardRegion: selectedLeaderboardRegion,
       searchQuery: pipelineSearchQuery,
       source: selectedSource,
       sourceMode: data.source.mode,
@@ -3606,8 +3627,13 @@ function getSelectedMemberProfile(
   leaderboard: LeaderboardRow[],
   selectedMemberId: string | undefined,
   context: {
+    bestPracticeChapterId: string | null;
+    eventCommitteeFilter: ChapterLeaderEventCommitteeFilterKey;
+    eventId: string | null;
     feedPostId: string | null;
     filter: ChapterLeaderPipelineFilter;
+    leaderboardMetric: ChapterLeaderLeaderboardMetricKey;
+    leaderboardRegion: ChapterLeaderLeaderboardRegionKey;
     searchQuery: string;
     source: ChapterLeaderCommandCenterSource | null;
     sourceMode: ReadOnlyAppData["source"]["mode"];
@@ -3625,19 +3651,13 @@ function getSelectedMemberProfile(
   const detail =
     memberProfileDetailById[member.id] ??
     memberProfileDetailById["member-zara"];
+  const navigationOptions = getMemberProfileNavigationOptions(member.id, context);
+  const backToContext = getMemberBackToContext(member.id, context);
   const profileHref = buildChapterLeaderCommandCenterHref("member_profile", {
-    source: context.source,
-    memberId: member.id,
-    feedPostId: context.feedPostId,
-    pipelineFilter: context.filter,
-    searchQuery: context.searchQuery,
+    ...navigationOptions,
   });
   const backToPipelineHref = buildChapterLeaderCommandCenterHref("members", {
-    source: context.source,
-    memberId: member.id,
-    feedPostId: context.feedPostId,
-    pipelineFilter: context.filter,
-    searchQuery: context.searchQuery,
+    ...navigationOptions,
   });
 
   return {
@@ -3674,14 +3694,21 @@ function getSelectedMemberProfile(
       }),
     })),
     reviewContext: getMemberReviewContext(member, context, backToPipelineHref),
+    backToContextLabel: backToContext.label,
+    backToContextHref: backToContext.href,
     backToPipelineHref,
     profileHref,
   };
 }
 
 function getMockLeaderProfile(context: {
+  bestPracticeChapterId: string | null;
+  eventCommitteeFilter: ChapterLeaderEventCommitteeFilterKey;
+  eventId: string | null;
   feedPostId: string | null;
   filter: ChapterLeaderPipelineFilter;
+  leaderboardMetric: ChapterLeaderLeaderboardMetricKey;
+  leaderboardRegion: ChapterLeaderLeaderboardRegionKey;
   searchQuery: string;
   source: ChapterLeaderCommandCenterSource | null;
 }): ChapterLeaderCommandCenterMemberProfile {
@@ -3691,14 +3718,11 @@ function getMockLeaderProfile(context: {
     pipelineFilter: context.filter,
     searchQuery: context.searchQuery,
   });
+  const backToContext = getMemberBackToContext(mockLeaderProfileId, context);
 
   const buildLeaderProfileHref = (quickAction?: ChapterLeaderQuickActionState) =>
     buildChapterLeaderCommandCenterHref("member_profile", {
-      source: context.source,
-      memberId: mockLeaderProfileId,
-      feedPostId: context.feedPostId,
-      pipelineFilter: context.filter,
-      searchQuery: context.searchQuery,
+      ...getMemberProfileNavigationOptions(mockLeaderProfileId, context),
       quickAction,
     });
 
@@ -3793,12 +3817,11 @@ function getMockLeaderProfile(context: {
       },
     ],
     reviewContext: null,
+    backToContextLabel: backToContext.label,
+    backToContextHref: backToContext.href,
     backToPipelineHref,
     profileHref: buildChapterLeaderCommandCenterHref("member_profile", {
-      source: context.source,
-      feedPostId: context.feedPostId,
-      pipelineFilter: context.filter,
-      searchQuery: context.searchQuery,
+      ...getMemberProfileNavigationOptions(mockLeaderProfileId, context),
     }),
   };
 }
@@ -3806,13 +3829,51 @@ function getMockLeaderProfile(context: {
 function getMemberReviewContext(
   member: ChapterMemberRow,
   context: {
+    bestPracticeChapterId: string | null;
+    eventCommitteeFilter: ChapterLeaderEventCommitteeFilterKey;
+    eventId: string | null;
     feedPostId: string | null;
     filter: ChapterLeaderPipelineFilter;
+    leaderboardMetric: ChapterLeaderLeaderboardMetricKey;
+    leaderboardRegion: ChapterLeaderLeaderboardRegionKey;
     searchQuery: string;
     source: ChapterLeaderCommandCenterSource | null;
   },
   backToPipelineHref: string,
 ) {
+  if (context.source === "events") {
+    return {
+      eyebrow: "Event review follow-through",
+      title: "Attendance review context is active",
+      summary: `${member.displayName} was opened from the leader event shell, so this profile should keep the active event, attendance follow-through, and point-ready readback visible before the review turns into a generic member check-in.`,
+      actionLabel: "Back to event performance",
+      actionHref: buildChapterLeaderCommandCenterHref("events", {
+        source: "events",
+        memberId: member.id,
+        eventCommitteeFilter: context.eventCommitteeFilter,
+        eventId: context.eventId,
+        pipelineFilter: context.filter,
+        searchQuery: context.searchQuery,
+      }),
+    };
+  }
+
+  if (context.source === "leaderboard") {
+    return {
+      eyebrow: "Leaderboard follow-through",
+      title: "Points readback context is active",
+      summary: `${member.displayName} was opened from the attendance leaderboard readback, so this profile should keep the same points and comparison context visible before the review turns into a disconnected roster pass.`,
+      actionLabel: "Back to leaderboard",
+      actionHref: buildChapterLeaderCommandCenterHref("leaderboard", {
+        source: "leaderboard",
+        memberId: member.id,
+        leaderboardMetric: context.leaderboardMetric,
+        leaderboardRegion: context.leaderboardRegion,
+        bestPracticeChapterId: context.bestPracticeChapterId,
+      }),
+    };
+  }
+
   if (context.filter !== "follow_up") {
     return null;
   }
@@ -3856,57 +3917,45 @@ function getMemberLeadershipActionHref(
   action: ChapterLeaderCommandCenterMemberProfile["leadershipActions"][number],
   memberId: string,
   context: {
+    bestPracticeChapterId: string | null;
+    eventCommitteeFilter: ChapterLeaderEventCommitteeFilterKey;
+    eventId: string | null;
     feedPostId: string | null;
     filter: ChapterLeaderPipelineFilter;
+    leaderboardMetric: ChapterLeaderLeaderboardMetricKey;
+    leaderboardRegion: ChapterLeaderLeaderboardRegionKey;
     searchQuery: string;
     source: ChapterLeaderCommandCenterSource | null;
   },
 ) {
+  const navigationOptions = getMemberProfileNavigationOptions(memberId, context);
+
   switch (action.label) {
     case "Promote to Chair":
       return buildChapterLeaderCommandCenterHref("member_profile", {
-        memberId,
-        source: context.source,
-        feedPostId: context.feedPostId,
-        pipelineFilter: context.filter,
-        searchQuery: context.searchQuery,
+        ...navigationOptions,
         quickAction: "promote_to_chair",
       });
     case "Nominate for E-Board":
       return buildChapterLeaderCommandCenterHref("member_profile", {
-        memberId,
-        source: context.source,
-        feedPostId: context.feedPostId,
-        pipelineFilter: context.filter,
-        searchQuery: context.searchQuery,
+        ...navigationOptions,
         quickAction: "nominate_for_eboard",
       });
     case "Schedule Values Interview":
       return buildChapterLeaderCommandCenterHref("member_profile", {
-        memberId,
-        source: context.source,
-        feedPostId: context.feedPostId,
-        pipelineFilter: context.filter,
-        searchQuery: context.searchQuery,
+        ...navigationOptions,
         quickAction: "schedule_values_interview",
       });
     case "Assign Leadership Action":
     case "Open Event Context":
       return buildChapterLeaderCommandCenterHref("member_profile", {
-        memberId,
-        source: context.source,
-        feedPostId: context.feedPostId,
+        ...navigationOptions,
         pipelineFilter: context.filter !== "all" ? context.filter : "follow_up",
-        searchQuery: context.searchQuery,
         quickAction: "assign_leadership_action",
       });
     case "Add Note":
       return buildChapterLeaderCommandCenterHref("member_profile", {
-        memberId,
-        source: context.source,
-        feedPostId: context.feedPostId,
-        pipelineFilter: context.filter,
-        searchQuery: context.searchQuery,
+        ...navigationOptions,
         quickAction: "add_leader_note",
       });
     default:
@@ -3918,7 +3967,12 @@ function getPipelineRows(
   members: ChapterMemberRow[],
   leaderboard: LeaderboardRow[],
   context: {
+    bestPracticeChapterId: string | null;
+    eventCommitteeFilter: ChapterLeaderEventCommitteeFilterKey;
+    eventId: string | null;
     filter: ChapterLeaderPipelineFilter;
+    leaderboardMetric: ChapterLeaderLeaderboardMetricKey;
+    leaderboardRegion: ChapterLeaderLeaderboardRegionKey;
     searchQuery: string;
     source: ChapterLeaderCommandCenterSource | null;
     selectedMemberId: string | null;
@@ -3971,12 +4025,22 @@ function getPipelineRows(
         href: buildChapterLeaderCommandCenterHref("members", {
           source: context.source,
           memberId: member.id,
+          bestPracticeChapterId: context.bestPracticeChapterId,
+          eventCommitteeFilter: context.eventCommitteeFilter,
+          eventId: context.eventId,
+          leaderboardMetric: context.leaderboardMetric,
+          leaderboardRegion: context.leaderboardRegion,
           pipelineFilter: context.filter,
           searchQuery: context.searchQuery,
         }),
         profileHref: buildChapterLeaderCommandCenterHref("member_profile", {
           source: context.source,
           memberId: member.id,
+          bestPracticeChapterId: context.bestPracticeChapterId,
+          eventCommitteeFilter: context.eventCommitteeFilter,
+          eventId: context.eventId,
+          leaderboardMetric: context.leaderboardMetric,
+          leaderboardRegion: context.leaderboardRegion,
           pipelineFilter: context.filter,
           searchQuery: context.searchQuery,
         }),
@@ -3992,6 +4056,91 @@ function getInitials(value: string) {
     .map((part) => part[0] ?? "")
     .join("")
     .toUpperCase();
+}
+
+function getMemberProfileNavigationOptions(
+  memberId: string,
+  context: {
+    bestPracticeChapterId: string | null;
+    eventCommitteeFilter: ChapterLeaderEventCommitteeFilterKey;
+    eventId: string | null;
+    feedPostId: string | null;
+    filter: ChapterLeaderPipelineFilter;
+    leaderboardMetric: ChapterLeaderLeaderboardMetricKey;
+    leaderboardRegion: ChapterLeaderLeaderboardRegionKey;
+    searchQuery: string;
+    source: ChapterLeaderCommandCenterSource | null;
+  },
+) {
+  return {
+    source: context.source,
+    memberId,
+    bestPracticeChapterId: context.bestPracticeChapterId,
+    eventCommitteeFilter: context.eventCommitteeFilter,
+    eventId: context.eventId,
+    feedPostId: context.feedPostId,
+    leaderboardMetric: context.leaderboardMetric,
+    leaderboardRegion: context.leaderboardRegion,
+    pipelineFilter: context.filter,
+    searchQuery: context.searchQuery,
+  };
+}
+
+function getMemberBackToContext(
+  memberId: string,
+  context: {
+    bestPracticeChapterId: string | null;
+    eventCommitteeFilter: ChapterLeaderEventCommitteeFilterKey;
+    eventId: string | null;
+    feedPostId: string | null;
+    filter: ChapterLeaderPipelineFilter;
+    leaderboardMetric: ChapterLeaderLeaderboardMetricKey;
+    leaderboardRegion: ChapterLeaderLeaderboardRegionKey;
+    searchQuery: string;
+    source: ChapterLeaderCommandCenterSource | null;
+  },
+) {
+  switch (context.source) {
+    case "events":
+      return {
+        label: "Back to Event Performance",
+        href: buildChapterLeaderCommandCenterHref("events", {
+          source: "events",
+          memberId,
+          eventCommitteeFilter: context.eventCommitteeFilter,
+          eventId: context.eventId,
+          pipelineFilter: context.filter,
+          searchQuery: context.searchQuery,
+        }),
+      };
+    case "leaderboard":
+      return {
+        label: "Back to Leaderboard",
+        href: buildChapterLeaderCommandCenterHref("leaderboard", {
+          source: "leaderboard",
+          memberId,
+          bestPracticeChapterId: context.bestPracticeChapterId,
+          leaderboardMetric: context.leaderboardMetric,
+          leaderboardRegion: context.leaderboardRegion,
+        }),
+      };
+    default:
+      return {
+        label: "Back to Member Pipeline",
+        href: buildChapterLeaderCommandCenterHref("members", {
+          source: context.source,
+          memberId,
+          bestPracticeChapterId: context.bestPracticeChapterId,
+          eventCommitteeFilter: context.eventCommitteeFilter,
+          eventId: context.eventId,
+          feedPostId: context.feedPostId,
+          leaderboardMetric: context.leaderboardMetric,
+          leaderboardRegion: context.leaderboardRegion,
+          pipelineFilter: context.filter,
+          searchQuery: context.searchQuery,
+        }),
+      };
+  }
 }
 
 function getPipelineSnapshots(
