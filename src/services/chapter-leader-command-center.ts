@@ -1781,6 +1781,7 @@ export function getChapterLeaderCommandCenter(
       pipelineFilter: selectedPipelineFilter,
       searchQuery: pipelineSearchQuery,
       leaderboardRegion: selectedLeaderboardRegion,
+      bestPracticeChapterId: selectedBestPracticeChapterId,
       quickAction: activeQuickAction,
       returnQuickAction,
     }),
@@ -3181,6 +3182,7 @@ function getLeaderboardFilters(
     pipelineFilter: ChapterLeaderPipelineFilter;
     searchQuery: string;
     leaderboardRegion: ChapterLeaderLeaderboardRegionKey;
+    bestPracticeChapterId?: string | null;
     quickAction?: ChapterLeaderQuickActionState | null;
     returnQuickAction?: ChapterLeaderQuickActionState | null;
   },
@@ -3216,6 +3218,8 @@ function getLeaderboardFilters(
         searchQuery: context.searchQuery,
         leaderboardMetric: key,
         leaderboardRegion: context.leaderboardRegion,
+        bestPracticeChapterId:
+          context.source === "leaderboard" ? context.bestPracticeChapterId ?? null : null,
         quickAction: preservedAttendanceQuickAction,
       }),
     }));

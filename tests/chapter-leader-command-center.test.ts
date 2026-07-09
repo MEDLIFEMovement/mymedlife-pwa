@@ -1726,6 +1726,31 @@ describe("chapter leader command center", () => {
     );
   });
 
+  it("keeps benchmark leaderboard filter context attached while member review waits for a selected person", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "member_profile",
+      source: "leaderboard",
+      eventCommittee: "events",
+      eventId: "bc-event-moving-mountains-kickoff",
+      leaderboardMetric: "attendance",
+      leaderboardRegion: "canada",
+      bestPracticeChapterId: "leaderboard-mcgill",
+      quickAction: "assign_action",
+    });
+
+    expect(commandCenter.selectedMember).toBeNull();
+    expect(commandCenter.navigationMemberId).toBeNull();
+    expect(commandCenter.leaderboardRegionOptions.find((option) => option.key === "all")).toMatchObject({
+      href:
+        "/leader?view=leaderboard&source=leaderboard&eventCommittee=events&event=bc-event-moving-mountains-kickoff&leaderboardMetric=attendance&benchmark=leaderboard-mcgill&quickAction=assign_action",
+    });
+    expect(commandCenter.leaderboardFilters.find((filter) => filter.key === "chapter_health")).toMatchObject({
+      href:
+        "/leader?view=leaderboard&source=leaderboard&eventCommittee=events&event=bc-event-moving-mountains-kickoff&region=canada&benchmark=leaderboard-mcgill&quickAction=assign_action",
+    });
+  });
+
   it("keeps chapter-home attendance return posture visible while member review waits for a selected person", () => {
     const actor = getMockLocalActorContext("leader.a@mymedlife.test");
     const commandCenter = getChapterLeaderCommandCenter(actor, data, {
