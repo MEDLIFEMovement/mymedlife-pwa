@@ -80,9 +80,28 @@ describe("member mobile shell routes", () => {
     expect(html).toContain(">Events<");
     expect(html).toContain(">Points<");
     expect(html).toContain(">Profile<");
+    expect(getBottomNavHtml(html)).toContain('href="/profile?source=stories"');
     expect(html).not.toContain("Live from the field");
     expect(html).not.toContain("Add Story");
     expect(html).not.toContain("stories published");
+  });
+
+  it("keeps the filtered stories route tied to profile inside the member shell", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("member.a@mymedlife.test"),
+    );
+
+    const { default: StoriesPage } = await import("@/app/app/stories/page");
+    const html = renderToStaticMarkup(
+      await StoriesPage({
+        searchParams: Promise.resolve({ filter: "Events" }),
+      }),
+    );
+
+    expect(html).toContain('href="/app/stories?filter=Events"');
+    expect(getBottomNavHtml(html)).toContain('href="/profile?source=stories&amp;storyFilter=Events"');
   });
 
   it("renders the Events route through the shared Figma member shell", async () => {

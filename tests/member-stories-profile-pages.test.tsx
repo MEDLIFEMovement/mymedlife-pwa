@@ -68,7 +68,7 @@ describe("member stories and profile pages", () => {
     expect(html).toContain('href="/app/stories"');
     expect(html).toContain('href="/app/events"');
     expect(html).toContain('href="/app/points"');
-    expect(html).toContain('href="/profile"');
+    expect(html).toContain('href="/profile?source=stories"');
     expect(html).toContain("MEDLIFE Stories · preview-only student feed");
     expect(html).toContain("Preview");
     expect(html).toContain("TEST @nationwide");
@@ -310,6 +310,35 @@ describe("member stories and profile pages", () => {
     expect(html).toContain("without breaking the points-to-profile member loop");
     expect(html).toContain("Back to Points");
     expect(html).toContain('href="/app/points?source=points"');
+    expect(html).toContain('href="/app/events?source=profile"');
+  });
+
+  it("keeps stories-to-profile continuity inside the mobile member shell", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const dataModule = await import("@/services/read-only-app-data");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("member.a@mymedlife.test"),
+    );
+    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
+      getMockReadOnlyAppData("Testing member profile stories continuity."),
+    );
+
+    const { default: ProfilePage } = await import("@/app/profile/page");
+    const html = renderToStaticMarkup(
+      await ProfilePage({
+        searchParams: Promise.resolve({
+          source: "stories",
+          storyFilter: "Events",
+        }),
+      }),
+    );
+
+    expect(html).toContain("Opened from the TEST stories feed");
+    expect(html).toContain("stories-to-profile handoff");
+    expect(html).toContain("Back to Stories");
+    expect(html).toContain('href="/app/stories?filter=Events"');
+    expect(html).toContain('href="/app/points?source=profile"');
     expect(html).toContain('href="/app/events?source=profile"');
   });
 

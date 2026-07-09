@@ -18,9 +18,10 @@ import type { ReactNode } from "react";
 type MemberProfilePanelProps = {
   chapterName: string;
   displayName: string;
-  entrySource?: "home" | "points" | null;
+  entrySource?: "home" | "points" | "stories" | null;
   entryEventId?: string | null;
   entryCampaign?: string | null;
+  entryStoryFilter?: string | null;
   isPreviewMode?: boolean;
   workspace: ProfileWorkspace;
   studentHome: MvpMemberHome;
@@ -33,6 +34,7 @@ export function MemberProfilePanel({
   entrySource = null,
   entryEventId = null,
   entryCampaign = null,
+  entryStoryFilter = null,
   isPreviewMode = false,
   workspace,
   studentHome,
@@ -72,6 +74,14 @@ export function MemberProfilePanel({
             href: buildProfilePointsHref("points", entryEventId, entryCampaign),
             cta: "Back to Points",
           }
+        : entrySource === "stories"
+          ? {
+              eyebrow: "Opened from the TEST stories feed",
+              body:
+                "This profile stays inside the student shell so you can check your TEST identity without losing the stories-to-profile handoff or dropping out of the mobile member loop.",
+              href: buildProfileStoriesHref(entryStoryFilter),
+              cta: "Back to Stories",
+            }
         : null;
 
   return (
@@ -333,7 +343,7 @@ export function MemberProfilePanel({
 }
 
 function buildProfilePointsHref(
-  entrySource: "home" | "points" | null,
+  entrySource: "home" | "points" | "stories" | null,
   entryEventId: string | null,
   entryCampaign: string | null,
 ) {
@@ -359,7 +369,7 @@ function buildProfilePointsHref(
 }
 
 function buildProfileEventsHref(
-  entrySource: "home" | "points" | null,
+  entrySource: "home" | "points" | "stories" | null,
   entryEventId: string | null,
   entryCampaign: string | null,
 ) {
@@ -377,6 +387,16 @@ function buildProfileEventsHref(
 
   if (entryCampaign && entryCampaign !== "All") {
     url.searchParams.set("campaign", entryCampaign);
+  }
+
+  return `${url.pathname}${url.search}`;
+}
+
+function buildProfileStoriesHref(entryStoryFilter: string | null) {
+  const url = new URL("https://mymedlife.local/app/stories");
+
+  if (entryStoryFilter) {
+    url.searchParams.set("filter", entryStoryFilter);
   }
 
   return `${url.pathname}${url.search}`;
