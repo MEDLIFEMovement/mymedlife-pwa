@@ -123,6 +123,9 @@ export default async function LeaderPage({ searchParams }: LeaderPageProps) {
           | undefined,
         searchQuery: resolvedSearchParams?.q,
         eventId: resolvedSearchParams?.event,
+        leaderboardMetric: resolvedSearchParams?.leaderboardMetric,
+        leaderboardRegion: resolvedSearchParams?.region,
+        bestPracticeChapterId: resolvedSearchParams?.benchmark,
         quickAction:
           resolvedSearchParams?.quickAction === "assign_action"
             ? "assign_action"
