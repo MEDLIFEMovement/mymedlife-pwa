@@ -3369,23 +3369,14 @@ function StoriesScreen({
         <div className="sticky top-0 z-30 bg-white border-b border-gray-200 px-4 pt-12 pb-2">
           <div className="flex items-center justify-between mb-3">
             <div className="flex min-w-0 items-center gap-3">
-              <Link
-                href="/app"
-                aria-label="Back to student home"
-                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-100 text-black transition active:scale-[0.97]"
-              >
+              <Link href="/app" aria-label="Back to student home" className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-100 text-black transition active:scale-[0.97]">
                 <ArrowLeft size={16} />
               </Link>
               <div className="min-w-0 leading-none">
-                <h1
-                  className="truncate text-xl font-bold text-black"
-                  style={{ fontFamily: "'Playfair Display', serif" }}
-                >
+                <h1 className="truncate text-xl font-bold text-black" style={{ fontFamily: "'Playfair Display', serif" }}>
                   Stories
                 </h1>
-                <p className="mt-1 text-[11px] font-medium text-gray-400">
-                  MEDLIFE Stories · preview-only student feed
-                </p>
+                <p className="mt-1 text-[11px] font-medium text-gray-400">MEDLIFE Stories · preview-only student feed</p>
               </div>
             </div>
             <div className="flex items-center gap-1.5">
@@ -3397,20 +3388,10 @@ function StoriesScreen({
             {STORY_CATEGORIES.map((category) => {
               const isActive = activeFilter === category.filter;
               return (
-                <button
-                  type="button"
-                  key={category.filter}
-                  aria-label={`Apply story filter: ${category.filter}`}
-                  title={`Apply story filter: ${category.filter}`}
-                  aria-pressed={isActive}
-                  onClick={() => selectFilter(category.filter)}
-                  className={cn(
-                    "flex-shrink-0 whitespace-nowrap rounded-full border px-2.5 py-1 text-xs font-semibold transition-all",
-                    isActive
-                      ? "border-black bg-black text-white"
-                      : "border-gray-300 bg-white text-gray-500"
-                  )}
-                >
+                <button type="button" key={category.filter} aria-label={`Apply story filter: ${category.filter}`} title={`Apply story filter: ${category.filter}`} aria-pressed={isActive} onClick={() => selectFilter(category.filter)} className={cn(
+                  "flex-shrink-0 whitespace-nowrap rounded-full border px-2.5 py-1 text-xs font-semibold transition-all",
+                  isActive ? "border-black bg-black text-white" : "border-gray-300 bg-white text-gray-500"
+                )}>
                   <span
                     className="mr-1.5 inline-flex h-5 w-5 items-center justify-center rounded-full text-[11px]"
                     style={{ background: isActive ? "rgba(255,255,255,0.18)" : category.bg }}
