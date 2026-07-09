@@ -207,7 +207,7 @@ describe("Figma missing route placeholders", () => {
     expect(html).toContain("Chapter context: TEST Boston College");
     expect(html).toContain("Context: TEST Boston College");
     expect(html).toContain(
-      "Use this Admin readback to confirm event readiness, RSVP totals, attendance context, and points posture for TEST Boston College before requesting any correction path.",
+      "Use this Admin readback to confirm event readiness, RSVP totals, attendance context, and points posture for TEST Boston College before requesting any blocked-control follow-through or correction path.",
     );
     expect(html).toContain("Return with Command Center after this chapter review pass for TEST Boston College");
     expect(html).toContain("Return with Command Center after this chapter review pass");

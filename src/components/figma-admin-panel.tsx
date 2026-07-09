@@ -421,8 +421,8 @@ function getEmbeddedAdminReviewCopy(
       label: "Embedded Chapter Review",
       note:
         chapterContext
-          ? `Use this Admin readback to confirm event readiness, RSVP totals, attendance context, and points posture for ${chapterContext} before requesting any correction path.`
-          : "Use this Admin readback to confirm event readiness, RSVP totals, attendance context, and points posture before requesting any correction path.",
+          ? `Use this Admin readback to confirm event readiness, RSVP totals, attendance context, and points posture for ${chapterContext} before requesting any blocked-control follow-through or correction path.`
+          : "Use this Admin readback to confirm event readiness, RSVP totals, attendance context, and points posture before requesting any blocked-control follow-through or correction path.",
       footer:
         chapterContext
           ? `Return with Command Center after this chapter review pass for ${chapterContext}, or use the top-right menu to switch workspaces or log out.`
@@ -805,7 +805,7 @@ function ChaptersPage({
                   Embedded chapter oversight readback
                 </div>
                 <p className="mt-1 text-[12px] text-sky-300/80 leading-relaxed">
-                  {`Use this Admin readback to verify event readiness, RSVP totals, attendance context, and points posture for ${embeddedReadback.chapterContext} before requesting any correction path.`}
+                  {`Use this Admin readback to verify event readiness, RSVP totals, attendance context, and points posture for ${embeddedReadback.chapterContext} before requesting any blocked-control follow-through or correction path.`}
                 </p>
               </div>
             </div>
@@ -826,6 +826,35 @@ function ChaptersPage({
                 {
                   label: "Active Members",
                   value: embeddedReadback.members ?? "0",
+                },
+              ].map(({ label, value }) => (
+                <div key={label} className="rounded border border-sky-500/10 bg-[#0d1117]/50 px-3 py-2">
+                  <div className="text-[10px] text-sky-400/70 font-mono uppercase tracking-wider">{label}</div>
+                  <div className="mt-1 text-[13px] font-mono font-semibold text-slate-100">{value}</div>
+                </div>
+              ))}
+            </div>
+            <div className="flex items-center justify-between rounded border border-sky-500/10 bg-[#0d1117]/50 px-3 py-2">
+              <div>
+                <div className="text-[10px] text-sky-400/70 font-mono uppercase tracking-wider">Risk posture</div>
+                <div className="mt-1 text-[11px] leading-relaxed text-slate-400">
+                  Carry the same chapter risk context through this Admin readback before requesting any blocked-control follow-through or correction path.
+                </div>
+              </div>
+              <Badge
+                status={embeddedReadback.risk ?? "unknown"}
+                label={(embeddedReadback.risk ?? "unknown").toUpperCase()}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              {[
+                {
+                  label: "Handoff source",
+                  value: "Staff chapter drawer",
+                },
+                {
+                  label: "Return target",
+                  value: `${embeddedReadback.chapterContext} in Chapters`,
                 },
               ].map(({ label, value }) => (
                 <div key={label} className="rounded border border-sky-500/10 bg-[#0d1117]/50 px-3 py-2">
@@ -887,7 +916,7 @@ function ChaptersPage({
             </div>
             {embeddedReadback.pointsWeek ? (
               <p className="text-[11px] leading-relaxed text-slate-300">
-                {`Points posture stays read-only here: ${embeddedReadback.pointsWeek} weekly points remain review context only until an approved correction workflow exists.`}
+                {`Points posture stays read-only here: ${embeddedReadback.pointsWeek} weekly points remain review context only until an approved correction workflow exists, and blocked-control follow-through stays in this Admin readback lane.`}
               </p>
             ) : null}
           </div>
@@ -1007,7 +1036,7 @@ function ChaptersPage({
             {embeddedReadback ? (
               <div className="space-y-2">
                 <p className="text-[11px] leading-relaxed text-slate-300">
-                  RSVP totals, attendance context, event readiness, and points posture remain review-only in this embedded Admin drawer. Use this readback before requesting any chapter correction path.
+                  RSVP totals, attendance context, event readiness, and points posture remain review-only in this embedded Admin drawer. Use this readback before requesting any blocked-control follow-through or chapter correction path.
                 </p>
                 <p className="text-[11px] leading-relaxed text-sky-300/80">
                   {`After this Admin readback, return to Chapters with ${embeddedReadback.chapterContext} still selected in the same Command Center review loop to keep the chapter oversight context intact.`}

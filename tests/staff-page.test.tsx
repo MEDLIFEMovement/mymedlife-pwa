@@ -457,7 +457,7 @@ describe("staff page", () => {
     expect(html).toContain("Chapter review context: TEST Boston College");
     expect(html).toContain(">Chapters</h1>");
     expect(html).toContain(
-      "Chapter oversight for TEST Boston College stays read-only here: event readiness, RSVP totals, attendance readback, and points posture should be reviewed in Admin before any correction request.",
+      "Chapter oversight for TEST Boston College stays read-only here: event readiness, RSVP totals, attendance readback, and points posture should be reviewed in Admin before any blocked-control follow-through or correction request.",
     );
     expect(html).toContain("When DS Admin access is available, return to Chapters in the same Command Center review loop after the Admin readback closes.");
     expect(html).toContain("Return to Chapters");
@@ -505,7 +505,7 @@ describe("staff page", () => {
     expect(html).toContain("Restricted Preview Access");
     expect(html).toContain("Chapter review context: TEST Stanford University");
     expect(html).toContain(
-      "Open Admin preview to read back event readiness, RSVP totals, attendance context, and points posture for TEST Stanford University before requesting any correction path.",
+      "Open Admin preview to read back event readiness, RSVP totals, attendance context, and points posture for TEST Stanford University before requesting any blocked-control follow-through or correction path.",
     );
     expect(html).toContain("After the Admin readback, return to Chapters in the same Command Center review loop.");
     expect(html).toContain("Return to Chapters");
@@ -551,7 +551,7 @@ describe("staff page", () => {
     expect(html).toContain("Chapter context: TEST Stanford University");
     expect(html).toContain("Embedded Chapter Review");
     expect(html).toContain(
-      "Use this Admin readback to confirm event readiness, RSVP totals, attendance context, and points posture for TEST Stanford University before requesting any correction path.",
+      "Use this Admin readback to confirm event readiness, RSVP totals, attendance context, and points posture for TEST Stanford University before requesting any blocked-control follow-through or correction path.",
     );
     expect(html).toContain(
       "After this Admin readback, return to Chapters with TEST Stanford University still selected in the same Command Center review loop to keep the chapter oversight context intact.",
@@ -1133,23 +1133,27 @@ describe("staff page", () => {
 
     expect(html).toContain("Embedded chapter oversight readback");
     expect(html).toContain(
-      "Use this Admin readback to verify event readiness, RSVP totals, attendance context, and points posture for TEST Stanford University before requesting any correction path.",
+      "Use this Admin readback to verify event readiness, RSVP totals, attendance context, and points posture for TEST Stanford University before requesting any blocked-control follow-through or correction path.",
     );
     expect(html).toContain(">5</div>");
     expect(html).toContain(">80</div>");
     expect(html).toContain(">68</div>");
     expect(html).toContain(">22100</div>");
     expect(html).toContain(
-      "Points posture stays read-only here: 1890 weekly points remain review context only until an approved correction workflow exists.",
+      "Points posture stays read-only here: 1890 weekly points remain review context only until an approved correction workflow exists, and blocked-control follow-through stays in this Admin readback lane.",
     );
     expect(html).toContain(">School</div><div class=\"mt-1 text-[13px] font-mono font-semibold text-slate-100\">TEST Stanford University</div>");
     expect(html).toContain(">Region</div><div class=\"mt-1 text-[13px] font-mono font-semibold text-slate-100\">West</div>");
     expect(html).toContain(">Coach</div><div class=\"mt-1 text-[13px] font-mono font-semibold text-slate-100\">TEST James Okafor</div>");
     expect(html).toContain(">Active Members</div><div class=\"mt-1 text-[13px] font-mono font-semibold text-slate-100\">52</div>");
+    expect(html).toContain("Risk posture");
+    expect(html).toContain("Carry the same chapter risk context through this Admin readback before requesting any blocked-control follow-through or correction path.");
+    expect(html).toContain(">HEALTHY</span>");
+    expect(html).toContain(">Handoff source</div><div class=\"mt-1 text-[13px] font-mono font-semibold text-slate-100\">Staff chapter drawer</div>");
+    expect(html).toContain(">Return target</div><div class=\"mt-1 text-[13px] font-mono font-semibold text-slate-100\">TEST Stanford University in Chapters</div>");
     expect(html).toContain("Chapter Detail");
     expect(html).toContain("TEST Stanford University · West");
     expect(html).toContain("TEST James Okafor");
-    expect(html).toContain(">HEALTHY</span>");
     expect(html).toContain(">Active Members</div><div class=\"text-[14px] text-slate-200 font-mono font-semibold\">52</div>");
     expect(html).toContain(">Events This Month</div><div class=\"text-[14px] text-slate-200 font-mono font-semibold\">5</div>");
     expect(html).toContain(">RSVPs</div><div class=\"text-[14px] text-slate-200 font-mono font-semibold\">80</div>");
@@ -1166,7 +1170,7 @@ describe("staff page", () => {
     expect(html).toContain("68 attended");
     expect(html).toContain("+1890 this week");
     expect(html).toContain(
-      "RSVP totals, attendance context, event readiness, and points posture remain review-only in this embedded Admin drawer. Use this readback before requesting any chapter correction path.",
+      "RSVP totals, attendance context, event readiness, and points posture remain review-only in this embedded Admin drawer. Use this readback before requesting any blocked-control follow-through or chapter correction path.",
     );
     expect(html).toContain("Return to Chapters");
     expect(html).toContain(
