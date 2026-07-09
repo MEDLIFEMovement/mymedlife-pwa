@@ -133,7 +133,7 @@ describe("member mobile shell routes", () => {
       'href="/app/points?source=stories&amp;campaign=Spring+Showcase&amp;storyFilter=Events"',
     );
     expect(getBottomNavHtml(html)).toContain(
-      'href="/profile?source=stories&amp;storyFilter=Events"',
+      'href="/profile?source=stories&amp;storyFilter=Events&amp;campaign=Spring+Showcase"',
     );
   });
 
@@ -497,7 +497,7 @@ describe("member mobile shell routes", () => {
       'href="/app/events?source=stories&amp;campaign=Spring+Showcase&amp;storyFilter=Events"',
     );
     expect(getBottomNavHtml(html)).toContain(
-      'href="/profile?source=stories&amp;storyFilter=Events"',
+      'href="/profile?source=stories&amp;storyFilter=Events&amp;campaign=Spring+Showcase"',
     );
   });
   it("keeps the member points route connected to the profile walkthrough when opened from profile", async () => {
