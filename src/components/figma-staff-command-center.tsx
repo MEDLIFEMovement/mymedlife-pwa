@@ -121,8 +121,7 @@ interface BestPractice {
 type Screen = "chapters" | "campaigns" | "events" | "ugc" | "reports" | "admin" | "best-practices" | "sops";
 
 const STAFF_PAGE_HEADER_ACCOUNT_CLEARANCE = WORKSPACE_ACCOUNT_MENU_SHELL_CLEARANCE;
-const STAFF_TOP_BAR_ACCOUNT_CLEARANCE =
-  "pr-[4.5rem] sm:pr-[14rem] lg:pr-[14rem] xl:pr-[13rem] 2xl:pr-[13rem]";
+const STAFF_TOP_BAR_ACCOUNT_CLEARANCE = WORKSPACE_ACCOUNT_MENU_SHELL_CLEARANCE;
 const STAFF_HEADER_ALERT_VISIBILITY =
   "hidden md:flex max-w-[7.5rem] lg:max-w-[9rem] xl:max-w-[11rem] 2xl:max-w-[12.5rem]";
 
