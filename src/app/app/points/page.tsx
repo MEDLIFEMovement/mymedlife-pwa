@@ -8,6 +8,7 @@ type AppPointsPageProps = {
   searchParams?: Promise<{
     source?: string;
     event?: string;
+    campaign?: string;
   }>;
 };
 
@@ -20,7 +21,7 @@ function getPointsSource(source?: string): "events" | "home" | "profile" | "poin
 }
 
 export default async function AppPointsPage(props: AppPointsPageProps) {
-  const resolvedSearchParams: { source?: string; event?: string } = await (
+  const resolvedSearchParams: { source?: string; event?: string; campaign?: string } = await (
     props.searchParams ?? Promise.resolve({})
   );
 
@@ -29,5 +30,6 @@ export default async function AppPointsPage(props: AppPointsPageProps) {
     redirectPath: "/app/points",
     pointsSource: getPointsSource(resolvedSearchParams.source),
     pointsReturnEventId: resolvedSearchParams.event ?? null,
+    pointsReturnCampaign: resolvedSearchParams.campaign ?? null,
   });
 }

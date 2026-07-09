@@ -68,16 +68,37 @@ const MEMBER_EVENT_DETAIL_HREFS: Record<number, string> = {
   5: "/app/events/chapter-event-mcgill-coffee-chat?source=events",
 };
 
-function getMemberEventDetailHref(eventId: number, source: MemberLoopSource = "events") {
+function getMemberEventDetailHref(
+  eventId: number,
+  source: MemberLoopSource = "events",
+  campaign: string | null = null,
+  profileSource: "points" | null = null,
+) {
   const detailHref = MEMBER_EVENT_DETAIL_HREFS[eventId] ?? "/app/events";
+  const url = new URL(`https://mymedlife.local${detailHref}`);
 
-  return source === "events"
-    ? detailHref
-    : detailHref.replace("source=events", `source=${source}`);
+  if (source !== "events") {
+    url.searchParams.set("source", source);
+  }
+
+  if (source === "profile" && profileSource === "points") {
+    url.searchParams.set("profileSource", "points");
+  }
+
+  if (campaign && campaign !== "All") {
+    url.searchParams.set("campaign", campaign);
+  }
+
+  return `${url.pathname}${url.search}`;
 }
 
-function getMemberEventRsvpHref(eventId: number, source: MemberLoopSource = "events") {
-  const detailHref = getMemberEventDetailHref(eventId, source);
+function getMemberEventRsvpHref(
+  eventId: number,
+  source: MemberLoopSource = "events",
+  campaign: string | null = null,
+  profileSource: "points" | null = null,
+) {
+  const detailHref = getMemberEventDetailHref(eventId, source, campaign, profileSource);
   return detailHref.includes("?") ? `${detailHref}&step=rsvp` : `${detailHref}?step=rsvp`;
 }
 
@@ -87,6 +108,10 @@ function getMemberEventHomeRsvpHref(eventId: number) {
 
 function getMemberEventHomeDetailHref(eventId: number) {
   return getMemberEventDetailHref(eventId, "home");
+}
+
+function isMemberEventDetailHref(href: string) {
+  return href.startsWith("/app/events/chapter-event-");
 }
 
 type MemberLoopSource = "events" | "home" | "profile" | "points";
@@ -1843,9 +1868,11 @@ function AdminDashboard({ navigate }: { navigate: (s: Screen) => void }) {
 function PointsLeaderboard({
   source,
   returnEventId,
+  returnCampaign = null,
 }: {
   source: MemberLoopSource;
   returnEventId?: string | null;
+  returnCampaign?: string | null;
 }) {
   const badges = [
     { name: "TEST Rush Starter", desc: "Complete your first TEST Rush Month action", earned: true },
@@ -1883,12 +1910,16 @@ function PointsLeaderboard({
   const returnLoopSource: MemberLoopSource = source === "events" ? "points" : source;
   const returnEventDetailHref =
     returnEvent && returnEvent.routeId
-      ? getMemberEventDetailHref(returnEvent.id, returnLoopSource)
+      ? getMemberEventDetailHref(returnEvent.id, returnLoopSource, returnCampaign)
       : continuity[1];
   const returnEventRsvpHref =
-    returnEvent ? getMemberEventStepHref(returnEvent.id, returnLoopSource, "rsvp") : null;
+    returnEvent
+      ? getMemberEventStepHref(returnEvent.id, returnLoopSource, "rsvp", returnCampaign)
+      : null;
   const returnEventCheckInHref =
-    returnEvent ? getMemberEventStepHref(returnEvent.id, returnLoopSource, "checkin") : null;
+    returnEvent
+      ? getMemberEventStepHref(returnEvent.id, returnLoopSource, "checkin", returnCampaign)
+      : null;
 
   return (
     <div className="pb-24">
@@ -2103,14 +2134,20 @@ function resolveEventsCampaign(value?: string | null): CampaignTag | "All" {
 function buildEventsHref({
   source,
   campaign,
+  profileSource,
 }: {
   source: MemberLoopSource;
   campaign?: CampaignTag | "All";
+  profileSource?: "points" | null;
 }) {
   const params = new URLSearchParams();
 
   if (source !== "events") {
     params.set("source", source);
+  }
+
+  if (source === "profile" && profileSource === "points") {
+    params.set("profileSource", "points");
   }
 
   if (campaign && campaign !== "All") {
@@ -2248,18 +2285,22 @@ function getMemberEventStepHref(
   eventId: number,
   source: MemberLoopSource,
   step: "rsvp" | "checkin",
+  campaign: string | null = null,
+  profileSource: "points" | null = null,
 ) {
-  const detailHref = getMemberEventDetailHref(eventId, source);
+  const detailHref = getMemberEventDetailHref(eventId, source, campaign, profileSource);
   return detailHref.includes("?") ? `${detailHref}&step=${step}` : `${detailHref}?step=${step}`;
 }
 function EventsScreen({
   navigate,
   source,
   initialCampaign,
+  profileSource = null,
 }: {
   navigate: (s: Screen) => void;
   source: MemberLoopSource;
   initialCampaign?: string | null;
+  profileSource?: "points" | null;
 }) {
   const activeCampaign = resolveEventsCampaign(initialCampaign);
   const rsvpdIds = [2];
@@ -2267,13 +2308,20 @@ function EventsScreen({
   const featuredEvent = visibleEvents.find((e) => e.featured);
   const listEvents = visibleEvents.filter((e) => !e.featured);
   const activeCampaignData = activeCampaign !== "All" ? CAMPAIGNS.find((c) => c.name === activeCampaign) : null;
+  const pointsReturnHref = getEventsBottomNavPointsHref(source, activeCampaign, profileSource);
+  const profileReturnHref =
+    buildEventsProfileReturnHref(profileSource, activeCampaign) ??
+    getEventsBottomNavProfileHref(source, activeCampaign, profileSource) ??
+    "/profile";
   const eventsReturnCard =
     source === "home"
       ? { eyebrow: "Opened from the TEST home walkthrough", title: "Keep home, events, and points in one member loop.", body: "Home sent you into this TEST event list so you can open the next chapter moment, preview RSVP or attendance, and return to points without leaving the student shell.", href: "/app", cta: "Back to Home" }
+      : source === "profile" && profileSource === "points"
+      ? { eyebrow: "Opened from Points & Recognition via your TEST profile", title: "Keep profile, points, and events in one member loop.", body: "Your TEST profile carried exact points context into this event list. Open the next chapter moment, preview RSVP or attendance, then step back through the same profile-to-points loop without leaving the student shell.", href: profileReturnHref, cta: "Back to Profile" }
       : source === "profile"
-      ? { eyebrow: "Opened from your TEST profile", title: "Keep profile, events, and points in one member loop.", body: "Your TEST profile sent you here so the next chapter moment stays route-backed. Open an event, preview RSVP or attendance, then step back into points when you are ready.", href: "/profile", cta: "Back to Profile" }
+      ? { eyebrow: "Opened from your TEST profile", title: "Keep profile, events, and points in one member loop.", body: "Your TEST profile sent you here so the next chapter moment stays route-backed. Open an event, preview RSVP or attendance, then step back into points when you are ready.", href: profileReturnHref, cta: "Back to Profile" }
       : source === "points"
-        ? { eyebrow: "Opened from Points & Recognition", title: "Move from TEST points readback into the next event.", body: "The member loop should not stop at the leaderboard. Use this route-backed return path to find the next event, preview RSVP or check-in, and come back to points when the chapter moment is done.", href: "/app/points?source=events", cta: "Back to Points" }
+        ? { eyebrow: "Opened from Points & Recognition", title: "Move from TEST points readback into the next event.", body: "The member loop should not stop at the leaderboard. Use this route-backed return path to find the next event, preview RSVP or check-in, and come back to points when the chapter moment is done.", href: pointsReturnHref ?? "/app/points?source=events", cta: "Back to Points" }
         : null;
 
   return (
@@ -2286,7 +2334,7 @@ function EventsScreen({
       <div className="bg-primary px-4 pb-4">
         <div className="flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
           <Link
-            href={buildEventsHref({ source, campaign: "All" })}
+            href={buildEventsHref({ source, campaign: "All", profileSource })}
             aria-label="Show all TEST event campaigns"
             className={cn(
               "flex-shrink-0 px-3.5 py-1.5 rounded-full text-xs font-bold border transition-all",
@@ -2300,7 +2348,7 @@ function EventsScreen({
           {CAMPAIGNS.map((c) => (
             <Link
               key={c.name}
-              href={buildEventsHref({ source, campaign: c.name })}
+              href={buildEventsHref({ source, campaign: c.name, profileSource })}
               aria-label={`Filter TEST events by ${c.name}`}
               className={cn(
                 "flex-shrink-0 px-3.5 py-1.5 rounded-full text-xs font-bold border transition-all whitespace-nowrap",
@@ -2410,45 +2458,78 @@ function EventsScreen({
               {listEvents.map((ev) => {
                 const isRsvpd = rsvpdIds.includes(ev.id);
                 const typeCfg = EVENT_TYPE_CONFIG[ev.eventType];
+                const detailHref = getMemberEventDetailHref(ev.id, source, activeCampaign, profileSource);
+                const rsvpHref = getMemberEventRsvpHref(ev.id, source, activeCampaign, profileSource);
+                const hasDetailRoute = isMemberEventDetailHref(detailHref);
                 return (
                   <div
                     key={ev.id}
-                    className="bg-card rounded-2xl border border-border overflow-hidden cursor-pointer active:scale-[0.99] transition-transform hover:border-primary/20"
+                    className={cn(
+                      "bg-card rounded-2xl border border-border overflow-hidden transition-transform",
+                      hasDetailRoute ? "cursor-pointer active:scale-[0.99] hover:border-primary/20" : "cursor-default",
+                    )}
                     style={{ borderLeft: `4px solid ${typeCfg.color}` }}
                   >
                     <div className="flex items-start gap-3 p-4">
                       {/* Color-matched icon */}
-                      <Link href={getMemberEventDetailHref(ev.id, source)} className="flex min-w-0 flex-1 items-start gap-3">
-                        <div
-                          className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5"
-                          style={{ background: typeCfg.bg }}
+                      {hasDetailRoute ? (
+                        <Link
+                          href={detailHref}
+                          className="flex min-w-0 flex-1 items-start gap-3"
                         >
-                          <CalendarDays size={18} style={{ color: typeCfg.color }} />
-                        </div>
+                          <div
+                            className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5"
+                            style={{ background: typeCfg.bg }}
+                          >
+                            <CalendarDays size={18} style={{ color: typeCfg.color }} />
+                          </div>
 
-                        <div className="flex-1 min-w-0">
-                          {/* Type pill on its own line — instantly scannable */}
-                          <EventTypePill type={ev.eventType} />
-                          <p className="text-sm font-bold text-foreground leading-snug mt-1">{ev.title}</p>
-                          <p className="text-xs text-muted-foreground mt-0.5">{ev.date}</p>
-                          <p className="text-xs text-muted-foreground flex items-center gap-0.5 mt-0.5">
-                            <MapPin size={9} className="flex-shrink-0" />{ev.loc}
-                          </p>
+                          <div className="flex-1 min-w-0">
+                            <EventTypePill type={ev.eventType} />
+                            <p className="text-sm font-bold text-foreground leading-snug mt-1">{ev.title}</p>
+                            <p className="text-xs text-muted-foreground mt-0.5">{ev.date}</p>
+                            <p className="text-xs text-muted-foreground flex items-center gap-0.5 mt-0.5">
+                              <MapPin size={9} className="flex-shrink-0" />{ev.loc}
+                            </p>
+                          </div>
+                        </Link>
+                      ) : (
+                        <div className="flex min-w-0 flex-1 items-start gap-3">
+                          <div
+                            className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5"
+                            style={{ background: typeCfg.bg }}
+                          >
+                            <CalendarDays size={18} style={{ color: typeCfg.color }} />
+                          </div>
+
+                          <div className="flex-1 min-w-0">
+                            <EventTypePill type={ev.eventType} />
+                            <p className="text-sm font-bold text-foreground leading-snug mt-1">{ev.title}</p>
+                            <p className="text-xs text-muted-foreground mt-0.5">{ev.date}</p>
+                            <p className="text-xs text-muted-foreground flex items-center gap-0.5 mt-0.5">
+                              <MapPin size={9} className="flex-shrink-0" />{ev.loc}
+                            </p>
+                            <p className="mt-1 text-[11px] font-medium text-muted-foreground">
+                              Detail stays in this TEST campaign list preview for now.
+                            </p>
+                          </div>
                         </div>
-                      </Link>
+                      )}
 
                       <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
                         <PointsPill pts={ev.pts} />
                         {isRsvpd ? (
                           <Pill label="RSVP'd" variant="green" />
-                        ) : ev.status === "RSVP Open" ? (
+                        ) : ev.status === "RSVP Open" && hasDetailRoute ? (
                           <Link
-                            href={getMemberEventRsvpHref(ev.id, source)}
+                            href={rsvpHref}
                             className="text-[10px] font-bold px-2.5 py-1 rounded-full border hover:opacity-80"
                             style={{ color: typeCfg.text, borderColor: `${typeCfg.color}50`, background: typeCfg.bg }}
                           >
                             RSVP
                           </Link>
+                        ) : ev.status === "RSVP Open" ? (
+                          <Pill label="List preview" variant="gray" />
                         ) : (
                           <Pill label="Upcoming" variant="gray" />
                         )}
@@ -3583,7 +3664,9 @@ export function FigmaMemberMobileHome({
   initialEventsCampaign = null,
   pointsSource = "points",
   pointsReturnEventId = null,
+  pointsReturnCampaign = null,
   eventsSource = "events",
+  eventsProfileSource = null,
 }: {
   initialScreen?: MemberMobileLaunchScreen;
   sltPrepEntry?: MemberSltPrepEntry | null;
@@ -3592,7 +3675,9 @@ export function FigmaMemberMobileHome({
   initialEventsCampaign?: string | null;
   pointsSource?: MemberLoopSource;
   pointsReturnEventId?: string | null;
+  pointsReturnCampaign?: string | null;
   eventsSource?: MemberLoopSource;
+  eventsProfileSource?: "points" | null;
 }) {
   const [screen, setScreen] = useState<Screen>(initialScreen);
   const [role, setRole] = useState<Role>("student");
@@ -3613,13 +3698,16 @@ export function FigmaMemberMobileHome({
     screen === "home"
       ? "/profile?source=home"
       : screen === "points"
-        ? getPointsBottomNavProfileHref(pointsSource, pointsReturnEventId)
+        ? getPointsBottomNavProfileHref(pointsSource, pointsReturnEventId, pointsReturnCampaign)
         : "/profile";
   const bottomNavHrefOverrides = getMemberBottomNavHrefOverrides({
     screen,
+    eventsCampaign: initialEventsCampaign,
     pointsSource,
     pointsReturnEventId,
+    pointsReturnCampaign,
     eventsSource,
+    eventsProfileSource,
   });
   const content = () => {
     switch (screen) {
@@ -3628,13 +3716,21 @@ export function FigmaMemberMobileHome({
       case "action": return <ActionDetail navigate={navigate} />;
       case "evidence": return <EvidenceSubmission navigate={navigate} />;
       case "confirm": return <Confirmation navigate={navigate} />;
-      case "points": return <PointsLeaderboard source={pointsSource} returnEventId={pointsReturnEventId} />;
+      case "points":
+        return (
+          <PointsLeaderboard
+            source={pointsSource}
+            returnEventId={pointsReturnEventId}
+            returnCampaign={pointsReturnCampaign}
+          />
+        );
       case "events":
         return (
           <EventsScreen
             navigate={navigate}
             source={eventsSource}
             initialCampaign={initialEventsCampaign}
+            profileSource={eventsProfileSource}
           />
         );
       case "event-detail": return <EventDetailScreen navigate={navigate} />;
@@ -3694,29 +3790,47 @@ export function FigmaMemberMobileHome({
 
 function getMemberBottomNavHrefOverrides({
   screen,
+  eventsCampaign,
   pointsSource,
   pointsReturnEventId,
+  pointsReturnCampaign,
   eventsSource,
+  eventsProfileSource,
 }: {
   screen: Screen;
+  eventsCampaign: string | null;
   pointsSource: MemberLoopSource;
   pointsReturnEventId: string | null;
+  pointsReturnCampaign: string | null;
   eventsSource: MemberLoopSource;
+  eventsProfileSource: "points" | null;
 }): Partial<Record<MemberBottomNavTab, string>> | undefined {
   const overrides: Partial<Record<MemberBottomNavTab, string>> = {};
 
   if (screen === "points") {
-    overrides.events = getPointsBottomNavEventsHref(pointsSource, pointsReturnEventId);
+    overrides.events = getPointsBottomNavEventsHref(
+      pointsSource,
+      pointsReturnEventId,
+      pointsReturnCampaign,
+    );
   }
 
   if (screen === "events") {
-    const pointsHref = getEventsBottomNavPointsHref(eventsSource);
+    const pointsHref = getEventsBottomNavPointsHref(
+      eventsSource,
+      eventsCampaign,
+      eventsProfileSource,
+    );
 
     if (pointsHref) {
       overrides.points = pointsHref;
     }
 
-    const profileHref = getEventsBottomNavProfileHref(eventsSource);
+    const profileHref = getEventsBottomNavProfileHref(
+      eventsSource,
+      eventsCampaign,
+      eventsProfileSource,
+    );
 
     if (profileHref) {
       overrides.profile = profileHref;
@@ -3729,65 +3843,134 @@ function getMemberBottomNavHrefOverrides({
 function getPointsBottomNavEventsHref(
   source: MemberLoopSource,
   returnEventId: string | null,
+  returnCampaign: string | null,
 ) {
+  const campaignSuffix =
+    returnCampaign && returnCampaign !== "All"
+      ? `&campaign=${encodeURIComponent(returnCampaign)}`
+      : "";
+
   if (source === "events") {
     return returnEventId
-      ? `/app/events/${returnEventId}?source=points`
-      : "/app/events?source=points";
+      ? `/app/events/${returnEventId}?source=points${campaignSuffix}`
+      : `/app/events?source=points${campaignSuffix}`;
   }
 
   if (source === "home") {
     return returnEventId
-      ? `/app/events/${returnEventId}?source=home`
-      : "/app/events?source=home";
+      ? `/app/events/${returnEventId}?source=home${campaignSuffix}`
+      : `/app/events?source=home${campaignSuffix}`;
   }
 
   if (source === "profile") {
     return returnEventId
-      ? `/app/events/${returnEventId}?source=profile&profileSource=points`
-      : "/app/events?source=profile";
+      ? `/app/events/${returnEventId}?source=profile&profileSource=points${campaignSuffix}`
+      : `/app/events?source=profile${campaignSuffix}`;
   }
 
-  return "/app/events";
+  return campaignSuffix ? `/app/events?source=points${campaignSuffix}` : "/app/events";
 }
 
 function getPointsBottomNavProfileHref(
   source: MemberLoopSource,
   returnEventId: string | null,
+  returnCampaign: string | null,
 ) {
+  const campaignSuffix =
+    returnCampaign && returnCampaign !== "All"
+      ? `&campaign=${encodeURIComponent(returnCampaign)}`
+      : "";
+
   if (returnEventId) {
-    return `/profile?source=points&event=${returnEventId}`;
+    return `/profile?source=points&event=${returnEventId}${campaignSuffix}`;
   }
 
-  return screenlessProfileHref(source);
+  return screenlessProfileHref(source, returnCampaign);
 }
 
-function screenlessProfileHref(source: MemberLoopSource) {
-  return source === "home" ? "/profile?source=home" : "/profile?source=points";
+function screenlessProfileHref(
+  source: MemberLoopSource,
+  campaign: string | null = null,
+) {
+  const url = new URL(
+    `https://mymedlife.local${source === "home" ? "/profile?source=home" : "/profile?source=points"}`,
+  );
+
+  if (campaign && campaign !== "All") {
+    url.searchParams.set("campaign", campaign);
+  }
+
+  return `${url.pathname}${url.search}`;
 }
 
-function getEventsBottomNavPointsHref(source: MemberLoopSource) {
+function buildEventsProfileReturnHref(
+  profileSource: "points" | null,
+  campaign: string | null,
+) {
+  if (profileSource === "points") {
+    return screenlessProfileHref("points", campaign);
+  }
+
+  if (campaign && campaign !== "All") {
+    const url = new URL("https://mymedlife.local/profile");
+    url.searchParams.set("campaign", campaign);
+    return `${url.pathname}${url.search}`;
+  }
+
+  return null;
+}
+
+function getEventsBottomNavPointsHref(
+  source: MemberLoopSource,
+  campaign: string | null,
+  profileSource: "points" | null = null,
+) {
+  const campaignSuffix =
+    campaign && campaign !== "All"
+      ? `&campaign=${encodeURIComponent(campaign)}`
+      : "";
   if (source === "points") {
-    return "/app/points?source=events";
+    return `/app/points?source=events${campaignSuffix}`;
   }
 
   if (source === "home") {
-    return "/app/points?source=home";
+    return `/app/points?source=home${campaignSuffix}`;
   }
 
   if (source === "profile") {
-    return "/app/points?source=profile";
+    return `/app/points?source=${profileSource === "points" ? "points" : "profile"}${campaignSuffix}`;
   }
 
   return undefined;
 }
 
-function getEventsBottomNavProfileHref(source: MemberLoopSource) {
+function getEventsBottomNavProfileHref(
+  source: MemberLoopSource,
+  campaign: string | null,
+  profileSource: "points" | null,
+) {
+  const campaignSuffix =
+    campaign && campaign !== "All"
+      ? `&campaign=${encodeURIComponent(campaign)}`
+      : "";
+
   if (source === "home") {
-    return "/profile?source=home";
+    return `/profile?source=home${campaignSuffix}`;
   }
 
   if (source === "points") {
+    return `/profile?source=points${campaignSuffix}`;
+  }
+
+  if (source === "profile" && campaignSuffix) {
+    if (profileSource === "points") {
+      return `/profile?source=points${campaignSuffix}`;
+    }
+
+    return `/profile?campaign=${encodeURIComponent(campaign ?? "")}`;
+  }
+
+  if (source === "profile" && profileSource === "points") {
     return "/profile?source=points";
   }
 
