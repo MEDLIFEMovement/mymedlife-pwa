@@ -2297,12 +2297,17 @@ type StaffAdminChapterReadback = {
   region: string | null;
   coach: string | null;
   members: string | null;
+  risk: RiskLevel | null;
   events: string | null;
   rsvps: string | null;
   attendance: string | null;
   points: string | null;
   pointsWeek: string | null;
 };
+
+function resolveStaffAdminReadbackRisk(value: string | null): RiskLevel | null {
+  return value === "healthy" || value === "at-risk" || value === "intervene" ? value : null;
+}
 
 function AdminRouteBlocked({
   onBack,
@@ -2706,7 +2711,7 @@ export function FigmaStaffCommandCenter({
           region: getRouteParam("chapterRegionName"),
           coach: getRouteParam("chapterCoachName"),
           members: getRouteParam("chapterMembers"),
-          risk: getRouteParam("chapterRisk"),
+          risk: resolveStaffAdminReadbackRisk(getRouteParam("chapterRisk")),
           events: getRouteParam("chapterEvents"),
           rsvps: getRouteParam("chapterRsvps"),
           attendance: getRouteParam("chapterAttendance"),
