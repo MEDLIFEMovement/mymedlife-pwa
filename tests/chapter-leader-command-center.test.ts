@@ -2085,6 +2085,33 @@ describe("chapter leader command center", () => {
     );
   });
 
+  it("keeps quick actions context-only while leaderboard member review waits for a valid selected person", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "member_profile",
+      source: "leaderboard",
+      memberId: "missing-member",
+      eventCommittee: "events",
+      eventId: "bc-event-moving-mountains-kickoff",
+      leaderboardMetric: "attendance",
+      leaderboardRegion: "canada",
+      bestPracticeChapterId: "leaderboard-mcgill",
+      quickAction: "assign_action",
+    });
+
+    expect(commandCenter.selectedMember).toBeNull();
+    expect(commandCenter.navigationMemberId).toBeNull();
+    expect(commandCenter.quickActions.find((action) => action.label === "Confirm Attendance")?.href).toBe(
+      "/leader?view=events&source=leaderboard&eventCommittee=events&event=bc-event-moving-mountains-kickoff&leaderboardMetric=attendance&region=canada&benchmark=leaderboard-mcgill&quickAction=assign_action",
+    );
+    expect(commandCenter.quickActions.find((action) => action.label === "Review Members")?.href).toBe(
+      "/leader?view=members&source=leaderboard&eventCommittee=events&event=bc-event-moving-mountains-kickoff&leaderboardMetric=attendance&region=canada&benchmark=leaderboard-mcgill&quickAction=review_members",
+    );
+    expect(commandCenter.quickActions.find((action) => action.label === "Review Leaderboard")?.href).toBe(
+      "/leader?view=leaderboard&source=leaderboard&eventCommittee=events&event=bc-event-moving-mountains-kickoff&leaderboardMetric=attendance&region=canada&benchmark=leaderboard-mcgill&quickAction=assign_action",
+    );
+  });
+
   it("keeps the member-profile header compact so the person workbench leads the viewport", () => {
     const actor = getMockLocalActorContext("leader.a@mymedlife.test");
     const commandCenter = getChapterLeaderCommandCenter(actor, data, {
