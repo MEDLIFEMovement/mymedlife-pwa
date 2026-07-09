@@ -18,8 +18,9 @@ without rereading the whole story package.
 - PR `#620` is merged; Coordinator reported public no-write smoke stayed
   `11/11` green after the merge.
 - PR `#619` is merged.
-- PR `#618` is now the remaining open front branch after `#619`; refresh and
-  land it before starting another member PR.
+- PR `#618` is now the remaining open front branch after `#619`; it is open,
+  draft, mergeable, and green on the listed checks, so clear draft/merge posture
+  before starting another member PR.
 - The active planning layer still separates implementation truth from
   Figma/exported-source acceptance shape.
 - Open PR board noise and older parked branches should not outrank `#618`
@@ -54,7 +55,8 @@ Live PR signal:
 - `gh pr view 617` confirmed merged.
 - `gh pr view 620` confirmed merged.
 - `gh pr view 619` confirmed merged.
-- `gh pr view 618` shows the remaining open front branch.
+- `gh pr view 618` shows the remaining open front branch as draft, mergeable,
+  and green on the listed checks.
 - This packet should not be read as merge approval for `#618`; it only
   captures planning order and acceptance boundaries.
 
@@ -64,7 +66,7 @@ Live PR signal:
 
 Next safest slice:
 
-1. Refresh and land PR `#618` as the current front queue item.
+1. Clear draft/merge posture for PR `#618` as the current front queue item.
 2. Keep the next local member seam focused on source-backed member loop
    continuity instead of broad member redesign.
 3. Preserve the existing profile, Stories, events/detail, points, and bottom-nav

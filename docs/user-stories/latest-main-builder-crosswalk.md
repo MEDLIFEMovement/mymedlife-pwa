@@ -12,8 +12,9 @@ Use this queue overlay before the older backlog table below when assigning the
 next live branch:
 
 1. `#619` is merged, so stop treating it as active queue work.
-2. `#618` is the remaining open front branch. `#1` should refresh and land it
-   before starting another member PR.
+2. `#618` is the remaining open front branch and is now draft, mergeable, and
+   green on the listed checks. `#1` should clear draft/merge posture before
+   starting another member PR.
 3. `#620` is merged and public no-write smoke stayed `11/11` green after the
    merge. Do not keep its staff/admin seam in the pending queue.
 4. `#2` should return to local leader follow-on shaping after the `#619`
@@ -44,7 +45,7 @@ readiness, or rollout approval.
   - `#617` merged.
   - `#620` merged.
   - `#619` merged.
-  - `#618` open and green as the remaining front branch.
+  - `#618` open, draft, mergeable, and green as the remaining front branch.
 - Coordinator-reported public no-write smoke: 11/11 passed after `#620`.
 
 ## How To Use This Crosswalk
