@@ -20,6 +20,10 @@ function getEventsSource(source?: string): "events" | "home" | "profile" | "poin
   return "events";
 }
 
+function getInitialEventsCampaign(campaign?: string) {
+  return campaign && campaign !== "All" ? campaign : null;
+}
+
 export default async function AppEventsPage({ searchParams }: AppEventsPageProps) {
   const resolvedSearchParams: { source?: string; campaign?: string; profileSource?: string } = await (
     searchParams ?? Promise.resolve({})
@@ -28,7 +32,7 @@ export default async function AppEventsPage({ searchParams }: AppEventsPageProps
   return renderMemberMobileShellPage({
     initialScreen: "events",
     redirectPath: "/app/events",
-    initialEventsCampaign: resolvedSearchParams.campaign ?? null,
+    initialEventsCampaign: getInitialEventsCampaign(resolvedSearchParams.campaign),
     eventsSource: getEventsSource(resolvedSearchParams.source),
     eventsProfileSource: resolvedSearchParams.profileSource === "points" ? "points" : null,
   });

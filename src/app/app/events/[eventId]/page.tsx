@@ -812,6 +812,7 @@ function buildEventStepHref(
 ) {
   const baseHref = buildMemberLaunchLaneEventDetailHref(eventId, "events");
   const url = new URL(`https://mymedlife.local${baseHref}`);
+  const normalizedCampaign = normalizeCampaign(campaign);
 
   if (source) {
     url.searchParams.set("source", source);
@@ -825,8 +826,8 @@ function buildEventStepHref(
     url.searchParams.set("profileSource", "points");
   }
 
-  if (campaign) {
-    url.searchParams.set("campaign", campaign);
+  if (normalizedCampaign) {
+    url.searchParams.set("campaign", normalizedCampaign);
   }
 
   return `${url.pathname}${url.search}`;
@@ -902,6 +903,7 @@ function getLaunchLaneEventPointsHref(eventId: string, source?: string, campaign
   const url = new URL(
     `https://mymedlife.local${getLaunchLaneMemberPointsHref(getEventPointsSource(source))}`,
   );
+  const normalizedCampaign = normalizeCampaign(campaign);
 
   if (
     source === "events" ||
@@ -912,8 +914,8 @@ function getLaunchLaneEventPointsHref(eventId: string, source?: string, campaign
     url.searchParams.set("event", eventId);
   }
 
-  if (campaign) {
-    url.searchParams.set("campaign", campaign);
+  if (normalizedCampaign) {
+    url.searchParams.set("campaign", normalizedCampaign);
   }
 
   return `${url.pathname}${url.search}`;
@@ -930,16 +932,17 @@ function buildProfileReturnHref(
         ? "/profile?source=home"
         : source === "points"
           ? "/profile?source=points"
-          : "/profile"
+      : "/profile"
     }`,
   );
+  const normalizedCampaign = normalizeCampaign(campaign);
 
   if (eventId) {
     url.searchParams.set("event", eventId);
   }
 
-  if (campaign) {
-    url.searchParams.set("campaign", campaign);
+  if (normalizedCampaign) {
+    url.searchParams.set("campaign", normalizedCampaign);
   }
 
   return `${url.pathname}${url.search}`;
@@ -951,6 +954,7 @@ function buildEventsListHref(
   profileSource?: string,
 ) {
   const url = new URL(`https://mymedlife.local/app/events`);
+  const normalizedCampaign = normalizeCampaign(campaign);
 
   if (source !== "events") {
     url.searchParams.set("source", source);
@@ -960,11 +964,15 @@ function buildEventsListHref(
     url.searchParams.set("profileSource", "points");
   }
 
-  if (campaign) {
-    url.searchParams.set("campaign", campaign);
+  if (normalizedCampaign) {
+    url.searchParams.set("campaign", normalizedCampaign);
   }
 
   return `${url.pathname}${url.search}`;
+}
+
+function normalizeCampaign(campaign?: string) {
+  return campaign && campaign !== "All" ? campaign : undefined;
 }
 
 function getDurationLabel(startsAt: string | null, endsAt: string | null) {

@@ -233,6 +233,32 @@ describe("member stories and profile pages", () => {
     expect(html).toContain('href="/app/events/chapter-event-ucla-kickoff?source=home"');
   });
 
+  it("keeps home-origin profile links inside the member loop when no exact event handoff is present", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const dataModule = await import("@/services/read-only-app-data");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("member.a@mymedlife.test"),
+    );
+    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
+      getMockReadOnlyAppData("Testing home-origin profile continuity without an exact event."),
+    );
+
+    const { default: ProfilePage } = await import("@/app/profile/page");
+    const html = renderToStaticMarkup(
+      await ProfilePage({
+        searchParams: Promise.resolve({
+          source: "home",
+        }),
+      }),
+    );
+
+    expect(html).toContain('href="/app/points?source=home"');
+    expect(html).toContain('href="/app/events?source=home"');
+    expect(html).not.toContain('href="/app/points?source=profile"');
+    expect(html).not.toContain('href="/app/events?source=profile"');
+  });
+
   it("keeps points-to-profile continuity inside the mobile member shell", async () => {
     const actorModule = await import("@/services/local-actor-context");
     const dataModule = await import("@/services/read-only-app-data");
@@ -314,6 +340,35 @@ describe("member stories and profile pages", () => {
     expect(html).toContain(
       'href="/app/events/chapter-event-ucla-kickoff?source=profile&amp;profileSource=points&amp;campaign=Spring+Showcase"',
     );
+  });
+
+  it("drops the generic All campaign marker when points opens profile without a real filtered campaign", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const dataModule = await import("@/services/read-only-app-data");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("member.a@mymedlife.test"),
+    );
+    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
+      getMockReadOnlyAppData("Testing profile continuity without a real filtered campaign."),
+    );
+
+    const { default: ProfilePage } = await import("@/app/profile/page");
+    const html = renderToStaticMarkup(
+      await ProfilePage({
+        searchParams: Promise.resolve({
+          source: "points",
+          event: "chapter-event-ucla-kickoff",
+          campaign: "All",
+        }),
+      }),
+    );
+
+    expect(html).toContain('href="/app/points?source=points&amp;event=chapter-event-ucla-kickoff"');
+    expect(html).toContain(
+      'href="/app/events/chapter-event-ucla-kickoff?source=profile&amp;profileSource=points"',
+    );
+    expect(html).not.toContain("campaign=All");
   });
 
   it("redirects signed-out actors to login before rendering the member profile shell", async () => {
