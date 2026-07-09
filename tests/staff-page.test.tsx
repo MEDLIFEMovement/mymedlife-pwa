@@ -133,10 +133,9 @@ describe("staff page", () => {
     expect(html).toContain("Needs Review");
     expect(html).toContain("Export blocked");
     expect(html).toContain("pr-[4.5rem]");
-    expect(html).toContain("sm:pr-[14rem]");
-    expect(html).toContain("lg:pr-[14rem]");
-    expect(html).toContain("xl:pr-[13rem]");
-    expect(html).toContain("2xl:pr-[13rem]");
+    expect(html).toContain("sm:pr-[16rem]");
+    expect(html).toContain("lg:pr-[19rem]");
+    expect(html).toContain("xl:pr-[21rem]");
     expect(html).toContain("flex min-w-0 flex-1 items-center gap-0.5 overflow-hidden");
     expect(html).toContain("flex min-w-0 shrink items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold transition-all lg:px-3");
     expect(html).toContain("<span class=\"truncate\">Campaign SOPs</span>");
@@ -1225,8 +1224,7 @@ describe("staff page", () => {
 
     expect(accountMenuSource).toContain("export const WORKSPACE_ACCOUNT_MENU_SHELL_CLEARANCE");
     expect(staffSource).toContain("const STAFF_PAGE_HEADER_ACCOUNT_CLEARANCE = WORKSPACE_ACCOUNT_MENU_SHELL_CLEARANCE;");
-    expect(staffSource).toContain('const STAFF_TOP_BAR_ACCOUNT_CLEARANCE =');
-    expect(staffSource).toContain('"pr-[4.5rem] sm:pr-[14rem] lg:pr-[14rem] xl:pr-[13rem] 2xl:pr-[13rem]"');
+    expect(staffSource).toContain("const STAFF_TOP_BAR_ACCOUNT_CLEARANCE = WORKSPACE_ACCOUNT_MENU_SHELL_CLEARANCE;");
     expect(staffSource).toContain('flex min-w-0 flex-1 items-center gap-0.5 overflow-hidden');
     expect(staffSource).toContain('flex min-w-0 shrink items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold transition-all lg:px-3');
     expect(staffSource).toContain('<span className="truncate">{item.label}</span>');
