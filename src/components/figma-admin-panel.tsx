@@ -768,8 +768,10 @@ function UsersPage() {
 // ─── Chapters ─────────────────────────────────────────────────────────────────────
 function ChaptersPage({
   embeddedReadback,
+  embeddedBackHref,
 }: {
   embeddedReadback?: EmbeddedChapterReadback | null;
+  embeddedBackHref?: string;
 }) {
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<AdminChapterRecord | null>(() =>
@@ -919,7 +921,21 @@ function ChaptersPage({
               <button disabled title="Chapter event drill-in is handled by the staff events view" className="px-3 py-1.5 bg-sky-500/12 text-sky-400 border border-sky-500/20 rounded text-[12px] hover:bg-sky-500/20 transition-colors">View Events</button>
               <button disabled title="Module edits require the secure module-management workflow" className="px-3 py-1.5 bg-white/[0.04] text-slate-300 border border-white/[0.08] rounded text-[12px] hover:bg-white/[0.07] transition-colors">Edit Modules</button>
               <button disabled title="Audit drill-in is available from the audit log surface" className="px-3 py-1.5 bg-white/[0.04] text-slate-300 border border-white/[0.08] rounded text-[12px] hover:bg-white/[0.07] transition-colors">Audit History</button>
+              {embeddedReadback && embeddedBackHref ? (
+                <a
+                  href={embeddedBackHref}
+                  title={`Return to ${embeddedReadback.chapterContext} in the same Command Center review loop after this Admin readback.`}
+                  className="px-3 py-1.5 bg-sky-500/12 text-sky-300 border border-sky-500/20 rounded text-[12px] hover:bg-sky-500/20 transition-colors"
+                >
+                  {`Return to ${embeddedReadback.chapterContext}`}
+                </a>
+              ) : null}
             </div>
+            {embeddedReadback ? (
+              <p className="text-[11px] leading-relaxed text-sky-300/80">
+                {`After this Admin readback, return to ${embeddedReadback.chapterContext} in the same Command Center review loop to keep the chapter oversight context intact.`}
+              </p>
+            ) : null}
           </div>
         )}
       </Drawer>
@@ -4055,7 +4071,7 @@ export function FigmaAdminPanel({
     switch (active) {
       case "overview": return <OverviewPage />;
       case "users": return <UsersPage />;
-      case "chapters": return <ChaptersPage embeddedReadback={embeddedChapterReadback} />;
+      case "chapters": return <ChaptersPage embeddedReadback={embeddedChapterReadback} embeddedBackHref={embeddedBackHref} />;
       case "modules": return <ModulesPage />;
       case "luma": return <LumaPage />;
       case "points": return <PointsPage />;
