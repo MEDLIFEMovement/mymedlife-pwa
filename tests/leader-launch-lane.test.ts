@@ -57,6 +57,25 @@ describe("leader launch lane", () => {
     );
   });
 
+  it("canonicalizes the attendance lane to events without losing leader follow-up context", () => {
+    expect(resolveLeaderLaunchLaneView("attendance")).toMatchObject({
+      coreView: "events",
+      parkedNotice: null,
+    });
+
+    expect(
+      getLeaderLaunchLaneCanonicalHref({
+        view: "attendance",
+        member: "member-ivy",
+        source: "member_home",
+        pipeline: "follow_up",
+        q: "Ivy",
+      }),
+    ).toBe(
+      "/leader?view=events&member=member-ivy&source=member_home&pipeline=follow_up&q=Ivy",
+    );
+  });
+
   it("leaves already-canonical leader review routes alone", () => {
     expect(
       getLeaderLaunchLaneCanonicalHref({
