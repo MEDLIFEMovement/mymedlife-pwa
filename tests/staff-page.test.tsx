@@ -806,7 +806,7 @@ describe("staff page", () => {
     expect(html).toContain("Return to this chapter in the same Command Center loop after the Admin readback closes.");
     expect(html).toContain('href="/staff?view=admin&amp;adminView=chapters&amp;returnView=chapters&amp;chapter=chapter-test&amp;chapterContext=Boston+College&amp;chapterSchool=Boston+College&amp;chapterRegionName=New+England&amp;chapterCoachName=Maria+Santos&amp;chapterMembers=32&amp;chapterRisk=healthy&amp;chapterEvents=2&amp;chapterRsvps=30&amp;chapterAttendance=24&amp;chapterPoints=7800&amp;chapterPointsWeek=620"');
     expect(html).toContain("Open Admin preview");
-    expect(html).toContain("Return to Chapters");
+    expect(html).toContain("Return to Boston College in Chapters");
     expect(html).toContain("Return to Chapters with Boston College still selected in the same chapters review loop after this preview readback");
     expect(html).toContain('href="/staff?view=chapters"');
     expect(html).toContain("No note save, intervention status write, or follow-up task write runs for Boston College from this surface.");
@@ -834,13 +834,13 @@ describe("staff page", () => {
     );
     const source = readFileSync("src/components/figma-staff-command-center.tsx", "utf8");
 
-    expect(html).toContain("Return to Chapters");
+    expect(html).toContain("Return to TEST Stanford University in Chapters");
     expect(html).toContain(
       'href="/staff?view=chapters&amp;chapterRegion=West&amp;chapterSort=points"',
     );
     expect(source).toContain("const resolvedChapterReturnHref =");
     expect(source).toContain('chapterReturnHref ?? buildStaffShellHref("chapters", pathname, searchParams.toString())');
-    expect(source).toContain('const chapterReturnLabel = "Return to Chapters";');
+    expect(source).toContain('const chapterReturnLabel = `Return to ${chapter.name} in Chapters`;');
     expect(source).toContain('chapterReturnHref={buildStaffShellHref("chapters", pathname, currentRouteSearch)}');
   });
 
@@ -1146,7 +1146,7 @@ describe("staff page", () => {
     expect(html).toContain("80 RSVPs");
     expect(html).toContain("68 attended");
     expect(html).toContain("+1,890 this week");
-    expect(html).toContain("Return to Chapters");
+    expect(html).toContain("Return to TEST Stanford University in Chapters");
     expect(html).toContain('href="/staff?view=chapters');
     expect(html).toContain("chapterRegion=West");
     expect(html).toContain("chapterSort=points");
@@ -1193,7 +1193,7 @@ describe("staff page", () => {
     expect(html).toContain("80 RSVPs");
     expect(html).toContain("68 attended");
     expect(html).toContain("+1,890 this week");
-    expect(html).toContain("Return to Chapters");
+    expect(html).toContain("Return to TEST Stanford University in Chapters");
     expect(html).toContain('href="/staff?view=chapters"');
     expect(source).toContain("resolveStaffSelectedChapter(");
     expect(source).toContain("function normalizeStaffChapterContext");

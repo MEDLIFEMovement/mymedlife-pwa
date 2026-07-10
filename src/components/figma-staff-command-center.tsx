@@ -461,7 +461,7 @@ export function ChapterDetailDrawer({
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [showSurvey, setShowSurvey] = useState(false);
-  const chapterReturnLabel = "Return to Chapters";
+  const chapterReturnLabel = `Return to ${chapter.name} in Chapters`;
   const chapterReturnTitle = `Return to Chapters with ${chapter.name} still selected in the same chapters review loop after this preview readback`;
   const resolvedProofQueueContext =
     proofQueueContext ??
