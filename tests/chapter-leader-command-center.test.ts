@@ -958,6 +958,27 @@ describe("chapter leader command center", () => {
     );
   });
 
+  it("keeps chapter-home attendance context attached to blocked interview and e-board follow-up actions", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "member_profile",
+      source: "overview",
+      memberId: "member-ivy",
+      eventCommittee: "events",
+      eventId: "bc-event-moving-mountains-kickoff",
+      pipeline: "follow_up",
+      search: "Ivy",
+      quickAction: "assign_action",
+    });
+
+    expect(commandCenter.selectedMember?.leadershipActions[1]?.href).toBe(
+      "/leader?view=member_profile&source=overview&member=member-ivy&eventCommittee=events&event=bc-event-moving-mountains-kickoff&pipeline=follow_up&q=Ivy&quickAction=schedule_values_interview&returnQuickAction=assign_action",
+    );
+    expect(commandCenter.selectedMember?.leadershipActions[3]?.href).toBe(
+      "/leader?view=member_profile&source=overview&member=member-ivy&eventCommittee=events&event=bc-event-moving-mountains-kickoff&pipeline=follow_up&q=Ivy&quickAction=nominate_for_eboard&returnQuickAction=assign_action",
+    );
+  });
+
   it("keeps attendance-review context attached to blocked member-review actions from the leader event shell", () => {
     const actor = getMockLocalActorContext("leader.a@mymedlife.test");
     const commandCenter = getChapterLeaderCommandCenter(actor, data, {
@@ -974,6 +995,25 @@ describe("chapter leader command center", () => {
     );
     expect(commandCenter.selectedMember?.leadershipActions[2]?.href).toBe(
       "/leader?view=member_profile&source=events&member=member-ivy&eventCommittee=events&event=bc-event-moving-mountains-kickoff&pipeline=follow_up&quickAction=assign_leadership_action&returnQuickAction=assign_action",
+    );
+  });
+
+  it("keeps attendance-review context attached to blocked interview and e-board follow-up actions from the leader event shell", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "member_profile",
+      source: "events",
+      memberId: "member-ivy",
+      eventCommittee: "events",
+      eventId: "bc-event-moving-mountains-kickoff",
+      quickAction: "assign_action",
+    });
+
+    expect(commandCenter.selectedMember?.leadershipActions[1]?.href).toBe(
+      "/leader?view=member_profile&source=events&member=member-ivy&eventCommittee=events&event=bc-event-moving-mountains-kickoff&quickAction=schedule_values_interview&returnQuickAction=assign_action",
+    );
+    expect(commandCenter.selectedMember?.leadershipActions[3]?.href).toBe(
+      "/leader?view=member_profile&source=events&member=member-ivy&eventCommittee=events&event=bc-event-moving-mountains-kickoff&quickAction=nominate_for_eboard&returnQuickAction=assign_action",
     );
   });
 
@@ -1128,6 +1168,27 @@ describe("chapter leader command center", () => {
     );
     expect(commandCenter.selectedMember?.leadershipActions[2]?.href).toBe(
       "/leader?view=member_profile&source=leaderboard&member=member-ivy&eventCommittee=events&event=bc-event-moving-mountains-kickoff&leaderboardMetric=attendance&region=canada&pipeline=follow_up&quickAction=assign_leadership_action&returnQuickAction=assign_action",
+    );
+  });
+
+  it("keeps attendance-review posture attached to blocked interview and e-board follow-up actions from leaderboard readback", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "member_profile",
+      source: "leaderboard",
+      memberId: "member-ivy",
+      eventCommittee: "events",
+      eventId: "bc-event-moving-mountains-kickoff",
+      leaderboardMetric: "attendance",
+      leaderboardRegion: "canada",
+      quickAction: "assign_action",
+    });
+
+    expect(commandCenter.selectedMember?.leadershipActions[1]?.href).toBe(
+      "/leader?view=member_profile&source=leaderboard&member=member-ivy&eventCommittee=events&event=bc-event-moving-mountains-kickoff&leaderboardMetric=attendance&region=canada&quickAction=schedule_values_interview&returnQuickAction=assign_action",
+    );
+    expect(commandCenter.selectedMember?.leadershipActions[3]?.href).toBe(
+      "/leader?view=member_profile&source=leaderboard&member=member-ivy&eventCommittee=events&event=bc-event-moving-mountains-kickoff&leaderboardMetric=attendance&region=canada&quickAction=nominate_for_eboard&returnQuickAction=assign_action",
     );
   });
 
