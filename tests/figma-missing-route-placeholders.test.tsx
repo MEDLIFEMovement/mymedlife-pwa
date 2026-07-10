@@ -244,8 +244,8 @@ describe("Figma missing route placeholders", () => {
     expect(html).toContain("Proof review");
     expect(html).toContain("Chapter context: TEST Stanford University");
     expect(html).toContain("Queue context: Pending · Instagram");
-    expect(html).toContain("Return with Command Center after this Proof / UGC review pass for TEST Stanford University (Pending · Instagram)");
-    expect(html).toContain("Return with Command Center after this Proof / UGC review pass");
+    expect(html).toContain("Return to TEST Stanford University in Proof / UGC (Pending · Instagram)");
+    expect(html).toContain("Use this Admin readback to verify chapter oversight context for TEST Stanford University while preserving the same Pending · Instagram moderation queue.");
     expect(html).toContain("Audit Logs");
     expect(html).toContain("MCP Connections");
   });
