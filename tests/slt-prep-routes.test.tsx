@@ -117,6 +117,23 @@ describe("SLT Prep routes", () => {
     expect(html).toContain('aria-label="Member bottom navigation"');
   });
 
+  it("keeps the member SLT campaigns handoff inside the same student shell with a route back to campaigns", async () => {
+    mockPathname = "/app/slt-prep";
+    await primeSignedInActor("traveler.a@mymedlife.test");
+
+    const { default: AppSltPrepPage } = await import("@/app/app/slt-prep/page");
+    const html = renderToStaticMarkup(
+      await AppSltPrepPage({
+        searchParams: Promise.resolve({ source: "campaigns" }),
+      }),
+    );
+
+    expect(html).toContain("Opened from the TEST campaign shell");
+    expect(html).toContain('href="/campaigns"');
+    expect(html).toContain('href="/profile"');
+    expect(html).toContain('aria-label="Member bottom navigation"');
+  });
+
   it("renders the checklist detail preview packet with the admin handoff still blocked from writes", async () => {
     mockPathname = "/slt-prep/checklist/second-installment";
     await primeSignedInActor("admin@mymedlife.test");

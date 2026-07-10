@@ -18,6 +18,6 @@ export default async function MemberSltPrepAliasPage(
   return renderSltPrepPage(
     "/app/slt-prep",
     "member",
-    query.source === "home" ? "home" : null,
+    query.source === "home" ? "home" : query.source === "campaigns" ? "campaigns" : null,
   );
 }
