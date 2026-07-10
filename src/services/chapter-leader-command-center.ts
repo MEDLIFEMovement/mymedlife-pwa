@@ -1426,7 +1426,8 @@ export function getChapterLeaderCommandCenter(
       ? undefined
       : selectedView === "member_profile" &&
           data.source.mode === "mock" &&
-          !requestedMemberId
+          (hasExplicitMockLeaderProfileRequest ||
+            (!requestedMemberId && !options.memberId))
         ? mockLeaderProfileId
         : visiblePipelineMemberId;
   const pipelineRows = getPipelineRows(
@@ -1730,7 +1731,7 @@ export function getChapterLeaderCommandCenter(
     viewOptions: getViewOptions({
       source: selectedSource,
       memberId: navigationMemberId,
-      defaultProfileMemberId: requestedMemberId,
+      defaultProfileMemberId: navigationMemberId ?? requestedMemberId,
       committeeId: requestedCommitteeId,
       eventCommitteeFilter: selectedEventCommitteeFilter,
       eventId: selectedEventId,
@@ -3046,6 +3047,10 @@ function getNavigationMemberId(input: {
   selectedView: ChapterLeaderCommandCenterView;
 }) {
   if (input.requestedMemberId && input.selectedMemberId) {
+    return input.selectedMemberId;
+  }
+
+  if (input.selectedView === "member_profile" && input.selectedMemberId) {
     return input.selectedMemberId;
   }
 
