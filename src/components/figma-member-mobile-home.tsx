@@ -3851,18 +3851,12 @@ export function FigmaMemberMobileHome({
         : ["events", "event-detail", "rsvp-confirm", "checkin"].includes(screen)
           ? "events"
           : "home";
-  const profileHref =
-    screen === "home"
-      ? "/profile?source=home"
-      : screen === "stories"
-        ? getStoriesBottomNavProfileHref(initialStoriesFilter)
+  const profileHref = screen === "home"
+    ? "/profile?source=home"
+    : screen === "stories"
+      ? getStoriesReaderProfileHref(initialStoriesFilter, initialStoryId)
       : screen === "points"
-        ? getPointsBottomNavProfileHref(
-            pointsSource,
-            pointsReturnEventId,
-            pointsReturnCampaign,
-            pointsStoryFilter,
-          )
+        ? getPointsBottomNavProfileHref(pointsSource, pointsReturnEventId, pointsReturnCampaign, pointsStoryFilter)
         : "/profile";
   const bottomNavHrefOverrides = getMemberBottomNavHrefOverrides({
     screen,
@@ -4101,6 +4095,18 @@ function getStoriesBottomNavProfileHref(
     url.searchParams.set("campaign", campaign);
   }
 
+  return `${url.pathname}${url.search}`;
+}
+
+function getStoriesReaderProfileHref(storyFilter: string | null, storyId: string | null) {
+  const resolvedFilter = resolveStoryFilter(storyFilter);
+  const story = getStoryByIdForFilter(storyId, resolvedFilter);
+  const loopEvent = story ? getStoryLoopEvent(story.id) : null;
+  if (!loopEvent) return getStoriesBottomNavProfileHref(storyFilter);
+  const url = new URL("https://mymedlife.local/profile?source=stories");
+  url.searchParams.set("event", loopEvent.event.routeId ?? "");
+  url.searchParams.set("storyFilter", resolvedFilter);
+  url.searchParams.set("campaign", loopEvent.campaign);
   return `${url.pathname}${url.search}`;
 }
 

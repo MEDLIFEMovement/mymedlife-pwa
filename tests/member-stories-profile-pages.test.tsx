@@ -39,6 +39,10 @@ function getSignedInActor(email: string) {
   );
 }
 
+function getBottomNav(html: string) {
+  return html.match(/<nav aria-label="Member bottom navigation"[\s\S]*?<\/nav>/)?.[0] ?? "";
+}
+
 function getSignedOutActor(email: string) {
   return getMockLocalActorContext(
     email,
@@ -146,6 +150,9 @@ describe("member stories and profile pages", () => {
       'href="/app/points?source=stories&amp;event=chapter-event-ucla-kickoff&amp;storyFilter=Events&amp;campaign=Rush+Month"',
     );
     expect(html).toContain(
+      'href="/profile?source=stories&amp;event=chapter-event-ucla-kickoff&amp;storyFilter=Events&amp;campaign=Rush+Month"',
+    );
+    expect(getBottomNav(html)).toContain(
       'href="/profile?source=stories&amp;event=chapter-event-ucla-kickoff&amp;storyFilter=Events&amp;campaign=Rush+Month"',
     );
   });
