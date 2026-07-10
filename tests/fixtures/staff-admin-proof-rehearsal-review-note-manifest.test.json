@@ -1,0 +1,20 @@
+{
+  "kind": "staff-admin-test-rehearsal-review-note-manifest",
+  "isTestOnly": true,
+  "productionEvidenceBlocked": true,
+  "reviewNoteTitle": "Staff/Admin TEST rehearsal reviewer note",
+  "reviewNoteChecksum": "c616c9e5c8fcf41275533cb3ad058fbc81647d7101f2b1fb86c7c7eab5f6738f",
+  "reviewNoteFixturePath": "tests/fixtures/staff-admin-proof-rehearsal-review-note.test.md",
+  "routeTargets": [
+    "/staff?view=chapters",
+    "/admin",
+    "/app"
+  ],
+  "snapshotSummary": {
+    "ready": true,
+    "staffRows": 2,
+    "adminRows": 2,
+    "passedRows": 3,
+    "failedRows": 1
+  }
+}
