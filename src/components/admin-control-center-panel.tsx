@@ -42,7 +42,7 @@ export function AdminControlCenterPanel({ summary }: AdminControlCenterPanelProp
           label="Named roles"
           value={`${summary.namedRoleCount}/${summary.roleCoverage.length}`}
         />
-        <Metric label="Campaign shells" value={`${summary.campaignTemplateCount}`} />
+        <Metric label="TEST shells" value={`${summary.campaignTemplateCount}`} />
         <Metric label="Disabled outbox" value={`${summary.disabledOutboxCount}`} />
         <Metric label="Audit rows" value={`${summary.auditLogCount}`} />
       </div>
@@ -64,7 +64,7 @@ export function AdminControlCenterPanel({ summary }: AdminControlCenterPanelProp
             </p>
             <p className="mt-1 text-xs leading-5 text-white/56">
               Read-only admin view of TEST users, role coverage, TEST chapter scope,
-              and campaign templates.
+              and TEST campaign templates.
             </p>
           </div>
           <span className="rounded-full border border-emerald-300/20 bg-emerald-300/10 px-3 py-1 text-xs font-semibold text-emerald-100">
@@ -82,7 +82,7 @@ export function AdminControlCenterPanel({ summary }: AdminControlCenterPanelProp
           <div className="rounded-2xl border border-white/10 bg-black/20 p-3">
             <div className="flex items-center justify-between gap-3">
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/44">
-                Users
+                TEST users
               </p>
               <span className="text-xs font-semibold text-emerald-100">
                 {summary.masterDataInventory.users.length}
@@ -151,7 +151,7 @@ export function AdminControlCenterPanel({ summary }: AdminControlCenterPanelProp
           <div className="rounded-2xl border border-white/10 bg-black/20 p-3">
             <div className="flex items-center justify-between gap-3">
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/44">
-                Chapters
+                TEST chapters
               </p>
               <span className="text-xs font-semibold text-emerald-100">
                 {summary.masterDataInventory.chapters.length}
@@ -186,7 +186,7 @@ export function AdminControlCenterPanel({ summary }: AdminControlCenterPanelProp
           <div className="rounded-2xl border border-white/10 bg-black/20 p-3">
             <div className="flex items-center justify-between gap-3">
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/44">
-                Campaign templates
+                TEST campaign templates
               </p>
               <span className="text-xs font-semibold text-emerald-100">
                 {summary.masterDataInventory.campaignTemplates.length}
@@ -197,9 +197,12 @@ export function AdminControlCenterPanel({ summary }: AdminControlCenterPanelProp
                 <article key={template.slug} className="rounded-xl bg-white/[0.05] p-3">
                   <div className="flex items-start justify-between gap-2">
                     <div>
-                      <p className="text-sm font-semibold text-white">
-                        {template.name}
-                      </p>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <p className="text-sm font-semibold text-white">
+                          {template.name}
+                        </p>
+                        <PreviewToken>TEST</PreviewToken>
+                      </div>
                       <p className="mt-1 font-mono text-xs text-white/44">
                         {template.slug}
                       </p>

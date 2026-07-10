@@ -267,6 +267,13 @@ describe("admin control center", () => {
         detail: "TEST UCLA MEDLIFE is the current local chapter scope.",
       }),
     );
+    expect(summary.areas.find((area) => area.key === "campaign_templates")).toEqual(
+      expect.objectContaining({
+        primaryMetric: `${campaignShells.length} TEST shells`,
+        detail:
+          "TEST Rush Month plus reusable TEST campaign shells are visible as read-only operating templates.",
+      }),
+    );
     expect(summary.masterDataInventory.users[0]).toEqual(
       expect.objectContaining({
         displayName: "TEST Priya President",
@@ -278,6 +285,11 @@ describe("admin control center", () => {
         name: "TEST UCLA MEDLIFE",
         campus: "TEST UCLA",
         coachName: "TEST Renato Coach",
+      }),
+    );
+    expect(summary.masterDataInventory.campaignTemplates[0]).toEqual(
+      expect.objectContaining({
+        name: "TEST Rush Month",
       }),
     );
   });
@@ -297,9 +309,12 @@ describe("admin control center", () => {
     expect(html).toContain("Blocked production writes");
     expect(html).toContain("Blocked external sends");
     expect(html).toContain("TEST users");
+    expect(html).toContain("TEST shells");
     expect(html).toContain("Read-only admin view of TEST users, role coverage, TEST chapter scope,");
+    expect(html).toContain("and TEST campaign templates.");
     expect(html).toContain("TEST Priya President");
     expect(html).toContain("TEST Rush Month");
+    expect(html).toContain("TEST campaign templates");
     expect(html).toContain(expectedChapterName);
     expect(html).toContain(`${expectedCampusName} / ${data.chapter.region}`);
     expect(html).toContain(`Coach: ${expectedCoachName}.`);
