@@ -123,7 +123,7 @@ type Screen = "chapters" | "campaigns" | "events" | "ugc" | "reports" | "admin" 
 const STAFF_PAGE_HEADER_ACCOUNT_CLEARANCE = WORKSPACE_ACCOUNT_MENU_SHELL_CLEARANCE;
 const STAFF_TOP_BAR_ACCOUNT_CLEARANCE = WORKSPACE_ACCOUNT_MENU_SHELL_CLEARANCE;
 const STAFF_HEADER_ALERT_VISIBILITY =
-  "hidden md:flex max-w-[7.5rem] lg:max-w-[9rem] xl:max-w-[11rem] 2xl:max-w-[12.5rem]";
+  "hidden md:flex max-w-[7rem] lg:max-w-[8.5rem] xl:max-w-[10rem] 2xl:max-w-[11.5rem]";
 
 /* ─────────────────────────────────────────────────────────── */
 /*  MOCK DATA                                                   */
