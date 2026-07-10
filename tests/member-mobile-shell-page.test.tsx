@@ -129,6 +129,12 @@ describe("member mobile shell routes", () => {
     expect(html).toContain(
       'href="/app/events?source=stories&amp;storyFilter=Events&amp;campaign=Spring+Showcase"',
     );
+    expect(html).toContain(
+      'href="/app/events/chapter-event-mcgill-coffee-chat?source=stories&amp;storyFilter=Events&amp;campaign=Spring+Showcase"',
+    );
+    expect(html).not.toContain(
+      'href="/app/events/test-showcase-planning-meeting?source=stories&amp;storyFilter=Events&amp;campaign=Spring+Showcase"',
+    );
     expect(getBottomNavHtml(html)).toContain(
       'href="/app/points?source=stories&amp;campaign=Spring+Showcase&amp;storyFilter=Events"',
     );
@@ -498,6 +504,65 @@ describe("member mobile shell routes", () => {
     );
     expect(getBottomNavHtml(html)).toContain(
       'href="/profile?source=stories&amp;storyFilter=Events&amp;campaign=Spring+Showcase"',
+    );
+  });
+
+  it("preserves exact stories event context inside the points readback card", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("member.a@mymedlife.test"),
+    );
+
+    const { default: PointsPage } = await import("@/app/app/points/page");
+    const html = renderToStaticMarkup(
+      await PointsPage({
+        searchParams: Promise.resolve({
+          source: "stories",
+          storyFilter: "Events",
+          campaign: "Rush Month",
+          event: "chapter-event-ucla-kickoff",
+        }),
+      }),
+    );
+
+    expect(html).toContain("Back to Stories");
+    expect(html).toContain("Back to TEST event detail");
+    expect(html).toContain(
+      'href="/app/events/chapter-event-ucla-kickoff?source=stories&amp;storyFilter=Events&amp;campaign=Rush+Month"',
+    );
+    expect(html).toContain(
+      'href="/app/events/chapter-event-ucla-kickoff?source=stories&amp;storyFilter=Events&amp;campaign=Rush+Month&amp;step=rsvp"',
+    );
+    expect(html).toContain(
+      'href="/app/events/chapter-event-ucla-kickoff?source=stories&amp;storyFilter=Events&amp;campaign=Rush+Month&amp;step=checkin"',
+    );
+  });
+
+  it("keeps the points bottom-nav events link tied to the exact stories event context", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("member.a@mymedlife.test"),
+    );
+
+    const { default: PointsPage } = await import("@/app/app/points/page");
+    const html = renderToStaticMarkup(
+      await PointsPage({
+        searchParams: Promise.resolve({
+          source: "stories",
+          storyFilter: "Events",
+          campaign: "Rush Month",
+          event: "chapter-event-ucla-kickoff",
+        }),
+      }),
+    );
+
+    expect(getBottomNavHtml(html)).toContain(
+      'href="/app/events/chapter-event-ucla-kickoff?source=stories&amp;campaign=Rush+Month&amp;storyFilter=Events"',
+    );
+    expect(getBottomNavHtml(html)).not.toContain(
+      'href="/app/events/chapter-event-ucla-kickoff?source=events&amp;campaign=Rush+Month&amp;storyFilter=Events"',
     );
   });
   it("keeps the member points route connected to the profile walkthrough when opened from profile", async () => {

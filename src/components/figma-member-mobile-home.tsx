@@ -73,6 +73,7 @@ function getMemberEventDetailHref(
   source: MemberLoopSource = "events",
   campaign: string | null = null,
   profileSource: "points" | null = null,
+  storyFilter: string | null = null,
 ) {
   const detailHref = MEMBER_EVENT_DETAIL_HREFS[eventId] ?? "/app/events";
   const url = new URL(`https://mymedlife.local${detailHref}`);
@@ -83,6 +84,10 @@ function getMemberEventDetailHref(
 
   if (source === "profile" && profileSource === "points") {
     url.searchParams.set("profileSource", "points");
+  }
+
+  if (source === "stories" && storyFilter) {
+    url.searchParams.set("storyFilter", storyFilter);
   }
 
   if (campaign && campaign !== "All") {
@@ -97,8 +102,9 @@ function getMemberEventRsvpHref(
   source: MemberLoopSource = "events",
   campaign: string | null = null,
   profileSource: "points" | null = null,
+  storyFilter: string | null = null,
 ) {
-  const detailHref = getMemberEventDetailHref(eventId, source, campaign, profileSource);
+  const detailHref = getMemberEventDetailHref(eventId, source, campaign, profileSource, storyFilter);
   return detailHref.includes("?") ? `${detailHref}&step=rsvp` : `${detailHref}?step=rsvp`;
 }
 
@@ -1918,18 +1924,18 @@ function PointsLeaderboard({
   const continuity = continuityMap[source];
   const returnEvent = getMemberLoopEventByRouteId(returnEventId ?? null);
   const returnLoopSource: MemberLoopSource =
-    source === "events" ? "points" : source === "stories" ? "events" : source;
+    source === "events" ? "points" : source;
   const returnEventDetailHref =
     returnEvent && returnEvent.routeId
-      ? getMemberEventDetailHref(returnEvent.id, returnLoopSource, returnCampaign)
+      ? getMemberEventDetailHref(returnEvent.id, returnLoopSource, returnCampaign, null, storyFilter)
       : continuity[1];
   const returnEventRsvpHref =
     returnEvent
-      ? getMemberEventStepHref(returnEvent.id, returnLoopSource, "rsvp", returnCampaign)
+      ? getMemberEventStepHref(returnEvent.id, returnLoopSource, "rsvp", returnCampaign, null, storyFilter)
       : null;
   const returnEventCheckInHref =
     returnEvent
-      ? getMemberEventStepHref(returnEvent.id, returnLoopSource, "checkin", returnCampaign)
+      ? getMemberEventStepHref(returnEvent.id, returnLoopSource, "checkin", returnCampaign, null, storyFilter)
       : null;
 
   return (
@@ -2304,8 +2310,9 @@ function getMemberEventStepHref(
   step: "rsvp" | "checkin",
   campaign: string | null = null,
   profileSource: "points" | null = null,
+  storyFilter: string | null = null,
 ) {
-  const detailHref = getMemberEventDetailHref(eventId, source, campaign, profileSource);
+  const detailHref = getMemberEventDetailHref(eventId, source, campaign, profileSource, storyFilter);
   return detailHref.includes("?") ? `${detailHref}&step=${step}` : `${detailHref}?step=${step}`;
 }
 function EventsScreen({
@@ -2327,7 +2334,7 @@ function EventsScreen({
   const featuredEvent = visibleEvents.find((e) => e.featured);
   const listEvents = visibleEvents.filter((e) => !e.featured);
   const activeCampaignData = activeCampaign !== "All" ? CAMPAIGNS.find((c) => c.name === activeCampaign) : null;
-  const detailLoopSource: MemberLoopSource = source === "stories" ? "events" : source;
+  const detailLoopSource: MemberLoopSource = source;
   const pointsReturnHref = getEventsBottomNavPointsHref(
     source,
     activeCampaign,
@@ -2461,13 +2468,13 @@ function EventsScreen({
               </div>
               <div className="flex gap-2">
                 <Link
-                  href={getMemberEventRsvpHref(featuredEvent.id, detailLoopSource)}
+                  href={getMemberEventRsvpHref(featuredEvent.id, detailLoopSource, activeCampaign, profileSource, storyFilter)}
                   className="flex flex-1 items-center justify-center rounded-xl bg-primary py-2.5 text-sm font-bold text-white transition-opacity hover:opacity-90"
                 >
                   RSVP
                 </Link>
                 <Link
-                  href={getMemberEventDetailHref(featuredEvent.id, detailLoopSource)}
+                  href={getMemberEventDetailHref(featuredEvent.id, detailLoopSource, activeCampaign, profileSource, storyFilter)}
                   className="flex flex-1 items-center justify-center rounded-xl bg-secondary py-2.5 text-sm font-bold text-primary transition-colors hover:bg-muted"
                 >
                   View Details
@@ -2485,8 +2492,20 @@ function EventsScreen({
               {listEvents.map((ev) => {
                 const isRsvpd = rsvpdIds.includes(ev.id);
                 const typeCfg = EVENT_TYPE_CONFIG[ev.eventType];
-                const detailHref = getMemberEventDetailHref(ev.id, detailLoopSource, activeCampaign, profileSource);
-                const rsvpHref = getMemberEventRsvpHref(ev.id, detailLoopSource, activeCampaign, profileSource);
+                const detailHref = getMemberEventDetailHref(
+                  ev.id,
+                  detailLoopSource,
+                  activeCampaign,
+                  profileSource,
+                  storyFilter,
+                );
+                const rsvpHref = getMemberEventRsvpHref(
+                  ev.id,
+                  detailLoopSource,
+                  activeCampaign,
+                  profileSource,
+                  storyFilter,
+                );
                 const hasDetailRoute = isMemberEventDetailHref(detailHref);
                 return (
                   <div
@@ -2978,6 +2997,10 @@ const stories: Story[] = [
   },
 ];
 
+const STORY_EVENT_CONTINUITY: Partial<Record<number, { eventId: number; campaign: CampaignTag }>> = {
+  2: { eventId: 1, campaign: "Rush Month" },
+};
+
 const sourceConfig: Record<StorySource, { label: string; color: string; bg: string; icon: string }> = {
   instagram: { label: "Instagram", color: "#fff", bg: "linear-gradient(135deg,#f09433,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888)", icon: "IG" },
   linkedin:  { label: "LinkedIn",  color: "#fff", bg: "#0A66C2", icon: "in" },
@@ -3051,6 +3074,25 @@ function getStoryPreviewHandle(chapter: string) {
 
 function getStoryPreviewAvatarLabel(chapter: string) {
   return stripTestPrefix(chapter).charAt(0).toUpperCase() || "M";
+}
+
+function getStoryLoopEvent(storyId: number) {
+  const continuity = STORY_EVENT_CONTINUITY[storyId];
+
+  if (!continuity) {
+    return null;
+  }
+
+  const event = ALL_EVENTS.find((candidate) => candidate.id === continuity.eventId);
+
+  if (!event || !event.routeId) {
+    return null;
+  }
+
+  return {
+    event,
+    campaign: continuity.campaign,
+  };
 }
 
 function SourceBadge({ source }: { source: StorySource }) {
@@ -3398,8 +3440,32 @@ function StoryCard({ story, liked, onToggleLike, onClick, featured }: {
   );
 }
 
-function StoryModal({ story, liked, onToggleLike, closeHref }: { story: Story; liked: boolean; onToggleLike: (id: number) => void; closeHref: string }) {
+function StoryModal({
+  story,
+  liked,
+  onToggleLike,
+  closeHref,
+  activeFilter,
+}: {
+  story: Story;
+  liked: boolean;
+  onToggleLike: (id: number) => void;
+  closeHref: string;
+  activeFilter: StoryFilter;
+}) {
   const cfg = sourceConfig[story.source];
+  const loopEventsHref = buildEventsHref({
+    source: "stories",
+    storyFilter: activeFilter,
+  });
+  const loopPointsHref =
+    getEventsBottomNavPointsHref("stories", null, null, activeFilter) ?? "/app/points?source=stories";
+  const loopProfileHref = getStoriesBottomNavProfileHref(activeFilter);
+  const showLoopContinuity = activeFilter === "Events";
+  const loopEvent = showLoopContinuity ? getStoryLoopEvent(story.id) : null;
+  const loopEventDetailHref = loopEvent
+    ? getMemberEventDetailHref(loopEvent.event.id, "stories", loopEvent.campaign, null, activeFilter)
+    : null;
   return (
     <div className="fixed inset-0 z-50 flex flex-col bg-card sm:items-center sm:justify-center sm:p-6 sm:bg-foreground/40 sm:backdrop-blur-sm">
       <Link href={closeHref} aria-label="Close story reader" className="absolute inset-0 hidden sm:block" />
@@ -3453,6 +3519,37 @@ function StoryModal({ story, liked, onToggleLike, closeHref }: { story: Story; l
               </blockquote>
             )}
             {story.body && <p className="text-base text-foreground/75 leading-[1.8]">{story.body}</p>}
+            {showLoopContinuity && (
+              <div className="rounded-2xl border border-primary/15 bg-primary/5 px-4 py-4">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary" style={{ fontFamily: "'DM Mono', monospace" }}>
+                  Stay in the TEST member loop
+                </p>
+                <p className="mt-2 text-sm leading-relaxed text-foreground/75">
+                  This TEST story opened from the member events lane. Keep the same mobile shell context as you move into events,
+                  points, and profile readback.
+                </p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <Link
+                    href={loopEventDetailHref ?? loopEventsHref}
+                    className="inline-flex items-center rounded-full bg-primary px-3 py-2 text-xs font-semibold text-white"
+                  >
+                    {loopEventDetailHref ? "Open TEST event detail" : "Open TEST events"}
+                  </Link>
+                  <Link
+                    href={loopPointsHref}
+                    className="inline-flex items-center rounded-full bg-secondary px-3 py-2 text-xs font-semibold text-primary"
+                  >
+                    Open TEST points
+                  </Link>
+                  <Link
+                    href={loopProfileHref}
+                    className="inline-flex items-center rounded-full border border-border px-3 py-2 text-xs font-semibold text-foreground"
+                  >
+                    Open TEST profile
+                  </Link>
+                </div>
+              </div>
+            )}
           </div>
         </div>
         <div className="flex-shrink-0 px-5 py-4 border-t border-border flex items-center justify-between gap-3 bg-card">
@@ -3682,6 +3779,7 @@ function StoriesScreen({
           liked={false}
           onToggleLike={toggleLike}
           closeHref={closeHref}
+          activeFilter={activeFilter}
         />
       )}
     </>
@@ -3930,7 +4028,7 @@ function getPointsBottomNavEventsHref(
   if (source === "stories") {
     const url = new URL(
       `https://mymedlife.local${
-        returnEventId ? `/app/events/${returnEventId}?source=events` : "/app/events?source=stories"
+        returnEventId ? `/app/events/${returnEventId}?source=stories` : "/app/events?source=stories"
       }`,
     );
 
