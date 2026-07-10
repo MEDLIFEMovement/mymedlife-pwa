@@ -1805,6 +1805,24 @@ describe("chapter leader command center", () => {
     );
   });
 
+  it("keeps attendance-review member-pipeline nav attached while member review waits for a selected person", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "member_profile",
+      source: "events",
+      eventCommittee: "events",
+      eventId: "bc-event-moving-mountains-kickoff",
+      leaderboardMetric: "attendance",
+      quickAction: "assign_action",
+    });
+
+    expect(commandCenter.selectedMember).toBeNull();
+    expect(commandCenter.navigationMemberId).toBeNull();
+    expect(commandCenter.viewOptions.find((item) => item.key === "members")?.href).toBe(
+      "/leader?view=members&source=events&eventCommittee=events&event=bc-event-moving-mountains-kickoff&quickAction=assign_action",
+    );
+  });
+
   it("keeps leaderboard readback return posture visible while member review waits for a selected person", () => {
     const actor = getMockLocalActorContext("leader.a@mymedlife.test");
     const commandCenter = getChapterLeaderCommandCenter(actor, data, {
@@ -1916,6 +1934,26 @@ describe("chapter leader command center", () => {
       href:
         "/leader?view=leaderboard&source=leaderboard&eventCommittee=events&event=bc-event-moving-mountains-kickoff&region=canada&benchmark=leaderboard-mcgill&quickAction=assign_action",
     });
+  });
+
+  it("keeps benchmark leaderboard member-pipeline nav attached while member review waits for a selected person", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "member_profile",
+      source: "leaderboard",
+      eventCommittee: "events",
+      eventId: "bc-event-moving-mountains-kickoff",
+      leaderboardMetric: "attendance",
+      leaderboardRegion: "canada",
+      bestPracticeChapterId: "leaderboard-mcgill",
+      quickAction: "assign_action",
+    });
+
+    expect(commandCenter.selectedMember).toBeNull();
+    expect(commandCenter.navigationMemberId).toBeNull();
+    expect(commandCenter.viewOptions.find((item) => item.key === "members")?.href).toBe(
+      "/leader?view=members&source=leaderboard&eventCommittee=events&event=bc-event-moving-mountains-kickoff&leaderboardMetric=attendance&region=canada&benchmark=leaderboard-mcgill&quickAction=assign_action",
+    );
   });
 
   it("keeps chapter-home attendance return posture visible while member review waits for a selected person", () => {
