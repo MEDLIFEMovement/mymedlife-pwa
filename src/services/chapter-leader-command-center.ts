@@ -1480,6 +1480,8 @@ export function getChapterLeaderCommandCenter(
   const quickActionMemberId =
     requestedMemberId && selectedMember
       ? selectedMember.id
+      : shouldKeepMemberProfileShellEmpty
+        ? null
       : selectedView === "members" ||
           selectedView === "member_profile" ||
           selectedView === "leaders" ||
@@ -1592,9 +1594,15 @@ export function getChapterLeaderCommandCenter(
     quickActionMemberId,
     {
       source: quickActionSource,
+      bestPracticeChapterId: selectedBestPracticeChapterId,
       impactStoryId: selectedImpactHighlightId,
       pipelineFilter: selectedPipelineFilter,
       eventCommitteeFilter: selectedEventCommitteeFilter,
+      eventId: selectedEventId,
+      leaderboardMetric: selectedLeaderboardMetric,
+      leaderboardRegion: selectedLeaderboardRegion,
+      quickAction: activeQuickAction,
+      returnQuickAction,
       searchQuery: pipelineSearchQuery,
       bridgeVideoFilter: selectedBridgeVideoFilter,
       feedPostId: selectedFeedPostId,
@@ -1781,6 +1789,7 @@ export function getChapterLeaderCommandCenter(
       pipelineFilter: selectedPipelineFilter,
       searchQuery: pipelineSearchQuery,
       leaderboardRegion: selectedLeaderboardRegion,
+      bestPracticeChapterId: selectedBestPracticeChapterId,
       quickAction: activeQuickAction,
       returnQuickAction,
     }),
@@ -2373,6 +2382,25 @@ function getChapterLeaderSourceContext(
               quickAction: isAttendanceReview ? "assign_action" : undefined,
             }),
           },
+          ...(isAttendanceReview
+            ? [
+                {
+                  label: "Open attendance review",
+                  href: buildChapterLeaderCommandCenterHref("events", {
+                    source: "leaderboard",
+                    memberId: context.memberId,
+                    eventCommitteeFilter: context.eventCommitteeFilter,
+                    eventId: context.eventId,
+                    bestPracticeChapterId: context.bestPracticeChapterId ?? null,
+                    leaderboardMetric: context.leaderboardMetric,
+                    leaderboardRegion: context.leaderboardRegion,
+                    pipelineFilter: context.pipelineFilter,
+                    searchQuery: context.searchQuery,
+                    quickAction: "assign_action",
+                  }),
+                },
+              ]
+            : []),
         ],
       };
     }
@@ -3162,6 +3190,7 @@ function getLeaderboardFilters(
     pipelineFilter: ChapterLeaderPipelineFilter;
     searchQuery: string;
     leaderboardRegion: ChapterLeaderLeaderboardRegionKey;
+    bestPracticeChapterId?: string | null;
     quickAction?: ChapterLeaderQuickActionState | null;
     returnQuickAction?: ChapterLeaderQuickActionState | null;
   },
@@ -3197,6 +3226,8 @@ function getLeaderboardFilters(
         searchQuery: context.searchQuery,
         leaderboardMetric: key,
         leaderboardRegion: context.leaderboardRegion,
+        bestPracticeChapterId:
+          context.source === "leaderboard" ? context.bestPracticeChapterId ?? null : null,
         quickAction: preservedAttendanceQuickAction,
       }),
     }));
@@ -3464,15 +3495,35 @@ function getQuickActions(
   selectedMemberId: string | null,
   context: {
     source?: ChapterLeaderCommandCenterSource | null;
+    bestPracticeChapterId?: string | null;
     impactStoryId?: string | null;
     pipelineFilter?: ChapterLeaderPipelineFilter;
     eventCommitteeFilter?: ChapterLeaderEventCommitteeFilterKey;
+    eventId?: string | null;
+    leaderboardMetric?: ChapterLeaderLeaderboardMetricKey;
+    leaderboardRegion?: ChapterLeaderLeaderboardRegionKey;
+    quickAction?: ChapterLeaderQuickActionState | null;
+    returnQuickAction?: ChapterLeaderQuickActionState | null;
     searchQuery?: string;
     bridgeVideoFilter?: ChapterLeaderBridgeVideoFilterKey;
     feedPostId?: string | null;
   } = {},
 ): ChapterLeaderCommandCenterQuickAction[] {
   const commandCenterSource = context.source ?? "overview";
+  const preservedAttendanceQuickAction = isAttendanceReturnActive({
+    activeQuickAction: context.quickAction ?? null,
+    returnQuickAction: context.returnQuickAction ?? null,
+  })
+    ? "assign_action"
+    : undefined;
+  const shouldPreserveEventContext =
+    context.source === "events" ||
+    context.source === "leaderboard" ||
+    (context.source === "overview" && preservedAttendanceQuickAction === "assign_action");
+  const preservedBestPracticeChapterId =
+    context.source === "leaderboard" ? context.bestPracticeChapterId ?? null : null;
+  const preservedLeaderboardRegion =
+    context.source === "leaderboard" ? context.leaderboardRegion : undefined;
 
   return [
     {
@@ -3481,6 +3532,12 @@ function getQuickActions(
         source: commandCenterSource,
         memberId: selectedMemberId,
         eventCommitteeFilter: context.eventCommitteeFilter,
+        eventId: shouldPreserveEventContext ? context.eventId : null,
+        bestPracticeChapterId: preservedBestPracticeChapterId,
+        leaderboardMetric: context.leaderboardMetric,
+        leaderboardRegion: preservedLeaderboardRegion,
+        pipelineFilter: selectedMemberId ? undefined : context.pipelineFilter,
+        searchQuery: selectedMemberId ? undefined : context.searchQuery,
         quickAction: "create_event",
       }),
       helper: "Mock-linked Luma planning",
@@ -3492,7 +3549,13 @@ function getQuickActions(
         source: commandCenterSource,
         memberId: selectedMemberId,
         eventCommitteeFilter: context.eventCommitteeFilter,
-        quickAction: "assign_action",
+        eventId: shouldPreserveEventContext ? context.eventId : null,
+        bestPracticeChapterId: preservedBestPracticeChapterId,
+        leaderboardMetric: context.leaderboardMetric,
+        leaderboardRegion: preservedLeaderboardRegion,
+        pipelineFilter: selectedMemberId ? undefined : context.pipelineFilter,
+        searchQuery: selectedMemberId ? undefined : context.searchQuery,
+        quickAction: preservedAttendanceQuickAction ?? "assign_action",
       }),
       helper: "RSVP follow-up and point-ready roster",
       tone: "primary",
@@ -3502,6 +3565,11 @@ function getQuickActions(
       href: buildChapterLeaderCommandCenterHref("members", {
         source: context.source,
         memberId: selectedMemberId,
+        bestPracticeChapterId: preservedBestPracticeChapterId,
+        eventCommitteeFilter: shouldPreserveEventContext ? context.eventCommitteeFilter : "all",
+        eventId: shouldPreserveEventContext ? context.eventId : null,
+        leaderboardMetric: context.leaderboardMetric,
+        leaderboardRegion: preservedLeaderboardRegion,
         pipelineFilter: context.pipelineFilter,
         searchQuery: context.searchQuery,
         quickAction: "review_members",
@@ -3515,6 +3583,19 @@ function getQuickActions(
         source: commandCenterSource,
         memberId: selectedMemberId,
         leaderboardMetric: "attendance",
+        leaderboardRegion: preservedLeaderboardRegion,
+        bestPracticeChapterId: preservedBestPracticeChapterId,
+        eventCommitteeFilter: shouldPreserveEventContext ? context.eventCommitteeFilter : "all",
+        eventId: shouldPreserveEventContext ? context.eventId : null,
+        pipelineFilter:
+          preservedAttendanceQuickAction === "assign_action"
+            ? context.pipelineFilter
+            : undefined,
+        searchQuery:
+          preservedAttendanceQuickAction === "assign_action"
+            ? context.searchQuery
+            : undefined,
+        quickAction: preservedAttendanceQuickAction,
       }),
       helper: "Chapter rank and points movement",
       tone: "secondary",

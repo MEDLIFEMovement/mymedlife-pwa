@@ -785,6 +785,7 @@ function renderView(
                 <Link
                   href={
                     commandCenter.selectedMember?.profileHref ??
+                    commandCenter.pipelineRows[0]?.profileHref ??
                     buildChapterLeaderCommandCenterHref("member_profile", {
                       source: commandCenter.selectedSource,
                       memberId: commandCenter.selectedMemberId,
@@ -867,6 +868,53 @@ function renderView(
                   ) : null}
                   {commandCenter.selectedSource ? (
                     <input type="hidden" name="source" value={commandCenter.selectedSource} />
+                  ) : null}
+                  {commandCenter.selectedEventCommitteeFilter !== "all" ? (
+                    <input
+                      type="hidden"
+                      name="eventCommittee"
+                      value={commandCenter.selectedEventCommitteeFilter}
+                    />
+                  ) : null}
+                  {commandCenter.selectedEventId ? (
+                    <input type="hidden" name="event" value={commandCenter.selectedEventId} />
+                  ) : null}
+                  {commandCenter.selectedSource === "leaderboard" ? (
+                    <input
+                      type="hidden"
+                      name="leaderboardMetric"
+                      value={commandCenter.selectedLeaderboardMetric}
+                    />
+                  ) : null}
+                  {commandCenter.selectedSource === "leaderboard" &&
+                  commandCenter.selectedLeaderboardRegion !== "all" ? (
+                    <input
+                      type="hidden"
+                      name="region"
+                      value={commandCenter.selectedLeaderboardRegion}
+                    />
+                  ) : null}
+                  {commandCenter.selectedSource === "leaderboard" &&
+                  commandCenter.selectedBestPracticeChapterId ? (
+                    <input
+                      type="hidden"
+                      name="benchmark"
+                      value={commandCenter.selectedBestPracticeChapterId}
+                    />
+                  ) : null}
+                  {commandCenter.activeQuickAction ? (
+                    <input
+                      type="hidden"
+                      name="quickAction"
+                      value={commandCenter.activeQuickAction}
+                    />
+                  ) : null}
+                  {commandCenter.returnQuickAction ? (
+                    <input
+                      type="hidden"
+                      name="returnQuickAction"
+                      value={commandCenter.returnQuickAction}
+                    />
                   ) : null}
                 </form>
 
@@ -1189,14 +1237,17 @@ function renderView(
               preservesAttendanceReturnContext) ||
               (commandCenter.selectedSource === "leaderboard" &&
                 preservesAttendanceReturnContext)) &&
-            commandCenter.sourceContext?.actions?.[0] ? (
-              <div className="mt-4">
-                <Link
-                  href={commandCenter.sourceContext.actions[0].href}
-                  className="inline-flex rounded-full border border-[#bfdbfe] bg-white px-4 py-2 text-sm font-semibold text-[#1d4ed8]"
-                >
-                  {commandCenter.sourceContext.actions[0].label}
-                </Link>
+            commandCenter.sourceContext?.actions?.length ? (
+              <div className="mt-4 flex flex-wrap gap-2">
+                {commandCenter.sourceContext.actions.map((action) => (
+                  <Link
+                    key={`${action.label}-${action.href}`}
+                    href={action.href}
+                    className="inline-flex rounded-full border border-[#bfdbfe] bg-white px-4 py-2 text-sm font-semibold text-[#1d4ed8]"
+                  >
+                    {action.label}
+                  </Link>
+                ))}
               </div>
             ) : null}
           </SectionCard>
@@ -3796,6 +3847,7 @@ function renderMemberProfileQuickActionState(
     leaderboardRegion: commandCenter.selectedLeaderboardRegion,
     pipelineFilter: commandCenter.selectedPipelineFilter,
     searchQuery: commandCenter.pipelineSearchQuery,
+    returnQuickAction: commandCenter.returnQuickAction,
   });
 
   const successionHref = buildChapterLeaderCommandCenterHref("succession", {
