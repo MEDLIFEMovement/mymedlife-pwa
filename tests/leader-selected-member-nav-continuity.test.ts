@@ -236,4 +236,129 @@ describe("leader selected-member nav continuity", () => {
       "/leader?view=members&source=leaderboard&eventCommittee=events&event=bc-event-moving-mountains-kickoff&leaderboardMetric=attendance&region=canada",
     );
   });
+
+  it("keeps plain stale-member member review in the intentional empty state when no visible leader member matches", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "member_profile",
+      memberId: "missing-member",
+      pipeline: "follow_up",
+      search: "Nobody",
+      quickAction: "assign_action",
+    });
+
+    expect(commandCenter.selectedMember).toBeNull();
+    expect(commandCenter.navigationMemberId).toBeNull();
+    expect(commandCenter.viewOptions.find((item) => item.key === "overview")?.href).toBe(
+      "/leader?view=overview&pipeline=follow_up&q=Nobody&quickAction=assign_action",
+    );
+    expect(commandCenter.viewOptions.find((item) => item.key === "members")?.href).toBe(
+      "/leader?view=members&pipeline=follow_up&q=Nobody&quickAction=assign_action",
+    );
+    expect(commandCenter.viewOptions.find((item) => item.key === "leaderboard")?.href).toBe(
+      "/leader?view=leaderboard&leaderboardMetric=attendance&pipeline=follow_up&q=Nobody&quickAction=assign_action",
+    );
+  });
+
+  it("keeps plain stale-member blocked follow-through empty-state posture when no visible leader member matches", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "member_profile",
+      memberId: "missing-member",
+      pipeline: "follow_up",
+      search: "Nobody",
+      quickAction: "promote_to_chair",
+      returnQuickAction: "assign_action",
+    });
+
+    expect(commandCenter.selectedMember).toBeNull();
+    expect(commandCenter.navigationMemberId).toBeNull();
+    expect(commandCenter.viewOptions.find((item) => item.key === "overview")?.href).toBe(
+      "/leader?view=overview&pipeline=follow_up&q=Nobody&quickAction=assign_action",
+    );
+    expect(commandCenter.viewOptions.find((item) => item.key === "members")?.href).toBe(
+      "/leader?view=members&pipeline=follow_up&q=Nobody&quickAction=assign_action",
+    );
+    expect(commandCenter.viewOptions.find((item) => item.key === "leaderboard")?.href).toBe(
+      "/leader?view=leaderboard&leaderboardMetric=attendance&pipeline=follow_up&q=Nobody&quickAction=assign_action",
+    );
+  });
+
+  it("keeps plain stale-member open-event-context empty-state posture when no visible leader member matches", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "member_profile",
+      memberId: "missing-member",
+      pipeline: "follow_up",
+      search: "Nobody",
+      quickAction: "assign_leadership_action",
+      returnQuickAction: "assign_action",
+    });
+
+    expect(commandCenter.selectedMember).toBeNull();
+    expect(commandCenter.navigationMemberId).toBeNull();
+    expect(commandCenter.viewOptions.find((item) => item.key === "overview")?.href).toBe(
+      "/leader?view=overview&pipeline=follow_up&q=Nobody&quickAction=assign_action",
+    );
+    expect(commandCenter.viewOptions.find((item) => item.key === "members")?.href).toBe(
+      "/leader?view=members&pipeline=follow_up&q=Nobody&quickAction=assign_action",
+    );
+    expect(commandCenter.viewOptions.find((item) => item.key === "leaderboard")?.href).toBe(
+      "/leader?view=leaderboard&leaderboardMetric=attendance&pipeline=follow_up&q=Nobody&quickAction=assign_action",
+    );
+  });
+
+  it("keeps overview-sourced stale-member member review intentionally empty while preserving chapter-home event context", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "member_profile",
+      source: "overview",
+      memberId: "missing-member",
+      eventCommittee: "events",
+      eventId: "bc-event-moving-mountains-kickoff",
+      pipeline: "follow_up",
+      search: "Ivy",
+      quickAction: "assign_action",
+    });
+
+    expect(commandCenter.selectedMember).toBeNull();
+    expect(commandCenter.navigationMemberId).toBeNull();
+    expect(commandCenter.viewOptions.find((item) => item.key === "overview")?.href).toBe(
+      "/leader?view=overview&source=overview&eventCommittee=events&event=bc-event-moving-mountains-kickoff&pipeline=follow_up&q=Ivy&quickAction=assign_action",
+    );
+    expect(commandCenter.viewOptions.find((item) => item.key === "members")?.href).toBe(
+      "/leader?view=members&source=overview&eventCommittee=events&event=bc-event-moving-mountains-kickoff&pipeline=follow_up&q=Ivy&quickAction=assign_action",
+    );
+    expect(commandCenter.viewOptions.find((item) => item.key === "leaderboard")?.href).toBe(
+      "/leader?view=leaderboard&source=overview&eventCommittee=events&event=bc-event-moving-mountains-kickoff&leaderboardMetric=attendance&pipeline=follow_up&q=Ivy&quickAction=assign_action",
+    );
+  });
+
+  it("keeps leaderboard-sourced stale-member member review intentionally empty while preserving leaderboard event context", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "member_profile",
+      source: "leaderboard",
+      memberId: "missing-member",
+      eventCommittee: "events",
+      eventId: "bc-event-moving-mountains-kickoff",
+      leaderboardMetric: "attendance",
+      leaderboardRegion: "canada",
+      pipeline: "follow_up",
+      search: "Ivy",
+      quickAction: "assign_action",
+    });
+
+    expect(commandCenter.selectedMember).toBeNull();
+    expect(commandCenter.navigationMemberId).toBeNull();
+    expect(commandCenter.viewOptions.find((item) => item.key === "overview")?.href).toBe(
+      "/leader?view=overview&source=leaderboard&eventCommittee=events&event=bc-event-moving-mountains-kickoff&leaderboardMetric=attendance&region=canada&pipeline=follow_up&q=Ivy&quickAction=assign_action",
+    );
+    expect(commandCenter.viewOptions.find((item) => item.key === "members")?.href).toBe(
+      "/leader?view=members&source=leaderboard&eventCommittee=events&event=bc-event-moving-mountains-kickoff&leaderboardMetric=attendance&region=canada&pipeline=follow_up&q=Ivy&quickAction=assign_action",
+    );
+    expect(commandCenter.viewOptions.find((item) => item.key === "events")?.href).toBe(
+      "/leader?view=events&source=leaderboard&eventCommittee=events&event=bc-event-moving-mountains-kickoff&leaderboardMetric=attendance&region=canada&pipeline=follow_up&q=Ivy&quickAction=assign_action",
+    );
+  });
 });
