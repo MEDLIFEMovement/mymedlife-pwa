@@ -82,6 +82,8 @@ describe("member stories and profile pages", () => {
     expect(html).toContain('aria-label="Apply story filter: Trip Moments"');
     expect(html).toContain('aria-label="Apply story filter: Events"');
     expect(html).toContain('aria-current="true"');
+    expect(html).toContain('aria-pressed="false"');
+    expect(html).toContain('aria-pressed="true"');
     expect(html).toContain("Preview-only reaction. Likes are not saved, synced, or counted as production proof.");
     expect(html).toContain("preview likes");
     expect(html).toContain("Preview only - comments open the reader; shares and saves stay blocked.");

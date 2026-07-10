@@ -3650,7 +3650,7 @@ function StoriesScreen({
             {STORY_CATEGORIES.map((category) => {
               const isActive = activeFilter === category.filter;
               return (
-                <Link href={buildStoriesHref({ filter: category.filter })} key={category.filter} aria-label={`Apply story filter: ${category.filter}`} title={`Apply story filter: ${category.filter}`} aria-current={isActive ? "true" : undefined} className={cn(
+                <Link href={buildStoriesHref({ filter: category.filter })} key={category.filter} aria-label={`Apply story filter: ${category.filter}`} title={`Apply story filter: ${category.filter}`} aria-current={isActive ? "true" : undefined} aria-pressed={isActive} className={cn(
                   "flex-shrink-0 whitespace-nowrap rounded-full border px-2.5 py-1 text-xs font-semibold transition-all",
                   isActive ? "border-black bg-black text-white" : "border-gray-300 bg-white text-gray-500"
                 )}>
