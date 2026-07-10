@@ -34,7 +34,7 @@ describe("leader command center routing", () => {
         pathname: "/leader",
         search: "source=staff&view=events",
       }),
-    ).toBe("/leader?source=staff&view=leaderboard");
+    ).toBe("/leader?view=leaderboard");
 
     expect(
       buildLeaderCommandCenterHrefForScreen("events", {
@@ -42,5 +42,39 @@ describe("leader command center routing", () => {
         search: "eventCommittee=events",
       }),
     ).toBe("/leader?eventCommittee=events&view=events");
+  });
+
+  it("preserves selected-member continuity across leadership review screens without carrying quick-action noise", () => {
+    expect(
+      buildLeaderCommandCenterHrefForScreen("leaders", {
+        pathname: "/leader",
+        search:
+          "source=member_profile&view=succession&member=member-ivy&pipeline=follow_up&q=Ivy&feedPost=feed-post-slt-recap&quickAction=promote_to_chair",
+      }),
+    ).toBe(
+      "/leader?source=member_profile&member=member-ivy&pipeline=follow_up&q=Ivy&feedPost=feed-post-slt-recap&view=leaders",
+    );
+
+    expect(
+      buildLeaderCommandCenterHrefForScreen("values", {
+        pathname: "/leader",
+        search:
+          "source=leaders&view=member_profile&member=member-ivy&pipeline=follow_up&q=Ivy&quickAction=schedule_values_interview&benchmark=chapter-ucla",
+      }),
+    ).toBe(
+      "/leader?source=leaders&member=member-ivy&pipeline=follow_up&q=Ivy&benchmark=chapter-ucla&view=values",
+    );
+  });
+
+  it("keeps chapter-home return links shareable from leadership review screens", () => {
+    expect(
+      buildLeaderCommandCenterHrefForScreen("home", {
+        pathname: "/leader",
+        search:
+          "source=training&view=training&member=member-ivy&pipeline=follow_up&q=Ivy&quickAction=assign_action&leaderboardMetric=attendance&region=canada",
+      }),
+    ).toBe(
+      "/leader?source=training&member=member-ivy&pipeline=follow_up&q=Ivy&leaderboardMetric=attendance&region=canada&view=overview",
+    );
   });
 });
