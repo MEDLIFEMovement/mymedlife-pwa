@@ -74,6 +74,7 @@ function getMemberEventDetailHref(
   campaign: string | null = null,
   profileSource: "points" | null = null,
   storyFilter: string | null = null,
+  storyId: string | null = null,
 ) {
   const detailHref = MEMBER_EVENT_DETAIL_HREFS[eventId] ?? "/app/events";
   const url = new URL(`https://mymedlife.local${detailHref}`);
@@ -90,6 +91,10 @@ function getMemberEventDetailHref(
     url.searchParams.set("storyFilter", storyFilter);
   }
 
+  if (source === "stories" && storyId) {
+    url.searchParams.set("story", storyId);
+  }
+
   if (campaign && campaign !== "All") {
     url.searchParams.set("campaign", campaign);
   }
@@ -103,8 +108,9 @@ function getMemberEventRsvpHref(
   campaign: string | null = null,
   profileSource: "points" | null = null,
   storyFilter: string | null = null,
+  storyId: string | null = null,
 ) {
-  const detailHref = getMemberEventDetailHref(eventId, source, campaign, profileSource, storyFilter);
+  const detailHref = getMemberEventDetailHref(eventId, source, campaign, profileSource, storyFilter, storyId);
   return detailHref.includes("?") ? `${detailHref}&step=rsvp` : `${detailHref}?step=rsvp`;
 }
 
@@ -1876,11 +1882,13 @@ function PointsLeaderboard({
   returnEventId,
   returnCampaign = null,
   storyFilter = null,
+  storyId = null,
 }: {
   source: MemberLoopSource;
   returnEventId?: string | null;
   returnCampaign?: string | null;
   storyFilter?: string | null;
+  storyId?: string | null;
 }) {
   const badges = [
     { name: "TEST Rush Starter", desc: "Complete your first TEST Rush Month action", earned: true },
@@ -1915,7 +1923,9 @@ function PointsLeaderboard({
     ],
     stories: [
       "TEST points stay preview-only here, and this route keeps the stories-to-events handoff visible instead of dropping the member feed context on the floor.",
-      storyFilter ? `/app/stories?filter=${encodeURIComponent(storyFilter)}` : "/app/stories",
+      storyId
+        ? `/app/stories?filter=${encodeURIComponent(resolveStoryFilter(storyFilter))}&story=${encodeURIComponent(storyId)}`
+        : storyFilter ? `/app/stories?filter=${encodeURIComponent(storyFilter)}` : "/app/stories",
       "Back to Stories",
     ],
     points: ["TEST points in this member shell are a read-only preview of the event, RSVP, attendance, and action loop. They do not write to a live leaderboard, rewards system, or provider integration.", "/app/events?source=points", "See how to earn more points"],
@@ -1927,15 +1937,15 @@ function PointsLeaderboard({
     source === "events" ? "points" : source;
   const returnEventDetailHref =
     returnEvent && returnEvent.routeId
-      ? getMemberEventDetailHref(returnEvent.id, returnLoopSource, returnCampaign, null, storyFilter)
+      ? getMemberEventDetailHref(returnEvent.id, returnLoopSource, returnCampaign, null, storyFilter, storyId)
       : continuity[1];
   const returnEventRsvpHref =
     returnEvent
-      ? getMemberEventStepHref(returnEvent.id, returnLoopSource, "rsvp", returnCampaign, null, storyFilter)
+      ? getMemberEventStepHref(returnEvent.id, returnLoopSource, "rsvp", returnCampaign, null, storyFilter, storyId)
       : null;
   const returnEventCheckInHref =
     returnEvent
-      ? getMemberEventStepHref(returnEvent.id, returnLoopSource, "checkin", returnCampaign, null, storyFilter)
+      ? getMemberEventStepHref(returnEvent.id, returnLoopSource, "checkin", returnCampaign, null, storyFilter, storyId)
       : null;
 
   return (
@@ -2311,8 +2321,9 @@ function getMemberEventStepHref(
   campaign: string | null = null,
   profileSource: "points" | null = null,
   storyFilter: string | null = null,
+  storyId: string | null = null,
 ) {
-  const detailHref = getMemberEventDetailHref(eventId, source, campaign, profileSource, storyFilter);
+  const detailHref = getMemberEventDetailHref(eventId, source, campaign, profileSource, storyFilter, storyId);
   return detailHref.includes("?") ? `${detailHref}&step=${step}` : `${detailHref}?step=${step}`;
 }
 function EventsScreen({
@@ -3467,6 +3478,7 @@ function StoryModal({
         url.searchParams.set("event", loopEvent.event.routeId ?? "");
         url.searchParams.set("storyFilter", activeFilter);
         url.searchParams.set("campaign", loopEvent.campaign);
+        url.searchParams.set("story", String(story.id));
         return `${url.pathname}${url.search}`;
       })()
     : null;
@@ -3820,6 +3832,7 @@ export function FigmaMemberMobileHome({
   pointsReturnEventId = null,
   pointsReturnCampaign = null,
   pointsStoryFilter = null,
+  pointsStoryId = null,
   eventsSource = "events",
   eventsProfileSource = null,
   eventsStoryFilter = null,
@@ -3833,6 +3846,7 @@ export function FigmaMemberMobileHome({
   pointsReturnEventId?: string | null;
   pointsReturnCampaign?: string | null;
   pointsStoryFilter?: string | null;
+  pointsStoryId?: string | null;
   eventsSource?: MemberLoopSource;
   eventsProfileSource?: "points" | null;
   eventsStoryFilter?: string | null;
@@ -3857,7 +3871,13 @@ export function FigmaMemberMobileHome({
     : screen === "stories"
       ? getStoriesReaderProfileHref(initialStoriesFilter, initialStoryId)
       : screen === "points"
-        ? getPointsBottomNavProfileHref(pointsSource, pointsReturnEventId, pointsReturnCampaign, pointsStoryFilter)
+        ? getPointsBottomNavProfileHref(
+            pointsSource,
+            pointsReturnEventId,
+            pointsReturnCampaign,
+            pointsStoryFilter,
+            pointsStoryId,
+          )
         : "/profile";
   const bottomNavHrefOverrides = getMemberBottomNavHrefOverrides({
     screen,
@@ -3884,6 +3904,7 @@ export function FigmaMemberMobileHome({
             returnEventId={pointsReturnEventId}
             returnCampaign={pointsReturnCampaign}
             storyFilter={pointsStoryFilter}
+            storyId={pointsStoryId}
           />
         );
       case "events":
@@ -4065,9 +4086,10 @@ function getPointsBottomNavProfileHref(
   returnEventId: string | null,
   returnCampaign: string | null,
   storyFilter: string | null = null,
+  storyId: string | null = null,
 ) {
   if (source === "stories") {
-    return getStoriesBottomNavProfileHref(storyFilter, returnCampaign);
+    return getStoriesBottomNavProfileHref(storyFilter, returnCampaign, storyId);
   }
 
   const campaignSuffix =
@@ -4085,6 +4107,7 @@ function getPointsBottomNavProfileHref(
 function getStoriesBottomNavProfileHref(
   storyFilter: string | null,
   campaign: string | null = null,
+  storyId: string | null = null,
 ) {
   const url = new URL("https://mymedlife.local/profile?source=stories");
 
@@ -4094,6 +4117,10 @@ function getStoriesBottomNavProfileHref(
 
   if (campaign && campaign !== "All") {
     url.searchParams.set("campaign", campaign);
+  }
+
+  if (storyId) {
+    url.searchParams.set("story", storyId);
   }
 
   return `${url.pathname}${url.search}`;

@@ -530,6 +530,7 @@ describe("member mobile shell routes", () => {
           storyFilter: "Events",
           campaign: "Rush Month",
           event: "chapter-event-ucla-kickoff",
+          story: "2",
         }),
       }),
     );
@@ -537,13 +538,13 @@ describe("member mobile shell routes", () => {
     expect(html).toContain("Back to Stories");
     expect(html).toContain("Back to TEST event detail");
     expect(html).toContain(
-      'href="/app/events/chapter-event-ucla-kickoff?source=stories&amp;storyFilter=Events&amp;campaign=Rush+Month"',
+      'href="/app/events/chapter-event-ucla-kickoff?source=stories&amp;storyFilter=Events&amp;story=2&amp;campaign=Rush+Month"',
     );
     expect(html).toContain(
-      'href="/app/events/chapter-event-ucla-kickoff?source=stories&amp;storyFilter=Events&amp;campaign=Rush+Month&amp;step=rsvp"',
+      'href="/app/events/chapter-event-ucla-kickoff?source=stories&amp;storyFilter=Events&amp;story=2&amp;campaign=Rush+Month&amp;step=rsvp"',
     );
     expect(html).toContain(
-      'href="/app/events/chapter-event-ucla-kickoff?source=stories&amp;storyFilter=Events&amp;campaign=Rush+Month&amp;step=checkin"',
+      'href="/app/events/chapter-event-ucla-kickoff?source=stories&amp;storyFilter=Events&amp;story=2&amp;campaign=Rush+Month&amp;step=checkin"',
     );
   });
 
@@ -562,12 +563,16 @@ describe("member mobile shell routes", () => {
           storyFilter: "Events",
           campaign: "Rush Month",
           event: "chapter-event-ucla-kickoff",
+          story: "2",
         }),
       }),
     );
 
     expect(getBottomNavHtml(html)).toContain(
       'href="/app/events/chapter-event-ucla-kickoff?source=stories&amp;campaign=Rush+Month&amp;storyFilter=Events"',
+    );
+    expect(getBottomNavHtml(html)).toContain(
+      'href="/profile?source=stories&amp;storyFilter=Events&amp;campaign=Rush+Month&amp;story=2"',
     );
     expect(getBottomNavHtml(html)).not.toContain(
       'href="/app/events/chapter-event-ucla-kickoff?source=events&amp;campaign=Rush+Month&amp;storyFilter=Events"',

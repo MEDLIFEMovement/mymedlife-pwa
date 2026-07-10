@@ -10,6 +10,7 @@ type AppPointsPageProps = {
     event?: string;
     campaign?: string;
     storyFilter?: string;
+    story?: string;
   }>;
 };
 
@@ -26,7 +27,7 @@ function getPointsReturnCampaign(campaign?: string) {
 }
 
 export default async function AppPointsPage(props: AppPointsPageProps) {
-  const resolvedSearchParams: { source?: string; event?: string; campaign?: string; storyFilter?: string } = await (
+  const resolvedSearchParams: { source?: string; event?: string; campaign?: string; storyFilter?: string; story?: string } = await (
     props.searchParams ?? Promise.resolve({})
   );
 
@@ -37,5 +38,6 @@ export default async function AppPointsPage(props: AppPointsPageProps) {
     pointsReturnEventId: resolvedSearchParams.event ?? null,
     pointsReturnCampaign: getPointsReturnCampaign(resolvedSearchParams.campaign),
     pointsStoryFilter: resolvedSearchParams.storyFilter ?? null,
+    pointsStoryId: resolvedSearchParams.story ?? null,
   });
 }

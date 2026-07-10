@@ -488,7 +488,7 @@ describe("member event detail route", () => {
     expect(html).toContain("Opened from the TEST stories feed");
     expect(html).toContain("Keep stories, events, and points in one member loop.");
     expect(html).toContain('href="/app/events?source=stories&amp;storyFilter=Events&amp;campaign=Rush+Month"');
-    expect(html).toContain('href="/app/points?source=stories&amp;event=chapter-event-ucla-kickoff&amp;storyFilter=Events&amp;campaign=Rush+Month"');
+    expect(html).toContain('href="/app/points?source=stories&amp;event=chapter-event-ucla-kickoff&amp;storyFilter=Events&amp;story=2&amp;campaign=Rush+Month"');
     expect(html).toContain('href="/profile?source=stories&amp;event=chapter-event-ucla-kickoff&amp;campaign=Rush+Month&amp;storyFilter=Events&amp;story=2"');
     expect(html).toContain('href="/app/events/chapter-event-ucla-kickoff?source=stories&amp;step=rsvp&amp;storyFilter=Events&amp;story=2&amp;campaign=Rush+Month"');
   });
