@@ -1112,6 +1112,66 @@ describe("staff page", () => {
     expect(source).toContain('params.set("chapterPointsWeek", String(chapter.pointsWeek));');
   });
 
+  it("clears stale chapter and proof context when jumping from chapters into unrelated staff surfaces", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("general.staff@mymedlife.test"),
+    );
+
+    const { default: StaffPage } = await import("@/app/staff/page");
+    const html = renderToStaticMarkup(
+      await StaffPage({
+        searchParams: Promise.resolve({
+          view: "campaigns",
+          chapterContext: "TEST Stanford University",
+          chapterSchool: "TEST Stanford University",
+          chapterRegionName: "West",
+          chapterCoachName: "TEST James Okafor",
+          chapterMembers: "52",
+          chapterRisk: "healthy",
+          chapterEvents: "5",
+          chapterRsvps: "80",
+          chapterAttendance: "68",
+          chapterPoints: "22100",
+          chapterPointsWeek: "1890",
+          proofStatus: "pending",
+          proofPlatform: "instagram",
+        }),
+      }),
+    );
+    const source = readFileSync("src/components/figma-staff-command-center.tsx", "utf8");
+
+    expect(html).toContain("Campaign Operations");
+    expect(html).toContain('href="/staff?view=chapters"');
+    expect(html).not.toContain("chapterContext=TEST+Stanford+University");
+    expect(html).not.toContain("chapterSchool=TEST+Stanford+University");
+    expect(html).not.toContain("chapterRegionName=West");
+    expect(html).not.toContain("chapterCoachName=TEST+James+Okafor");
+    expect(html).not.toContain("chapterMembers=52");
+    expect(html).not.toContain("chapterRisk=healthy");
+    expect(html).not.toContain("chapterEvents=5");
+    expect(html).not.toContain("chapterRsvps=80");
+    expect(html).not.toContain("chapterAttendance=68");
+    expect(html).not.toContain("chapterPoints=22100");
+    expect(html).not.toContain("chapterPointsWeek=1890");
+    expect(html).not.toContain("proofStatus=pending");
+    expect(html).not.toContain("proofPlatform=instagram");
+    expect(source).toContain('params.delete("chapterContext");');
+    expect(source).toContain('params.delete("chapterSchool");');
+    expect(source).toContain('params.delete("chapterRegionName");');
+    expect(source).toContain('params.delete("chapterCoachName");');
+    expect(source).toContain('params.delete("chapterMembers");');
+    expect(source).toContain('params.delete("chapterRisk");');
+    expect(source).toContain('params.delete("chapterEvents");');
+    expect(source).toContain('params.delete("chapterRsvps");');
+    expect(source).toContain('params.delete("chapterAttendance");');
+    expect(source).toContain('params.delete("chapterPoints");');
+    expect(source).toContain('params.delete("chapterPointsWeek");');
+    expect(source).toContain('params.delete("proofStatus");');
+    expect(source).toContain('params.delete("proofPlatform");');
+  });
+
   it("reopens the same chapter drawer after an embedded admin return while preserving chapter filter context", async () => {
     const actorModule = await import("@/services/local-actor-context");
 
@@ -1735,7 +1795,7 @@ describe("staff page", () => {
     const lineCount = source.split("\n").length;
 
     expect(lineCount).toBeGreaterThanOrEqual(2170);
-    expect(lineCount).toBeLessThanOrEqual(3520);
+    expect(lineCount).toBeLessThanOrEqual(3540);
     expect(source).toContain("type Screen = \"chapters\" | \"campaigns\" | \"events\" | \"ugc\" | \"reports\" | \"admin\" | \"best-practices\" | \"sops\";");
     expect(source).toContain("const NAV_ITEMS");
     expect(source).toContain("function PortfolioOverview");
