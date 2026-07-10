@@ -3374,6 +3374,24 @@ function buildStaffShellHref(screen: Screen, pathname: string, search: string): 
     params.delete("adminView");
     params.delete("returnView");
   }
+  const preserveChapterContext = screen === "chapters" || screen === "ugc" || screen === "admin";
+  if (!preserveChapterContext) {
+    params.delete("chapterContext");
+    params.delete("chapterSchool");
+    params.delete("chapterRegionName");
+    params.delete("chapterCoachName");
+    params.delete("chapterMembers");
+    params.delete("chapterRisk");
+    params.delete("chapterEvents");
+    params.delete("chapterRsvps");
+    params.delete("chapterAttendance");
+    params.delete("chapterPoints");
+    params.delete("chapterPointsWeek");
+  }
+  if (screen !== "ugc" && screen !== "admin") {
+    params.delete("proofStatus");
+    params.delete("proofPlatform");
+  }
   const query = params.toString();
   return query ? `${pathname}?${query}` : pathname;
 }
