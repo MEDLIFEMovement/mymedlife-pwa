@@ -25,6 +25,8 @@ describe("admin system health review", () => {
     expect(review.title).toBe("Admin system health review");
     expect(review.launchReady).toBe(false);
     expect(review.summary).toContain("read-only");
+    expect(review.readbackLabel).toBe("Local TEST readback");
+    expect(review.readbackNote).toContain("local TEST or mock-safe readback only");
     expect(review.browserWritesEnabled).toBe(0);
     expect(review.externalWritesEnabled).toBe(0);
     expect(review.secretsShown).toBe(0);
@@ -110,6 +112,8 @@ describe("admin system health review", () => {
 
     expect(review.title).toBe("DS Admin system health and integration review");
     expect(review.sourceLabel).toBe("supabase");
+    expect(review.readbackLabel).toBe("Local Supabase readback");
+    expect(review.readbackNote).toContain("local Supabase readback");
     expect(
       review.checks.find((check) => check.key === "data_source")?.status,
     ).toBe("local_ready");
@@ -155,11 +159,10 @@ describe("admin system health review", () => {
       React.createElement(AdminSystemHealthReviewPanel, { review }),
     );
 
-    expect(html).toContain("This route stays read-only.");
-    expect(html).toContain(
-      "move into the linked follow-through routes only for approved runbook and evidence checks.",
-    );
+    expect(html).toContain("Readback Local TEST readback");
+    expect(html).toContain("Visible checks below reflect local TEST or mock-safe readback only.");
     expect(html).toContain("Blocked here restart incidents");
+    expect(html).toContain("Blocked here trigger rollback from the browser");
     expect(html).toContain("Next: Approve retry, idempotency, dead-letter, and manual recovery rules before any real external send.");
   });
 });
