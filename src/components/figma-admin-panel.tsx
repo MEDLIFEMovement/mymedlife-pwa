@@ -900,6 +900,9 @@ function ChaptersPage({
     : activeEmbeddedReadback
       ? `${activeEmbeddedReadback.chapterContext} in Chapters`
       : "Chapters";
+  const activeEmbeddedFallbackPrefix = activeEmbeddedReadback?.chapterContext.toUpperCase().includes("TEST")
+    ? "TEST "
+    : "";
   const embeddedContinuityNote = getEmbeddedChapterContinuityNote(
     selected?.name ?? null,
     embeddedReadback?.chapterContext ?? null,
@@ -934,11 +937,11 @@ function ChaptersPage({
                 },
                 {
                   label: "Region",
-                  value: activeEmbeddedReadback.region ?? "Read-only staff context",
+                  value: activeEmbeddedReadback.region ?? `${activeEmbeddedFallbackPrefix}Region readback pending`,
                 },
                 {
                   label: "Coach",
-                  value: activeEmbeddedReadback.coach ?? "Read-only staff context",
+                  value: activeEmbeddedReadback.coach ?? `${activeEmbeddedFallbackPrefix}Coach readback pending`,
                 },
                 {
                   label: "Active Members",
@@ -1160,9 +1163,9 @@ function ChaptersPage({
             </div>
 
             <div className="flex flex-wrap gap-2">
-              <button disabled title={`Chapter event readiness for ${selected.name} stays read-only here; use the staff events view for the route-backed drill-in.`} className="px-3 py-1.5 bg-sky-500/12 text-sky-400 border border-sky-500/20 rounded text-[12px] hover:bg-sky-500/20 transition-colors">Event readback only</button>
-              <button disabled title={`Module edits for ${selected.name} remain blocked until the secure module-management workflow is approved.`} className="px-3 py-1.5 bg-white/[0.04] text-slate-300 border border-white/[0.08] rounded text-[12px] hover:bg-white/[0.07] transition-colors">Module edits blocked</button>
-              <button disabled title={`Audit history for ${selected.name} remains a readback surface; use the audit log route for the full review trail.`} className="px-3 py-1.5 bg-white/[0.04] text-slate-300 border border-white/[0.08] rounded text-[12px] hover:bg-white/[0.07] transition-colors">Audit readback only</button>
+              <button disabled title={`Chapter event readiness for ${selected.name} stays read-only here; use the staff events view for the route-backed drill-in.`} className="px-3 py-1.5 bg-sky-500/12 text-sky-400 border border-sky-500/20 rounded text-[12px] hover:bg-sky-500/20 transition-colors">Event readiness readback</button>
+              <button disabled title={`Module edits for ${selected.name} remain blocked until the secure module-management workflow is approved.`} className="px-3 py-1.5 bg-white/[0.04] text-slate-300 border border-white/[0.08] rounded text-[12px] hover:bg-white/[0.07] transition-colors">Module controls blocked</button>
+              <button disabled title={`Audit history for ${selected.name} remains a readback surface; use the audit log route for the full review trail.`} className="px-3 py-1.5 bg-white/[0.04] text-slate-300 border border-white/[0.08] rounded text-[12px] hover:bg-white/[0.07] transition-colors">Audit trail readback</button>
               {activeEmbeddedReadback && embeddedReturnHref ? (
                 <a
                   href={embeddedReturnHref}
@@ -1192,18 +1195,13 @@ function ChaptersPage({
 
 function buildEmbeddedReadbackChapter(embeddedReadback: EmbeddedChapterReadback): AdminChapterRecord {
   const isTestContext = embeddedReadback.chapterContext.toUpperCase().includes("TEST");
+  const fallbackPrefix = isTestContext ? "TEST " : "";
   return {
     id: -1,
     name: embeddedReadback.chapterContext,
-    school:
-      embeddedReadback.school ??
-      (isTestContext ? "TEST Embedded staff oversight context" : "Embedded staff oversight context"),
-    region:
-      embeddedReadback.region ??
-      (isTestContext ? "TEST Command Center" : "Command Center"),
-    coach:
-      embeddedReadback.coach ??
-      (isTestContext ? "TEST Read-only staff context" : "Read-only staff context"),
+    school: embeddedReadback.school ?? embeddedReadback.chapterContext,
+    region: embeddedReadback.region ?? `${fallbackPrefix}Region readback pending`,
+    coach: embeddedReadback.coach ?? `${fallbackPrefix}Coach readback pending`,
     members: Number(embeddedReadback.members ?? 0),
     upcomingEvents: Number(embeddedReadback.events ?? 0),
     rsvps: Number(embeddedReadback.rsvps ?? 0),

@@ -1298,9 +1298,9 @@ describe("staff page", () => {
     expect(html).toContain("Carry TEST Stanford University back out to Chapters");
     expect(html).toContain("No attendance correction path runs here for TEST Stanford University");
     expect(html).toContain("TEST Stanford University points posture stays oversight-only");
-    expect(html).toContain("Event readback only");
-    expect(html).toContain("Module edits blocked");
-    expect(html).toContain("Audit readback only");
+    expect(html).toContain("Event readiness readback");
+    expect(html).toContain("Module controls blocked");
+    expect(html).toContain("Audit trail readback");
     expect(html).toContain("5 events this month");
     expect(html).toContain("80 RSVPs");
     expect(html).toContain("68 attended");
@@ -1451,6 +1451,37 @@ describe("staff page", () => {
     );
   });
 
+  it("keeps sparse unmatched embedded chapter handoffs tied to the selected TEST chapter instead of generic admin placeholders", async () => {
+    mockPathname = "/staff";
+    mockSearchParams = new URLSearchParams({
+      view: "admin",
+      adminView: "chapters",
+      returnView: "chapters",
+      chapter: "chapter-unknown",
+      chapterContext: "TEST Brown University",
+    });
+
+    const { FigmaAdminPanel } = await import("@/components/figma-admin-panel");
+    const html = renderToStaticMarkup(
+      <FigmaAdminPanel
+        initialActive="chapters"
+        onBack={vi.fn()}
+        embeddedBackLabel="this chapter"
+        embeddedBackHref="/staff?view=chapters&chapter=chapter-unknown"
+        embeddedChapterHref="/staff?view=chapters&chapter=chapter-unknown"
+      />,
+    );
+
+    expect(html).toContain("Embedded chapter oversight readback");
+    expect(html).toContain("TEST Brown University");
+    expect(html).toContain(">School</div><div class=\"mt-1 text-[13px] font-mono font-semibold text-slate-100\">TEST Brown University</div>");
+    expect(html).toContain(">Region</div><div class=\"mt-1 text-[13px] font-mono font-semibold text-slate-100\">TEST Region readback pending</div>");
+    expect(html).toContain(">Coach</div><div class=\"mt-1 text-[13px] font-mono font-semibold text-slate-100\">TEST Coach readback pending</div>");
+    expect(html).not.toContain("TEST Embedded staff oversight context");
+    expect(html).not.toContain("TEST Read-only staff context");
+    expect(html).not.toContain("Read-only staff context");
+  });
+
   it("keeps the embedded admin chapter detail drawer tied to the same TEST chapter after a sparse handoff", async () => {
     mockPathname = "/staff";
     mockSearchParams = new URLSearchParams({
@@ -1487,9 +1518,9 @@ describe("staff page", () => {
     expect(html).toContain("7,800");
     expect(html).toContain(">Points This Week</div><div class=\"text-[14px] text-slate-200 font-mono font-semibold\">+620</div>");
     expect(html).toContain("Risk Status");
-    expect(html).toContain("Event readback only");
-    expect(html).toContain("Module edits blocked");
-    expect(html).toContain("Audit readback only");
+    expect(html).toContain("Event readiness readback");
+    expect(html).toContain("Module controls blocked");
+    expect(html).toContain("Audit trail readback");
     expect(html).toContain("Chapter event readiness for TEST Boston College stays read-only here; use the staff events view for the route-backed drill-in.");
     expect(html).toContain("Module edits for TEST Boston College remain blocked until the secure module-management workflow is approved.");
     expect(html).toContain("Audit history for TEST Boston College remains a readback surface; use the audit log route for the full review trail.");
