@@ -1,8 +1,13 @@
 "use client";
 
 import type { ChangeEvent } from "react";
+import { useRouter } from "next/navigation";
 
 import type { ChapterLeaderCommandCenter } from "@/services/chapter-leader-command-center";
+import {
+  createChapterLeaderFilterNavigate,
+  navigateToSelectedChapterLeaderFilter,
+} from "@/components/chapter-leader-filter-routing";
 
 type ChapterLeaderLeaderboardRegionFilterSelectProps = {
   options: ChapterLeaderCommandCenter["leaderboardRegionOptions"];
@@ -13,13 +18,10 @@ export function ChapterLeaderLeaderboardRegionFilterSelect({
   options,
   selectedKey,
 }: ChapterLeaderLeaderboardRegionFilterSelectProps) {
-  function handleChange(event: ChangeEvent<HTMLSelectElement>) {
-    const nextOption = options.find((option) => option.key === event.target.value);
-    if (!nextOption) {
-      return;
-    }
+  const navigate = createChapterLeaderFilterNavigate(useRouter());
 
-    window.location.assign(nextOption.href);
+  function handleChange(event: ChangeEvent<HTMLSelectElement>) {
+    navigateToSelectedChapterLeaderFilter(options, event.target.value, navigate);
   }
 
   return (
