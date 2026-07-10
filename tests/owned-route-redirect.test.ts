@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { getMockLocalActorContext } from "@/services/local-actor-context";
 import {
+  getActionCommitteesRouteRedirectHref,
   getCampaignsRouteRedirectHref,
   getChapterRouteRedirectHref,
   getChapterMembersRouteRedirectHref,
@@ -298,7 +299,7 @@ describe("owned route redirect service", () => {
       getChapterMembersRouteRedirectHref(
         getMockLocalActorContext("leader.a@mymedlife.test"),
       ),
-    ).toBe("/leader?view=events");
+    ).toBe("/leader?view=members");
     expect(
       getChapterMembersRouteRedirectHref(
         getMockLocalActorContext("coach@mymedlife.test"),
@@ -319,6 +320,24 @@ describe("owned route redirect service", () => {
         getMockLocalActorContext("super.admin@mymedlife.test"),
       ),
     ).toBe("/admin");
+  });
+
+  it("keeps legacy action-committee entry points inside the restored leader committees lane", () => {
+    expect(
+      getActionCommitteesRouteRedirectHref(
+        getMockLocalActorContext("leader.a@mymedlife.test"),
+      ),
+    ).toBe("/leader?view=committees");
+    expect(
+      getActionCommitteesRouteRedirectHref(
+        getMockLocalActorContext("coach@mymedlife.test"),
+      ),
+    ).toBe("/staff?view=events&campaign=rush-month");
+    expect(
+      getActionCommitteesRouteRedirectHref(
+        getMockLocalActorContext("member.a@mymedlife.test"),
+      ),
+    ).toBe("/app/events");
   });
 
   it("rewrites the old chapter shell into each role's owned surface while preserving restored leader views", () => {

@@ -146,6 +146,10 @@ export function getCoachRouteRedirectHref(
 export function getActionCommitteesRouteRedirectHref(
   actor: LocalActorContext,
 ): string {
+  if (getActorSurfaceFamily(actor) === "leader") {
+    return "/leader?view=committees";
+  }
+
   return getLaunchLaneFocusHref(getActorSurfaceFamily(actor), "events");
 }
 
@@ -175,7 +179,7 @@ export function getChapterMembersRouteRedirectHref(
     case "member":
       return "/app";
     case "leader":
-      return "/leader?view=events";
+      return "/leader?view=members";
     case "coach":
     case "staff":
       return "/staff?view=chapters";
