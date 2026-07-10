@@ -1,0 +1,6 @@
+email,workspace,observedPath,status,checkedAt,notes
+test.staff.support@example.test,staff,/staff?view=chapters,passed,2026-07-10T16:00:00Z,TEST staging rehearsal only; approved staff/support coach with chapters read posture; reviewer fills real staging timestamp; does not count as production proof
+test.ds.admin@example.test,admin,/admin,passed,2026-07-10T16:01:00Z,TEST staging rehearsal only; approved DS Admin with admin backend read posture; reviewer fills real staging timestamp; does not count as production proof
+test.super.admin@example.test,admin,/admin,passed,2026-07-10T16:02:00Z,TEST staging rehearsal only; approved Super Admin with admin backend read posture; reviewer fills real staging timestamp; does not count as production proof
+test.member.only@example.test,staff,/app,failed,2026-07-10T16:03:00Z,TEST staging negative only; member-only account must not satisfy Staff/Admin proof; does not count as production proof
+
