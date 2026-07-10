@@ -18,7 +18,7 @@ import type { ReactNode } from "react";
 type MemberProfilePanelProps = {
   chapterName: string;
   displayName: string;
-  entrySource?: "home" | "points" | "stories" | null;
+  entrySource?: "events" | "home" | "points" | "stories" | null;
   entryEventId?: string | null;
   entryCampaign?: string | null;
   entryStoryFilter?: string | null;
@@ -84,6 +84,16 @@ export function MemberProfilePanel({
               href: buildProfileStoriesHref(entryStoryFilter),
               cta: "Back to Stories",
             }
+          : entrySource === "events"
+            ? {
+                eyebrow: "Opened from the TEST events lane",
+                body:
+                  entryEventId
+                    ? "This profile stays inside the student shell so you can review your TEST identity and chapter standing without breaking the event-to-profile member loop."
+                    : "This profile stays inside the student shell so you can review your TEST identity and chapter standing without breaking the member event loop.",
+                href: launchLaneEventsHref,
+                cta: entryEventId ? "Back to TEST event detail" : "Back to Events",
+              }
         : null;
 
   return (
@@ -345,7 +355,7 @@ export function MemberProfilePanel({
 }
 
 function buildProfilePointsHref(
-  entrySource: "home" | "points" | "stories" | null,
+  entrySource: "events" | "home" | "points" | "stories" | null,
   entryEventId: string | null,
   entryCampaign: string | null,
   entryStoryFilter: string | null,
@@ -354,6 +364,8 @@ function buildProfilePointsHref(
     `https://mymedlife.local${
       entrySource === "points"
         ? "/app/points?source=points"
+        : entrySource === "events"
+          ? "/app/points?source=events"
         : entrySource === "home"
           ? "/app/points?source=home"
           : entrySource === "stories"
@@ -378,7 +390,7 @@ function buildProfilePointsHref(
 }
 
 function buildProfileEventsHref(
-  entrySource: "home" | "points" | "stories" | null,
+  entrySource: "events" | "home" | "points" | "stories" | null,
   entryEventId: string | null,
   entryCampaign: string | null,
   entryStoryFilter: string | null,
@@ -390,6 +402,10 @@ function buildProfileEventsHref(
             entryEventId ? `/app/events/${entryEventId}?source=stories` : "/app/events?source=stories"
           }`,
         )
+      : entrySource === "events"
+        ? new URL(
+            `https://mymedlife.local${entryEventId ? `/app/events/${entryEventId}?source=events` : "/app/events"}`,
+          )
       : new URL(
           `https://mymedlife.local${
             entryEventId

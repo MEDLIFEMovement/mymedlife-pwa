@@ -257,6 +257,39 @@ describe("member stories and profile pages", () => {
     previewSpy.mockRestore();
   });
 
+  it("keeps profile inside the exact event-detail loop when opened from events", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const dataModule = await import("@/services/read-only-app-data");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("member.a@mymedlife.test"),
+    );
+    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
+      getMockReadOnlyAppData("Testing member profile events continuity."),
+    );
+
+    const { default: ProfilePage } = await import("@/app/profile/page");
+    const html = renderToStaticMarkup(
+      await ProfilePage({
+        searchParams: Promise.resolve({
+          source: "events",
+          event: "chapter-event-ucla-kickoff",
+          campaign: "Rush Month",
+        }),
+      }),
+    );
+
+    expect(html).toContain("Opened from the TEST events lane");
+    expect(html).toContain("Back to TEST event detail");
+    expect(html).toContain(
+      'href="/app/events/chapter-event-ucla-kickoff?source=events&amp;campaign=Rush+Month"',
+    );
+    expect(html).toContain(
+      'href="/app/points?source=events&amp;event=chapter-event-ucla-kickoff&amp;campaign=Rush+Month"',
+    );
+    expect(html).toContain('href="/app/stories"');
+  });
+
   it("keeps home-to-profile continuity inside the mobile member shell", async () => {
     const actorModule = await import("@/services/local-actor-context");
     const dataModule = await import("@/services/read-only-app-data");

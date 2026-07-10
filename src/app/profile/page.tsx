@@ -24,8 +24,8 @@ type ProfilePageProps = {
   }>;
 };
 
-function getProfileSource(source?: string): "home" | "points" | "stories" | null {
-  if (source === "home" || source === "points" || source === "stories") {
+function getProfileSource(source?: string): "events" | "home" | "points" | "stories" | null {
+  if (source === "events" || source === "home" || source === "points" || source === "stories") {
     return source;
   }
 
@@ -94,7 +94,7 @@ export default async function ProfilePage(props: ProfilePageProps) {
 }
 
 function buildProfileEventsHref(
-  source: "home" | "points" | "stories" | null,
+  source: "events" | "home" | "points" | "stories" | null,
   eventId: string | null,
   campaign: string | null,
   storyFilter: string | null,
@@ -110,6 +110,18 @@ function buildProfileEventsHref(
 
     if (storyFilter) {
       url.searchParams.set("storyFilter", storyFilter);
+    }
+
+    return `${url.pathname}${url.search}`;
+  }
+
+  if (source === "events") {
+    const url = new URL(
+      `https://mymedlife.local${eventId ? `/app/events/${eventId}?source=events` : "/app/events"}`,
+    );
+
+    if (campaign && campaign !== "All") {
+      url.searchParams.set("campaign", campaign);
     }
 
     return `${url.pathname}${url.search}`;
@@ -141,7 +153,7 @@ function buildProfileEventsHref(
 }
 
 function buildProfilePointsHref(
-  source: "home" | "points" | "stories" | null,
+  source: "events" | "home" | "points" | "stories" | null,
   eventId: string | null,
   campaign: string | null,
   storyFilter: string | null,
@@ -150,6 +162,8 @@ function buildProfilePointsHref(
     `https://mymedlife.local${
       source === "points"
         ? "/app/points?source=points"
+        : source === "events"
+          ? "/app/points?source=events"
         : source === "home"
           ? "/app/points?source=home"
           : source === "stories"
@@ -174,7 +188,7 @@ function buildProfilePointsHref(
 }
 
 function buildProfileStoriesHref(
-  source: "home" | "points" | "stories" | null,
+  source: "events" | "home" | "points" | "stories" | null,
   storyFilter: string | null,
 ) {
   if (source !== "stories") {

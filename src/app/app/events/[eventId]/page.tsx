@@ -810,6 +810,8 @@ function getEventDetailNavHrefOverrides(
 
   if (source === "home") {
     overrides.profile = buildProfileReturnHref(eventId, "home", campaign);
+  } else if (source === "events") {
+    overrides.profile = buildProfileReturnHref(eventId, "events", campaign);
   } else if (source === "points") {
     overrides.profile = buildProfileReturnHref(eventId, "points", campaign);
   } else if (source === "profile") {
@@ -996,7 +998,7 @@ function getLaunchLaneEventPointsHref(
 
 function buildProfileReturnHref(
   eventId: string | null,
-  source: "home" | "points" | "stories" | null,
+  source: "events" | "home" | "points" | "stories" | null,
   campaign?: string,
   storyFilter?: string,
 ) {
@@ -1004,6 +1006,8 @@ function buildProfileReturnHref(
     `https://mymedlife.local${
       source === "home"
         ? "/profile?source=home"
+        : source === "events"
+          ? "/profile?source=events"
         : source === "points"
           ? "/profile?source=points"
         : source === "stories"
