@@ -3459,7 +3459,7 @@ function StoryModal({
   const showLoopContinuity = activeFilter === "Events";
   const loopEvent = showLoopContinuity ? getStoryLoopEvent(story.id) : null;
   const loopEventDetailHref = loopEvent
-    ? getMemberEventDetailHref(loopEvent.event.id, "stories", loopEvent.campaign, null, activeFilter)
+    ? `${getMemberEventDetailHref(loopEvent.event.id, "stories", loopEvent.campaign, null, activeFilter)}&story=${story.id}`
     : null;
   const loopEventPointsHref = loopEvent
     ? (() => {

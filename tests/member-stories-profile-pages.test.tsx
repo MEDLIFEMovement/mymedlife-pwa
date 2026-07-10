@@ -144,7 +144,7 @@ describe("member stories and profile pages", () => {
     expect(html).toContain("Open TEST points");
     expect(html).toContain("Open TEST profile");
     expect(html).toContain(
-      'href="/app/events/chapter-event-ucla-kickoff?source=stories&amp;storyFilter=Events&amp;campaign=Rush+Month"',
+      'href="/app/events/chapter-event-ucla-kickoff?source=stories&amp;storyFilter=Events&amp;campaign=Rush+Month&amp;story=2"',
     );
     expect(html).toContain(
       'href="/app/points?source=stories&amp;event=chapter-event-ucla-kickoff&amp;storyFilter=Events&amp;campaign=Rush+Month"',
