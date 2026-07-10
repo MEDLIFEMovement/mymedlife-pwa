@@ -56,22 +56,53 @@ const EMBEDDED_CHAPTER_FALLBACKS: Record<string, Omit<EmbeddedChapterReadback, "
   },
 };
 
+function normalizeEmbeddedChapterContext(value: string): string {
+  return value.trim().toLowerCase().replace(/^test\s+/, "");
+}
+
+export function getEmbeddedChapterHandoffSource(
+  selectedChapterName: string | null,
+  embeddedChapterContext: string | null,
+) {
+  return selectedChapterName && embeddedChapterContext && selectedChapterName !== embeddedChapterContext
+    ? "Embedded chapter directory"
+    : "Staff chapter drawer";
+}
+
+export function getEmbeddedChapterContinuityNote(
+  selectedChapterName: string | null,
+  embeddedChapterContext: string | null,
+) {
+  if (!selectedChapterName) return "Keep the selected chapter in view until the Admin readback closes.";
+  if (embeddedChapterContext && selectedChapterName !== embeddedChapterContext) {
+    return `The open chapter drawer below now mirrors ${selectedChapterName} after you switched chapters inside embedded Admin, so the same selected chapter can return to Chapters with its oversight context intact.`;
+  }
+
+  return `The open chapter drawer below stays seeded from the ${selectedChapterName} staff handoff until you intentionally select a different chapter in this preview-only directory.`;
+}
+
 function enrichEmbeddedChapterReadback(
   embeddedReadback: EmbeddedChapterReadback,
 ): EmbeddedChapterReadback {
   const chapterContext = embeddedReadback.chapterContext.trim().toLowerCase();
+  const normalizedChapterContext = normalizeEmbeddedChapterContext(embeddedReadback.chapterContext);
   const matchedChapter = CHAPTERS_DATA.find((chapter) => {
-    const name = chapter.name.trim().toLowerCase();
-    const school = chapter.school.trim().toLowerCase();
-    return name === chapterContext || school === chapterContext;
+    const name = normalizeEmbeddedChapterContext(chapter.name);
+    const school = normalizeEmbeddedChapterContext(chapter.school);
+    return name === normalizedChapterContext || school === normalizedChapterContext;
   });
 
-  const fallback = EMBEDDED_CHAPTER_FALLBACKS[chapterContext] ?? null;
+  const fallbackEntry =
+    Object.entries(EMBEDDED_CHAPTER_FALLBACKS).find(([key]) =>
+      key === chapterContext || normalizeEmbeddedChapterContext(key) === normalizedChapterContext,
+    ) ?? null;
+  const fallback = fallbackEntry?.[1] ?? null;
 
   if (!matchedChapter && !fallback) return embeddedReadback;
 
   return {
     ...embeddedReadback,
+    chapterContext: matchedChapter?.name ?? fallback?.school ?? embeddedReadback.chapterContext,
     school: embeddedReadback.school ?? matchedChapter?.school ?? fallback?.school ?? null,
     region: embeddedReadback.region ?? matchedChapter?.region ?? fallback?.region ?? null,
     coach: embeddedReadback.coach ?? matchedChapter?.coach ?? fallback?.coach ?? null,
@@ -99,12 +130,12 @@ const USERS_DATA = [
 ];
 
 const CHAPTERS_DATA = [
-  { id: 1, name: "TEST Howard University", school: "TEST Howard University", region: "TEST DC-Metro", coach: "TEST Dr. S. Williams", members: 42, upcomingEvents: 3, rsvps: 87, attendance: 74, points: 3240, modules: ["Events", "RSVP", "Attendance", "Points"], risk: "low" },
-  { id: 2, name: "TEST UCLA MEDLIFE", school: "TEST UCLA", region: "TEST West Coast", coach: "TEST Dr. R. Patel", members: 68, upcomingEvents: 5, rsvps: 142, attendance: 118, points: 5890, modules: ["Events", "RSVP", "Attendance", "Points"], risk: "low" },
-  { id: 3, name: "TEST Emory University", school: "TEST Emory University", region: "TEST Southeast", coach: "TEST Dr. K. Brown", members: 31, upcomingEvents: 1, rsvps: 28, attendance: 20, points: 840, modules: ["Events", "RSVP", "Points"], risk: "medium" },
-  { id: 4, name: "TEST Morehouse College", school: "TEST Morehouse College", region: "TEST Southeast", coach: "TEST Dr. T. Jackson", members: 28, upcomingEvents: 2, rsvps: 41, attendance: 35, points: 1450, modules: ["Events", "RSVP", "Attendance", "Points"], risk: "low" },
-  { id: 5, name: "TEST Michigan State", school: "TEST Michigan State University", region: "TEST Midwest", coach: "TEST Dr. L. Chen", members: 39, upcomingEvents: 0, rsvps: 12, attendance: 8, points: 290, modules: ["Events"], risk: "high" },
-  { id: 6, name: "TEST Spelman College", school: "TEST Spelman College", region: "TEST Southeast", coach: "TEST Dr. N. Osei", members: 24, upcomingEvents: 1, rsvps: 19, attendance: 14, points: 560, modules: ["Events", "RSVP"], risk: "medium" },
+  { id: 1, name: "TEST Howard University", school: "TEST Howard University", region: "TEST DC-Metro", coach: "TEST Dr. S. Williams", members: 42, upcomingEvents: 3, rsvps: 87, attendance: 74, points: 3240, pointsWeek: 410, modules: ["Events", "RSVP", "Attendance", "Points"], risk: "low" },
+  { id: 2, name: "TEST UCLA MEDLIFE", school: "TEST UCLA", region: "TEST West Coast", coach: "TEST Dr. R. Patel", members: 68, upcomingEvents: 5, rsvps: 142, attendance: 118, points: 5890, pointsWeek: 980, modules: ["Events", "RSVP", "Attendance", "Points"], risk: "low" },
+  { id: 3, name: "TEST Emory University", school: "TEST Emory University", region: "TEST Southeast", coach: "TEST Dr. K. Brown", members: 31, upcomingEvents: 1, rsvps: 28, attendance: 20, points: 840, pointsWeek: 240, modules: ["Events", "RSVP", "Points"], risk: "medium" },
+  { id: 4, name: "TEST Morehouse College", school: "TEST Morehouse College", region: "TEST Southeast", coach: "TEST Dr. T. Jackson", members: 28, upcomingEvents: 2, rsvps: 41, attendance: 35, points: 1450, pointsWeek: 360, modules: ["Events", "RSVP", "Attendance", "Points"], risk: "low" },
+  { id: 5, name: "TEST Michigan State", school: "TEST Michigan State University", region: "TEST Midwest", coach: "TEST Dr. L. Chen", members: 39, upcomingEvents: 0, rsvps: 12, attendance: 8, points: 290, pointsWeek: 90, modules: ["Events"], risk: "high" },
+  { id: 6, name: "TEST Spelman College", school: "TEST Spelman College", region: "TEST Southeast", coach: "TEST Dr. N. Osei", members: 24, upcomingEvents: 1, rsvps: 19, attendance: 14, points: 560, pointsWeek: 180, modules: ["Events", "RSVP"], risk: "medium" },
 ];
 
 const MODULES_DATA = [
@@ -320,6 +351,9 @@ function Sidebar({
   const isEmbeddedPreview = Boolean(onBack);
   const embeddedReviewCopy = getEmbeddedAdminReviewCopy(backLabel, chapterContext, proofQueueContext);
   const displayBackLabel = getEmbeddedAdminDisplayBackLabel(backLabel, chapterContext, proofQueueContext);
+  const isChapterEmbeddedReview =
+    backLabel.trim().toLowerCase() === "this chapter" ||
+    backLabel.trim().toLowerCase() === "chapters";
 
   return (
     <aside className="fixed left-0 top-0 h-screen w-[220px] bg-[#090d12] border-r border-white/[0.05] flex flex-col z-40">
@@ -348,7 +382,7 @@ function Sidebar({
             </div>
             {chapterContext ? (
               <div className="mt-1 text-[10px] leading-tight text-slate-500 group-hover:text-slate-300">
-                {`Chapter context: ${chapterContext}`}
+                {`${isChapterEmbeddedReview ? "Chapter" : "Chapter context"}: ${chapterContext}`}
               </div>
             ) : null}
             {proofQueueContext ? (
@@ -481,7 +515,7 @@ function getEmbeddedAdminReviewCopy(
           : "Use this Admin readback to confirm event readiness, RSVP totals, attendance context, and points posture before requesting any blocked-control follow-through or correction path.",
       footer:
         chapterContext
-          ? `Return with Command Center after this chapter review pass for ${chapterContext}, or use the top-right menu to switch workspaces or log out.`
+          ? `Return with Command Center to ${chapterContext} in Chapters after this chapter review pass, or use the top-right menu to switch workspaces or log out.`
           : "Return with Command Center after this chapter review pass, or use the top-right menu to switch workspaces or log out.",
       tag: "Chapter review",
     };
@@ -511,6 +545,7 @@ function getEmbeddedAdminDisplayBackLabel(
   }
 
   if (normalized === "this chapter" || normalized === "chapters") {
+    if (chapterContext) return `${chapterContext} in Chapters`;
     return "Chapters";
   }
 
@@ -538,6 +573,9 @@ function Header({
     chapterContext,
     proofQueueContext,
   );
+  const isChapterEmbeddedReview =
+    embeddedBackLabel.trim().toLowerCase() === "this chapter" ||
+    embeddedBackLabel.trim().toLowerCase() === "chapters";
   return (
     <div className="h-[52px] flex items-center justify-between px-6 border-b border-white/[0.06] bg-[#0d1117]/90 backdrop-blur-sm sticky top-0 z-30 flex-shrink-0">
       <div className="flex items-center gap-3">
@@ -553,7 +591,7 @@ function Header({
             </span>
             {chapterContext ? (
               <span className="text-[10px] text-slate-500">
-                {`Context: ${chapterContext}`}
+                {`${isChapterEmbeddedReview ? "Chapter" : "Context"}: ${chapterContext}`}
               </span>
             ) : null}
             {proofQueueContext ? (
@@ -842,7 +880,27 @@ function ChaptersPage({
   const [selected, setSelected] = useState<AdminChapterRecord | null>(() =>
     embeddedReadback ? buildEmbeddedReadbackChapter(embeddedReadback) : null,
   );
+  const activeEmbeddedReadback =
+    embeddedReadback && selected
+      ? buildActiveEmbeddedChapterReadback(selected, embeddedReadback)
+      : embeddedReadback;
   const resolvedEmbeddedChapterHref = embeddedChapterHref ?? embeddedBackHref;
+  const embeddedReturnHref = selected
+    ? buildEmbeddedChapterReturnHref(selected, resolvedEmbeddedChapterHref)
+    : resolvedEmbeddedChapterHref;
+  const embeddedHandoffSource = getEmbeddedChapterHandoffSource(
+    selected?.name ?? null,
+    embeddedReadback?.chapterContext ?? null,
+  );
+  const embeddedReturnTarget = selected
+    ? `${selected.name} in Chapters`
+    : activeEmbeddedReadback
+      ? `${activeEmbeddedReadback.chapterContext} in Chapters`
+      : "Chapters";
+  const embeddedContinuityNote = getEmbeddedChapterContinuityNote(
+    selected?.name ?? null,
+    embeddedReadback?.chapterContext ?? null,
+  );
 
   const filtered = CHAPTERS_DATA.filter((c) =>
     c.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -852,7 +910,7 @@ function ChaptersPage({
   return (
     <>
       <div className="p-6 space-y-4">
-        {embeddedReadback ? (
+        {activeEmbeddedReadback ? (
           <div className="bg-sky-500/8 border border-sky-500/15 rounded-lg px-4 py-3 space-y-3">
             <div className="flex items-start gap-3">
               <AlertCircle size={13} className="text-sky-400 flex-shrink-0 mt-0.5" />
@@ -861,7 +919,7 @@ function ChaptersPage({
                   Embedded chapter oversight readback
                 </div>
                 <p className="mt-1 text-[12px] text-sky-300/80 leading-relaxed">
-                  {`Use this Admin readback to verify event readiness, RSVP totals, attendance context, and points posture for ${embeddedReadback.chapterContext} before requesting any blocked-control follow-through or correction path.`}
+                  {`Use this Admin readback to verify event readiness, RSVP totals, attendance context, and points posture for ${activeEmbeddedReadback.chapterContext} before requesting any blocked-control follow-through or correction path.`}
                 </p>
               </div>
             </div>
@@ -869,19 +927,19 @@ function ChaptersPage({
               {[
                 {
                   label: "School",
-                  value: embeddedReadback.school ?? embeddedReadback.chapterContext,
+                  value: activeEmbeddedReadback.school ?? activeEmbeddedReadback.chapterContext,
                 },
                 {
                   label: "Region",
-                  value: embeddedReadback.region ?? "Read-only staff context",
+                  value: activeEmbeddedReadback.region ?? "Read-only staff context",
                 },
                 {
                   label: "Coach",
-                  value: embeddedReadback.coach ?? "Read-only staff context",
+                  value: activeEmbeddedReadback.coach ?? "Read-only staff context",
                 },
                 {
                   label: "Active Members",
-                  value: embeddedReadback.members ?? "0",
+                  value: activeEmbeddedReadback.members ?? "0",
                 },
               ].map(({ label, value }) => (
                 <div key={label} className="rounded border border-sky-500/10 bg-[#0d1117]/50 px-3 py-2">
@@ -894,23 +952,23 @@ function ChaptersPage({
               <div>
                 <div className="text-[10px] text-sky-400/70 font-mono uppercase tracking-wider">Risk posture</div>
                 <div className="mt-1 text-[11px] leading-relaxed text-slate-400">
-                  Carry the same chapter risk context through this Admin readback before requesting any blocked-control follow-through or correction path.
+                  {`Carry ${activeEmbeddedReadback.chapterContext}'s risk context through this Admin readback before requesting any blocked-control follow-through or correction path.`}
                 </div>
               </div>
               <Badge
-                status={embeddedReadback.risk ?? "unknown"}
-                label={(embeddedReadback.risk ?? "unknown").toUpperCase()}
+                status={activeEmbeddedReadback.risk ?? "unknown"}
+                label={(activeEmbeddedReadback.risk ?? "unknown").toUpperCase()}
               />
             </div>
             <div className="grid grid-cols-2 gap-2">
               {[
                 {
                   label: "Handoff source",
-                  value: "Staff chapter drawer",
+                  value: embeddedHandoffSource,
                 },
                 {
                   label: "Return target",
-                  value: `${embeddedReadback.chapterContext} in Chapters`,
+                  value: embeddedReturnTarget,
                 },
               ].map(({ label, value }) => (
                 <div key={label} className="rounded border border-sky-500/10 bg-[#0d1117]/50 px-3 py-2">
@@ -921,10 +979,10 @@ function ChaptersPage({
             </div>
             <div className="grid grid-cols-4 gap-2">
               {[
-                { label: "Events / Month", value: embeddedReadback.events ?? "—" },
-                { label: "RSVP Totals", value: embeddedReadback.rsvps ?? "—" },
-                { label: "Attendance", value: embeddedReadback.attendance ?? "—" },
-                { label: "Points / Year", value: embeddedReadback.points ?? "—" },
+                { label: "Events / Month", value: activeEmbeddedReadback.events ?? "—" },
+                { label: "RSVP Totals", value: activeEmbeddedReadback.rsvps ?? "—" },
+                { label: "Attendance", value: activeEmbeddedReadback.attendance ?? "—" },
+                { label: "Points / Year", value: activeEmbeddedReadback.points ?? "—" },
               ].map(({ label, value }) => (
                 <div key={label} className="rounded border border-sky-500/10 bg-[#0d1117]/50 px-3 py-2">
                   <div className="text-[10px] text-sky-400/70 font-mono uppercase tracking-wider">{label}</div>
@@ -936,31 +994,31 @@ function ChaptersPage({
               {[
                 {
                   label: "Event readiness",
-                  value: embeddedReadback.events
-                    ? `${embeddedReadback.events} events this month`
-                    : "No event snapshot",
-                  note: "Review-only embedded snapshot",
+                  value: activeEmbeddedReadback.events
+                    ? `${activeEmbeddedReadback.events} events this month`
+                    : "No event readback",
+                  note: `Review-only ${activeEmbeddedReadback.chapterContext} readback`,
                 },
                 {
                   label: "RSVP totals",
-                  value: embeddedReadback.rsvps
-                    ? `${embeddedReadback.rsvps} RSVPs`
-                    : "No RSVP snapshot",
-                  note: "Carry the same chapter context back out",
+                  value: activeEmbeddedReadback.rsvps
+                    ? `${activeEmbeddedReadback.rsvps} RSVPs`
+                    : "No RSVP readback",
+                  note: `Carry ${activeEmbeddedReadback.chapterContext} back out to Chapters`,
                 },
                 {
                   label: "Attendance context",
-                  value: embeddedReadback.attendance
-                    ? `${embeddedReadback.attendance} attended`
-                    : "No attendance snapshot",
-                  note: "No attendance correction path runs here",
+                  value: activeEmbeddedReadback.attendance
+                    ? `${activeEmbeddedReadback.attendance} attended`
+                    : "No attendance readback",
+                  note: `No attendance correction path runs here for ${activeEmbeddedReadback.chapterContext}`,
                 },
                 {
                   label: "Weekly points posture",
-                  value: embeddedReadback.pointsWeek
-                    ? `+${embeddedReadback.pointsWeek} this week`
-                    : "No weekly points snapshot",
-                  note: "Points posture stays oversight-only",
+                  value: activeEmbeddedReadback.pointsWeek
+                    ? `+${activeEmbeddedReadback.pointsWeek} this week`
+                    : "No weekly points readback",
+                  note: `${activeEmbeddedReadback.chapterContext} points posture stays oversight-only`,
                 },
               ].map(({ label, value, note }) => (
                 <div key={label} className="rounded border border-sky-500/10 bg-[#0d1117]/50 px-3 py-2">
@@ -970,11 +1028,12 @@ function ChaptersPage({
                 </div>
               ))}
             </div>
-            {embeddedReadback.pointsWeek ? (
+            {activeEmbeddedReadback.pointsWeek ? (
               <p className="text-[11px] leading-relaxed text-slate-300">
-                {`Points posture stays read-only here: ${embeddedReadback.pointsWeek} weekly points remain review context only until an approved correction workflow exists, and blocked-control follow-through stays in this Admin readback lane.`}
+                {`Points posture for ${activeEmbeddedReadback.chapterContext} stays read-only here: ${activeEmbeddedReadback.pointsWeek} weekly points remain review context only until an approved correction workflow exists, and blocked-control follow-through stays in this Admin readback lane.`}
               </p>
             ) : null}
+            <p className="text-[11px] leading-relaxed text-slate-400">{embeddedContinuityNote}</p>
           </div>
         ) : null}
 
@@ -1043,7 +1102,26 @@ function ChaptersPage({
             <div>
               <h2 className="text-white font-bold text-[17px]">{selected.name}</h2>
               <p className="text-slate-500 text-[12px] mt-0.5">{selected.school} · {selected.region}</p>
+              {activeEmbeddedReadback ? (
+                <p className="mt-1 text-[11px] leading-relaxed text-sky-300/80">
+                  {`This selected ${selected.name} readback stays read-only inside embedded Admin so staff can confirm event readiness, RSVP totals, attendance context, and points posture before returning to Chapters.`}
+                </p>
+              ) : null}
             </div>
+
+            {activeEmbeddedReadback ? (
+              <div className="grid grid-cols-2 gap-2">
+                {[
+                  { label: "Handoff source", value: embeddedHandoffSource },
+                  { label: "Return target", value: embeddedReturnTarget },
+                ].map(({ label, value }) => (
+                  <div key={label} className="bg-[#0d1117]/60 border border-white/[0.05] rounded p-3">
+                    <div className="text-[10px] text-slate-700 font-mono uppercase tracking-wider mb-1">{label}</div>
+                    <div className="text-[14px] text-slate-200 font-mono font-semibold">{value}</div>
+                  </div>
+                ))}
+              </div>
+            ) : null}
 
             <div className="grid grid-cols-2 gap-2">
               {[
@@ -1053,6 +1131,9 @@ function ChaptersPage({
                 { label: "Points This Year", value: selected.points.toLocaleString() },
                 { label: "RSVPs", value: String(selected.rsvps) },
                 { label: "Attendance", value: String(selected.attendance) },
+                ...(activeEmbeddedReadback?.pointsWeek
+                  ? [{ label: "Points This Week", value: `+${activeEmbeddedReadback.pointsWeek}` }]
+                  : []),
               ].map(({ label, value }) => (
                 <div key={label} className="bg-[#0d1117]/60 border border-white/[0.05] rounded p-3">
                   <div className="text-[10px] text-slate-700 font-mono uppercase tracking-wider mb-1">{label}</div>
@@ -1076,26 +1157,26 @@ function ChaptersPage({
             </div>
 
             <div className="flex flex-wrap gap-2">
-              <button disabled title="Chapter event readiness stays read-only here; use the staff events view for the route-backed drill-in." className="px-3 py-1.5 bg-sky-500/12 text-sky-400 border border-sky-500/20 rounded text-[12px] hover:bg-sky-500/20 transition-colors">Event readback only</button>
-              <button disabled title="Module edits remain blocked until the secure module-management workflow is approved." className="px-3 py-1.5 bg-white/[0.04] text-slate-300 border border-white/[0.08] rounded text-[12px] hover:bg-white/[0.07] transition-colors">Module edits blocked</button>
-              <button disabled title="Audit history remains a readback surface; use the audit log route for the full review trail." className="px-3 py-1.5 bg-white/[0.04] text-slate-300 border border-white/[0.08] rounded text-[12px] hover:bg-white/[0.07] transition-colors">Audit readback only</button>
-              {embeddedReadback && resolvedEmbeddedChapterHref ? (
+              <button disabled title={`Chapter event readiness for ${selected.name} stays read-only here; use the staff events view for the route-backed drill-in.`} className="px-3 py-1.5 bg-sky-500/12 text-sky-400 border border-sky-500/20 rounded text-[12px] hover:bg-sky-500/20 transition-colors">Event readback only</button>
+              <button disabled title={`Module edits for ${selected.name} remain blocked until the secure module-management workflow is approved.`} className="px-3 py-1.5 bg-white/[0.04] text-slate-300 border border-white/[0.08] rounded text-[12px] hover:bg-white/[0.07] transition-colors">Module edits blocked</button>
+              <button disabled title={`Audit history for ${selected.name} remains a readback surface; use the audit log route for the full review trail.`} className="px-3 py-1.5 bg-white/[0.04] text-slate-300 border border-white/[0.08] rounded text-[12px] hover:bg-white/[0.07] transition-colors">Audit readback only</button>
+              {activeEmbeddedReadback && embeddedReturnHref ? (
                 <a
-                  href={resolvedEmbeddedChapterHref}
-                  title={`Return to Chapters with ${embeddedReadback.chapterContext} reopened in the same Command Center review loop after this Admin readback.`}
+                  href={embeddedReturnHref}
+                  title={`Return to Chapters with ${selected.name} reopened in the same Command Center review loop after this Admin readback.`}
                   className="px-3 py-1.5 bg-sky-500/12 text-sky-300 border border-sky-500/20 rounded text-[12px] hover:bg-sky-500/20 transition-colors"
                 >
-                  Return to Chapters
+                  {`Return to ${selected.name} in Chapters`}
                 </a>
               ) : null}
             </div>
-            {embeddedReadback ? (
+            {activeEmbeddedReadback ? (
               <div className="space-y-2">
                 <p className="text-[11px] leading-relaxed text-slate-300">
-                  RSVP totals, attendance context, event readiness, and points posture remain review-only in this embedded Admin drawer. Use this readback before requesting any blocked-control follow-through or chapter correction path.
+                  {`RSVP totals, attendance context, event readiness, and points posture for ${selected.name} remain review-only in this embedded Admin drawer. Use this readback before requesting any blocked-control follow-through or chapter correction path.`}
                 </p>
                 <p className="text-[11px] leading-relaxed text-sky-300/80">
-                  {`After this Admin readback, return to Chapters with ${embeddedReadback.chapterContext} still selected in the same Command Center review loop to keep the chapter oversight context intact.`}
+                  {`After this Admin readback, return to Chapters with ${selected.name} still selected in the same Command Center review loop to keep the chapter oversight context intact.`}
                 </p>
               </div>
             ) : null}
@@ -1125,9 +1206,53 @@ function buildEmbeddedReadbackChapter(embeddedReadback: EmbeddedChapterReadback)
     rsvps: Number(embeddedReadback.rsvps ?? 0),
     attendance: Number(embeddedReadback.attendance ?? 0),
     points: Number(embeddedReadback.points ?? 0),
+    pointsWeek: Number(embeddedReadback.pointsWeek ?? 0),
     modules: ["Events", "RSVP", "Attendance", "Points"],
     risk: embeddedReadback.risk ?? "medium",
   };
+}
+
+function buildActiveEmbeddedChapterReadback(
+  chapter: AdminChapterRecord,
+  embeddedReadback: EmbeddedChapterReadback,
+): EmbeddedChapterReadback {
+  return {
+    chapterContext: chapter.name,
+    school: chapter.school,
+    region: chapter.region,
+    coach: chapter.coach,
+    members: String(chapter.members),
+    risk: chapter.risk,
+    events: String(chapter.upcomingEvents),
+    rsvps: String(chapter.rsvps),
+    attendance: String(chapter.attendance),
+    points: String(chapter.points),
+    pointsWeek:
+      embeddedReadback.chapterContext === chapter.name && embeddedReadback.pointsWeek
+        ? embeddedReadback.pointsWeek
+        : String(chapter.pointsWeek),
+  };
+}
+
+function buildEmbeddedChapterReturnHref(
+  chapter: AdminChapterRecord,
+  fallbackHref?: string,
+) {
+  const [path, query = ""] = (fallbackHref ?? "/staff?view=chapters").split("?");
+  const params = new URLSearchParams(query);
+  params.set("view", "chapters");
+  params.set("chapterContext", chapter.name);
+  params.set("chapterSchool", chapter.school);
+  params.set("chapterRegionName", chapter.region);
+  params.set("chapterCoachName", chapter.coach);
+  params.set("chapterMembers", String(chapter.members));
+  params.set("chapterRisk", chapter.risk);
+  params.set("chapterEvents", String(chapter.upcomingEvents));
+  params.set("chapterRsvps", String(chapter.rsvps));
+  params.set("chapterAttendance", String(chapter.attendance));
+  params.set("chapterPoints", String(chapter.points));
+  params.set("chapterPointsWeek", String(chapter.pointsWeek));
+  return `${path}?${params.toString()}`;
 }
 
 // ─── Modules / Feature Flags ────────────────────────────────────────────────────
@@ -4235,6 +4360,7 @@ export function FigmaAdminPanel({
   const embeddedProofQueueContext = pathname.startsWith("/staff")
     ? getEmbeddedProofQueueContext(searchParams.get("proofStatus"), searchParams.get("proofPlatform"))
     : null;
+  const embeddedDisplayChapterContext = embeddedChapterReadback?.chapterContext ?? embeddedChapterContext;
   const page = PAGES[active] ?? PAGES.overview;
 
   const handleNav = (id: string) => {
@@ -4269,7 +4395,7 @@ export function FigmaAdminPanel({
         onBack={onBack}
         backHref={embeddedBackHref}
         backLabel={embeddedBackLabel}
-        chapterContext={embeddedChapterContext}
+        chapterContext={embeddedDisplayChapterContext}
         proofQueueContext={embeddedProofQueueContext}
       />
       <div className="ml-[220px] flex-1 flex flex-col min-h-0 overflow-hidden">
@@ -4278,7 +4404,7 @@ export function FigmaAdminPanel({
           subtitle={page.subtitle}
           isEmbeddedPreview={Boolean(onBack)}
           embeddedBackLabel={embeddedBackLabel}
-          chapterContext={embeddedChapterContext}
+          chapterContext={embeddedDisplayChapterContext}
           proofQueueContext={embeddedProofQueueContext}
         />
         <main className="flex-1 overflow-y-auto scrollbar-hide bg-[#0d1117]">

@@ -459,22 +459,74 @@ describe("staff page", () => {
     expect(html).toContain(
       "Chapter oversight for TEST Boston College stays read-only here: event readiness, RSVP totals, attendance readback, and points posture should be reviewed in Admin before any blocked-control follow-through or correction request.",
     );
-    expect(html).toContain("When DS Admin access is available, return to Chapters in the same Command Center review loop after the Admin readback closes.");
-    expect(html).toContain("Return to Chapters");
+    expect(html).toContain("When DS Admin access is available, return to TEST Boston College in Chapters in the same Command Center review loop after the Admin readback closes.");
+    expect(html).toContain("Return to TEST Boston College in Chapters");
     expect(html).toContain("TEST Boston College");
     expect(html).toContain("New England");
     expect(html).toContain("TEST Maria Santos");
     expect(html).toContain(">32</div>");
     expect(html).toContain("Risk posture");
-    expect(html).toContain("Carry the same chapter risk context through this blocked Admin handoff before requesting any blocked-control follow-through or correction path.");
+    expect(html).toContain("Carry TEST Boston College&#x27;s risk context through this blocked Admin handoff before requesting any blocked-control follow-through or correction path.");
     expect(html).toContain(">Handoff source</div><div class=\"mt-1 text-[12px] font-mono font-semibold text-slate-200\">Staff chapter drawer</div>");
     expect(html).toContain(">Return target</div><div class=\"mt-1 text-[12px] font-mono font-semibold text-slate-200\">TEST Boston College in Chapters</div>");
     expect(html).toContain("2 events this month");
+    expect(html).toContain("Review-only TEST Boston College readback");
     expect(html).toContain("30 RSVPs");
+    expect(html).toContain("Carry TEST Boston College back out to Chapters");
     expect(html).toContain("24 attended");
-    expect(html).toContain("+620 this week");
-    expect(html).toContain("7,800");
-    expect(html).toContain('href="/staff?view=chapters&amp;chapter=chapter-test&amp;chapterContext=TEST+Boston+College&amp;chapterSchool=TEST+Boston+College&amp;chapterRegionName=New+England&amp;chapterCoachName=TEST+Maria+Santos&amp;chapterMembers=32&amp;chapterEvents=2&amp;chapterRsvps=30&amp;chapterAttendance=24&amp;chapterPoints=7800&amp;chapterPointsWeek=620"');
+    expect(html).toContain("No attendance correction path runs here for TEST Boston College");
+  expect(html).toContain("+620 this week");
+  expect(html).toContain("TEST Boston College points posture stays oversight-only");
+  expect(html).toContain("7,800");
+  expect(html).toContain("Keep TEST Boston College in the same review loop before any correction request");
+  expect(html).toContain('href="/staff?view=chapters&amp;chapter=chapter-test&amp;chapterContext=TEST+Boston+College&amp;chapterSchool=TEST+Boston+College&amp;chapterRegionName=New+England&amp;chapterCoachName=TEST+Maria+Santos&amp;chapterMembers=32&amp;chapterEvents=2&amp;chapterRsvps=30&amp;chapterAttendance=24&amp;chapterPoints=7800&amp;chapterPointsWeek=620"');
+  });
+
+  it("fills blocked admin route chapter oversight readback from sparse chapter context", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("general.staff@mymedlife.test"),
+    );
+
+    const { default: StaffPage } = await import("@/app/staff/page");
+    const html = renderToStaticMarkup(
+      await StaffPage({
+        searchParams: Promise.resolve({
+          view: "admin",
+          adminView: "chapters",
+          returnView: "chapters",
+          chapter: "ch13",
+          chapterContext: "Stanford University",
+        }),
+      }),
+    );
+    const source = readFileSync("src/components/figma-staff-command-center.tsx", "utf8");
+
+    expect(html).toContain("Chapter review context: TEST Stanford University");
+    expect(html).toContain("TEST Stanford University");
+    expect(html).toContain(
+      "Chapter oversight for TEST Stanford University stays read-only here: event readiness, RSVP totals, attendance readback, and points posture should be reviewed in Admin before any blocked-control follow-through or correction request.",
+    );
+    expect(html).toContain("West");
+    expect(html).toContain("TEST James Okafor");
+    expect(html).toContain(">52</div>");
+    expect(html).toContain("5 events this month");
+    expect(html).toContain("Review-only TEST Stanford University readback");
+    expect(html).toContain("80 RSVPs");
+    expect(html).toContain("Carry TEST Stanford University back out to Chapters");
+    expect(html).toContain("68 attended");
+    expect(html).toContain("No attendance correction path runs here for TEST Stanford University");
+    expect(html).toContain("+1890 this week");
+    expect(html).toContain("TEST Stanford University points posture stays oversight-only");
+    expect(html).toContain("22,100");
+    expect(html).toContain("Keep TEST Stanford University in the same review loop before any correction request");
+    expect(html).toContain("When DS Admin access is available, return to TEST Stanford University in Chapters in the same Command Center review loop after the Admin readback closes.");
+    expect(html).toContain(
+      ">Return target</div><div class=\"mt-1 text-[12px] font-mono font-semibold text-slate-200\">TEST Stanford University in Chapters</div>",
+    );
+    expect(source).toContain("enrichStaffAdminChapterReadback(");
+    expect(source).toContain("const adminDisplayChapterContext = adminChapterReadback?.chapterContext ?? adminChapterContext;");
   });
 
   it("keeps chapter oversight readback visible in the admin role gate before opening the embedded admin shell", async () => {
@@ -511,14 +563,16 @@ describe("staff page", () => {
     expect(html).toContain(
       "Open Admin preview to read back event readiness, RSVP totals, attendance context, and points posture for TEST Stanford University before requesting any blocked-control follow-through or correction path.",
     );
-    expect(html).toContain("After the Admin readback, return to Chapters in the same Command Center review loop.");
-    expect(html).toContain("Return to Chapters");
+    expect(html).toContain(
+      "After the Admin readback, return to TEST Stanford University in Chapters in the same Command Center review loop.",
+    );
+    expect(html).toContain("Return to TEST Stanford University in Chapters");
     expect(html).toContain("TEST Stanford University");
     expect(html).toContain("West");
     expect(html).toContain("TEST James Okafor");
     expect(html).toContain(">52</div>");
     expect(html).toContain("Risk posture");
-    expect(html).toContain("Carry the same chapter risk context through this Admin gate before requesting any blocked-control follow-through or correction path.");
+    expect(html).toContain("Carry TEST Stanford University&#x27;s risk context through this Admin gate before requesting any blocked-control follow-through or correction path.");
     expect(html).toContain(">Handoff source</div><div class=\"mt-1 text-[12px] font-mono font-semibold text-slate-200\">Staff chapter drawer</div>");
     expect(html).toContain(">Return target</div><div class=\"mt-1 text-[12px] font-mono font-semibold text-slate-200\">TEST Stanford University in Chapters</div>");
     expect(html).toContain("5 events this month");
@@ -556,7 +610,11 @@ describe("staff page", () => {
     expect(html).toContain("Command Center");
     expect(html).toContain('role="button"');
     expect(html).toContain("Return to Chapters");
-    expect(html).toContain("Chapter context: TEST Stanford University");
+    expect(html).toContain("Return: TEST Stanford University in Chapters");
+    expect(html).toContain("Chapter: TEST Stanford University");
+    expect(html).toContain(
+      "Return with Command Center to TEST Stanford University in Chapters after this chapter review pass, or use the top-right menu to switch workspaces or log out.",
+    );
     expect(html).toContain("Embedded Chapter Review");
     expect(html).toContain(
       "Use this Admin readback to confirm event readiness, RSVP totals, attendance context, and points posture for TEST Stanford University before requesting any blocked-control follow-through or correction path.",
@@ -653,7 +711,9 @@ describe("staff page", () => {
     expect(html).toContain("Command Center");
     expect(html).toContain('href="/staff?view=proof_ugc&amp;ugcCard=ugc4&amp;chapterContext=TEST+Stanford+University&amp;proofStatus=pending&amp;proofPlatform=instagram"');
     expect(html).toContain("Return to Chapters");
-    expect(html).toContain('href="/staff?view=chapters&amp;chapter=ch13&amp;ugcCard=ugc4&amp;proofStatus=pending&amp;proofPlatform=instagram"');
+    expect(html).toContain(
+      'href="/staff?view=chapters&amp;chapter=ch13&amp;ugcCard=ugc4&amp;proofStatus=pending&amp;proofPlatform=instagram&amp;chapterContext=TEST+Stanford+University&amp;chapterSchool=TEST+Stanford+University&amp;chapterRegionName=West&amp;chapterCoachName=TEST+James+Okafor&amp;chapterMembers=52&amp;chapterRisk=healthy&amp;chapterEvents=5&amp;chapterRsvps=80&amp;chapterAttendance=68&amp;chapterPoints=22100&amp;chapterPointsWeek=1890"',
+    );
     expect(staffSource).toContain("const adminChapterReturnHref =");
     expect(staffSource).toContain('adminProofQueueContext ? getRouteParam("ugcCard") : null');
     expect(staffSource).toContain('embeddedChapterHref={adminChapterReturnHref ?? undefined}');
@@ -729,14 +789,19 @@ describe("staff page", () => {
     expect(html).toContain("Use the embedded Admin preview to verify event readiness, RSVP totals, attendance context, and points posture before requesting any attendance correction, point adjustment, or event-status write.");
     expect(html).toContain("Event readiness");
     expect(html).toContain("2 events this month");
+    expect(html).toContain("Read-only Boston College readback");
     expect(html).toContain("30 RSVPs");
+    expect(html).toContain("Carry Boston College into embedded Admin");
     expect(html).toContain("24 attended");
+    expect(html).toContain("Review Boston College before any correction request");
     expect(html).toContain("+620 this week");
+    expect(html).toContain("Boston College points posture stays preview-only");
     expect(html).toContain("Risk posture");
-    expect(html).toContain("Carry the same chapter risk context into the embedded Admin readback.");
+    expect(html).toContain("Carry Boston College&#x27;s risk context into the embedded Admin readback.");
     expect(html).toContain("Staff chapter drawer");
     expect(html).toContain("Boston College in Chapters");
-    expect(html).toContain("Return to the same selected chapter after the Admin readback closes.");
+    expect(html).toContain("Keep Boston College visible in embedded Admin.");
+    expect(html).toContain("Return to Boston College in Chapters after the Admin readback closes.");
     expect(html).toContain("Next step: open the Admin preview for DS directory readback, event readiness, RSVP totals, attendance context, points posture, and blocked-control follow-through before requesting any write path.");
     expect(html).toContain("Return to this chapter in the same Command Center loop after the Admin readback closes.");
     expect(html).toContain('href="/staff?view=admin&amp;adminView=chapters&amp;returnView=chapters&amp;chapter=chapter-test&amp;chapterContext=Boston+College&amp;chapterSchool=Boston+College&amp;chapterRegionName=New+England&amp;chapterCoachName=Maria+Santos&amp;chapterMembers=32&amp;chapterRisk=healthy&amp;chapterEvents=2&amp;chapterRsvps=30&amp;chapterAttendance=24&amp;chapterPoints=7800&amp;chapterPointsWeek=620"');
@@ -898,8 +963,11 @@ describe("staff page", () => {
     expect(source).toContain("getStaffAdminPreviewTitle(getRouteParam(\"adminView\"))");
     expect(source).toContain('const isEmbeddedAdminOpen = activeScreen === "admin" && Boolean(adminRole) && canAccessAdminPanel;');
     expect(source).toContain("{!isEmbeddedAdminOpen && (");
-    expect(source).toContain("getStaffAdminHeaderSubtitle(adminBackLabel, adminChapterContext, adminProofQueueContext)");
-    expect(source).toContain("getStaffAdminReturnLoopLabel(backLabel, chapterContext, proofQueueContext)");
+    expect(source).toContain(
+      "const adminDisplayChapterContext = adminChapterReadback?.chapterContext ?? adminChapterContext;",
+    );
+    expect(source).toContain("getStaffAdminHeaderSubtitle(");
+    expect(source).toContain("getStaffAdminReturnLoopLabel(");
   });
 
   it("keeps proof review chapter follow-through route-backed from the selected story panel", async () => {
@@ -1090,6 +1158,48 @@ describe("staff page", () => {
     expect(html).toContain("chapter=ch13");
   });
 
+  it("reopens the same chapter drawer from chapter context when the return path uses a sparse chapter id", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("general.staff@mymedlife.test"),
+    );
+
+    const { default: StaffPage } = await import("@/app/staff/page");
+    const html = renderToStaticMarkup(
+      await StaffPage({
+        searchParams: Promise.resolve({
+          view: "chapters",
+          chapter: "chapter-test",
+          chapterContext: "Stanford University",
+          chapterSchool: "TEST Stanford University",
+          chapterRegionName: "West",
+          chapterCoachName: "TEST James Okafor",
+          chapterMembers: "52",
+          chapterEvents: "5",
+          chapterRsvps: "80",
+          chapterAttendance: "68",
+          chapterPoints: "22100",
+          chapterPointsWeek: "1890",
+        }),
+      }),
+    );
+    const source = readFileSync("src/components/figma-staff-command-center.tsx", "utf8");
+
+    expect(html).toContain("Chapter Detail");
+    expect(html).toContain("TEST Stanford University");
+    expect(html).toContain("TEST James Okafor");
+    expect(html).toContain("5 events this month");
+    expect(html).toContain("80 RSVPs");
+    expect(html).toContain("68 attended");
+    expect(html).toContain("+1,890 this week");
+    expect(html).toContain("Return to Chapters");
+    expect(html).toContain('href="/staff?view=chapters"');
+    expect(source).toContain("resolveStaffSelectedChapter(");
+    expect(source).toContain("function normalizeStaffChapterContext");
+    expect(source).toContain("function resolveStaffSelectedChapter(");
+  });
+
   it("keeps proof queue return context when the chapter drawer opens an admin chapter review handoff", async () => {
     const actorModule = await import("@/services/local-actor-context");
 
@@ -1157,14 +1267,15 @@ describe("staff page", () => {
     expect(html).toContain(">68</div>");
     expect(html).toContain(">22100</div>");
     expect(html).toContain(
-      "Points posture stays read-only here: 1890 weekly points remain review context only until an approved correction workflow exists, and blocked-control follow-through stays in this Admin readback lane.",
+      "Points posture for TEST Stanford University stays read-only here: 1890 weekly points remain review context only until an approved correction workflow exists, and blocked-control follow-through stays in this Admin readback lane.",
     );
     expect(html).toContain(">School</div><div class=\"mt-1 text-[13px] font-mono font-semibold text-slate-100\">TEST Stanford University</div>");
     expect(html).toContain(">Region</div><div class=\"mt-1 text-[13px] font-mono font-semibold text-slate-100\">West</div>");
     expect(html).toContain(">Coach</div><div class=\"mt-1 text-[13px] font-mono font-semibold text-slate-100\">TEST James Okafor</div>");
     expect(html).toContain(">Active Members</div><div class=\"mt-1 text-[13px] font-mono font-semibold text-slate-100\">52</div>");
     expect(html).toContain("Risk posture");
-    expect(html).toContain("Carry the same chapter risk context through this Admin readback before requesting any blocked-control follow-through or correction path.");
+    expect(html).toContain("Carry TEST Stanford University");
+    expect(html).toContain("risk context through this Admin readback before requesting any blocked-control follow-through or correction path.");
     expect(html).toContain(">HEALTHY</span>");
     expect(html).toContain(">Handoff source</div><div class=\"mt-1 text-[13px] font-mono font-semibold text-slate-100\">Staff chapter drawer</div>");
     expect(html).toContain(">Return target</div><div class=\"mt-1 text-[13px] font-mono font-semibold text-slate-100\">TEST Stanford University in Chapters</div>");
@@ -1179,6 +1290,10 @@ describe("staff page", () => {
     expect(html).toContain(">Events / Month</div><div class=\"mt-1 text-[14px] font-mono font-semibold text-slate-100\">5</div>");
     expect(html).toContain(">RSVP Totals</div><div class=\"mt-1 text-[14px] font-mono font-semibold text-slate-100\">80</div>");
     expect(html).toContain(">Points / Year</div><div class=\"mt-1 text-[14px] font-mono font-semibold text-slate-100\">22100</div>");
+    expect(html).toContain("Review-only TEST Stanford University readback");
+    expect(html).toContain("Carry TEST Stanford University back out to Chapters");
+    expect(html).toContain("No attendance correction path runs here for TEST Stanford University");
+    expect(html).toContain("TEST Stanford University points posture stays oversight-only");
     expect(html).toContain("Event readback only");
     expect(html).toContain("Module edits blocked");
     expect(html).toContain("Audit readback only");
@@ -1187,13 +1302,15 @@ describe("staff page", () => {
     expect(html).toContain("68 attended");
     expect(html).toContain("+1890 this week");
     expect(html).toContain(
-      "RSVP totals, attendance context, event readiness, and points posture remain review-only in this embedded Admin drawer. Use this readback before requesting any blocked-control follow-through or chapter correction path.",
+      "RSVP totals, attendance context, event readiness, and points posture for TEST Stanford University remain review-only in this embedded Admin drawer. Use this readback before requesting any blocked-control follow-through or chapter correction path.",
     );
     expect(html).toContain("Return to Chapters");
     expect(html).toContain(
       "After this Admin readback, return to Chapters with TEST Stanford University still selected in the same Command Center review loop to keep the chapter oversight context intact.",
     );
-    expect(html).toContain('href="/staff?view=chapters&amp;chapter=ch13"');
+    expect(html).toContain(
+      'href="/staff?view=chapters&amp;chapter=ch13&amp;chapterContext=TEST+Stanford+University&amp;chapterSchool=TEST+Stanford+University&amp;chapterRegionName=West&amp;chapterCoachName=TEST+James+Okafor&amp;chapterMembers=52&amp;chapterRisk=healthy&amp;chapterEvents=5&amp;chapterRsvps=80&amp;chapterAttendance=68&amp;chapterPoints=22100&amp;chapterPointsWeek=1890"',
+    );
     expect(adminSource).toContain('events: searchParams.get("chapterEvents"),');
     expect(adminSource).toContain('school: searchParams.get("chapterSchool"),');
     expect(adminSource).toContain('region: searchParams.get("chapterRegionName"),');
@@ -1206,7 +1323,12 @@ describe("staff page", () => {
     expect(adminSource).toContain('pointsWeek: searchParams.get("chapterPointsWeek"),');
     expect(adminSource).toContain("function enrichEmbeddedChapterReadback");
     expect(adminSource).toContain("embeddedReadback ? buildEmbeddedReadbackChapter(embeddedReadback) : null");
+    expect(adminSource).toContain("const activeEmbeddedReadback =");
+    expect(adminSource).toContain("buildActiveEmbeddedChapterReadback(selected, embeddedReadback)");
     expect(adminSource).toContain("function buildEmbeddedReadbackChapter");
+    expect(adminSource).toContain("function buildActiveEmbeddedChapterReadback(");
+    expect(adminSource).toContain("function buildEmbeddedChapterReturnHref(");
+    expect(adminSource).toContain('params.set("chapterPointsWeek", String(chapter.pointsWeek));');
     expect(adminSource).toContain('risk: embeddedReadback.risk ?? "medium",');
     expect(adminSource).toContain("embeddedBackHref={embeddedBackHref}");
   });
@@ -1240,6 +1362,7 @@ describe("staff page", () => {
     expect(html).toContain(">Region</div><div class=\"mt-1 text-[13px] font-mono font-semibold text-slate-100\">New England</div>");
     expect(html).toContain(">Coach</div><div class=\"mt-1 text-[13px] font-mono font-semibold text-slate-100\">TEST Maria Santos</div>");
     expect(html).toContain(">Active Members</div><div class=\"mt-1 text-[13px] font-mono font-semibold text-slate-100\">32</div>");
+    expect(html).toContain(">Handoff source</div><div class=\"mt-1 text-[13px] font-mono font-semibold text-slate-100\">Staff chapter drawer</div>");
     expect(html).toContain(">Events / Month</div><div class=\"mt-1 text-[14px] font-mono font-semibold text-slate-100\">2</div>");
     expect(html).toContain(">RSVP Totals</div><div class=\"mt-1 text-[14px] font-mono font-semibold text-slate-100\">30</div>");
     expect(html).toContain(">Points / Year</div><div class=\"mt-1 text-[14px] font-mono font-semibold text-slate-100\">7800</div>");
@@ -1247,7 +1370,285 @@ describe("staff page", () => {
     expect(html).toContain(
       "After this Admin readback, return to Chapters with TEST Boston College still selected in the same Command Center review loop to keep the chapter oversight context intact.",
     );
-    expect(html).toContain('href="/staff?view=chapters&amp;chapter=ch2"');
+    expect(html).toContain(
+      'href="/staff?view=chapters&amp;chapter=ch2&amp;chapterContext=TEST+Boston+College&amp;chapterSchool=TEST+Boston+College&amp;chapterRegionName=New+England&amp;chapterCoachName=TEST+Maria+Santos&amp;chapterMembers=32&amp;chapterRisk=healthy&amp;chapterEvents=2&amp;chapterRsvps=30&amp;chapterAttendance=24&amp;chapterPoints=7800&amp;chapterPointsWeek=620"',
+    );
+  });
+
+  it("fills embedded admin chapter readback from fallback data when the sparse handoff omits the TEST prefix", async () => {
+    mockPathname = "/staff";
+    mockSearchParams = new URLSearchParams({
+      view: "admin",
+      adminView: "chapters",
+      returnView: "chapters",
+      chapter: "chapter-test",
+      chapterContext: "Boston College",
+    });
+
+    const { FigmaAdminPanel } = await import("@/components/figma-admin-panel");
+    const html = renderToStaticMarkup(
+      <FigmaAdminPanel
+        initialActive="chapters"
+        onBack={vi.fn()}
+        embeddedBackLabel="this chapter"
+        embeddedBackHref="/staff?view=chapters&chapter=chapter-test"
+        embeddedChapterHref="/staff?view=chapters&chapter=chapter-test"
+      />,
+    );
+    const adminSource = readFileSync("src/components/figma-admin-panel.tsx", "utf8");
+
+    expect(html).toContain("Embedded chapter oversight readback");
+    expect(html).toContain(
+      "Use this Admin readback to verify event readiness, RSVP totals, attendance context, and points posture for TEST Boston College before requesting any blocked-control follow-through or correction path.",
+    );
+    expect(html).toContain("Return: TEST Boston College in Chapters");
+    expect(html).toContain("Chapter: TEST Boston College");
+    expect(html).toContain(
+      "Return with Command Center to TEST Boston College in Chapters after this chapter review pass, or use the top-right menu to switch workspaces or log out.",
+    );
+    expect(html).toContain(">School</div><div class=\"mt-1 text-[13px] font-mono font-semibold text-slate-100\">TEST Boston College</div>");
+    expect(html).toContain(">Region</div><div class=\"mt-1 text-[13px] font-mono font-semibold text-slate-100\">New England</div>");
+    expect(html).toContain(">Coach</div><div class=\"mt-1 text-[13px] font-mono font-semibold text-slate-100\">TEST Maria Santos</div>");
+    expect(html).toContain(">Active Members</div><div class=\"mt-1 text-[13px] font-mono font-semibold text-slate-100\">32</div>");
+    expect(html).toContain(">Attendance</div><div class=\"text-[14px] text-slate-200 font-mono font-semibold\">24</div>");
+    expect(html).toContain("+620 this week");
+    expect(html).toContain(
+      "After this Admin readback, return to Chapters with TEST Boston College still selected in the same Command Center review loop to keep the chapter oversight context intact.",
+    );
+    expect(html).toContain(
+      "The open chapter drawer below stays seeded from the TEST Boston College staff handoff until you intentionally select a different chapter in this preview-only directory.",
+    );
+    expect(html).toContain(
+      'href="/staff?view=chapters&amp;chapter=chapter-test&amp;chapterContext=TEST+Boston+College&amp;chapterSchool=TEST+Boston+College&amp;chapterRegionName=New+England&amp;chapterCoachName=TEST+Maria+Santos&amp;chapterMembers=32&amp;chapterRisk=healthy&amp;chapterEvents=2&amp;chapterRsvps=30&amp;chapterAttendance=24&amp;chapterPoints=7800&amp;chapterPointsWeek=620"',
+    );
+    expect(adminSource).toContain("function normalizeEmbeddedChapterContext");
+  });
+
+  it("keeps embedded chapter provenance honest when the selected admin chapter no longer matches the original staff handoff", async () => {
+    const { getEmbeddedChapterContinuityNote, getEmbeddedChapterHandoffSource } = await import(
+      "@/components/figma-admin-panel"
+    );
+
+    expect(
+      getEmbeddedChapterHandoffSource("TEST Stanford University", "TEST Boston College"),
+    ).toBe("Embedded chapter directory");
+    expect(
+      getEmbeddedChapterContinuityNote("TEST Stanford University", "TEST Boston College"),
+    ).toBe(
+      "The open chapter drawer below now mirrors TEST Stanford University after you switched chapters inside embedded Admin, so the same selected chapter can return to Chapters with its oversight context intact.",
+    );
+    expect(
+      getEmbeddedChapterHandoffSource("TEST Boston College", "TEST Boston College"),
+    ).toBe("Staff chapter drawer");
+    expect(
+      getEmbeddedChapterContinuityNote("TEST Boston College", "TEST Boston College"),
+    ).toBe(
+      "The open chapter drawer below stays seeded from the TEST Boston College staff handoff until you intentionally select a different chapter in this preview-only directory.",
+    );
+  });
+
+  it("keeps the embedded admin chapter detail drawer tied to the same TEST chapter after a sparse handoff", async () => {
+    mockPathname = "/staff";
+    mockSearchParams = new URLSearchParams({
+      view: "admin",
+      adminView: "chapters",
+      returnView: "chapters",
+      chapter: "chapter-test",
+      chapterContext: "Boston College",
+    });
+
+    const { FigmaAdminPanel } = await import("@/components/figma-admin-panel");
+    const html = renderToStaticMarkup(
+      <FigmaAdminPanel
+        initialActive="chapters"
+        onBack={vi.fn()}
+        embeddedBackLabel="this chapter"
+        embeddedBackHref="/staff?view=chapters&chapter=chapter-test"
+        embeddedChapterHref="/staff?view=chapters&chapter=chapter-test"
+      />,
+    );
+
+    expect(html).toContain("Chapter Detail");
+    expect(html).toContain("TEST Boston College");
+    expect(html).toContain("TEST Maria Santos");
+    expect(html).toContain(
+      "This selected TEST Boston College readback stays read-only inside embedded Admin so staff can confirm event readiness, RSVP totals, attendance context, and points posture before returning to Chapters.",
+    );
+    expect(html).toContain(">Handoff source</div><div class=\"text-[14px] text-slate-200 font-mono font-semibold\">Staff chapter drawer</div>");
+    expect(html).toContain(">Return target</div><div class=\"text-[14px] text-slate-200 font-mono font-semibold\">TEST Boston College in Chapters</div>");
+    expect(html).toContain("32");
+    expect(html).toContain("2");
+    expect(html).toContain("30");
+    expect(html).toContain("24");
+    expect(html).toContain("7,800");
+    expect(html).toContain(">Points This Week</div><div class=\"text-[14px] text-slate-200 font-mono font-semibold\">+620</div>");
+    expect(html).toContain("Risk Status");
+    expect(html).toContain("Event readback only");
+    expect(html).toContain("Module edits blocked");
+    expect(html).toContain("Audit readback only");
+    expect(html).toContain("Chapter event readiness for TEST Boston College stays read-only here; use the staff events view for the route-backed drill-in.");
+    expect(html).toContain("Module edits for TEST Boston College remain blocked until the secure module-management workflow is approved.");
+    expect(html).toContain("Audit history for TEST Boston College remains a readback surface; use the audit log route for the full review trail.");
+    expect(html).toContain("Return to Chapters");
+    expect(html).toContain(
+      "RSVP totals, attendance context, event readiness, and points posture for TEST Boston College remain review-only in this embedded Admin drawer. Use this readback before requesting any blocked-control follow-through or chapter correction path.",
+    );
+    expect(html).toContain(
+      "After this Admin readback, return to Chapters with TEST Boston College still selected in the same Command Center review loop to keep the chapter oversight context intact.",
+    );
+    expect(html).toContain(
+      "The open chapter drawer below stays seeded from the TEST Boston College staff handoff until you intentionally select a different chapter in this preview-only directory.",
+    );
+    expect(html).toContain(
+      'href="/staff?view=chapters&amp;chapter=chapter-test&amp;chapterContext=TEST+Boston+College&amp;chapterSchool=TEST+Boston+College&amp;chapterRegionName=New+England&amp;chapterCoachName=TEST+Maria+Santos&amp;chapterMembers=32&amp;chapterRisk=healthy&amp;chapterEvents=2&amp;chapterRsvps=30&amp;chapterAttendance=24&amp;chapterPoints=7800&amp;chapterPointsWeek=620"',
+    );
+  });
+
+  it("keeps the same TEST Boston College oversight context aligned across drawer, blocked handoff, gate, and embedded admin", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const { FigmaAdminPanel } = await import("@/components/figma-admin-panel");
+    const { default: StaffPage } = await import("@/app/staff/page");
+
+    const drawerHtml = renderToStaticMarkup(
+      <ChapterDetailDrawer
+        chapter={{
+          id: "chapter-test",
+          name: "Boston College",
+          school: "Boston College",
+          country: "USA",
+          region: "North America",
+          activeMembers: 32,
+          coach: "Maria Santos",
+          leaders: ["Ivy Ramos"],
+          chapterType: "established",
+          medlifeRegion: "New England",
+          campaign: "Rush Month",
+          campaignStatus: "on-track",
+          followUps: 18,
+          assignments: 12,
+          evidencePending: 2,
+          evidenceApproved: 9,
+          hubspotLifecycle: "MQL",
+          hubspotTasks: 3,
+          lumaEvents: 2,
+          lastActivity: "2h ago",
+          risk: "healthy",
+          decision: "Advance",
+          healthScore: 84,
+          newMembers: 6,
+          feedViews: 180,
+          eventsThisYear: 9,
+          eventsThisMonth: 2,
+          leads: 48,
+          rsvps: 30,
+          attendance: 24,
+          leadAttendancePct: 50,
+          avgNpsScore: 62,
+          totalPointsYear: 7800,
+          pointsWeek: 620,
+        }}
+        onClose={() => {}}
+        adminPreviewHref="/staff?view=admin&adminView=chapters&returnView=chapters&chapter=chapter-test&chapterContext=Boston+College&chapterSchool=Boston+College&chapterRegionName=New+England&chapterCoachName=Maria+Santos&chapterMembers=32&chapterRisk=healthy&chapterEvents=2&chapterRsvps=30&chapterAttendance=24&chapterPoints=7800&chapterPointsWeek=620"
+        chapterReturnHref="/staff?view=chapters"
+      />,
+    );
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("general.staff@mymedlife.test"),
+    );
+    const blockedHtml = renderToStaticMarkup(
+      await StaffPage({
+        searchParams: Promise.resolve({
+          view: "admin",
+          adminView: "chapters",
+          returnView: "chapters",
+          chapter: "chapter-test",
+          chapterContext: "TEST Boston College",
+          chapterSchool: "TEST Boston College",
+          chapterRegionName: "New England",
+          chapterCoachName: "TEST Maria Santos",
+          chapterMembers: "32",
+          chapterEvents: "2",
+          chapterRsvps: "30",
+          chapterAttendance: "24",
+          chapterPoints: "7800",
+          chapterPointsWeek: "620",
+        }),
+      }),
+    );
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("super.admin@mymedlife.test"),
+    );
+    const gateHtml = renderToStaticMarkup(
+      await StaffPage({
+        searchParams: Promise.resolve({
+          view: "admin",
+          adminView: "chapters",
+          returnView: "chapters",
+          chapter: "chapter-test",
+          chapterContext: "TEST Boston College",
+          chapterSchool: "TEST Boston College",
+          chapterRegionName: "New England",
+          chapterCoachName: "TEST Maria Santos",
+          chapterMembers: "32",
+          chapterEvents: "2",
+          chapterRsvps: "30",
+          chapterAttendance: "24",
+          chapterPoints: "7800",
+          chapterPointsWeek: "620",
+        }),
+      }),
+    );
+
+    mockPathname = "/staff";
+    mockSearchParams = new URLSearchParams({
+      view: "admin",
+      adminView: "chapters",
+      returnView: "chapters",
+      chapter: "chapter-test",
+      chapterContext: "Boston College",
+    });
+    const embeddedHtml = renderToStaticMarkup(
+      <FigmaAdminPanel
+        initialActive="chapters"
+        onBack={vi.fn()}
+        embeddedBackLabel="this chapter"
+        embeddedBackHref="/staff?view=chapters&chapter=chapter-test"
+        embeddedChapterHref="/staff?view=chapters&chapter=chapter-test"
+      />,
+    );
+
+    for (const html of [drawerHtml, blockedHtml, gateHtml, embeddedHtml]) {
+      expect(html).toContain("Boston College");
+      expect(html).toContain("30 RSVPs");
+      expect(html).toContain("24 attended");
+      expect(html).toContain("+620 this week");
+    }
+
+    expect(drawerHtml).toContain("Keep Boston College visible in embedded Admin.");
+    expect(drawerHtml).toContain("Return to Boston College in Chapters after the Admin readback closes.");
+
+    expect(blockedHtml).toContain("Review-only TEST Boston College readback");
+    expect(blockedHtml).toContain("Carry TEST Boston College back out to Chapters");
+    expect(blockedHtml).toContain(
+      "When DS Admin access is available, return to TEST Boston College in Chapters in the same Command Center review loop after the Admin readback closes.",
+    );
+
+    expect(gateHtml).toContain("Restricted Preview Access");
+    expect(gateHtml).toContain(
+      "Open Admin preview to read back event readiness, RSVP totals, attendance context, and points posture for TEST Boston College before requesting any blocked-control follow-through or correction path.",
+    );
+    expect(gateHtml).toContain(
+      "After the Admin readback, return to TEST Boston College in Chapters in the same Command Center review loop.",
+    );
+
+    expect(embeddedHtml).toContain("Embedded chapter oversight readback");
+    expect(embeddedHtml).toContain("Review-only TEST Boston College readback");
+    expect(embeddedHtml).toContain("Carry TEST Boston College back out to Chapters");
+    expect(embeddedHtml).toContain(
+      "After this Admin readback, return to Chapters with TEST Boston College still selected in the same Command Center review loop to keep the chapter oversight context intact.",
+    );
   });
 
   it("keeps a proof queue return path visible when a chapter drawer opens from Proof / UGC context", async () => {
@@ -1299,7 +1700,7 @@ describe("staff page", () => {
     const lineCount = source.split("\n").length;
 
     expect(lineCount).toBeGreaterThanOrEqual(2170);
-    expect(lineCount).toBeLessThanOrEqual(3400);
+    expect(lineCount).toBeLessThanOrEqual(3520);
     expect(source).toContain("type Screen = \"chapters\" | \"campaigns\" | \"events\" | \"ugc\" | \"reports\" | \"admin\" | \"best-practices\" | \"sops\";");
     expect(source).toContain("const NAV_ITEMS");
     expect(source).toContain("function PortfolioOverview");
