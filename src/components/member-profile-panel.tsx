@@ -40,8 +40,8 @@ export function MemberProfilePanel({
   studentHome,
   recognition,
 }: MemberProfilePanelProps) {
-  const launchLanePointsHref = buildProfilePointsHref(entrySource, entryEventId, entryCampaign);
-  const launchLaneEventsHref = buildProfileEventsHref(entrySource, entryEventId, entryCampaign);
+  const launchLanePointsHref = buildProfilePointsHref(entrySource, entryEventId, entryCampaign, entryStoryFilter);
+  const launchLaneEventsHref = buildProfileEventsHref(entrySource, entryEventId, entryCampaign, entryStoryFilter);
   const testDisplayName = ensureVisibleTestLabel(displayName);
   const testChapterName = ensureVisibleTestLabel(chapterName);
   const visibleBadges = getProfileBadges(recognition);
@@ -71,14 +71,16 @@ export function MemberProfilePanel({
               entryEventId
                 ? "This profile stays inside the student shell so you can review your TEST identity, chapter standing, and exact event context without breaking the points-to-profile member loop."
                 : "This profile stays inside the student shell so you can review your TEST identity and chapter standing without breaking the points-to-profile member loop.",
-            href: buildProfilePointsHref("points", entryEventId, entryCampaign),
+            href: buildProfilePointsHref("points", entryEventId, entryCampaign, null),
             cta: "Back to Points",
           }
         : entrySource === "stories"
           ? {
               eyebrow: "Opened from the TEST stories feed",
               body:
-                "This profile stays inside the student shell so you can check your TEST identity without losing the stories-to-profile handoff or dropping out of the mobile member loop.",
+                entryEventId
+                  ? "This profile stays inside the student shell so you can check your TEST identity without losing the stories-to-event-to-profile handoff or dropping out of the mobile member loop."
+                  : "This profile stays inside the student shell so you can check your TEST identity without losing the stories-to-profile handoff or dropping out of the mobile member loop.",
               href: buildProfileStoriesHref(entryStoryFilter),
               cta: "Back to Stories",
             }
@@ -166,7 +168,7 @@ export function MemberProfilePanel({
                 <ChevronLeft size={14} />
                 {continuityCard.cta}
               </a>
-              {(entrySource === "points" || entrySource === "home") && entryEventId ? (
+              {(entrySource === "points" || entrySource === "home" || entrySource === "stories") && entryEventId ? (
                 <a
                   href={launchLaneEventsHref}
                   className="mt-2 inline-flex items-center gap-1.5 text-sm font-semibold text-slate-700"
@@ -346,6 +348,7 @@ function buildProfilePointsHref(
   entrySource: "home" | "points" | "stories" | null,
   entryEventId: string | null,
   entryCampaign: string | null,
+  entryStoryFilter: string | null,
 ) {
   const url = new URL(
     `https://mymedlife.local${
@@ -353,6 +356,8 @@ function buildProfilePointsHref(
         ? "/app/points?source=points"
         : entrySource === "home"
           ? "/app/points?source=home"
+          : entrySource === "stories"
+            ? "/app/points?source=stories"
           : "/app/points?source=profile"
     }`,
   );
@@ -365,6 +370,10 @@ function buildProfilePointsHref(
     url.searchParams.set("campaign", entryCampaign);
   }
 
+  if (entrySource === "stories" && entryStoryFilter) {
+    url.searchParams.set("storyFilter", entryStoryFilter);
+  }
+
   return `${url.pathname}${url.search}`;
 }
 
@@ -372,14 +381,22 @@ function buildProfileEventsHref(
   entrySource: "home" | "points" | "stories" | null,
   entryEventId: string | null,
   entryCampaign: string | null,
+  entryStoryFilter: string | null,
 ) {
-  const url = new URL(
-    `https://mymedlife.local${
-      entryEventId
-        ? `/app/events/${entryEventId}?source=${entrySource === "home" ? "home" : "profile"}`
-        : `/app/events?source=${entrySource === "home" ? "home" : "profile"}`
-    }`,
-  );
+  const url =
+    entrySource === "stories"
+      ? new URL(
+          `https://mymedlife.local${
+            entryEventId ? `/app/events/${entryEventId}?source=stories` : "/app/events?source=stories"
+          }`,
+        )
+      : new URL(
+          `https://mymedlife.local${
+            entryEventId
+              ? `/app/events/${entryEventId}?source=${entrySource === "home" ? "home" : "profile"}`
+              : `/app/events?source=${entrySource === "home" ? "home" : "profile"}`
+          }`,
+        );
 
   if (entrySource === "points") {
     url.searchParams.set("profileSource", "points");
@@ -387,6 +404,10 @@ function buildProfileEventsHref(
 
   if (entryCampaign && entryCampaign !== "All") {
     url.searchParams.set("campaign", entryCampaign);
+  }
+
+  if (entrySource === "stories" && entryStoryFilter) {
+    url.searchParams.set("storyFilter", entryStoryFilter);
   }
 
   return `${url.pathname}${url.search}`;

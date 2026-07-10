@@ -458,4 +458,37 @@ describe("member event detail route", () => {
     expect(html).toContain('href="/app/events"');
     expect(html).toContain('aria-label="Back to Events"');
   });
+
+  it("preserves stories filter continuity when event detail opens from the member stories feed", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const dataModule = await import("@/services/read-only-app-data");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("member.a@mymedlife.test"),
+    );
+    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
+      getMockReadOnlyAppData("Testing member event detail stories continuity."),
+    );
+
+    const { default: EventDetailPage } = await import("@/app/app/events/[eventId]/page");
+    const html = renderToStaticMarkup(
+      await EventDetailPage({
+        params: Promise.resolve({ eventId: "chapter-event-ucla-kickoff" }),
+        searchParams: Promise.resolve({
+          source: "stories",
+          storyFilter: "Events",
+          campaign: "Rush Month",
+        }),
+      }),
+    );
+
+    expect(html).toContain('href="/app/stories?filter=Events"');
+    expect(html).toContain('aria-label="Back to Stories"');
+    expect(html).toContain("Opened from the TEST stories feed");
+    expect(html).toContain("Keep stories, events, and points in one member loop.");
+    expect(html).toContain('href="/app/events?source=stories&amp;storyFilter=Events&amp;campaign=Rush+Month"');
+    expect(html).toContain('href="/app/points?source=stories&amp;event=chapter-event-ucla-kickoff&amp;storyFilter=Events&amp;campaign=Rush+Month"');
+    expect(html).toContain('href="/profile?source=stories&amp;event=chapter-event-ucla-kickoff&amp;campaign=Rush+Month&amp;storyFilter=Events"');
+    expect(html).toContain('href="/app/events/chapter-event-ucla-kickoff?source=stories&amp;step=rsvp&amp;storyFilter=Events&amp;campaign=Rush+Month"');
+  });
 });

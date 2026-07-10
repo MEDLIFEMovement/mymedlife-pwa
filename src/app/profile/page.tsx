@@ -84,8 +84,8 @@ export default async function ProfilePage(props: ProfilePageProps) {
           activeTab="profile"
           hrefOverrides={{
             stories: buildProfileStoriesHref(profileSource, profileStoryFilter),
-            events: buildProfileEventsHref(profileSource, profileEventId, profileCampaign),
-            points: buildProfilePointsHref(profileSource, profileEventId, profileCampaign),
+            events: buildProfileEventsHref(profileSource, profileEventId, profileCampaign, profileStoryFilter),
+            points: buildProfilePointsHref(profileSource, profileEventId, profileCampaign, profileStoryFilter),
           }}
         />
       </div>
@@ -97,7 +97,24 @@ function buildProfileEventsHref(
   source: "home" | "points" | "stories" | null,
   eventId: string | null,
   campaign: string | null,
+  storyFilter: string | null,
 ) {
+  if (source === "stories") {
+    const url = new URL(
+      `https://mymedlife.local${eventId ? `/app/events/${eventId}?source=stories` : "/app/events?source=stories"}`,
+    );
+
+    if (campaign && campaign !== "All") {
+      url.searchParams.set("campaign", campaign);
+    }
+
+    if (storyFilter) {
+      url.searchParams.set("storyFilter", storyFilter);
+    }
+
+    return `${url.pathname}${url.search}`;
+  }
+
   if (!eventId) {
     const url = new URL(
       `https://mymedlife.local/app/events?source=${source === "home" ? "home" : "profile"}`,
@@ -127,6 +144,7 @@ function buildProfilePointsHref(
   source: "home" | "points" | "stories" | null,
   eventId: string | null,
   campaign: string | null,
+  storyFilter: string | null,
 ) {
   const url = new URL(
     `https://mymedlife.local${
@@ -134,6 +152,8 @@ function buildProfilePointsHref(
         ? "/app/points?source=points"
         : source === "home"
           ? "/app/points?source=home"
+          : source === "stories"
+            ? "/app/points?source=stories"
           : "/app/points?source=profile"
     }`,
   );
@@ -144,6 +164,10 @@ function buildProfilePointsHref(
 
   if (campaign && campaign !== "All") {
     url.searchParams.set("campaign", campaign);
+  }
+
+  if (source === "stories" && storyFilter) {
+    url.searchParams.set("storyFilter", storyFilter);
   }
 
   return `${url.pathname}${url.search}`;
