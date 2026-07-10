@@ -21,6 +21,7 @@ type ProfilePageProps = {
     event?: string;
     campaign?: string;
     storyFilter?: string;
+    story?: string;
   }>;
 };
 
@@ -37,13 +38,14 @@ export default async function ProfilePage(props: ProfilePageProps) {
     getLocalActorContext(),
     getReadOnlyAppData(),
   ]);
-  const resolvedSearchParams: { source?: string; event?: string; campaign?: string; storyFilter?: string } = await (
+  const resolvedSearchParams: { source?: string; event?: string; campaign?: string; storyFilter?: string; story?: string } = await (
     props.searchParams ?? Promise.resolve({})
   );
   const profileSource = getProfileSource(resolvedSearchParams.source);
   const profileEventId = resolvedSearchParams.event ?? null;
   const profileCampaign = resolvedSearchParams.campaign ?? null;
   const profileStoryFilter = resolvedSearchParams.storyFilter ?? null;
+  const profileStoryId = resolvedSearchParams.story ?? null;
   const workspace = getProfileWorkspace(actor, data);
   const isMemberProfile = canAccessMemberWorkspace(actor);
   const studentHome = isMemberProfile
@@ -83,7 +85,7 @@ export default async function ProfilePage(props: ProfilePageProps) {
         <MemberBottomNav
           activeTab="profile"
           hrefOverrides={{
-            stories: buildProfileStoriesHref(profileSource, profileStoryFilter),
+            stories: buildProfileStoriesHref(profileSource, profileStoryFilter, profileStoryId),
             events: buildProfileEventsHref(profileSource, profileEventId, profileCampaign, profileStoryFilter),
             points: buildProfilePointsHref(profileSource, profileEventId, profileCampaign, profileStoryFilter),
           }}
@@ -190,6 +192,7 @@ function buildProfilePointsHref(
 function buildProfileStoriesHref(
   source: "events" | "home" | "points" | "stories" | null,
   storyFilter: string | null,
+  storyId: string | null,
 ) {
   if (source !== "stories") {
     return "/app/stories";
@@ -199,6 +202,10 @@ function buildProfileStoriesHref(
 
   if (storyFilter) {
     url.searchParams.set("filter", storyFilter);
+  }
+
+  if (storyId) {
+    url.searchParams.set("story", storyId);
   }
 
   return `${url.pathname}${url.search}`;

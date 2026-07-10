@@ -3476,6 +3476,7 @@ function StoryModal({
         url.searchParams.set("event", loopEvent.event.routeId ?? "");
         url.searchParams.set("storyFilter", activeFilter);
         url.searchParams.set("campaign", loopEvent.campaign);
+        url.searchParams.set("story", String(story.id));
         return `${url.pathname}${url.search}`;
       })()
     : null;
@@ -4101,12 +4102,14 @@ function getStoriesBottomNavProfileHref(
 function getStoriesReaderProfileHref(storyFilter: string | null, storyId: string | null) {
   const resolvedFilter = resolveStoryFilter(storyFilter);
   const story = getStoryByIdForFilter(storyId, resolvedFilter);
-  const loopEvent = story ? getStoryLoopEvent(story.id) : null;
+  if (!story) return getStoriesBottomNavProfileHref(storyFilter);
+  const loopEvent = getStoryLoopEvent(story.id);
   if (!loopEvent) return getStoriesBottomNavProfileHref(storyFilter);
   const url = new URL("https://mymedlife.local/profile?source=stories");
   url.searchParams.set("event", loopEvent.event.routeId ?? "");
   url.searchParams.set("storyFilter", resolvedFilter);
   url.searchParams.set("campaign", loopEvent.campaign);
+  url.searchParams.set("story", String(story.id));
   return `${url.pathname}${url.search}`;
 }
 
