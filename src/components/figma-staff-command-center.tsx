@@ -2371,7 +2371,7 @@ function AdminRouteBlocked({
       : `Return to ${returnLoopLabel}`;
   const oversightReadbackNote =
     backLabel === "this chapter" && displayChapterContext
-      ? `Chapter oversight for ${displayChapterContext} stays read-only here: event readiness, RSVP totals, attendance readback, and points posture should be reviewed in Admin before any blocked-control follow-through or correction request.`
+      ? `Chapter oversight for ${displayChapterContext} stays read-only here: event readiness, RSVP totals, attendance readback, and points posture should be reviewed in Admin before any correction request.`
       : null;
   return (
     <div className="flex-1 flex items-center justify-center bg-[#0d1117]">
@@ -2540,7 +2540,7 @@ function AdminRoleGate({
       : `Return to ${returnLoopLabel}`;
   const oversightReadbackNote =
     backLabel === "this chapter" && displayChapterContext
-      ? `Open Admin preview to read back event readiness, RSVP totals, attendance context, and points posture for ${displayChapterContext} before requesting any blocked-control follow-through or correction path.`
+      ? `Open Admin preview to read back event readiness, RSVP totals, attendance context, and points posture for ${displayChapterContext} before requesting any correction path.`
       : null;
 
   return (
