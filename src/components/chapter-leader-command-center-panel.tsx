@@ -600,6 +600,7 @@ function renderView(
     searchQuery: preservedChapterState.searchQuery,
     feedPostId: preservedChapterState.feedPostId,
   });
+  const leadershipReviewLoopLinks = getLeadershipReviewLoopLinks(commandCenter);
 
   switch (commandCenter.selectedView) {
     case "leaderboard":
@@ -2608,6 +2609,8 @@ function renderView(
             </div>
           </section>
 
+          <LeadershipReviewLoopCard links={leadershipReviewLoopLinks} />
+
           <div className="grid gap-4 xl:grid-cols-[1.02fr_0.98fr]">
             <SectionCard eyebrow="Leadership Gaps" title="Leadership Gaps">
               <div className="grid gap-3">
@@ -2713,6 +2716,8 @@ function renderView(
             </div>
           </section>
 
+          <LeadershipReviewLoopCard links={leadershipReviewLoopLinks} />
+
           {commandCenter.selectedMember ? (
             <SelectedMemberContextBanner
               eyebrow="Leader in focus"
@@ -2809,6 +2814,8 @@ function renderView(
             </div>
           </section>
 
+          <LeadershipReviewLoopCard links={leadershipReviewLoopLinks} />
+
           {commandCenter.selectedMember ? (
             <SelectedMemberContextBanner
               eyebrow="Values review in focus"
@@ -2882,6 +2889,17 @@ function renderView(
               </p>
             </div>
           </section>
+
+          <LeadershipReviewLoopCard links={leadershipReviewLoopLinks} />
+
+          {commandCenter.selectedMember ? (
+            <SelectedMemberContextBanner
+              eyebrow="Training review in focus"
+              title={`Reviewing ${toVisibleTestLabel(commandCenter.selectedMember.displayName)} for leadership development`}
+              summary="Keep leadership resources tied to a real chapter member, their visible role lane, and the succession context around them. No resource share, playback, or assignment write becomes live from this review shell."
+              member={commandCenter.selectedMember}
+            />
+          ) : null}
 
           <SectionCard eyebrow="TEST Featured Resources" title="Leadership Development Resources">
             <div className="grid gap-3">
@@ -4696,6 +4714,82 @@ function SelectedMemberContextBanner({
         </Link>
       </div>
     </div>
+  );
+}
+
+function getLeadershipReviewLoopLinks(
+  commandCenter: ChapterLeaderCommandCenter,
+): Array<{
+  key: ChapterLeaderCommandCenterView;
+  label: string;
+  href: string;
+  isActive: boolean;
+}> {
+  const visibleKeys: ChapterLeaderCommandCenterView[] = [
+    "overview",
+    "leaders",
+    "succession",
+    "values",
+    "training",
+  ];
+
+  if (commandCenter.selectedMember || commandCenter.navigationMemberId) {
+    visibleKeys.splice(1, 0, "member_profile");
+  }
+
+  return commandCenter.viewOptions
+    .filter((option) => visibleKeys.includes(option.key))
+    .map((option) => ({
+      key: option.key,
+      label: option.key === "overview" ? "Chapter Home" : option.label,
+      href: option.href,
+      isActive: commandCenter.selectedView === option.key,
+    }));
+}
+
+function LeadershipReviewLoopCard({
+  links,
+}: {
+  links: Array<{
+    key: ChapterLeaderCommandCenterView;
+    label: string;
+    href: string;
+    isActive: boolean;
+  }>;
+}) {
+  if (links.length === 0) {
+    return null;
+  }
+
+  return (
+    <SectionCard
+      eyebrow="Leadership review loop"
+      title="Keep chapter home, roster review, succession, values, and training in one route-backed lane."
+    >
+      <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+        <p className="max-w-3xl text-sm leading-6 text-slate-600">
+          Move across the chapter operating loop without dropping the visible leadership context.
+          Every stop stays preview-safe here, but the return paths remain clear and consistent.
+        </p>
+        <div className="flex flex-wrap gap-2">
+          {links.map((link) => (
+            <Link
+              key={link.key}
+              href={link.href}
+              aria-current={link.isActive ? "page" : undefined}
+              className={[
+                "inline-flex rounded-full px-4 py-2 text-sm font-semibold transition",
+                link.isActive
+                  ? "bg-[#2563eb] text-white"
+                  : "border border-[#bfdbfe] bg-white text-[#1d4ed8] hover:border-[#93c5fd] hover:bg-[#eef5ff]",
+              ].join(" ")}
+            >
+              {link.label}
+            </Link>
+          ))}
+        </div>
+      </div>
+    </SectionCard>
   );
 }
 
