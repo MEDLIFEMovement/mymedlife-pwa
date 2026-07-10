@@ -133,6 +133,14 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Configure SonarQube Cloud for CI analysis
+        uses: xmidt-org/sonarcloud-project-config@v1
+        with:
+          create-missing-project: false
+          sonarcloud-org: ${{ vars.SONAR_ORGANIZATION }}
+          analysis-mode: ci
+          sonar-token: ${{ secrets.SONAR_TOKEN }}
+
       - name: Download coverage for SonarQube Cloud
         uses: actions/download-artifact@v4
         with:
