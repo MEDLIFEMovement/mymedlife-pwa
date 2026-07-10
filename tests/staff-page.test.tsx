@@ -663,14 +663,17 @@ describe("staff page", () => {
     const staffSource = readFileSync("src/components/figma-staff-command-center.tsx", "utf8");
 
     expect(html).toContain("Command Center");
-    expect(html).toContain("Return to TEST Stanford University in Proof / UGC");
+    expect(html).toContain("Return to TEST Stanford University in Proof / UGC (Pending · Instagram)");
     expect(html).toContain("Embedded Proof Review");
-    expect(html).toContain("Return: TEST Stanford University in Proof / UGC");
+    expect(html).toContain("Return: TEST Stanford University in Proof / UGC (Pending · Instagram)");
     expect(html).toContain("Context: TEST Stanford University");
     expect(html).toContain("Queue: Pending · Instagram");
     expect(html).toContain("Queue context: Pending · Instagram");
     expect(html).toContain(
       "Use this Admin readback to verify chapter oversight context for TEST Stanford University while preserving the same Pending · Instagram moderation queue.",
+    );
+    expect(html).toContain(
+      "Return with Command Center to TEST Stanford University in Proof / UGC (Pending · Instagram) after this review pass, or use the top-right menu to switch workspaces or log out.",
     );
     expect(html).toContain('href="/staff?view=proof_ugc&amp;ugcCard=ugc4&amp;chapterContext=TEST+Stanford+University&amp;proofStatus=pending&amp;proofPlatform=instagram"');
     expect(staffSource).toContain('adminReturnScreen === "ugc"');
@@ -732,6 +735,7 @@ describe("staff page", () => {
     expect(source).toContain('if (screen === "ugc") return "Proof / UGC";');
     expect(source).toContain('return chapterId ? "this chapter" : "chapters";');
     expect(source).toContain("buildStaffChapterHref");
+    expect(source).toContain("return `${chapterContext} in Proof / UGC (${proofQueueContext})`;");
   });
 
   it("keeps chapter-detail NPS controls preview-only instead of implying a live send", () => {
@@ -951,7 +955,7 @@ describe("staff page", () => {
     const source = readFileSync("src/components/figma-staff-command-center.tsx", "utf8");
 
     expect(html).toContain("TEST Stanford University");
-    expect(html).toContain("Return to Proof / UGC");
+    expect(html).toContain("Return to TEST Stanford University in Proof / UGC (Pending · Instagram)");
     expect(html).toContain("Return to TEST Stanford University in Proof / UGC (Pending · Instagram) after the Admin readback to continue the same Command Center review loop.");
     expect(html).toContain("Return to TEST Stanford University in Proof / UGC (Pending · Instagram) after Admin readback to continue the same review loop in the staff shell.");
     expect(html).toContain('href="/staff?view=admin&amp;ugcCard=ugc4&amp;proofStatus=pending&amp;proofPlatform=instagram&amp;adminView=audit&amp;returnView=proof_ugc&amp;chapterContext=TEST+Stanford+University"');
@@ -1029,7 +1033,7 @@ describe("staff page", () => {
     expect(chapterHtml).toContain("chapterAttendance=68");
     expect(chapterHtml).toContain("chapterPoints=22100");
     expect(chapterHtml).toContain("chapterPointsWeek=1890");
-    expect(chapterHtml).toContain("Return to Proof / UGC");
+    expect(chapterHtml).toContain("Return to Proof / UGC (Pending · Instagram)");
     expect(chapterHtml).toContain(
       'href="/staff?view=proof_ugc&amp;ugcCard=ugc4&amp;proofStatus=pending&amp;proofPlatform=instagram"',
     );
@@ -1673,7 +1677,7 @@ describe("staff page", () => {
 
     expect(html).toContain("Oversight loop: return to Proof / UGC (Pending · Instagram) after this chapter review to keep the same moderation queue in focus.");
     expect(html).toContain('href="/staff?view=proof_ugc&amp;proofStatus=pending&amp;proofPlatform=instagram"');
-    expect(html).toContain("Return to Proof / UGC");
+    expect(html).toContain("Return to Proof / UGC (Pending · Instagram)");
     expect(source).toContain("const resolvedProofQueueContext =");
     expect(source).toContain("const resolvedProofQueueReturnHref = proofQueueReturnHref ??");
     expect(source).toContain("const currentRouteSearch = searchParams.toString() || initialRouteSearch;");

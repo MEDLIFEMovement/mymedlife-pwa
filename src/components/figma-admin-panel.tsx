@@ -495,12 +495,12 @@ function getEmbeddedAdminReviewCopy(
               : "Use this Admin readback to verify blocked controls before returning to the same Proof / UGC review queue.",
       footer:
         chapterContext && proofQueueContext
-          ? `Return with Command Center after this Proof / UGC review pass for ${chapterContext} (${proofQueueContext}), or use the top-right menu to switch workspaces or log out.`
+          ? `Return with Command Center to ${chapterContext} in Proof / UGC (${proofQueueContext}) after this review pass, or use the top-right menu to switch workspaces or log out.`
           : chapterContext
-            ? `Return with Command Center after this Proof / UGC review pass for ${chapterContext}, or use the top-right menu to switch workspaces or log out.`
+            ? `Return with Command Center to ${chapterContext} in Proof / UGC after this review pass, or use the top-right menu to switch workspaces or log out.`
             : proofQueueContext
-              ? `Return with Command Center after this Proof / UGC review pass for ${proofQueueContext}, or use the top-right menu to switch workspaces or log out.`
-              : "Return with Command Center after this Proof / UGC review pass, or use the top-right menu to switch workspaces or log out.",
+              ? `Return with Command Center to Proof / UGC (${proofQueueContext}) after this review pass, or use the top-right menu to switch workspaces or log out.`
+              : "Return with Command Center to Proof / UGC after this review pass, or use the top-right menu to switch workspaces or log out.",
       tag: "Proof review",
     };
   }
@@ -539,6 +539,9 @@ function getEmbeddedAdminDisplayBackLabel(
   const normalized = backLabel.trim().toLowerCase();
 
   if (normalized === "proof / ugc") {
+    if (chapterContext && proofQueueContext) {
+      return `${chapterContext} in Proof / UGC (${proofQueueContext})`;
+    }
     if (chapterContext) return `${chapterContext} in Proof / UGC`;
     if (proofQueueContext) return `Proof / UGC (${proofQueueContext})`;
     return "Proof / UGC";
