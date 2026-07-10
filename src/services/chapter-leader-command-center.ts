@@ -3074,7 +3074,13 @@ function getNavigationMemberId(input: {
     return input.selectedMemberId;
   }
 
-  if (input.selectedView === "member_profile" && input.selectedMemberId) {
+  if (
+    input.selectedMemberId &&
+    (input.selectedView === "member_profile" ||
+      input.selectedView === "leaders" ||
+      input.selectedView === "values" ||
+      input.selectedView === "training")
+  ) {
     return input.selectedMemberId;
   }
 
