@@ -3955,7 +3955,7 @@ function getPointsBottomNavProfileHref(
   storyFilter: string | null = null,
 ) {
   if (source === "stories") {
-    return getStoriesBottomNavProfileHref(storyFilter);
+    return getStoriesBottomNavProfileHref(storyFilter, returnCampaign);
   }
 
   const campaignSuffix =
@@ -3970,11 +3970,18 @@ function getPointsBottomNavProfileHref(
   return screenlessProfileHref(source, returnCampaign);
 }
 
-function getStoriesBottomNavProfileHref(storyFilter: string | null) {
+function getStoriesBottomNavProfileHref(
+  storyFilter: string | null,
+  campaign: string | null = null,
+) {
   const url = new URL("https://mymedlife.local/profile?source=stories");
 
   if (storyFilter) {
     url.searchParams.set("storyFilter", storyFilter);
+  }
+
+  if (campaign && campaign !== "All") {
+    url.searchParams.set("campaign", campaign);
   }
 
   return `${url.pathname}${url.search}`;
@@ -4071,7 +4078,7 @@ function getEventsBottomNavProfileHref(
   }
 
   if (source === "stories") {
-    return getStoriesBottomNavProfileHref(storyFilter);
+    return getStoriesBottomNavProfileHref(storyFilter, campaign);
   }
 
   if (source === "profile" && campaignSuffix) {
