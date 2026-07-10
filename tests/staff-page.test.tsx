@@ -955,7 +955,7 @@ describe("staff page", () => {
     const source = readFileSync("src/components/figma-staff-command-center.tsx", "utf8");
 
     expect(html).toContain("TEST Stanford University");
-    expect(html).toContain("Return to Proof / UGC");
+    expect(html).toContain("Return to TEST Stanford University in Proof / UGC (Pending · Instagram)");
     expect(html).toContain("Return to TEST Stanford University in Proof / UGC (Pending · Instagram) after the Admin readback to continue the same Command Center review loop.");
     expect(html).toContain("Return to TEST Stanford University in Proof / UGC (Pending · Instagram) after Admin readback to continue the same review loop in the staff shell.");
     expect(html).toContain('href="/staff?view=admin&amp;ugcCard=ugc4&amp;proofStatus=pending&amp;proofPlatform=instagram&amp;adminView=audit&amp;returnView=proof_ugc&amp;chapterContext=TEST+Stanford+University"');
@@ -1033,7 +1033,7 @@ describe("staff page", () => {
     expect(chapterHtml).toContain("chapterAttendance=68");
     expect(chapterHtml).toContain("chapterPoints=22100");
     expect(chapterHtml).toContain("chapterPointsWeek=1890");
-    expect(chapterHtml).toContain("Return to Proof / UGC");
+    expect(chapterHtml).toContain("Return to Proof / UGC (Pending · Instagram)");
     expect(chapterHtml).toContain(
       'href="/staff?view=proof_ugc&amp;ugcCard=ugc4&amp;proofStatus=pending&amp;proofPlatform=instagram"',
     );
@@ -1677,7 +1677,7 @@ describe("staff page", () => {
 
     expect(html).toContain("Oversight loop: return to Proof / UGC (Pending · Instagram) after this chapter review to keep the same moderation queue in focus.");
     expect(html).toContain('href="/staff?view=proof_ugc&amp;proofStatus=pending&amp;proofPlatform=instagram"');
-    expect(html).toContain("Return to Proof / UGC");
+    expect(html).toContain("Return to Proof / UGC (Pending · Instagram)");
     expect(source).toContain("const resolvedProofQueueContext =");
     expect(source).toContain("const resolvedProofQueueReturnHref = proofQueueReturnHref ??");
     expect(source).toContain("const currentRouteSearch = searchParams.toString() || initialRouteSearch;");
