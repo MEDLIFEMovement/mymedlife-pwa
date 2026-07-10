@@ -3886,6 +3886,7 @@ export function FigmaMemberMobileHome({
     pointsReturnEventId,
     pointsReturnCampaign,
     pointsStoryFilter,
+    pointsStoryId,
     eventsSource,
     eventsProfileSource,
     eventsStoryFilter,
@@ -3979,6 +3980,7 @@ function getMemberBottomNavHrefOverrides({
   pointsReturnEventId,
   pointsReturnCampaign,
   pointsStoryFilter,
+  pointsStoryId,
   eventsSource,
   eventsProfileSource,
   eventsStoryFilter,
@@ -3989,6 +3991,7 @@ function getMemberBottomNavHrefOverrides({
   pointsReturnEventId: string | null;
   pointsReturnCampaign: string | null;
   pointsStoryFilter: string | null;
+  pointsStoryId: string | null;
   eventsSource: MemberLoopSource;
   eventsProfileSource: "points" | null;
   eventsStoryFilter: string | null;
@@ -4001,6 +4004,7 @@ function getMemberBottomNavHrefOverrides({
       pointsReturnEventId,
       pointsReturnCampaign,
       pointsStoryFilter,
+      pointsStoryId,
     );
   }
 
@@ -4010,6 +4014,7 @@ function getMemberBottomNavHrefOverrides({
       eventsCampaign,
       eventsProfileSource,
       eventsStoryFilter,
+      pointsStoryId,
     );
 
     if (pointsHref) {
@@ -4036,6 +4041,7 @@ function getPointsBottomNavEventsHref(
   returnEventId: string | null,
   returnCampaign: string | null,
   storyFilter: string | null = null,
+  storyId: string | null = null,
 ) {
   const campaignSuffix =
     returnCampaign && returnCampaign !== "All"
@@ -4073,6 +4079,10 @@ function getPointsBottomNavEventsHref(
 
     if (storyFilter) {
       url.searchParams.set("storyFilter", storyFilter);
+    }
+
+    if (storyId) {
+      url.searchParams.set("story", storyId);
     }
 
     return `${url.pathname}${url.search}`;
@@ -4177,6 +4187,7 @@ function getEventsBottomNavPointsHref(
   campaign: string | null,
   profileSource: "points" | null = null,
   storyFilter: string | null = null,
+  storyId: string | null = null,
 ) {
   const campaignSuffix =
     campaign && campaign !== "All"
@@ -4203,6 +4214,10 @@ function getEventsBottomNavPointsHref(
 
     if (storyFilter) {
       url.searchParams.set("storyFilter", storyFilter);
+    }
+
+    if (storyId) {
+      url.searchParams.set("story", storyId);
     }
 
     return `${url.pathname}${url.search}`;

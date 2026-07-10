@@ -569,7 +569,7 @@ describe("member mobile shell routes", () => {
     );
 
     expect(getBottomNavHtml(html)).toContain(
-      'href="/app/events/chapter-event-ucla-kickoff?source=stories&amp;campaign=Rush+Month&amp;storyFilter=Events"',
+      'href="/app/events/chapter-event-ucla-kickoff?source=stories&amp;campaign=Rush+Month&amp;storyFilter=Events&amp;story=2"',
     );
     expect(getBottomNavHtml(html)).toContain(
       'href="/profile?source=stories&amp;storyFilter=Events&amp;campaign=Rush+Month&amp;story=2"',
