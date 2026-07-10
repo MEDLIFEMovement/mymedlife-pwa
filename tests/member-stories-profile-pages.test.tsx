@@ -247,6 +247,7 @@ describe("member stories and profile pages", () => {
     expect(html).toContain("No join request, role approval, membership change, or coach assignment runs from this route.");
     expect(html).toContain("Notification preference writes stay blocked");
     expect(html).toContain("Certificates stay blocked");
+    expect(html).toContain("Back to Home");
     expect(html).toContain("max-w-[430px]");
     expect(html).toContain("bg-[#d6e0f0]");
     expect(html).toContain('href="/app"');
@@ -769,7 +770,7 @@ describe("member stories and profile pages", () => {
     expect(html).toContain("Sign Out");
     expect(html).toContain("myMEDLIFE v1.0 · TEST UCLA MEDLIFE");
     expect(html).not.toContain("Open the next chapter event");
-    expect(html).not.toContain("Back to Home");
+    expect(html).toContain("Back to Home");
     expect(html).not.toContain("member.a@mymedlife.test");
     expect(html).not.toContain("Profile Details");
   });

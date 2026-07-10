@@ -343,6 +343,15 @@ export function MemberProfilePanel({
                 <p>Certificates and profile sharing stay blocked in this preview shell.</p>
               ) : null}
             </div>
+            {continuityCard ? null : (
+              <a
+                href="/app"
+                className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-[#2563eb]"
+              >
+                <ChevronLeft size={14} />
+                Back to Home
+              </a>
+            )}
           </div>
 
           <form action={signOut}>
