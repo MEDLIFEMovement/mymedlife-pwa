@@ -1471,6 +1471,143 @@ describe("chapter leader command center", () => {
     expect(markup).toContain('name="returnQuickAction" value="assign_action"');
   });
 
+  it("keeps attendance-review context attached across leader nav while review-members is active", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "members",
+      source: "events",
+      memberId: "member-ivy",
+      eventCommittee: "events",
+      eventId: "bc-event-moving-mountains-kickoff",
+      pipeline: "follow_up",
+      search: "Ivy",
+      quickAction: "review_members",
+      returnQuickAction: "assign_action",
+    });
+
+    expect(commandCenter.viewOptions.find((item) => item.key === "overview")?.href).toBe(
+      "/leader?view=overview&source=events&member=member-ivy&eventCommittee=events&event=bc-event-moving-mountains-kickoff&pipeline=follow_up&q=Ivy&quickAction=assign_action",
+    );
+    expect(commandCenter.viewOptions.find((item) => item.key === "leaderboard")?.href).toBe(
+      "/leader?view=leaderboard&source=events&member=member-ivy&eventCommittee=events&event=bc-event-moving-mountains-kickoff&leaderboardMetric=attendance&pipeline=follow_up&q=Ivy&quickAction=assign_action",
+    );
+    expect(commandCenter.sourceContext?.actions).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          label: "Back to attendance review",
+          href: "/leader?view=events&source=events&member=member-ivy&eventCommittee=events&event=bc-event-moving-mountains-kickoff&quickAction=assign_action",
+        }),
+      ]),
+    );
+  });
+
+  it("keeps chapter-home attendance context attached across leader nav while review-members is active", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "members",
+      source: "overview",
+      memberId: "member-ivy",
+      eventCommittee: "events",
+      eventId: "bc-event-moving-mountains-kickoff",
+      pipeline: "follow_up",
+      search: "Ivy",
+      quickAction: "review_members",
+      returnQuickAction: "assign_action",
+    });
+
+    expect(commandCenter.viewOptions.find((item) => item.key === "overview")?.href).toBe(
+      "/leader?view=overview&source=overview&member=member-ivy&eventCommittee=events&event=bc-event-moving-mountains-kickoff&pipeline=follow_up&q=Ivy&quickAction=assign_action",
+    );
+    expect(commandCenter.viewOptions.find((item) => item.key === "leaderboard")?.href).toBe(
+      "/leader?view=leaderboard&source=overview&member=member-ivy&eventCommittee=events&event=bc-event-moving-mountains-kickoff&leaderboardMetric=attendance&pipeline=follow_up&q=Ivy&quickAction=assign_action",
+    );
+    expect(commandCenter.sourceContext?.actions).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          label: "Back to Chapter Home",
+          href: "/leader?view=overview&source=overview&member=member-ivy&eventCommittee=events&event=bc-event-moving-mountains-kickoff&pipeline=follow_up&q=Ivy&quickAction=assign_action",
+        }),
+        expect.objectContaining({
+          label: "Open attendance review",
+          href: "/leader?view=events&source=overview&member=member-ivy&eventCommittee=events&event=bc-event-moving-mountains-kickoff&quickAction=assign_action",
+        }),
+      ]),
+    );
+  });
+
+  it("keeps leaderboard attendance context attached across leader nav while review-members is active", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "members",
+      source: "leaderboard",
+      memberId: "member-ivy",
+      eventCommittee: "events",
+      eventId: "bc-event-moving-mountains-kickoff",
+      leaderboardMetric: "attendance",
+      leaderboardRegion: "canada",
+      pipeline: "follow_up",
+      search: "Ivy",
+      quickAction: "review_members",
+      returnQuickAction: "assign_action",
+    });
+
+    expect(commandCenter.viewOptions.find((item) => item.key === "overview")?.href).toBe(
+      "/leader?view=overview&source=leaderboard&member=member-ivy&eventCommittee=events&event=bc-event-moving-mountains-kickoff&leaderboardMetric=attendance&region=canada&pipeline=follow_up&q=Ivy&quickAction=assign_action",
+    );
+    expect(commandCenter.viewOptions.find((item) => item.key === "events")?.href).toBe(
+      "/leader?view=events&source=leaderboard&member=member-ivy&eventCommittee=events&event=bc-event-moving-mountains-kickoff&leaderboardMetric=attendance&region=canada&pipeline=follow_up&q=Ivy&quickAction=assign_action",
+    );
+    expect(commandCenter.sourceContext?.actions).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          label: "Back to leaderboard",
+          href: "/leader?view=leaderboard&source=leaderboard&member=member-ivy&eventCommittee=events&event=bc-event-moving-mountains-kickoff&leaderboardMetric=attendance&region=canada&pipeline=follow_up&q=Ivy&quickAction=assign_action",
+        }),
+        expect.objectContaining({
+          label: "Open attendance review",
+          href: "/leader?view=events&source=leaderboard&member=member-ivy&eventCommittee=events&event=bc-event-moving-mountains-kickoff&leaderboardMetric=attendance&region=canada&pipeline=follow_up&q=Ivy&quickAction=assign_action",
+        }),
+      ]),
+    );
+  });
+
+  it("keeps benchmark leaderboard context attached across leader nav while review-members is active", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "members",
+      source: "leaderboard",
+      memberId: "member-ivy",
+      eventCommittee: "events",
+      eventId: "bc-event-moving-mountains-kickoff",
+      leaderboardMetric: "attendance",
+      leaderboardRegion: "canada",
+      bestPracticeChapterId: "leaderboard-mcgill",
+      pipeline: "follow_up",
+      search: "Ivy",
+      quickAction: "review_members",
+      returnQuickAction: "assign_action",
+    });
+
+    expect(commandCenter.viewOptions.find((item) => item.key === "overview")?.href).toBe(
+      "/leader?view=overview&source=leaderboard&member=member-ivy&eventCommittee=events&event=bc-event-moving-mountains-kickoff&leaderboardMetric=attendance&region=canada&benchmark=leaderboard-mcgill&pipeline=follow_up&q=Ivy&quickAction=assign_action",
+    );
+    expect(commandCenter.viewOptions.find((item) => item.key === "events")?.href).toBe(
+      "/leader?view=events&source=leaderboard&member=member-ivy&eventCommittee=events&event=bc-event-moving-mountains-kickoff&leaderboardMetric=attendance&region=canada&benchmark=leaderboard-mcgill&pipeline=follow_up&q=Ivy&quickAction=assign_action",
+    );
+    expect(commandCenter.sourceContext?.actions).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          label: "Back to leaderboard",
+          href: "/leader?view=leaderboard&source=leaderboard&member=member-ivy&eventCommittee=events&event=bc-event-moving-mountains-kickoff&leaderboardMetric=attendance&region=canada&benchmark=leaderboard-mcgill&pipeline=follow_up&q=Ivy&quickAction=assign_action",
+        }),
+        expect.objectContaining({
+          label: "Open attendance review",
+          href: "/leader?view=events&source=leaderboard&member=member-ivy&eventCommittee=events&event=bc-event-moving-mountains-kickoff&leaderboardMetric=attendance&region=canada&benchmark=leaderboard-mcgill&pipeline=follow_up&q=Ivy&quickAction=assign_action",
+        }),
+      ]),
+    );
+  });
+
   it("keeps leaderboard attendance member-review entry inside the leader loop when no member is selected", () => {
     const actor = getMockLocalActorContext("leader.a@mymedlife.test");
     const commandCenter = {
