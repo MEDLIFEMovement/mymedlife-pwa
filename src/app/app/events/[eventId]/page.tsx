@@ -809,18 +809,14 @@ function getEventDetailActiveTab(step: EventDetailStep): MemberBottomNavTab {
 function getEventDetailNavHrefOverrides(
   eventId: string,
   source?: string,
-<<<<<<< HEAD
   profileSource?: string,
   campaign?: string,
   storyFilter?: string,
   storyId?: string,
-=======
->>>>>>> 12bdfa2 ([codex] preserve member event loop nav continuity)
 ): Partial<Record<MemberBottomNavTab, string>> {
   const overrides: Partial<Record<MemberBottomNavTab, string>> = {
     events:
       source === "profile"
-<<<<<<< HEAD
         ? buildEventsListHref("profile", campaign, profileSource)
         : source === "points"
           ? buildEventsListHref("points", campaign)
@@ -845,17 +841,6 @@ function getEventDetailNavHrefOverrides(
         : buildProfileReturnHref(null, null, campaign);
   } else if (source === "stories") {
     overrides.profile = buildProfileReturnHref(eventId, "stories", campaign, storyFilter, storyId);
-=======
-        ? "/app/events?source=profile"
-        : source === "points"
-          ? "/app/events?source=points"
-          : "/app/events",
-    points: getLaunchLaneEventPointsHref(eventId, source),
-  };
-
-  if (source === "home") {
-    overrides.profile = "/profile?source=home";
->>>>>>> 12bdfa2 ([codex] preserve member event loop nav continuity)
   }
 
   return overrides;
