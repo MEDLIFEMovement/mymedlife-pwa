@@ -2899,7 +2899,7 @@ function CheckInScreen({ navigate }: { navigate: (s: Screen) => void }) {
 
 type StorySource = "instagram" | "linkedin" | "youtube" | "loom" | "facebook" | "field";
 type StoryType = "Field Story" | "Student Story" | "Chapter Highlight" | "Trip Moment" | "Event Highlight" | "Fundraising" | "Patient Voice";
-type StoryFilter = "For You" | "My Chapter" | "Field Stories" | "Student Stories" | "Trip Moments" | "Events" | "Featured";
+type StoryFilter = "For You" | "Events" | "SLT" | "Fundraising" | "Leadership";
 
 interface Story {
   id: number; title: string; caption: string; source: StorySource; type: StoryType;
@@ -2921,7 +2921,7 @@ const stories: Story[] = [
     likes: 214, views: 1847, date: "Jun 28, 2025", featured: true, trending: true,
     quote: '"TEST We didn\'t just hand out medicine — we listened." — TEST Ana, TEST Penn State MEDLIFE',
     body: "TEST On a humid Saturday morning in San Juan de Lurigancho, students from twelve different universities arrived before dawn. By 7am, the Mobile Clinic was fully operational. Nurses triaged patients while volunteers translated, escorted, and connected families to the services they needed. This clinic marks the 400th service event MEDLIFE has run in Lima alone.",
-    filters: ["For You", "Field Stories", "Featured"],
+    filters: ["For You", "Leadership"],
   },
   {
     id: 2, title: "TEST UConn MEDLIFE chapter packed the room at their intro event",
@@ -2929,7 +2929,7 @@ const stories: Story[] = [
     source: "instagram", type: "Chapter Highlight", chapter: "TEST UConn", country: "TEST USA",
     image: "https://images.unsplash.com/photo-1523580494863-6f3031224c94?w=800&h=530&fit=crop&auto=format",
     likes: 88, views: 612, date: "Jun 25, 2025", featured: false, trending: false,
-    filters: ["For You", "My Chapter", "Events"],
+    filters: ["For You", "Events", "Leadership"],
   },
   {
     id: 3, title: "TEST Trip reflection: two weeks in Ecuador changed everything",
@@ -2939,7 +2939,7 @@ const stories: Story[] = [
     likes: 143, views: 934, date: "Jun 22, 2025", featured: false, trending: true,
     quote: '"TEST I came to help. I left understanding what help actually means."',
     body: "TEST Cassandra spent fourteen days in Riobamba with a MEDLIFE team running environmental health assessments. She wrote about the moment she realized that medicine without infrastructure is incomplete — and why she's now leading a TEST Safe Homes fundraising campaign back at TEST FSU.",
-    filters: ["For You", "Student Stories", "Trip Moments"],
+    filters: ["For You", "Leadership"],
   },
   {
     id: 4, title: "TEST Safe Homes project update: 12 stoves, 4 weeks, one community",
@@ -2949,7 +2949,7 @@ const stories: Story[] = [
     likes: 176, views: 1103, date: "Jun 19, 2025", featured: true,
     quote: '"TEST The family invited us in for lunch after we finished. That meal meant more than any metric."',
     body: "TEST Twelve smokeless stoves installed. Four weeks of community organizing. One neighborhood transformed. The Cajamarca Safe Homes team worked alongside local masons to build and install improved cookstoves that reduce indoor smoke exposure — a leading driver of childhood respiratory disease in highland Peru. Phase 3 begins in August.",
-    filters: ["Field Stories", "Featured"],
+    filters: ["For You", "Fundraising"],
   },
   {
     id: 5, title: "TEST Why I joined MEDLIFE — a student interview",
@@ -2958,7 +2958,7 @@ const stories: Story[] = [
     image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=800&h=530&fit=crop&auto=format",
     likes: 97, views: 489, date: "Jun 17, 2025", featured: false, isVideo: true, duration: "6:34",
     embedUrl: "https://www.loom.com/embed/dQw4w9WgXcQ",
-    filters: ["Student Stories", "For You"],
+    filters: ["For You", "Leadership"],
   },
   {
     id: 6, title: "TEST Community health fair draws 300+ in Managua",
@@ -2966,7 +2966,7 @@ const stories: Story[] = [
     source: "facebook", type: "Event Highlight", chapter: "TEST Miami MEDLIFE", country: "TEST Nicaragua",
     image: "https://images.unsplash.com/photo-1517048676732-d65bc937f952?w=800&h=530&fit=crop&auto=format",
     likes: 61, views: 378, date: "Jun 14, 2025", featured: false,
-    filters: ["Events", "Field Stories"],
+    filters: ["For You", "Events"],
   },
   {
     id: 7, title: "TEST Fundraising milestone: $42,000 raised for Safe Homes 2025",
@@ -2974,7 +2974,7 @@ const stories: Story[] = [
     source: "instagram", type: "Fundraising", chapter: "TEST National Campaign", country: "MEDLIFE", tag: "Trending",
     image: "https://images.unsplash.com/photo-1532629345422-7515f3d16bb6?w=800&h=530&fit=crop&auto=format",
     likes: 203, views: 1542, date: "Jun 10, 2025", featured: false, trending: true,
-    filters: ["For You", "Featured"],
+    filters: ["For You", "Fundraising"],
   },
   {
     id: 8, title: "TEST A grandmother's story: forty years without access to a doctor",
@@ -2984,7 +2984,7 @@ const stories: Story[] = [
     likes: 318, views: 2104, date: "Jun 6, 2025", featured: true,
     quote: '"TEST The young woman held my hand the whole time. I wasn\'t afraid anymore."',
     body: "TEST Doña Carmen walked two hours from her village to attend the MEDLIFE Mobile Clinic in Quetzaltenango. She had never seen a physician. A MEDLIFE student volunteer, TEST Priya from TEST Johns Hopkins, stayed with her through every step — translating from Spanish to Mam, explaining each test, and making sure she understood her diagnosis and next steps.",
-    filters: ["Field Stories", "Featured", "For You"],
+    filters: ["For You", "Leadership"],
   },
   {
     id: 9, title: "TEST Yale chapter hosts pre-trip training weekend",
@@ -2993,7 +2993,7 @@ const stories: Story[] = [
     image: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800&h=530&fit=crop&auto=format",
     likes: 54, views: 301, date: "Jun 2, 2025", featured: false, isVideo: true, duration: "4:12",
     embedUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
-    filters: ["Events", "My Chapter", "Trip Moments"],
+    filters: ["For You", "Events", "SLT", "Leadership"],
   },
 ];
 
@@ -3010,17 +3010,15 @@ const sourceConfig: Record<StorySource, { label: string; color: string; bg: stri
   field:     { label: "Field Note",color: "#fff", bg: "#3D7A5A", icon: "✦" },
 };
 
-const STORY_FILTERS: StoryFilter[] = ["For You", "My Chapter", "Field Stories", "Student Stories", "Trip Moments", "Events", "Featured"];
+const STORY_FILTERS: StoryFilter[] = ["For You", "Events", "SLT", "Fundraising", "Leadership"];
 
 // Mobile category circles — each gets a color + emoji for fast visual scanning
 const STORY_CATEGORIES: { filter: StoryFilter; emoji: string; short: string; color: string; bg: string }[] = [
   { filter: "For You",        emoji: "✦",  short: "For You",  color: "#1B4B8E", bg: "#DBEAFE" },
-  { filter: "My Chapter",     emoji: "🏛",  short: "Chapter",  color: "#16A34A", bg: "#DCFCE7" },
-  { filter: "Field Stories",  emoji: "🌍",  short: "Field",    color: "#3D7A5A", bg: "#D1FAE5" },
-  { filter: "Student Stories",emoji: "🎓",  short: "Students", color: "#7C3AED", bg: "#EDE9FE" },
-  { filter: "Trip Moments",   emoji: "✈️",  short: "Trips",    color: "#EA580C", bg: "#FFEDD5" },
   { filter: "Events",         emoji: "📅",  short: "Events",   color: "#DB2777", bg: "#FCE7F3" },
-  { filter: "Featured",       emoji: "⭐",  short: "Featured", color: "#D97706", bg: "#FEF3C7" },
+  { filter: "SLT",            emoji: "🧭",  short: "SLT",      color: "#D97706", bg: "#FEF3C7" },
+  { filter: "Fundraising",    emoji: "🎯",  short: "Funds",    color: "#EA580C", bg: "#FFEDD5" },
+  { filter: "Leadership",     emoji: "⭐",  short: "Leads",    color: "#7C3AED", bg: "#EDE9FE" },
 ];
 
 function resolveStoryFilter(value?: string | null): StoryFilter {
@@ -3650,7 +3648,7 @@ function StoriesScreen({
             {STORY_CATEGORIES.map((category) => {
               const isActive = activeFilter === category.filter;
               return (
-                <Link href={buildStoriesHref({ filter: category.filter })} key={category.filter} aria-label={`Apply story filter: ${category.filter}`} title={`Apply story filter: ${category.filter}`} aria-current={isActive ? "true" : undefined} className={cn(
+                <Link href={buildStoriesHref({ filter: category.filter })} key={category.filter} aria-label={`Apply story filter: ${category.filter}`} title={`Apply story filter: ${category.filter}`} aria-current={isActive ? "true" : undefined} aria-pressed={isActive} className={cn(
                   "flex-shrink-0 whitespace-nowrap rounded-full border px-2.5 py-1 text-xs font-semibold transition-all",
                   isActive ? "border-black bg-black text-white" : "border-gray-300 bg-white text-gray-500"
                 )}>

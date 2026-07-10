@@ -69,8 +69,14 @@ describe("member mobile shell routes", () => {
     expect(html).toContain("Preview");
     expect(html).toContain("TEST @uconn");
     expect(html).toContain('href="/app/stories?filter=For+You&amp;story=1"');
-    expect(html).toContain('href="/app/stories?filter=My+Chapter"');
     expect(html).toContain('href="/app/stories?filter=Events"');
+    expect(html).toContain('href="/app/stories?filter=SLT"');
+    expect(html).toContain('href="/app/stories?filter=Fundraising"');
+    expect(html).toContain('href="/app/stories?filter=Leadership"');
+    expect(html).not.toContain('href="/app/stories?filter=My+Chapter"');
+    expect(html).not.toContain('href="/app/stories?filter=Trip+Moments"');
+    expect(html).toContain('aria-pressed="true"');
+    expect(html).toContain('aria-pressed="false"');
     expect(html).toContain("preview likes");
     expect(html).toContain("Preview only - comments open the reader; shares and saves stay blocked.");
     expect(html).toContain('aria-current="page"');
@@ -101,6 +107,8 @@ describe("member mobile shell routes", () => {
     );
 
     expect(html).toContain('href="/app/stories?filter=Events"');
+    expect(html).toContain('aria-pressed="true"');
+    expect(html).toContain('aria-pressed="false"');
     expect(getBottomNavHtml(html)).toContain('href="/profile?source=stories&amp;storyFilter=Events"');
   });
 
