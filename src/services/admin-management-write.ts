@@ -1,4 +1,5 @@
 import { isUuid } from "@/services/action-start-write";
+import { getSupabaseAuthConfig } from "@/services/supabase-auth-config";
 import type { DatabaseRoleKey } from "@/shared/types/persistence";
 
 export type AdminAccessOperation =
@@ -14,13 +15,15 @@ export type AdminAccessOperation =
 export type AdminAccessWriteConfig =
   | {
       enabled: true;
-      isLocalOnly: true;
+      isLocalOnly: boolean;
+      isHostedStaging?: boolean;
       externalWritesEnabled: false;
       reason: string;
     }
   | {
       enabled: false;
-      isLocalOnly: true;
+      isLocalOnly: boolean;
+      isHostedStaging?: boolean;
       externalWritesEnabled: false;
       reason: string;
     };
@@ -100,32 +103,91 @@ const adminUserManagementRoute = "/admin/users";
 export function getAdminAccessWriteConfig(
   env: Record<string, string | undefined> = process.env,
 ): AdminAccessWriteConfig {
-  if (env.MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES !== "true") {
+  const authConfig = getSupabaseAuthConfig(env);
+
+  if (authConfig.mode === "staging_supabase") {
+    if (!authConfig.enabled) {
+      return disabledWriteConfig({
+        isLocalOnly: false,
+        isHostedStaging: true,
+        reason: authConfig.reason,
+      });
+    }
+
+    if (env.MYMEDLIFE_ALLOW_STAGING_SUPABASE_WRITES !== "true") {
+      return disabledWriteConfig({
+        isLocalOnly: false,
+        isHostedStaging: true,
+        reason:
+          "Hosted staging admin access writes are disabled. Set MYMEDLIFE_ALLOW_STAGING_SUPABASE_WRITES=true only for the approved MED-509 staging rehearsal.",
+      });
+    }
+
+    if (env.MYMEDLIFE_ENABLE_ADMIN_ACCESS_WRITE !== "true") {
+      return disabledWriteConfig({
+        isLocalOnly: false,
+        isHostedStaging: true,
+        reason:
+          "Hosted staging admin access writes remain disabled. Set MYMEDLIFE_ENABLE_ADMIN_ACCESS_WRITE=true only after auth, RLS, rollback, and audit readback are approved.",
+      });
+    }
+
     return {
-      enabled: false,
-      isLocalOnly: true,
+      enabled: true,
+      isLocalOnly: false,
+      isHostedStaging: true,
       externalWritesEnabled: false,
       reason:
-        "Local Supabase writes are disabled. Set MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES=true only for local admin write testing.",
+        "Hosted staging admin access writes are enabled for staging.mymedlife.org only. External sends, production writes, uploads, and integrations remain disabled.",
     };
   }
 
-  if (env.MYMEDLIFE_ENABLE_ADMIN_ACCESS_WRITE !== "true") {
-    return {
-      enabled: false,
+  if (authConfig.mode === "production_supabase") {
+    return disabledWriteConfig({
+      isLocalOnly: false,
+      isHostedStaging: false,
+      reason:
+        "Production admin access writes are disabled. Prove MED-509 access changes on hosted staging before any production approval.",
+    });
+  }
+
+  if (env.MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES !== "true") {
+    return disabledWriteConfig({
       isLocalOnly: true,
-      externalWritesEnabled: false,
+      reason:
+        "Local Supabase writes are disabled. Set MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES=true only for local admin write testing.",
+    });
+  }
+
+  if (env.MYMEDLIFE_ENABLE_ADMIN_ACCESS_WRITE !== "true") {
+    return disabledWriteConfig({
+      isLocalOnly: true,
       reason:
         "Admin access writes remain disabled. Set MYMEDLIFE_ENABLE_ADMIN_ACCESS_WRITE=true only after local auth, RLS, audit, and rollback review are approved.",
-    };
+    });
   }
 
   return {
     enabled: true,
     isLocalOnly: true,
+    isHostedStaging: false,
     externalWritesEnabled: false,
     reason:
       "Local admin access writes are enabled for localhost Supabase only. External sends, production writes, and hosted rollout remain disabled.",
+  };
+}
+
+function disabledWriteConfig(input: {
+  isLocalOnly: boolean;
+  isHostedStaging?: boolean;
+  reason: string;
+}): AdminAccessWriteConfig {
+  return {
+    enabled: false,
+    isLocalOnly: input.isLocalOnly,
+    isHostedStaging: input.isHostedStaging ?? false,
+    externalWritesEnabled: false,
+    reason: input.reason,
   };
 }
 
