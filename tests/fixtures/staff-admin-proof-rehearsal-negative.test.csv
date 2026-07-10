@@ -1,0 +1,2 @@
+email,workspace,observedPath,status,checkedAt,notes
+test.member.only@example.test,staff,/app,failed,2026-07-10T16:03:00Z,TEST staging negative only; member-only account must not satisfy Staff/Admin proof; does not count as production proof
