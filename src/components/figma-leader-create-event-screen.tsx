@@ -47,7 +47,7 @@ const EVENT_TYPES = [
 
 const SHARE_CHANNELS = [
   { id:"app",       label:"Chapter App Feed",  sub:"Prepare a chapter feed preview in myMEDLIFE",   icon:Bell,         color:"#1A56E8" },
-  { id:"instagram", label:"Instagram",         sub:"Prepare a post or story preview template",       icon:Share2,       color:"#E1306C" },
+  { id:"instagram", label:"Instagram",         sub:"Prepare a TEST post or story preview template",  icon:Share2,       color:"#E1306C" },
   { id:"email",     label:"Email",             sub:"Draft a chapter member email preview",           icon:Upload,       color:"#16A34A" },
   { id:"whatsapp",  label:"Text / WhatsApp",   sub:"Draft message preview copy for contacts",        icon:MessageSquare,color:"#25D366" },
 ];
@@ -114,16 +114,16 @@ export function CreateEventForm({ onBack }: { onBack: () => void }) {
         <CheckCircle size={40} className="text-green-500"/>
       </div>
       <div className="text-center max-w-md">
-        <h2 className="text-2xl font-black text-slate-900 mb-2">Event Staged!</h2>
+        <h2 className="text-2xl font-black text-slate-900 mb-2">TEST Event Preview Ready</h2>
         <p className="text-sm text-slate-500 leading-relaxed">
-          <strong className="text-slate-800">"{name}"</strong> is ready in the myMEDLIFE staging flow.
+          <strong className="text-slate-800">"{name}"</strong> is ready as a TEST event preview in this route-backed leader shell.
           {shareChannels.includes("app")       && " Chapter feed preview prepared."}
-          {shareChannels.includes("instagram") && " Instagram template prepared."}
+          {shareChannels.includes("instagram") && " TEST Instagram template prepared."}
           {shareChannels.includes("email")     && " Email preview prepared; no email was sent."}
           {shareChannels.includes("whatsapp")  && " WhatsApp/SMS copy prepared; no message was sent."}
         </p>
         <p className="text-xs text-slate-400 mt-2">
-          Luma writes, external sends, and production publishing stay off until explicitly approved.
+          Luma writes, external sends, attendance follow-through, and production publishing stay blocked until explicitly approved.
         </p>
       </div>
       <div className="flex gap-3">
@@ -133,7 +133,7 @@ export function CreateEventForm({ onBack }: { onBack: () => void }) {
         </button>
         <button onClick={() => { setPublished(false); setName(""); setEventType(""); setDate(""); setStartTime(""); setEndTime(""); setDescription(""); setCommittee(""); }}
           className="px-5 py-2.5 bg-[#1A56E8] text-white text-sm font-bold rounded-xl cursor-pointer hover:bg-blue-700 transition-colors">
-          Stage Another Event
+          Build Another TEST Event
         </button>
       </div>
     </div>
@@ -154,7 +154,7 @@ export function CreateEventForm({ onBack }: { onBack: () => void }) {
           disabled={!canPublish}
           onClick={() => setPublished(true)}
           className="flex items-center gap-2 px-5 py-2.5 bg-[#1A56E8] text-white text-sm font-bold rounded-xl cursor-pointer hover:bg-blue-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed shadow-sm">
-          <Share2 size={14}/>Stage Event
+          <Share2 size={14}/>Stage Event Preview
           {shareChannels.length > 0 && <span className="bg-white/20 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">{shareChannels.length}</span>}
         </button>
       </div>
@@ -328,19 +328,19 @@ export function CreateEventForm({ onBack }: { onBack: () => void }) {
 
                         {ch.id === "instagram" && (
                           <div className="mt-3 space-y-2">
-                            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Instagram — choose format</div>
+                            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Instagram preview formats</div>
                             <div className="grid grid-cols-2 gap-2">
                               <div className="p-3 rounded-xl border border-pink-200 bg-gradient-to-br from-pink-50 to-purple-50 text-center">
                                 <div className="text-2xl mb-1">📸</div>
                                 <div className="text-xs font-bold text-slate-700">Feed Post</div>
                                 <div className="text-[10px] text-slate-400">1080 × 1080 template</div>
-                                <button disabled title="Caption copying is blocked in this preview" className="mt-2 text-[10px] font-semibold px-2 py-1 bg-pink-500 text-white rounded-lg cursor-pointer">Copy Caption</button>
+                                <button disabled title="Caption copying is blocked in this preview" className="mt-2 text-[10px] font-semibold px-2 py-1 bg-pink-500 text-white rounded-lg cursor-not-allowed opacity-60">Caption Copy Blocked</button>
                               </div>
                               <div className="p-3 rounded-xl border border-purple-200 bg-gradient-to-br from-purple-50 to-indigo-50 text-center">
                                 <div className="text-2xl mb-1">✨</div>
                                 <div className="text-xs font-bold text-slate-700">Story</div>
                                 <div className="text-[10px] text-slate-400">1080 × 1920 template</div>
-                                <button disabled title="Caption copying is blocked in this preview" className="mt-2 text-[10px] font-semibold px-2 py-1 bg-purple-500 text-white rounded-lg cursor-pointer">Copy Caption</button>
+                                <button disabled title="Caption copying is blocked in this preview" className="mt-2 text-[10px] font-semibold px-2 py-1 bg-purple-500 text-white rounded-lg cursor-not-allowed opacity-60">Caption Copy Blocked</button>
                               </div>
                             </div>
                             <div className="p-2.5 bg-white rounded-lg border border-slate-200 text-xs text-slate-600 font-mono leading-relaxed">
@@ -358,7 +358,7 @@ export function CreateEventForm({ onBack }: { onBack: () => void }) {
                             <div className="bg-white rounded-xl border border-slate-200 overflow-hidden text-xs">
                               <div className="bg-[#07192E] px-4 py-2.5 flex items-center gap-2">
                                 <div className="w-5 h-5 rounded bg-[#1A56E8] flex items-center justify-center text-white text-[9px] font-black">M</div>
-                                <span className="text-white text-[11px] font-semibold">Boston College MEDLIFE</span>
+                                <span className="text-white text-[11px] font-semibold">TEST Boston College MEDLIFE</span>
                               </div>
                               <div className="px-4 py-3 space-y-1.5">
                                 <div className="text-slate-400 text-[10px]">To: TEST chapter member list preview (84 recipients)</div>
@@ -388,7 +388,7 @@ export function CreateEventForm({ onBack }: { onBack: () => void }) {
                               <div className="bg-white rounded-xl px-3 py-2.5 shadow-sm max-w-xs text-[11px] text-slate-700 leading-relaxed whitespace-pre-line">
                                 {waMsg || `Hey everyone! 👋\n\nNew event: ${name || "[Event Name]"}${formattedDate ? `\n📅 ${formattedDate}` : ""}${timeRange ? ` at ${timeRange}` : ""}${address ? `\n📍 ${address}` : ""}\n\nRSVP link: [link] 🙌`}
                               </div>
-                              <div className="text-right mt-1 text-[9px] text-slate-400">Preview only - no message sent</div>
+                              <div className="text-right mt-1 text-[9px] text-slate-400">TEST preview only - no message sent</div>
                             </div>
                             <div className="flex gap-2">
                               <button disabled title="WhatsApp copy is blocked in this preview" className="flex-1 px-3 py-1.5 border border-slate-200 bg-white rounded-lg text-[11px] font-semibold text-slate-600 cursor-pointer hover:bg-slate-50 text-center">📋 Copy for WhatsApp</button>
@@ -458,7 +458,7 @@ export function CreateEventForm({ onBack }: { onBack: () => void }) {
                 {/* Sharing summary */}
                 {shareChannels.length > 0 && (
                   <div className="border-t border-slate-100 pt-3">
-                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Sharing to</div>
+                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Previewing on</div>
                     <div className="flex gap-1.5 flex-wrap">
                       {shareChannels.map(ch => {
                         const c = SHARE_CHANNELS.find(x => x.id === ch)!;
