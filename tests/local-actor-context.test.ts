@@ -125,6 +125,28 @@ describe("local actor context service", () => {
     await expectAudience("super.admin@mymedlife.test", "super_admin", ["Super Admin"]);
   });
 
+  it("keeps leader workspace access when a live membership row is still marked active", async () => {
+    const actor = await getSupabaseLocalActorContext(
+      createFakeClient({
+        ...fakeActorRows,
+        memberships: [
+          membership("membership-1", "user-1", "chapter-1", "general_member"),
+          membership("membership-2", "user-2", "chapter-1", "president_vp", "active"),
+        ],
+      }),
+      "leader.a@mymedlife.test",
+      "Hosted production actor read.",
+      "local_auth_session",
+      "signed_in",
+      false,
+    );
+
+    expect(actor.audience).toBe("chapter_leader");
+    expect(actor.chapterRoles).toEqual(["President / VP"]);
+    expect(actor.canonicalRoles).toContain("president");
+    expect(actor.defaultLandingSurface).toBe("student_leadership_command_center");
+  });
+
   it("adds breakglass scope for Super Admin local actor contexts", () => {
     const actor = getMockLocalActorContext("super.admin@mymedlife.test");
 
@@ -385,13 +407,19 @@ function profile(id: string, displayName: string, email: string) {
   };
 }
 
-function membership(id: string, userId: string, chapterId: string, roleKey: string) {
+function membership(
+  id: string,
+  userId: string,
+  chapterId: string,
+  roleKey: string,
+  status = "approved",
+) {
   return {
     id,
     user_id: userId,
     chapter_id: chapterId,
     role_key: roleKey,
-    status: "approved",
+    status,
     requested_at: "2026-06-15T00:00:00Z",
     approved_at: "2026-06-15T00:00:00Z",
     approved_by: "user-4",
