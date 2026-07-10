@@ -127,6 +127,40 @@ describe("member stories and profile pages", () => {
     expect(html).toContain("Instagram");
     expect(html).toContain("Preview only - reactions, save preview, and source previews stay blocked in this reader.");
     expect(html).toContain("TEST UConn");
+    expect(html).toContain("Stay in the TEST member loop");
+    expect(html).toContain("Open TEST event detail");
+    expect(html).toContain("Open TEST points");
+    expect(html).toContain("Open TEST profile");
+    expect(html).toContain(
+      'href="/app/events/chapter-event-ucla-kickoff?source=stories&amp;storyFilter=Events&amp;campaign=Rush+Month"',
+    );
+    expect(html).toContain('href="/app/points?source=stories&amp;storyFilter=Events"');
+    expect(html).toContain('href="/profile?source=stories&amp;storyFilter=Events"');
+  });
+
+  it("keeps the generic stories-loop fallback when an Events story has no exact member event detail route", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("member.a@mymedlife.test"),
+    );
+
+    const { default: AppStoriesPage } = await import("@/app/app/stories/page");
+    const html = renderToStaticMarkup(
+      await AppStoriesPage({
+        searchParams: Promise.resolve({
+          filter: "Events",
+          story: "6",
+        }),
+      }),
+    );
+
+    expect(html).toContain("Stay in the TEST member loop");
+    expect(html).toContain("Open TEST events");
+    expect(html).toContain('href="/app/events?source=stories&amp;storyFilter=Events"');
+    expect(html).not.toContain(
+      'href="/app/events/chapter-event-ucla-kickoff?source=stories&amp;storyFilter=Events&amp;campaign=Rush+Month"',
+    );
   });
 
   it("keeps the stories reader tied to the active filter when the query picks a mismatched story", async () => {
@@ -152,6 +186,7 @@ describe("member stories and profile pages", () => {
     expect(html).not.toContain('aria-label="Back to stories feed"');
     expect(html).not.toContain("TEST Students in Lima joined a Mobile Clinic this weekend");
     expect(html).not.toContain("Preview only - reactions, save preview, and source previews stay blocked in this reader.");
+    expect(html).not.toContain("Stay in the TEST member loop");
   });
 
   it("keeps profile route-backed and explicitly read-only", async () => {
