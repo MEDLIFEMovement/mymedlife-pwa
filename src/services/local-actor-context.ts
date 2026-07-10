@@ -370,7 +370,7 @@ export async function getSupabaseLocalActorContext(
   }
 
   const actorMemberships = snapshot.memberships.filter(
-    (item) => item.user_id === profile.id && item.status === "approved",
+    (item) => item.user_id === profile.id && isReadableMembershipStatus(item.status),
   );
   const actorStaffRoles = snapshot.staffRoles.filter(
     (item) => item.user_id === profile.id && item.status === "active",
@@ -680,6 +680,10 @@ function getAudience(
   }
 
   return "chapter_member";
+}
+
+function isReadableMembershipStatus(status: MembershipRow["status"] | string | null | undefined) {
+  return status === "approved" || status === "active";
 }
 
 function findChapterName(chapters: ChapterRow[], chapterId: string) {
