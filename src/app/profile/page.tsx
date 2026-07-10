@@ -75,6 +75,7 @@ export default async function ProfilePage(props: ProfilePageProps) {
               entryEventId={profileEventId}
               entryCampaign={profileCampaign}
               entryStoryFilter={profileStoryFilter}
+              entryStoryId={profileStoryId}
               isPreviewMode={isPreviewWorkspaceAccess(actor, "student_app")}
               workspace={workspace}
               studentHome={studentHome}
@@ -87,7 +88,13 @@ export default async function ProfilePage(props: ProfilePageProps) {
           hrefOverrides={{
             stories: buildProfileStoriesHref(profileSource, profileStoryFilter, profileStoryId),
             events: buildProfileEventsHref(profileSource, profileEventId, profileCampaign, profileStoryFilter),
-            points: buildProfilePointsHref(profileSource, profileEventId, profileCampaign, profileStoryFilter),
+            points: buildProfilePointsHref(
+              profileSource,
+              profileEventId,
+              profileCampaign,
+              profileStoryFilter,
+              profileStoryId,
+            ),
           }}
         />
       </div>
@@ -159,6 +166,7 @@ function buildProfilePointsHref(
   eventId: string | null,
   campaign: string | null,
   storyFilter: string | null,
+  storyId: string | null,
 ) {
   const url = new URL(
     `https://mymedlife.local${
@@ -184,6 +192,10 @@ function buildProfilePointsHref(
 
   if (source === "stories" && storyFilter) {
     url.searchParams.set("storyFilter", storyFilter);
+  }
+
+  if (source === "stories" && storyId) {
+    url.searchParams.set("story", storyId);
   }
 
   return `${url.pathname}${url.search}`;

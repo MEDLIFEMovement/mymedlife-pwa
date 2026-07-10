@@ -22,6 +22,7 @@ type MemberProfilePanelProps = {
   entryEventId?: string | null;
   entryCampaign?: string | null;
   entryStoryFilter?: string | null;
+  entryStoryId?: string | null;
   isPreviewMode?: boolean;
   workspace: ProfileWorkspace;
   studentHome: MvpMemberHome;
@@ -35,12 +36,19 @@ export function MemberProfilePanel({
   entryEventId = null,
   entryCampaign = null,
   entryStoryFilter = null,
+  entryStoryId = null,
   isPreviewMode = false,
   workspace,
   studentHome,
   recognition,
 }: MemberProfilePanelProps) {
-  const launchLanePointsHref = buildProfilePointsHref(entrySource, entryEventId, entryCampaign, entryStoryFilter);
+  const launchLanePointsHref = buildProfilePointsHref(
+    entrySource,
+    entryEventId,
+    entryCampaign,
+    entryStoryFilter,
+    entryStoryId,
+  );
   const launchLaneEventsHref = buildProfileEventsHref(entrySource, entryEventId, entryCampaign, entryStoryFilter);
   const testDisplayName = ensureVisibleTestLabel(displayName);
   const testChapterName = ensureVisibleTestLabel(chapterName);
@@ -71,7 +79,7 @@ export function MemberProfilePanel({
               entryEventId
                 ? "This profile stays inside the student shell so you can review your TEST identity, chapter standing, and exact event context without breaking the points-to-profile member loop."
                 : "This profile stays inside the student shell so you can review your TEST identity and chapter standing without breaking the points-to-profile member loop.",
-            href: buildProfilePointsHref("points", entryEventId, entryCampaign, null),
+            href: buildProfilePointsHref("points", entryEventId, entryCampaign, null, null),
             cta: "Back to Points",
           }
         : entrySource === "stories"
@@ -81,7 +89,7 @@ export function MemberProfilePanel({
                 entryEventId
                   ? "This profile stays inside the student shell so you can check your TEST identity without losing the stories-to-event-to-profile handoff or dropping out of the mobile member loop."
                   : "This profile stays inside the student shell so you can check your TEST identity without losing the stories-to-profile handoff or dropping out of the mobile member loop.",
-              href: buildProfileStoriesHref(entryStoryFilter),
+              href: buildProfileStoriesHref(entryStoryFilter, entryStoryId),
               cta: "Back to Stories",
             }
           : entrySource === "events"
@@ -359,6 +367,7 @@ function buildProfilePointsHref(
   entryEventId: string | null,
   entryCampaign: string | null,
   entryStoryFilter: string | null,
+  entryStoryId: string | null,
 ) {
   const url = new URL(
     `https://mymedlife.local${
@@ -384,6 +393,10 @@ function buildProfilePointsHref(
 
   if (entrySource === "stories" && entryStoryFilter) {
     url.searchParams.set("storyFilter", entryStoryFilter);
+  }
+
+  if (entrySource === "stories" && entryStoryId) {
+    url.searchParams.set("story", entryStoryId);
   }
 
   return `${url.pathname}${url.search}`;
@@ -429,11 +442,15 @@ function buildProfileEventsHref(
   return `${url.pathname}${url.search}`;
 }
 
-function buildProfileStoriesHref(entryStoryFilter: string | null) {
+function buildProfileStoriesHref(entryStoryFilter: string | null, entryStoryId: string | null) {
   const url = new URL("https://mymedlife.local/app/stories");
 
   if (entryStoryFilter) {
     url.searchParams.set("filter", entryStoryFilter);
+  }
+
+  if (entryStoryId) {
+    url.searchParams.set("story", entryStoryId);
   }
 
   return `${url.pathname}${url.search}`;

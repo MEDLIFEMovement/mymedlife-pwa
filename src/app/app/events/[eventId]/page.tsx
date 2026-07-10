@@ -643,7 +643,7 @@ function EventPointsImpactView({
 
         <div className="mt-6 w-full space-y-2.5">
           <PrimaryLink
-            href={getLaunchLaneEventPointsHref(event.id, source, campaign, storyFilter)}
+            href={getLaunchLaneEventPointsHref(event.id, source, campaign, storyFilter, storyId)}
             label="View leaderboard impact"
             icon={<Star size={15} />}
           />
@@ -825,7 +825,7 @@ function getEventDetailNavHrefOverrides(
           : source === "home"
             ? buildEventsListHref("home", campaign)
             : buildEventsListHref("events", campaign),
-    points: getLaunchLaneEventPointsHref(eventId, source, campaign, storyFilter),
+    points: getLaunchLaneEventPointsHref(eventId, source, campaign, storyFilter, storyId),
   };
 
   if (source === "home") {
@@ -910,8 +910,8 @@ function getEventReturnHref(
         : buildProfileReturnHref(null, null, campaign)
       : source === "stories"
         ? buildStoriesReturnHref(storyFilter, storyId)
-      : source === "points"
-        ? getLaunchLaneEventPointsHref(eventId, source, campaign, storyFilter)
+        : source === "points"
+        ? getLaunchLaneEventPointsHref(eventId, source, campaign, storyFilter, storyId)
         : buildEventsListHref("events", campaign);
 }
 
@@ -981,7 +981,7 @@ function getEventSourceContext(
       title: "Move from TEST points readback into the next event.",
       body:
         "The member loop should not stop at the leaderboard. Use this route-backed return path to preview RSVP or attendance here, then come back to points when the chapter moment is done.",
-      href: getLaunchLaneEventPointsHref(eventId, source, campaign, storyFilter),
+      href: getLaunchLaneEventPointsHref(eventId, source, campaign, storyFilter, storyId),
       cta: "Back to Points",
     };
   }
@@ -994,6 +994,7 @@ function getLaunchLaneEventPointsHref(
   source?: string,
   campaign?: string,
   storyFilter?: string,
+  storyId?: string,
 ) {
   const baseHref =
     source === "stories"
@@ -1014,6 +1015,10 @@ function getLaunchLaneEventPointsHref(
 
   if (source === "stories" && storyFilter) {
     url.searchParams.set("storyFilter", storyFilter);
+  }
+
+  if (source === "stories" && storyId) {
+    url.searchParams.set("story", storyId);
   }
 
   if (normalizedCampaign) {

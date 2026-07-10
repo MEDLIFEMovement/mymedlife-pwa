@@ -23,6 +23,7 @@ export async function renderMemberMobileShellPage({
   pointsReturnEventId,
   pointsReturnCampaign,
   pointsStoryFilter,
+  pointsStoryId,
   eventsSource,
   eventsProfileSource,
   eventsStoryFilter,
@@ -36,6 +37,7 @@ export async function renderMemberMobileShellPage({
   pointsReturnEventId?: string | null;
   pointsReturnCampaign?: string | null;
   pointsStoryFilter?: string | null;
+  pointsStoryId?: string | null;
   eventsSource?: "events" | "home" | "profile" | "points" | "stories";
   eventsProfileSource?: "points" | null;
   eventsStoryFilter?: string | null;
@@ -79,6 +81,7 @@ export async function renderMemberMobileShellPage({
         pointsReturnEventId={pointsReturnEventId}
         pointsReturnCampaign={pointsReturnCampaign}
         pointsStoryFilter={pointsStoryFilter}
+        pointsStoryId={pointsStoryId}
         eventsSource={eventsSource}
         eventsProfileSource={eventsProfileSource}
         eventsStoryFilter={eventsStoryFilter}

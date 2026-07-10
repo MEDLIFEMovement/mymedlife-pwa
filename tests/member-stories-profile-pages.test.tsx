@@ -147,7 +147,7 @@ describe("member stories and profile pages", () => {
       'href="/app/events/chapter-event-ucla-kickoff?source=stories&amp;storyFilter=Events&amp;campaign=Rush+Month&amp;story=2"',
     );
     expect(html).toContain(
-      'href="/app/points?source=stories&amp;event=chapter-event-ucla-kickoff&amp;storyFilter=Events&amp;campaign=Rush+Month"',
+      'href="/app/points?source=stories&amp;event=chapter-event-ucla-kickoff&amp;storyFilter=Events&amp;campaign=Rush+Month&amp;story=2"',
     );
     expect(html).toContain(
       'href="/profile?source=stories&amp;event=chapter-event-ucla-kickoff&amp;storyFilter=Events&amp;campaign=Rush+Month&amp;story=2"',
@@ -457,7 +457,7 @@ describe("member stories and profile pages", () => {
     expect(html).toContain("Back to Stories");
     expect(html).toContain("Back to TEST event detail");
     expect(html).toContain('href="/app/stories?filter=Events&amp;story=2"');
-    expect(html).toContain('href="/app/points?source=stories&amp;event=chapter-event-ucla-kickoff&amp;campaign=Rush+Month&amp;storyFilter=Events"');
+    expect(html).toContain('href="/app/points?source=stories&amp;event=chapter-event-ucla-kickoff&amp;campaign=Rush+Month&amp;storyFilter=Events&amp;story=2"');
     expect(html).toContain('href="/app/events/chapter-event-ucla-kickoff?source=stories&amp;campaign=Rush+Month&amp;storyFilter=Events"');
   });
 
