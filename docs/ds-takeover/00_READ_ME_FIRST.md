@@ -63,9 +63,13 @@ Suggested body shape:
 Start with this file, then read:
 
 1. `01_current_state_inventory.md`
-2. `03_module_map.md`
-3. `05_functionality_wiring_map.md`
-4. `06_data_model_and_seed_map.md`
-5. `08_live_build_status.md`
+2. `72_LAUNCH_PROOF_OPERATOR_PACKET.md`
+3. `73_PROOF_ARTIFACT_RECEIPT_PACKET.md`
+4. `74_ROLLOUT_PROOF_REQUEST_AND_INTAKE_KIT.md`
+5. `75_ROLLOUT_EVIDENCE_IMPORT_VALIDATION_PACKET.md`
+6. `03_module_map.md`
+7. `05_functionality_wiring_map.md`
+8. `06_data_model_and_seed_map.md`
+9. `08_live_build_status.md`
 
 Use the other maps when someone asks, "Where is this route?", "Which Figma screen owns this?", or "Can this button safely write data?"
