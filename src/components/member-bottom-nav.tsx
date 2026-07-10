@@ -13,13 +13,13 @@ export type MemberBottomNavTab =
   | "profile";
 
 type MemberBottomNavProps = {
-  activeTab: MemberBottomNavTab;
+  activeTab?: MemberBottomNavTab | null;
   profileHref?: string;
   hrefOverrides?: Partial<Record<MemberBottomNavTab, string>>;
 };
 
 export function MemberBottomNav({
-  activeTab,
+  activeTab = null,
   profileHref = "/profile",
   hrefOverrides,
 }: MemberBottomNavProps) {

@@ -335,7 +335,7 @@ describe("Figma missing route placeholders", () => {
     );
 
     const { default: AppSltPrepPage } = await import("@/app/app/slt-prep/page");
-    const html = renderToStaticMarkup(await AppSltPrepPage());
+    const html = renderToStaticMarkup(await AppSltPrepPage({}));
 
     expect(html).not.toContain("Figma page missing - implementation blocked");
     expect(html).toContain("Complete next step");
