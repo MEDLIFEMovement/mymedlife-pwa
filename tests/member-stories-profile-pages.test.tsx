@@ -134,8 +134,12 @@ describe("member stories and profile pages", () => {
     expect(html).toContain(
       'href="/app/events/chapter-event-ucla-kickoff?source=stories&amp;storyFilter=Events&amp;campaign=Rush+Month"',
     );
-    expect(html).toContain('href="/app/points?source=stories&amp;storyFilter=Events"');
-    expect(html).toContain('href="/profile?source=stories&amp;storyFilter=Events"');
+    expect(html).toContain(
+      'href="/app/points?source=stories&amp;event=chapter-event-ucla-kickoff&amp;storyFilter=Events&amp;campaign=Rush+Month"',
+    );
+    expect(html).toContain(
+      'href="/profile?source=stories&amp;event=chapter-event-ucla-kickoff&amp;storyFilter=Events&amp;campaign=Rush+Month"',
+    );
   });
 
   it("keeps the generic stories-loop fallback when an Events story has no exact member event detail route", async () => {

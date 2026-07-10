@@ -3458,14 +3458,35 @@ function StoryModal({
     source: "stories",
     storyFilter: activeFilter,
   });
-  const loopPointsHref =
-    getEventsBottomNavPointsHref("stories", null, null, activeFilter) ?? "/app/points?source=stories";
-  const loopProfileHref = getStoriesBottomNavProfileHref(activeFilter);
   const showLoopContinuity = activeFilter === "Events";
   const loopEvent = showLoopContinuity ? getStoryLoopEvent(story.id) : null;
   const loopEventDetailHref = loopEvent
     ? getMemberEventDetailHref(loopEvent.event.id, "stories", loopEvent.campaign, null, activeFilter)
     : null;
+  const loopEventPointsHref = loopEvent
+    ? (() => {
+        const url = new URL("https://mymedlife.local/app/points?source=stories");
+        url.searchParams.set("event", loopEvent.event.routeId ?? "");
+        url.searchParams.set("storyFilter", activeFilter);
+        url.searchParams.set("campaign", loopEvent.campaign);
+        return `${url.pathname}${url.search}`;
+      })()
+    : null;
+  const loopEventProfileHref = loopEvent
+    ? (() => {
+        const url = new URL("https://mymedlife.local/profile?source=stories");
+        url.searchParams.set("event", loopEvent.event.routeId ?? "");
+        url.searchParams.set("storyFilter", activeFilter);
+        url.searchParams.set("campaign", loopEvent.campaign);
+        return `${url.pathname}${url.search}`;
+      })()
+    : null;
+  const loopPointsHref: string = loopEvent
+    ? loopEventPointsHref ?? "/app/points?source=stories"
+    : getEventsBottomNavPointsHref("stories", null, null, activeFilter) ?? "/app/points?source=stories";
+  const loopProfileHref: string = loopEvent
+    ? loopEventProfileHref ?? getStoriesBottomNavProfileHref(activeFilter)
+    : getStoriesBottomNavProfileHref(activeFilter);
   return (
     <div className="fixed inset-0 z-50 flex flex-col bg-card sm:items-center sm:justify-center sm:p-6 sm:bg-foreground/40 sm:backdrop-blur-sm">
       <Link href={closeHref} aria-label="Close story reader" className="absolute inset-0 hidden sm:block" />
