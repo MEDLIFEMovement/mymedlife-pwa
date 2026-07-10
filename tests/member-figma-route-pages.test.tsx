@@ -43,8 +43,10 @@ describe("member Figma route pages", () => {
     expect(html).toContain("What Good Looks Like");
     expect(html).toContain('href="/app/events"');
     expect(html).toContain('href="/app/stories"');
+    expect(html).toContain('href="/app/slt-prep?source=campaigns"');
     expect(html).toContain('href="/proof-library/upload"');
     expect(html).toContain('href="/rush-month/actions"');
+    expect(html).toContain("Open TEST member SLT prep");
   });
 
   it("renders the member proof library surface instead of parking it into points", async () => {

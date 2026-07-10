@@ -166,6 +166,16 @@ export function FigmaMemberCampaignsPage({
                 See consent, storage, and blocked upload rules before any proof write path exists.
               </p>
             </Link>
+            <Link
+              href="/app/slt-prep?source=campaigns"
+              className="rounded-2xl border border-[#e5ded3] bg-white p-4"
+            >
+              <p className="text-sm font-bold text-[#1a0a0a]">Open TEST member SLT prep</p>
+              <p className="mt-1 text-xs leading-5 text-[#7a5a5a]">
+                Keep campaign planning in the same preview-safe member shell before any write or
+                travel proof work appears.
+              </p>
+            </Link>
           </div>
 
           {readiness.canReadReadiness ? (
