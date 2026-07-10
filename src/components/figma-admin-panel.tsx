@@ -511,8 +511,8 @@ function getEmbeddedAdminReviewCopy(
       label: "Embedded Chapter Review",
       note:
         chapterContext
-          ? `Use this Admin readback to confirm event readiness, RSVP totals, attendance context, and points posture for ${chapterContext} before requesting any correction path.`
-          : "Use this Admin readback to confirm event readiness, RSVP totals, attendance context, and points posture before requesting any correction path.",
+          ? `Use this Admin readback to confirm event readiness, RSVP totals, attendance context, and points posture for ${chapterContext} before requesting any blocked-control follow-through or correction path.`
+          : "Use this Admin readback to confirm event readiness, RSVP totals, attendance context, and points posture before requesting any blocked-control follow-through or correction path.",
       footer:
         chapterContext
           ? `Return with Command Center to ${chapterContext} in Chapters after this chapter review pass, or use the top-right menu to switch workspaces or log out.`

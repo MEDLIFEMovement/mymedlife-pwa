@@ -617,7 +617,7 @@ describe("staff page", () => {
     );
     expect(html).toContain("Embedded Chapter Review");
     expect(html).toContain(
-      "Use this Admin readback to confirm event readiness, RSVP totals, attendance context, and points posture for TEST Stanford University before requesting any correction path.",
+      "Use this Admin readback to confirm event readiness, RSVP totals, attendance context, and points posture for TEST Stanford University before requesting any blocked-control follow-through or correction path.",
     );
     expect(html).toContain(">School</div><div class=\"mt-1 text-[13px] font-mono font-semibold text-slate-100\">TEST Stanford University</div>");
     expect(html).toContain(">Region</div><div class=\"mt-1 text-[13px] font-mono font-semibold text-slate-100\">West</div>");
@@ -1741,6 +1741,9 @@ describe("staff page", () => {
     expect(embeddedHtml).toContain("Embedded chapter oversight readback");
     expect(embeddedHtml).toContain("Review-only TEST Boston College readback");
     expect(embeddedHtml).toContain("Carry TEST Boston College back out to Chapters");
+    expect(embeddedHtml).toContain(
+      "Use this Admin readback to confirm event readiness, RSVP totals, attendance context, and points posture for TEST Boston College before requesting any blocked-control follow-through or correction path.",
+    );
     expect(embeddedHtml).toContain(
       "After this Admin readback, return to Chapters with TEST Boston College still selected in the same Command Center review loop to keep the chapter oversight context intact.",
     );
