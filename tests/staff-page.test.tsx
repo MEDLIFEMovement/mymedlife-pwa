@@ -663,14 +663,17 @@ describe("staff page", () => {
     const staffSource = readFileSync("src/components/figma-staff-command-center.tsx", "utf8");
 
     expect(html).toContain("Command Center");
-    expect(html).toContain("Return to TEST Stanford University in Proof / UGC");
+    expect(html).toContain("Return to TEST Stanford University in Proof / UGC (Pending · Instagram)");
     expect(html).toContain("Embedded Proof Review");
-    expect(html).toContain("Return: TEST Stanford University in Proof / UGC");
+    expect(html).toContain("Return: TEST Stanford University in Proof / UGC (Pending · Instagram)");
     expect(html).toContain("Context: TEST Stanford University");
     expect(html).toContain("Queue: Pending · Instagram");
     expect(html).toContain("Queue context: Pending · Instagram");
     expect(html).toContain(
       "Use this Admin readback to verify chapter oversight context for TEST Stanford University while preserving the same Pending · Instagram moderation queue.",
+    );
+    expect(html).toContain(
+      "Return with Command Center to TEST Stanford University in Proof / UGC (Pending · Instagram) after this review pass, or use the top-right menu to switch workspaces or log out.",
     );
     expect(html).toContain('href="/staff?view=proof_ugc&amp;ugcCard=ugc4&amp;chapterContext=TEST+Stanford+University&amp;proofStatus=pending&amp;proofPlatform=instagram"');
     expect(staffSource).toContain('adminReturnScreen === "ugc"');
@@ -732,6 +735,7 @@ describe("staff page", () => {
     expect(source).toContain('if (screen === "ugc") return "Proof / UGC";');
     expect(source).toContain('return chapterId ? "this chapter" : "chapters";');
     expect(source).toContain("buildStaffChapterHref");
+    expect(source).toContain("return `${chapterContext} in Proof / UGC (${proofQueueContext})`;");
   });
 
   it("keeps chapter-detail NPS controls preview-only instead of implying a live send", () => {
