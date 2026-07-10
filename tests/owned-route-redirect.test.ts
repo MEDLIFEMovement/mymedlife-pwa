@@ -375,6 +375,52 @@ describe("owned route redirect service", () => {
     );
   });
 
+  it("canonicalizes parked leadership-family aliases while preserving selected-member review context", () => {
+    expect(
+      getChapterRouteRedirectHref(getMockLocalActorContext("leader.a@mymedlife.test"), {
+        view: "current_leaders",
+        source: "member_home",
+        member: "member-ivy",
+        pipeline: "follow_up",
+        q: "Ivy",
+        feedPost: "feed-post-slt-recap",
+        quickAction: "add_leader_note",
+        leaderboardMetric: "attendance",
+        region: "canada",
+      }),
+    ).toBe(
+      "/leader?source=member_home&member=member-ivy&pipeline=follow_up&q=Ivy&feedPost=feed-post-slt-recap&leaderboardMetric=attendance&region=canada&view=leaders",
+    );
+
+    expect(
+      getChapterRouteRedirectHref(getMockLocalActorContext("leader.a@mymedlife.test"), {
+        view: "leadership_training",
+        source: "member_home",
+        member: "member-ivy",
+        pipeline: "follow_up",
+        q: "Ivy",
+        feedPost: "feed-post-slt-recap",
+        quickAction: "schedule_values_interview",
+        leaderboardMetric: "attendance",
+      }),
+    ).toBe(
+      "/leader?source=member_home&member=member-ivy&pipeline=follow_up&q=Ivy&feedPost=feed-post-slt-recap&leaderboardMetric=attendance&view=training",
+    );
+  });
+
+  it("canonicalizes attendance aliases while preserving event review continuity only", () => {
+    expect(
+      getChapterRouteRedirectHref(getMockLocalActorContext("leader.a@mymedlife.test"), {
+        view: "attendance",
+        source: "member_home",
+        member: "member-ivy",
+        eventCommittee: "recruitment",
+        event: "bc-event-quad-tabling",
+        quickAction: "assign_action",
+      }),
+    ).toBe("/leader?event=bc-event-quad-tabling&eventCommittee=recruitment&view=events");
+  });
+
   it("keeps SLT prep redirects on their source-backed traveler and staff preview surfaces", () => {
     expect(
       getSltPrepRouteRedirectHref(getMockLocalActorContext("traveler.a@mymedlife.test")),

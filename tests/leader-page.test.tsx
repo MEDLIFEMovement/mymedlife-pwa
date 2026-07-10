@@ -177,6 +177,84 @@ describe("leader page", () => {
     expect(html).not.toContain("Chapter Metrics — June 2025");
   });
 
+  it("canonicalizes leadership-family aliases at the page entrypoint while preserving review context", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const dataModule = await import("@/services/read-only-app-data");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("leader.a@mymedlife.test"),
+    );
+    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
+      getMockReadOnlyAppData("Testing leader alias canonicalization."),
+    );
+
+    const { default: LeaderPage } = await import("@/app/leader/page");
+
+    await expect(
+      LeaderPage({
+        searchParams: Promise.resolve({
+          view: "current_leaders",
+          source: "member_home",
+          member: "member-ivy",
+          pipeline: "follow_up",
+          q: "Ivy",
+          feedPost: "feed-post-slt-recap",
+          quickAction: "add_leader_note",
+          leaderboardMetric: "attendance",
+          region: "canada",
+        }),
+      }),
+    ).rejects.toThrow(
+      "NEXT_REDIRECT:/leader?source=member_home&member=member-ivy&pipeline=follow_up&q=Ivy&feedPost=feed-post-slt-recap&leaderboardMetric=attendance&region=canada&view=leaders",
+    );
+
+    await expect(
+      LeaderPage({
+        searchParams: Promise.resolve({
+          view: "leadership_training",
+          source: "member_home",
+          member: "member-ivy",
+          pipeline: "follow_up",
+          q: "Ivy",
+          feedPost: "feed-post-slt-recap",
+          quickAction: "schedule_values_interview",
+          leaderboardMetric: "attendance",
+        }),
+      }),
+    ).rejects.toThrow(
+      "NEXT_REDIRECT:/leader?source=member_home&member=member-ivy&pipeline=follow_up&q=Ivy&feedPost=feed-post-slt-recap&leaderboardMetric=attendance&view=training",
+    );
+  });
+
+  it("canonicalizes attendance aliases at the page entrypoint while keeping event review context", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const dataModule = await import("@/services/read-only-app-data");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("leader.a@mymedlife.test"),
+    );
+    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
+      getMockReadOnlyAppData("Testing leader attendance alias canonicalization."),
+    );
+
+    const { default: LeaderPage } = await import("@/app/leader/page");
+
+    await expect(
+      LeaderPage({
+        searchParams: Promise.resolve({
+          view: "attendance",
+          source: "member_home",
+          member: "member-ivy",
+          eventCommittee: "recruitment",
+          event: "bc-event-quad-tabling",
+          quickAction: "assign_action",
+        }),
+      }),
+    ).rejects.toThrow(
+      "NEXT_REDIRECT:/leader?event=bc-event-quad-tabling&eventCommittee=recruitment&view=events",
+    );
+  });
+
   it.each([
     ["overview", "This Week&#x27;s Priority"],
     ["leaderboard", "Ideas to try"],
@@ -231,7 +309,7 @@ describe("leader page", () => {
         }),
       }),
     ).rejects.toThrow(
-      "NEXT_REDIRECT:/leader?view=events&source=overview&member=member-ivy&eventCommittee=events&event=bc-event-moving-mountains-kickoff&pipeline=follow_up&q=Ivy&quickAction=assign_action",
+      "NEXT_REDIRECT:/leader?event=bc-event-moving-mountains-kickoff&eventCommittee=events&view=events",
     );
   });
 
@@ -263,7 +341,7 @@ describe("leader page", () => {
         }),
       }),
     ).rejects.toThrow(
-      "NEXT_REDIRECT:/leader?view=events&source=leaderboard&member=member-ivy&eventCommittee=events&event=bc-event-moving-mountains-kickoff&leaderboardMetric=attendance&region=canada&benchmark=leaderboard-mcgill&quickAction=assign_action",
+      "NEXT_REDIRECT:/leader?event=bc-event-moving-mountains-kickoff&eventCommittee=events&view=events",
     );
   });
 

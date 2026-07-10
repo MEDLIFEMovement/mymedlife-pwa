@@ -1,11 +1,24 @@
 import {
+  buildLeaderCommandCenterHrefForScreen,
   getLeaderCommandCenterViewForScreen,
   resolveLeaderCommandCenterScreen,
 } from "@/services/leader-command-center-routing";
 
 export type LeaderLaunchLaneCoreView =
   | "overview"
+  | "members"
+  | "member_profile"
+  | "committees"
   | "events"
+  | "impact"
+  | "bridge_videos"
+  | "feed_analytics"
+  | "leaders"
+  | "succession"
+  | "values"
+  | "training"
+  | "create_event"
+  | "stories"
   | "leaderboard";
 
 export type LeaderLaunchLaneViewResolution = {
@@ -27,43 +40,41 @@ export function resolveLeaderLaunchLaneView(
     case null:
     case "overview":
       return createResolution(normalizedView, "overview");
-    case "events":
-      return createResolution(normalizedView, "events");
     case "members":
+      return createResolution(normalizedView, "members");
+    case "events":
     case "attendance":
       return createResolution(normalizedView, "events");
+    case "member_profile":
+      return createResolution(normalizedView, "member_profile");
+    case "committees":
+    case "event_committees":
+      return createResolution(normalizedView, "committees");
     case "leaderboard":
       return createResolution(normalizedView, "leaderboard");
-    case "member_profile":
-      return createResolution(normalizedView, "events", {
-        eyebrow: "Member review parked",
-        title: "Member profile detail is parked inside the attendance lane for this launch pass.",
-        detail:
-          "Use the attendance lane to review who is active, who still needs follow-up, and who is ready for the next chapter push while the broader member-profile module stays off.",
-      });
-    case "committees":
-      return createResolution(normalizedView, "events", {
-        eyebrow: "Committee lane parked",
-        title: "Committee management is folded into the leader events lane for this launch pass.",
-        detail:
-          "Keep chapter owners visible through the event loop: create the next event, watch RSVP posture, confirm attendance, and let that drive the work instead of opening a separate committee product lane.",
-      });
     case "succession":
-      return createResolution(normalizedView, "events", {
-        eyebrow: "Succession lane parked",
-        title: "Leadership pipeline review is parked inside the attendance lane for this launch pass.",
-        detail:
-          "Use the attendance lane to see who is active, consistent, and ready for more responsibility while the broader succession workspace stays off.",
-      });
+      return createResolution(normalizedView, "succession");
+    case "leaders":
+    case "current_leaders":
+      return createResolution(normalizedView, "leaders");
+    case "values":
+    case "medlife_values":
+      return createResolution(normalizedView, "values");
+    case "training":
+    case "leadership_training":
+      return createResolution(normalizedView, "training");
     case "impact":
+      return createResolution(normalizedView, "impact");
     case "bridge_videos":
+      return createResolution(normalizedView, "bridge_videos");
     case "feed_analytics":
-      return createResolution(normalizedView, "leaderboard", {
-        eyebrow: "Story lane parked",
-        title: "Impact, story, and feed review are parked inside the points lane for this launch pass.",
-        detail:
-          "Stay focused on attendance-backed leaderboard movement first. Broader impact, bridge-video, and feed modules stay out of the visible leader workspace until the event loop is fully live.",
-      });
+      return createResolution(normalizedView, "feed_analytics");
+    case "create_event":
+    case "create-event":
+      return createResolution(normalizedView, "create_event");
+    case "stories":
+    case "medlife_stories":
+      return createResolution(normalizedView, "stories");
     default:
       return createResolution(normalizedView, "overview", {
         eyebrow: "Launch lane",
@@ -91,9 +102,9 @@ export function getLeaderLaunchLaneCanonicalHref(
     return null;
   }
 
-  return withQuery("/leader", {
-    ...searchParams,
-    view: canonicalView,
+  return buildLeaderCommandCenterHrefForScreen(resolvedScreen, {
+    pathname: "/leader",
+    search: buildCanonicalSearch(searchParams),
   });
 }
 
@@ -114,20 +125,14 @@ function normalizeRequestedView(value?: string | null) {
   return trimmed ? trimmed : null;
 }
 
-function withQuery(baseHref: string, query: Record<string, string | undefined>) {
-  const searchParams = new URLSearchParams();
+function buildCanonicalSearch(searchParams: Record<string, string | undefined>) {
+  const params = new URLSearchParams();
 
-  for (const [key, value] of Object.entries(query)) {
+  for (const [key, value] of Object.entries(searchParams)) {
     if (value) {
-      searchParams.set(key, value);
+      params.set(key, value);
     }
   }
 
-  const queryString = searchParams.toString();
-
-  if (!queryString) {
-    return baseHref;
-  }
-
-  return `${baseHref}?${queryString}`;
+  return params.toString();
 }
