@@ -63,6 +63,7 @@ export default async function LeaderPage({ searchParams }: LeaderPageProps) {
   const actor = await getLocalActorContext();
   const resolvedSearchParams = await searchParams;
   const initialScreen = resolveLeaderCommandCenterScreen(resolvedSearchParams?.view);
+  const isPreviewLeaderWorkspace = isPreviewWorkspaceAccess(actor, "leader_command_center");
 
   if (shouldRedirectActorToLogin(actor)) {
     redirect(buildLoginRedirectHref("/leader?view=overview"));
@@ -189,7 +190,8 @@ export default async function LeaderPage({ searchParams }: LeaderPageProps) {
     );
   }
 
-  const shouldUseServiceShell = SERVICE_BACKED_LEADER_VIEWS.has(requestedView);
+  const shouldUseServiceShell =
+    SERVICE_BACKED_LEADER_VIEWS.has(requestedView) && !isPreviewLeaderWorkspace;
 
   if (shouldUseServiceShell) {
     const data = await getReadOnlyAppData();
@@ -216,7 +218,7 @@ export default async function LeaderPage({ searchParams }: LeaderPageProps) {
       return (
         <>
           <WorkspaceAccountMenu actor={actor} currentWorkspace="leader_command_center" />
-          {isPreviewWorkspaceAccess(actor, "leader_command_center") ? (
+          {isPreviewLeaderWorkspace ? (
             <WorkspacePreviewBanner workspaceLabel="the Student Command Center" />
           ) : null}
           <FigmaLeaderCommandCenter initialScreen={initialScreen} />
@@ -227,7 +229,7 @@ export default async function LeaderPage({ searchParams }: LeaderPageProps) {
     return (
       <>
         <WorkspaceAccountMenu actor={actor} currentWorkspace="leader_command_center" />
-        {isPreviewWorkspaceAccess(actor, "leader_command_center") ? (
+        {isPreviewLeaderWorkspace ? (
           <WorkspacePreviewBanner workspaceLabel="the Student Command Center" />
         ) : null}
         <ChapterLeaderCommandCenterPanel commandCenter={commandCenter} />
@@ -238,7 +240,7 @@ export default async function LeaderPage({ searchParams }: LeaderPageProps) {
   return (
     <>
       <WorkspaceAccountMenu actor={actor} currentWorkspace="leader_command_center" />
-      {isPreviewWorkspaceAccess(actor, "leader_command_center") ? (
+      {isPreviewLeaderWorkspace ? (
         <WorkspacePreviewBanner workspaceLabel="the Student Command Center" />
       ) : null}
       <FigmaLeaderCommandCenter initialScreen={initialScreen} />
