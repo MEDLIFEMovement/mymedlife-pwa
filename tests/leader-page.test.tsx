@@ -5,6 +5,8 @@ import { join } from "node:path";
 
 import { getMockLocalActorContext } from "@/services/local-actor-context";
 import { getMockReadOnlyAppData } from "@/services/read-only-app-data";
+import type { CanonicalRole } from "@/services/canonical-role-scope";
+import type { DatabaseRoleKey } from "@/shared/types/persistence";
 
 vi.mock("next/navigation", () => ({
   usePathname: () => "/leader",
@@ -137,6 +139,34 @@ describe("leader page", () => {
     expect(html).toContain("Student Command Center");
     expect(html).toContain("Preview");
     expect(html).toContain("Create Event");
+  });
+
+  it("keeps mixed Super Admin plus leader-role accounts on the Figma preview shell", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const dataModule = await import("@/services/read-only-app-data");
+
+    const mixedSuperAdminLeader = {
+      ...getSignedInActor("super.admin@mymedlife.test"),
+      chapterRoles: ["President / VP"],
+      canonicalRoles: ["super_admin", "president"] satisfies CanonicalRole[],
+      databaseRoleKeys: ["super_admin", "president_vp"] satisfies DatabaseRoleKey[],
+    };
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(mixedSuperAdminLeader);
+    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
+      getMockReadOnlyAppData("Testing mixed super admin leader preview route."),
+    );
+
+    const { default: LeaderPage } = await import("@/app/leader/page");
+    const html = renderToStaticMarkup(await LeaderPage({}));
+
+    expect(html).toContain("Leadership Center");
+    expect(html).toContain("Student Command Center");
+    expect(html).toContain("Preview");
+    expect(html).toContain("Chapter Dashboard · Jun 2025");
+    expect(html).toContain("TEST Boston College MEDLIFE");
+    expect(html).not.toContain("TEST myMEDLIFE Review Chapter");
+    expect(html).not.toContain("CHAPTER HOME");
   });
 
   it("falls back to the preview leader shell instead of rendering blank when service-backed leader data is unreadable", async () => {
