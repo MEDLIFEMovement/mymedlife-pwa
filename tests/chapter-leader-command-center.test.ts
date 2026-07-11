@@ -113,6 +113,15 @@ describe("chapter leader command center", () => {
     );
   });
 
+  it("lets super admins render the leader command center when leader workspace access is allowed", () => {
+    const actor = getMockLocalActorContext("super.admin@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data);
+
+    expect(commandCenter.canReadCommandCenter).toBe(true);
+    expect(commandCenter.selectedView).toBe("overview");
+    expect(commandCenter.chapterName).toBe("Boston College MEDLIFE");
+  });
+
   it("renders the overview hero with the chapter-home framing from the mockup", () => {
     const actor = getMockLocalActorContext("leader.a@mymedlife.test");
     const commandCenter = getChapterLeaderCommandCenter(actor, data);

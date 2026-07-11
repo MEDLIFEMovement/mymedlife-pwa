@@ -18,6 +18,7 @@ import { buildStudentHomePreviewHref } from "@/services/local-preview-route";
 import { getMemberRecognitionSummary } from "@/services/member-recognition";
 import type { ReadOnlyAppData } from "@/services/read-only-app-data";
 import {
+  canAccessLeaderWorkspace,
   getActorSurfaceFamily,
   getVisibleAssignmentsForActor,
 } from "@/services/role-visibility";
@@ -1358,7 +1359,7 @@ export function getChapterLeaderCommandCenter(
   data: ReadOnlyAppData,
   options: ChapterLeaderCommandCenterOptions = {},
 ): ChapterLeaderCommandCenter {
-  if (getActorSurfaceFamily(actor) !== "leader") {
+  if (!canAccessLeaderWorkspace(actor)) {
     return emptyCommandCenter();
   }
 
