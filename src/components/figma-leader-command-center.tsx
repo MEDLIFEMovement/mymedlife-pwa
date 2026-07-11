@@ -1525,7 +1525,15 @@ function NpsResultsPanel({ nps, attendees, totalMembers, rsvp }: { nps: NpsResul
   );
 }
 
-function EventsScreen({ externalCreate, onExternalCreateHandled }: { externalCreate?: boolean; onExternalCreateHandled?: () => void }) {
+function EventsScreen({
+  externalCreate,
+  onExternalCreateHandled,
+  onNavigate,
+}: {
+  externalCreate?: boolean;
+  onExternalCreateHandled?: () => void;
+  onNavigate?: (screen: Screen) => void;
+}) {
   const [showCreate,   setShowCreate]   = useState(false);
   const [surveyEvent,  setSurveyEvent]  = useState<{id:number; name:string}|null>(null);
   const [npsEventId,   setNpsEventId]   = useState<number|null>(null);
@@ -1552,7 +1560,16 @@ function EventsScreen({ externalCreate, onExternalCreateHandled }: { externalCre
   const totalMembersConverted = npsEvents.reduce((a,e) => a + NPS_RESULTS[e.id].membersAttending, 0);
   const totalMembers          = npsEvents.reduce((a,e) => a + NPS_RESULTS[e.id].totalMembers, 0);
 
-  if (showCreate) return <CreateEventForm onBack={() => setShowCreate(false)}/>;
+  if (showCreate) {
+    return (
+      <CreateEventForm
+        onBack={() => setShowCreate(false)}
+        onOpenHome={() => onNavigate?.("home")}
+        onOpenCommittees={() => onNavigate?.("committees")}
+        onOpenEvents={() => onNavigate?.("events")}
+      />
+    );
+  }
 
   return (
     <div className="space-y-5">
@@ -4299,7 +4316,13 @@ export function FigmaLeaderCommandCenter({
               onCreateEvent={handleCreateEvent}
             />
           )}
-          {screen==="events"      && <EventsScreen externalCreate={showCreateEvent} onExternalCreateHandled={() => setShowCreateEvent(false)}/>}
+          {screen==="events"      && (
+            <EventsScreen
+              externalCreate={showCreateEvent}
+              onExternalCreateHandled={() => setShowCreateEvent(false)}
+              onNavigate={navigateToScreen}
+            />
+          )}
           {screen==="impact"      && <ImpactScreen/>}
           {screen==="bridge"      && <BridgeScreen/>}
           {screen==="succession"  && <SuccessionScreen onNavigate={navigateToScreen} onSelectMember={handleSelectMember}/>}
@@ -4307,7 +4330,16 @@ export function FigmaLeaderCommandCenter({
           {screen==="training"    && <TrainingScreen/>}
           {screen==="values"      && <ValuesScreen/>}
           {screen==="leaders"     && <LeadersScreen onSelectMember={handleSelectMember} onNavigate={navigateToScreen}/>}
-          {screen==="create-event"&& <div className="p-0"><CreateEventForm onBack={() => navigateToScreen("events")}/></div>}
+          {screen==="create-event"&& (
+            <div className="p-0">
+              <CreateEventForm
+                onBack={() => navigateToScreen("events")}
+                onOpenHome={() => navigateToScreen("home")}
+                onOpenCommittees={() => navigateToScreen("committees")}
+                onOpenEvents={() => navigateToScreen("events")}
+              />
+            </div>
+          )}
           {screen==="stories"     && <MedlifeStoriesScreen/>}
         </div>
       </main>
