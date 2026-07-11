@@ -119,6 +119,51 @@ describe("leader page", () => {
     expect(html).not.toContain("Leader event tracking");
   });
 
+  it("renders the leader command center for signed-in super admins using preview access", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const dataModule = await import("@/services/read-only-app-data");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("super.admin@mymedlife.test"),
+    );
+    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
+      getMockReadOnlyAppData("Testing super admin preview access to leader page."),
+    );
+
+    const { default: LeaderPage } = await import("@/app/leader/page");
+    const html = renderToStaticMarkup(await LeaderPage({}));
+
+    expect(html).toContain("Leadership Center");
+    expect(html).toContain("Student Command Center");
+    expect(html).toContain("Preview");
+    expect(html).toContain("Create Event");
+  });
+
+  it("falls back to the preview leader shell instead of rendering blank when service-backed leader data is unreadable", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const dataModule = await import("@/services/read-only-app-data");
+
+    const superAdminWithMemberAudience = {
+      ...getSignedInActor("super.admin@mymedlife.test"),
+      audience: "chapter_member" as const,
+      audienceLabel: "Chapter member",
+      chapterRoles: [],
+    };
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(superAdminWithMemberAudience);
+    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
+      getMockReadOnlyAppData("Testing leader preview fallback when service data is unreadable."),
+    );
+
+    const { default: LeaderPage } = await import("@/app/leader/page");
+    const html = renderToStaticMarkup(await LeaderPage({}));
+
+    expect(html).toContain("Leadership Center");
+    expect(html).toContain("Chapter Dashboard · Jun 2025");
+    expect(html).toContain("TEST Boston College MEDLIFE");
+    expect(html).not.toContain("Leadership page not yet available");
+  });
+
   it("opens the requested service-backed event screen from the leader view query", async () => {
     const actorModule = await import("@/services/local-actor-context");
     const dataModule = await import("@/services/read-only-app-data");

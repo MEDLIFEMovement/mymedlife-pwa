@@ -212,6 +212,18 @@ export default async function LeaderPage({ searchParams }: LeaderPageProps) {
       quickAction: resolvedSearchParams?.quickAction,
     });
 
+    if (!commandCenter.canReadCommandCenter) {
+      return (
+        <>
+          <WorkspaceAccountMenu actor={actor} currentWorkspace="leader_command_center" />
+          {isPreviewWorkspaceAccess(actor, "leader_command_center") ? (
+            <WorkspacePreviewBanner workspaceLabel="the Student Command Center" />
+          ) : null}
+          <FigmaLeaderCommandCenter initialScreen={initialScreen} />
+        </>
+      );
+    }
+
     return (
       <>
         <WorkspaceAccountMenu actor={actor} currentWorkspace="leader_command_center" />
