@@ -12,7 +12,7 @@ import { getChapterLeaderCommandCenter } from "@/services/chapter-leader-command
 import { getLandingRouteForActor } from "@/services/landing-route";
 import { buildLoginRedirectHref, shouldRedirectActorToLogin } from "@/services/login-route";
 import { getLocalActorContext } from "@/services/local-actor-context";
-import { canAccessLeaderWorkspace } from "@/services/role-visibility";
+import { canAccessLeaderWorkspace, getActorSurfaceFamily } from "@/services/role-visibility";
 import { getReadOnlyAppData } from "@/services/read-only-app-data";
 import { getStaticRouteMetadata } from "@/services/static-route-metadata";
 import { isPreviewWorkspaceAccess } from "@/services/workspace-access";
@@ -64,6 +64,12 @@ export default async function LeaderPage({ searchParams }: LeaderPageProps) {
   const resolvedSearchParams = await searchParams;
   const initialScreen = resolveLeaderCommandCenterScreen(resolvedSearchParams?.view);
   const isPreviewLeaderWorkspace = isPreviewWorkspaceAccess(actor, "leader_command_center");
+  const actorSurfaceFamily = getActorSurfaceFamily(actor);
+  const shouldRenderFigmaLeaderPreview =
+    isPreviewLeaderWorkspace ||
+    actorSurfaceFamily === "staff" ||
+    actorSurfaceFamily === "ds_admin" ||
+    actorSurfaceFamily === "super_admin";
 
   if (shouldRedirectActorToLogin(actor)) {
     redirect(buildLoginRedirectHref("/leader?view=overview"));
@@ -191,7 +197,7 @@ export default async function LeaderPage({ searchParams }: LeaderPageProps) {
   }
 
   const shouldUseServiceShell =
-    SERVICE_BACKED_LEADER_VIEWS.has(requestedView) && !isPreviewLeaderWorkspace;
+    SERVICE_BACKED_LEADER_VIEWS.has(requestedView) && !shouldRenderFigmaLeaderPreview;
 
   if (shouldUseServiceShell) {
     const data = await getReadOnlyAppData();
@@ -218,7 +224,7 @@ export default async function LeaderPage({ searchParams }: LeaderPageProps) {
       return (
         <>
           <WorkspaceAccountMenu actor={actor} currentWorkspace="leader_command_center" />
-          {isPreviewLeaderWorkspace ? (
+          {shouldRenderFigmaLeaderPreview ? (
             <WorkspacePreviewBanner workspaceLabel="the Student Command Center" />
           ) : null}
           <FigmaLeaderCommandCenter initialScreen={initialScreen} />
@@ -229,7 +235,7 @@ export default async function LeaderPage({ searchParams }: LeaderPageProps) {
     return (
       <>
         <WorkspaceAccountMenu actor={actor} currentWorkspace="leader_command_center" />
-        {isPreviewLeaderWorkspace ? (
+        {shouldRenderFigmaLeaderPreview ? (
           <WorkspacePreviewBanner workspaceLabel="the Student Command Center" />
         ) : null}
         <ChapterLeaderCommandCenterPanel commandCenter={commandCenter} />
@@ -240,7 +246,7 @@ export default async function LeaderPage({ searchParams }: LeaderPageProps) {
   return (
     <>
       <WorkspaceAccountMenu actor={actor} currentWorkspace="leader_command_center" />
-      {isPreviewLeaderWorkspace ? (
+      {shouldRenderFigmaLeaderPreview ? (
         <WorkspacePreviewBanner workspaceLabel="the Student Command Center" />
       ) : null}
       <FigmaLeaderCommandCenter initialScreen={initialScreen} />
