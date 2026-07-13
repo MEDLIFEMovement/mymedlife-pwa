@@ -21,6 +21,7 @@ import {
   type AdminAccessResultCode,
   type AdminAccessWriteConfig,
 } from "@/services/admin-management-write";
+import { AdminReviewShellHeader } from "@/components/admin-review-shell-header";
 import type { LocalActorContext } from "@/services/local-actor-context";
 import type { DataSourceMeta } from "@/services/read-only-app-data";
 import { getWorkspaceLabel } from "@/services/workspace-access";
@@ -202,29 +203,12 @@ export function AdminUsersManagementPanel({
   return (
     <main className="min-h-screen bg-[#0d1117] px-6 py-8 text-slate-100">
       <div className="mx-auto max-w-7xl space-y-6">
-        <header className="flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-sky-400">
-              DS / Super Admin
-            </p>
-            <h1 className="mt-2 text-3xl font-bold tracking-tight">
-              User Access Management
-            </h1>
-            <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-400">
-              Search users, inspect their workspace access, and review the exact
-              audited action packets for role, chapter, invite, status, and
-              destructive access changes. These operations use the same service
-              guards as the tests. Return to the Command Center after this
-              review to continue the DS Admin walkthrough.
-            </p>
-          </div>
-          <a
-            href="/admin"
-            className="rounded-md border border-white/10 px-4 py-2 text-sm font-semibold text-slate-200 hover:bg-white/5"
-          >
-            Return to Command Center
-          </a>
-        </header>
+        <AdminReviewShellHeader
+          activeView="users"
+          eyebrow="DS / Super Admin"
+          title="User Access Management"
+          description="Search users, inspect their workspace access, and review the exact audited action packets for role, chapter, invite, status, and destructive access changes. These operations use the same service guards as the tests. Return to the Command Center after this review to continue the DS Admin walkthrough."
+        />
 
         <section className="grid gap-3 md:grid-cols-4">
           <SummaryCard label="Directory users" value={String(users.length)} />
