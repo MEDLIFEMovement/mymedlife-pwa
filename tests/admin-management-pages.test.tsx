@@ -52,6 +52,12 @@ describe("admin management pages", () => {
 
     expect(html).toContain("User Access Management");
     expect(html).toContain("myMEDLIFE DS Admin shell");
+    expect(html).toContain("DS Admin Figma menu");
+    expect(html).toContain("Same command-center menu family maintained on Users and Chapters.");
+    expect(html).toContain('href="/admin/users"');
+    expect(html).toContain('href="/admin/chapters"');
+    expect(html).toContain('href="/admin?view=integrations"');
+    expect(html).toContain('href="/admin?view=apikeys"');
     expect(html).toContain("Return to Command Center");
     expect(html).toContain(">Overview<");
     expect(html).toContain(">Users<");
@@ -65,6 +71,10 @@ describe("admin management pages", () => {
     expect(html).toContain(">API Keys<");
     expect(html).toContain(">MCP Connections<");
     expect(html).toContain(">Settings<");
+    expect(html).toContain("SOP Builder");
+    expect(html).toContain("Task Assignment");
+    expect(html).toContain("UGC / Feed");
+    expect(html).toContain("MCP Analytics");
     expect(html).toContain("Create a site user");
     expect(html).toContain("Create user");
     expect(html).toContain("Temporary password");
@@ -147,6 +157,12 @@ describe("admin management pages", () => {
 
     expect(html).toContain("Chapter Management");
     expect(html).toContain("myMEDLIFE DS Admin shell");
+    expect(html).toContain("DS Admin Figma menu");
+    expect(html).toContain("Same command-center menu family maintained on Users and Chapters.");
+    expect(html).toContain('href="/admin/users"');
+    expect(html).toContain('href="/admin/chapters"');
+    expect(html).toContain('href="/admin?view=integrations"');
+    expect(html).toContain('href="/admin?view=apikeys"');
     expect(html).toContain("Return to Command Center");
     expect(html).toContain(">Overview<");
     expect(html).toContain(">Users<");
@@ -160,6 +176,10 @@ describe("admin management pages", () => {
     expect(html).toContain(">API Keys<");
     expect(html).toContain(">MCP Connections<");
     expect(html).toContain(">Settings<");
+    expect(html).toContain("SOP Builder");
+    expect(html).toContain("Task Assignment");
+    expect(html).toContain("UGC / Feed");
+    expect(html).toContain("MCP Analytics");
     expect(html).toContain("TEST UCLA MEDLIFE");
     expect(html).toContain("TEST UCLA");
     expect(html).toContain("TEST West Coast");
