@@ -4364,11 +4364,7 @@ export function FigmaAdminPanel({
   const embeddedDisplayChapterContext = embeddedChapterReadback?.chapterContext ?? embeddedChapterContext;
   const page = PAGES[active] ?? PAGES.overview;
 
-  const handleNav = (id: string) => {
-    router.replace(buildAdminShellHref(id, pathname, searchParams.toString()), {
-      scroll: false,
-    });
-  };
+  const handleNav = createAdminShellNavHandler(router, pathname, searchParams);
 
   const renderPage = () => {
     switch (active) {
@@ -4421,22 +4417,18 @@ export function FigmaAdminShellFrame({
   title,
   subtitle,
   children,
-}: {
+}: Readonly<{
   activeView: string;
   title: string;
   subtitle?: string;
   children: React.ReactNode;
-}) {
+}>) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const active = resolveAdminShellView(activeView);
 
-  const handleNav = (id: string) => {
-    router.replace(buildAdminShellHref(id, pathname, searchParams.toString()), {
-      scroll: false,
-    });
-  };
+  const handleNav = createAdminShellNavHandler(router, pathname, searchParams);
 
   return (
     <div className="flex min-h-screen bg-[#0d1117] overflow-hidden" style={{ fontFamily: "'Manrope', system-ui, sans-serif" }}>
@@ -4515,4 +4507,16 @@ function getAdminShellRouteHref(active: string): string {
   if (active === "health") return "/admin/system-health";
 
   return `/admin?view=${active}`;
+}
+
+function createAdminShellNavHandler(
+  router: { replace: (href: string, options?: { scroll?: boolean }) => void },
+  pathname: string,
+  searchParams: { toString: () => string },
+) {
+  return (id: string) => {
+    router.replace(buildAdminShellHref(id, pathname, searchParams.toString()), {
+      scroll: false,
+    });
+  };
 }
