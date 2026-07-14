@@ -49,6 +49,7 @@ export type AdminUsersSearchParams = {
 type AdminUsersManagementPanelProps = {
   actor: LocalActorContext;
   chapters?: ManagedChapter[];
+  embeddedInFigmaShell?: boolean;
   source?: DataSourceMeta;
   searchParams?: AdminUsersSearchParams;
   users?: ManagedUser[];
@@ -170,6 +171,7 @@ const resultText: Record<
 export function AdminUsersManagementPanel({
   actor,
   chapters = managedChapterFixtures,
+  embeddedInFigmaShell = false,
   source = {
     mode: "mock",
     status: "mock_fallback",
@@ -231,16 +233,19 @@ export function AdminUsersManagementPanel({
     managedUserFixtures[0];
   const previews = buildUserActionPreviews(actor, selectedUser);
   const returnTo = selectedUser ? `/admin/users?userId=${selectedUser.id}` : "/admin/users";
+  const Container = embeddedInFigmaShell ? "div" : "main";
 
   return (
-    <main className="min-h-screen bg-[#0d1117] px-6 py-8 text-slate-100">
+    <Container className={`${embeddedInFigmaShell ? "px-6 py-6" : "min-h-screen px-6 py-8"} bg-[#0d1117] text-slate-100`}>
       <div className="mx-auto max-w-7xl space-y-6">
-        <AdminReviewShellHeader
-          activeView="users"
-          eyebrow="DS / Super Admin"
-          title="User Access Management"
-          description="Search users, inspect their workspace access, and review the exact audited action packets for role, chapter, invite, status, and destructive access changes. These operations use the same service guards as the tests. Return to the Command Center after this review to continue the DS Admin walkthrough."
-        />
+        {!embeddedInFigmaShell && (
+          <AdminReviewShellHeader
+            activeView="users"
+            eyebrow="DS / Super Admin"
+            title="User Access Management"
+            description="Search users, inspect their workspace access, and review the exact audited action packets for role, chapter, invite, status, and destructive access changes. These operations use the same service guards as the tests. Return to the Command Center after this review to continue the DS Admin walkthrough."
+          />
+        )}
 
         <section className="grid gap-3 md:grid-cols-4">
           <SummaryCard label="Directory users" value={String(users.length)} />
@@ -482,7 +487,7 @@ export function AdminUsersManagementPanel({
           </aside>
         </section>
       </div>
-    </main>
+    </Container>
   );
 }
 

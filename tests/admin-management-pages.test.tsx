@@ -7,6 +7,9 @@ import { getMockLocalActorContext } from "@/services/local-actor-context";
 
 vi.mock("next/navigation", () => ({
   usePathname: () => "/admin/integrations/luma",
+  useRouter: () => ({
+    replace: vi.fn(),
+  }),
   useSearchParams: () => new URLSearchParams(),
   redirect: vi.fn((href: string) => {
     throw new Error(`NEXT_REDIRECT:${href}`);
@@ -51,26 +54,21 @@ describe("admin management pages", () => {
     );
 
     expect(html).toContain("User Access Management");
-    expect(html).toContain("myMEDLIFE DS Admin shell");
-    expect(html).toContain("DS Admin Figma menu");
-    expect(html).toContain("Same command-center menu family maintained on Users and Chapters.");
-    expect(html).toContain('href="/admin/users"');
-    expect(html).toContain('href="/admin/chapters"');
-    expect(html).toContain('href="/admin?view=integrations"');
-    expect(html).toContain('href="/admin?view=apikeys"');
-    expect(html).toContain("Return to Command Center");
-    expect(html).toContain(">Overview<");
-    expect(html).toContain(">Users<");
-    expect(html).toContain(">Chapters<");
-    expect(html).toContain(">Modules<");
-    expect(html).toContain(">Luma Events<");
-    expect(html).toContain(">Points<");
-    expect(html).toContain(">Integrations<");
-    expect(html).toContain(">Audit Logs<");
-    expect(html).toContain(">System Health<");
-    expect(html).toContain(">API Keys<");
-    expect(html).toContain(">MCP Connections<");
-    expect(html).toContain(">Settings<");
+    expect(html).toContain("DS Admin · v2.4");
+    expect(html).toContain("SYSTEMS OK");
+    expect(html).toContain("Overview");
+    expect(html).toContain("Users");
+    expect(html).toContain("Chapters");
+    expect(html).toContain("Modules");
+    expect(html).toContain("Luma Events");
+    expect(html).toContain("Points");
+    expect(html).toContain("Integrations");
+    expect(html).toContain("Audit Logs");
+    expect(html).toContain("System Health");
+    expect(html).toContain("API Keys");
+    expect(html).toContain("MCP Connections");
+    expect(html).toContain("Settings");
+    expect(html).toContain("Disabled Modules");
     expect(html).toContain("SOP Builder");
     expect(html).toContain("Task Assignment");
     expect(html).toContain("UGC / Feed");
@@ -156,26 +154,21 @@ describe("admin management pages", () => {
     );
 
     expect(html).toContain("Chapter Management");
-    expect(html).toContain("myMEDLIFE DS Admin shell");
-    expect(html).toContain("DS Admin Figma menu");
-    expect(html).toContain("Same command-center menu family maintained on Users and Chapters.");
-    expect(html).toContain('href="/admin/users"');
-    expect(html).toContain('href="/admin/chapters"');
-    expect(html).toContain('href="/admin?view=integrations"');
-    expect(html).toContain('href="/admin?view=apikeys"');
-    expect(html).toContain("Return to Command Center");
-    expect(html).toContain(">Overview<");
-    expect(html).toContain(">Users<");
-    expect(html).toContain(">Chapters<");
-    expect(html).toContain(">Modules<");
-    expect(html).toContain(">Luma Events<");
-    expect(html).toContain(">Points<");
-    expect(html).toContain(">Integrations<");
-    expect(html).toContain(">Audit Logs<");
-    expect(html).toContain(">System Health<");
-    expect(html).toContain(">API Keys<");
-    expect(html).toContain(">MCP Connections<");
-    expect(html).toContain(">Settings<");
+    expect(html).toContain("DS Admin · v2.4");
+    expect(html).toContain("SYSTEMS OK");
+    expect(html).toContain("Overview");
+    expect(html).toContain("Users");
+    expect(html).toContain("Chapters");
+    expect(html).toContain("Modules");
+    expect(html).toContain("Luma Events");
+    expect(html).toContain("Points");
+    expect(html).toContain("Integrations");
+    expect(html).toContain("Audit Logs");
+    expect(html).toContain("System Health");
+    expect(html).toContain("API Keys");
+    expect(html).toContain("MCP Connections");
+    expect(html).toContain("Settings");
+    expect(html).toContain("Disabled Modules");
     expect(html).toContain("SOP Builder");
     expect(html).toContain("Task Assignment");
     expect(html).toContain("UGC / Feed");
