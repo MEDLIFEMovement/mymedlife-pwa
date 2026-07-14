@@ -30,7 +30,11 @@ import {
   getMemberLaunchLaneEventRowById,
 } from "@/services/member-launch-lane-events";
 import { getLocalActorContext } from "@/services/local-actor-context";
-import { getReadOnlyAppData } from "@/services/read-only-app-data";
+import {
+  getMockReadOnlyAppData,
+  getReadOnlyAppData,
+  type ReadOnlyAppData,
+} from "@/services/read-only-app-data";
 import { canAccessMemberWorkspace } from "@/services/role-visibility";
 import { getStaticRouteMetadata } from "@/services/static-route-metadata";
 
@@ -80,8 +84,8 @@ export default async function AppEventDetailPage({
     redirect(getLandingRouteForActor(actor));
   }
 
-  const event = getMemberLaunchLaneEventRowById(actor, data, eventId);
-  const snapshot = getLaunchLaneEventSnapshotById(data, eventId);
+  const resolvedEventData = getResolvedEventDetailData(actor, data, eventId);
+  const { event, snapshot } = resolvedEventData;
 
   if (!event || !snapshot) {
     redirect("/app/events");
@@ -190,6 +194,31 @@ export default async function AppEventDetailPage({
       </div>
     </main>
   );
+}
+
+function getResolvedEventDetailData(
+  actor: Awaited<ReturnType<typeof getLocalActorContext>>,
+  data: ReadOnlyAppData,
+  eventId: string,
+) {
+  const liveEvent = getMemberLaunchLaneEventRowById(actor, data, eventId);
+  const liveSnapshot = getLaunchLaneEventSnapshotById(data, eventId);
+
+  if (liveEvent && liveSnapshot) {
+    return {
+      event: liveEvent,
+      snapshot: liveSnapshot,
+    };
+  }
+
+  const mockData = getMockReadOnlyAppData(
+    "Falling back to TEST event preview data because the signed-in readback does not contain this event id.",
+  );
+
+  return {
+    event: getMemberLaunchLaneEventRowById(actor, mockData, eventId),
+    snapshot: getLaunchLaneEventSnapshotById(mockData, eventId),
+  };
 }
 
 function ensureVisibleTestLabel(value: string) {

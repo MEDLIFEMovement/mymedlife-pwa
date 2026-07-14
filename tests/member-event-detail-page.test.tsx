@@ -62,6 +62,38 @@ describe("member event detail route", () => {
     ).rejects.toThrow("redirect:/app/events");
   });
 
+  it("falls back to TEST preview event data when the signed-in readback lacks the requested event id", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const dataModule = await import("@/services/read-only-app-data");
+    const liveOnlyData = getMockReadOnlyAppData("Testing signed-in preview fallback.");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("member.a@mymedlife.test"),
+    );
+    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue({
+      ...liveOnlyData,
+      chapterEventRows: [],
+      lumaEventLinkRows: [],
+      eventRows: [],
+      allEventRows: [],
+      pointsEventRows: [],
+      allPointsEventRows: [],
+      kpiEventRows: [],
+    });
+
+    const { default: EventDetailPage } = await import("@/app/app/events/[eventId]/page");
+    const html = renderToStaticMarkup(
+      await EventDetailPage({
+        params: Promise.resolve({ eventId: "chapter-event-ucla-kickoff" }),
+        searchParams: Promise.resolve({ source: "home", step: "rsvp" }),
+      }),
+    );
+
+    expect(html).toContain("You&#x27;re RSVP&#x27;d!");
+    expect(html).toContain("Route-backed preview only");
+    expect(html).toContain('href="/app/events/chapter-event-ucla-kickoff?source=home&amp;step=checkin"');
+  });
+
   it("renders the source-backed event detail shell on the standalone route", async () => {
     const actorModule = await import("@/services/local-actor-context");
     const dataModule = await import("@/services/read-only-app-data");
