@@ -167,6 +167,13 @@ describe("admin management pages", () => {
     expect(html).toContain("Chapter type");
     expect(html).toContain("College / University Chapter");
     expect(html).toContain("Needs Review");
+    expect(html).toContain("Country");
+    expect(html).toContain("HubSpot company ID");
+    expect(html).toContain("Coach and student role history");
+    expect(html).toContain("Current Action Committee Chairs");
+    expect(html).toContain("Current E-Boarders");
+    expect(html).toContain("Previous role holders");
+    expect(html).toContain("HubSpot company/contact IDs are stored as app-side references");
     expect(html).toContain("Edit chapter ownership and modules");
     expect(html).toContain("Apply preview filters");
     expect(html).toContain("Archive chapter (blocked)");
@@ -283,11 +290,47 @@ describe("admin management pages", () => {
             name: "TEST UCLA MEDLIFE",
             school: "TEST UCLA",
             region: "West Coast",
+            country: "United States",
+            hubspotCompanyId: "hubspot-company-ucla",
             chapterType: "college_university",
             status: "active",
             coachOwnerId: "33333333-3333-4333-8333-333333333333",
+            coachAssignments: [
+              {
+                id: "55555555-5555-4555-8555-555555555555",
+                coachUserId: "33333333-3333-4333-8333-333333333333",
+                status: "active",
+                startsAt: "2024-08-01T00:00:00.000Z",
+                endsAt: null,
+                handoffReason: null,
+              },
+            ],
             staffOwnerIds: [],
             studentLeaderIds: ["44444444-4444-4444-8444-444444444444"],
+            studentLeaderAssignments: [
+              {
+                id: "66666666-6666-4666-8666-666666666666",
+                userId: "44444444-4444-4444-8444-444444444444",
+                roleKey: "President / VP",
+                status: "approved",
+                roleTermLabel: "President for 2024-2025",
+                roleTermStartYear: 2024,
+                roleTermEndYear: 2025,
+                approvedAt: "2024-08-01T00:00:00.000Z",
+                updatedAt: "2024-08-01T00:00:00.000Z",
+              },
+              {
+                id: "77777777-7777-4777-8777-777777777777",
+                userId: "55555555-5555-4555-8555-555555555556",
+                roleKey: "E-Board Member",
+                status: "inactive",
+                roleTermLabel: "E-Board for 2023-2024",
+                roleTermStartYear: 2023,
+                roleTermEndYear: 2024,
+                approvedAt: "2023-08-01T00:00:00.000Z",
+                updatedAt: "2024-05-01T00:00:00.000Z",
+              },
+            ],
             activeModules: ["Events", "Points"],
             activeMemberCount: 12,
             activeEventCount: 2,
@@ -320,6 +363,25 @@ describe("admin management pages", () => {
             portfolioChapterIds: [],
             inviteStatus: "accepted",
           },
+          {
+            id: "55555555-5555-4555-8555-555555555556",
+            name: "TEST Eva Eboard",
+            email: "test.eva.eboard@mymedlife.test",
+            status: "active",
+            chapterMemberships: [
+              {
+                chapterId: "11111111-1111-4111-8111-111111111111",
+                roleKey: "E-Board Member",
+                status: "inactive",
+                roleTermLabel: "E-Board for 2023-2024",
+                roleTermStartYear: 2023,
+                roleTermEndYear: 2024,
+              },
+            ],
+            staffRoles: [],
+            portfolioChapterIds: [],
+            inviteStatus: "accepted",
+          },
         ]}
         writeConfig={{
           enabled: true,
@@ -331,6 +393,16 @@ describe("admin management pages", () => {
     );
 
     expect(html).toContain("Create chapter");
+    expect(html).toContain("HubSpot company ID");
+    expect(html).toContain("hubspot-company-ucla");
+    expect(html).toContain("United States");
+    expect(html).toContain("Current coach");
+    expect(html).toContain("TEST Cam Coach");
+    expect(html).toContain("Current President / VP");
+    expect(html).toContain("President for 2024-2025");
+    expect(html).toContain("Previous role holders");
+    expect(html).toContain("E-Board for 2023-2024");
+    expect(html).toContain("Role term label");
     expect(html).toContain("Save chapter profile");
     expect(html).toContain("Assign coach");
     expect(html).toContain("Assign student leader");

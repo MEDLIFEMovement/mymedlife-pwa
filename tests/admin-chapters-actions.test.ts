@@ -91,6 +91,18 @@ describe("admin chapter management server action", () => {
     shortReasonForm.set("auditReason", "too short");
 
     await expectAdminChapterFailure(shortReasonForm, "audit_reason_required");
+
+    await expectAdminChapterFailure(
+      buildAdminChapterForm({
+        operation: "assign_student_leader",
+        chapterId: "00000000-0000-4000-8000-000000000201",
+        targetUserId: "00000000-0000-4000-8000-000000000008",
+        roleKey: "president_vp",
+        roleTermStartYear: "2025",
+        roleTermEndYear: "2024",
+      }),
+      "invalid_profile",
+    );
   });
 
   it("requires confirmation before destructive chapter changes", async () => {
@@ -294,6 +306,9 @@ describe("admin chapter management server action", () => {
         chapterId: "00000000-0000-4000-8000-000000000201",
         targetUserId: "00000000-0000-4000-8000-000000000008",
         roleKey: "action_committee_chair",
+        roleTermStartYear: "2024",
+        roleTermEndYear: "2025",
+        roleTermLabel: "Action Committee Chair for 2024-2025",
       }),
       {
         createServerClient: async () => ({
@@ -311,9 +326,14 @@ describe("admin chapter management server action", () => {
       name_input: null,
       campus_input: null,
       region_input: null,
+      country_input: null,
+      hubspot_company_id_input: null,
       status_input: null,
       target_user_uuid: "00000000-0000-4000-8000-000000000008",
       role_key_input: "action_committee_chair",
+      role_term_start_year_input: 2024,
+      role_term_end_year_input: 2025,
+      role_term_label_input: "Action Committee Chair for 2024-2025",
       audit_reason_input: "MED-509 admin chapter test reason.",
     });
     expect(result).toMatchObject({
@@ -389,6 +409,9 @@ function buildAdminChapterForm(input: {
   name?: string;
   region?: string;
   roleKey?: string;
+  roleTermEndYear?: string;
+  roleTermLabel?: string;
+  roleTermStartYear?: string;
   status?: string;
   targetUserId?: string;
 }) {
@@ -412,6 +435,13 @@ function buildAdminChapterForm(input: {
   if (input.name !== undefined) formData.set("name", input.name);
   if (input.region) formData.set("region", input.region);
   if (input.roleKey) formData.set("roleKey", input.roleKey);
+  if (input.roleTermEndYear) {
+    formData.set("roleTermEndYear", input.roleTermEndYear);
+  }
+  if (input.roleTermLabel) formData.set("roleTermLabel", input.roleTermLabel);
+  if (input.roleTermStartYear) {
+    formData.set("roleTermStartYear", input.roleTermStartYear);
+  }
   if (input.status) formData.set("status", input.status);
   if (input.targetUserId) formData.set("targetUserId", input.targetUserId);
 

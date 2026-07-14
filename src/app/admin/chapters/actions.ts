@@ -31,9 +31,14 @@ type AdminChapterRpcParams = {
   name_input: string | null;
   campus_input: string | null;
   region_input: string | null;
+  country_input: string | null;
+  hubspot_company_id_input: string | null;
   status_input: string | null;
   target_user_uuid: string | null;
   role_key_input: string | null;
+  role_term_start_year_input: number | null;
+  role_term_end_year_input: number | null;
+  role_term_label_input: string | null;
   audit_reason_input: string;
 };
 
@@ -196,9 +201,14 @@ export async function submitAdminChapterForLocalSupabase(
   const name = getOptionalString(formData.get("name"));
   const campus = getOptionalString(formData.get("campus"));
   const region = getOptionalString(formData.get("region"));
+  const country = getOptionalString(formData.get("country"));
+  const hubspotCompanyId = getOptionalString(formData.get("hubspotCompanyId"));
   const rawChapterType = getOptionalString(formData.get("chapterType"));
   const status = parseAdminChapterStatus(formData.get("status"));
   const roleKey = parseAdminStudentLeaderRole(formData.get("roleKey"));
+  const roleTermStartYear = parseOptionalYear(formData.get("roleTermStartYear"));
+  const roleTermEndYear = parseOptionalYear(formData.get("roleTermEndYear"));
+  const roleTermLabel = getOptionalString(formData.get("roleTermLabel"));
   const auditReason = String(formData.get("auditReason") ?? "").trim();
   const confirmation = String(formData.get("confirmation") ?? "").trim();
 
@@ -239,6 +249,23 @@ export async function submitAdminChapterForLocalSupabase(
       code: "invalid_role",
       chapterId: null,
       plainEnglishMessage: "Choose a valid student leader role before saving.",
+    };
+  }
+
+  if (
+    operation === "assign_student_leader" &&
+    (roleTermStartYear === "invalid" ||
+      roleTermEndYear === "invalid" ||
+      (typeof roleTermStartYear === "number" &&
+        typeof roleTermEndYear === "number" &&
+        roleTermEndYear < roleTermStartYear))
+  ) {
+    return {
+      success: false,
+      code: "invalid_profile",
+      chapterId: null,
+      plainEnglishMessage:
+        "Use a valid role year range before saving this chapter role history.",
     };
   }
 
@@ -340,9 +367,16 @@ export async function submitAdminChapterForLocalSupabase(
       name_input: name,
       campus_input: campus,
       region_input: region,
+      country_input: country,
+      hubspot_company_id_input: hubspotCompanyId,
       status_input: status,
       target_user_uuid: targetUserId,
       role_key_input: roleKey,
+      role_term_start_year_input:
+        typeof roleTermStartYear === "number" ? roleTermStartYear : null,
+      role_term_end_year_input:
+        typeof roleTermEndYear === "number" ? roleTermEndYear : null,
+      role_term_label_input: roleTermLabel,
       audit_reason_input: auditReason,
     });
 
@@ -392,6 +426,22 @@ function getOptionalString(value: FormDataEntryValue | null): string | null {
   const trimmed = value.trim();
 
   return trimmed.length > 0 ? trimmed : null;
+}
+
+function parseOptionalYear(
+  value: FormDataEntryValue | null,
+): number | null | "invalid" {
+  if (typeof value !== "string" || value.trim().length === 0) {
+    return null;
+  }
+
+  const year = Number(value.trim());
+
+  if (!Number.isInteger(year) || year < 1900 || year > 2200) {
+    return "invalid";
+  }
+
+  return year;
 }
 
 function appendSearchParams(path: string, params: URLSearchParams) {
