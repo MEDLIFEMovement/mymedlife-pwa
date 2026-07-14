@@ -11,7 +11,18 @@ import { getStaticRouteMetadata } from "@/services/static-route-metadata";
 export const metadata = getStaticRouteMetadata("admin");
 export const dynamic = "force-dynamic";
 
-export default async function AdminPage() {
+type AdminPageProps = {
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+};
+
+export default async function AdminPage({ searchParams }: AdminPageProps) {
+  const resolvedSearchParams = (await searchParams) ?? {};
+  const requestedView = resolvedSearchParams.view;
+
+  if (requestedView === "users") {
+    redirect("/admin/users");
+  }
+
   const actor = await getLocalActorContext();
 
   if (shouldRedirectActorToLogin(actor)) {

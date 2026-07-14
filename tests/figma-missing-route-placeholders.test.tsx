@@ -67,7 +67,7 @@ describe("Figma missing route placeholders", () => {
     );
 
     const { default: AdminPage } = await import("@/app/admin/page");
-    const html = renderToStaticMarkup(await AdminPage());
+    const html = renderToStaticMarkup(await AdminPage({}));
 
     expect(html).toContain("DS Admin · v2.4");
     expect(html).toContain("Overview");
@@ -86,6 +86,16 @@ describe("Figma missing route placeholders", () => {
     expect(html).toContain("Launch Mode Active");
     expect(html).not.toContain("Chapter Dashboard · Jun 2025");
     expect(html).not.toContain("Figma page missing - implementation blocked");
+  });
+
+  it("routes legacy admin users query links to the lifecycle-backed users page", async () => {
+    const { default: AdminPage } = await import("@/app/admin/page");
+
+    await expect(
+      AdminPage({
+        searchParams: Promise.resolve({ view: "users" }),
+      }),
+    ).rejects.toThrow("NEXT_REDIRECT:/admin/users");
   });
 
   it("keeps admin integrations, API-key, and MCP controls visibly blocked instead of simulating live mutations", async () => {
