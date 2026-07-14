@@ -10,6 +10,7 @@ import { buildLoginRedirectHref, shouldRedirectActorToLogin } from "@/services/l
 import { getAdminManagementDirectory } from "@/services/admin-management-data";
 import { getAdminUserCreationConfig } from "@/services/admin-user-creation";
 import { getAdminUserLifecycleConfig } from "@/services/admin-user-lifecycle";
+import { getAdminUserPasswordResetConfig } from "@/services/admin-user-password-reset";
 import { getLocalActorContext } from "@/services/local-actor-context";
 import { canAccessAdminWorkspace } from "@/services/role-visibility";
 import { getStaticRouteMetadata } from "@/services/static-route-metadata";
@@ -48,6 +49,7 @@ export default async function AdminUsersPage({
         writeConfig={directory.writeConfig}
         creationConfig={getAdminUserCreationConfig()}
         lifecycleConfig={getAdminUserLifecycleConfig()}
+        passwordResetConfig={getAdminUserPasswordResetConfig()}
       />
     </>
   );

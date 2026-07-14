@@ -79,6 +79,10 @@ describe("admin management pages", () => {
     expect(html).toContain("Return to General Student App only");
     expect(html).toContain("Apply preview filters");
     expect(html).toContain("Suspend / deactivate user");
+    expect(html).toContain("Send password reset email");
+    expect(html).toContain("RESET PASSWORD");
+    expect(html).toContain("Admins never see");
+    expect(html).toContain("Password reset locked:");
     expect(html).toContain("Permanently delete user");
     expect(html).toContain("Delete user safeguard");
     expect(html).toContain("Audit record preview");
@@ -236,9 +240,23 @@ describe("admin management pages", () => {
           externalWritesEnabled: false,
           reason: "Local DS Admin rehearsal.",
         }}
+        passwordResetConfig={{
+          enabled: true,
+          environment: "local",
+          reason: "Local password reset rehearsal.",
+          redirectTo: "http://127.0.0.1:3100/auth/callback?type=recovery&redirectTo=%2Fadmin%2Fusers",
+        }}
+        searchParams={{
+          adminUserPasswordResetResult: "password_reset_sent",
+        }}
       />,
     );
 
+    expect(html).toContain("Admin password reset: password reset sent");
+    expect(html).toContain("Password reset email was sent through Supabase Auth");
+    expect(html).toContain("Password reset enabled for local.");
+    expect(html).toContain("Send password reset email");
+    expect(html).not.toContain("Send password reset email (blocked)");
     expect(html).toContain("Save chapter role");
     expect(html).toContain("Remove chapter access");
     expect(html).toContain("Assign staff role");
