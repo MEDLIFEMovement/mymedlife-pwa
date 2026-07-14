@@ -74,6 +74,7 @@ type UserActionPreview = {
 const roleOptions = [
   "all",
   "general member",
+  "e-board member",
   "action committee member",
   "action committee chair",
   "president",
@@ -288,7 +289,7 @@ export function AdminUsersManagementPanel({
         {passwordResetResult ? <AdminUserPasswordResetResultBanner code={passwordResetResult} /> : null}
         {lifecycleResult ? <AdminUserLifecycleResultBanner code={lifecycleResult} /> : null}
 
-        <AdminUserCreationForm config={creationConfig} />
+        <AdminUserCreationForm chapters={chapters} config={creationConfig} />
 
         <form className="rounded-lg border border-white/10 bg-[#161b22] p-4">
           <div className="grid gap-3 md:grid-cols-[1.5fr_1fr_1fr_1fr_auto]">
@@ -600,7 +601,13 @@ function AdminUserPasswordResetResultBanner({ code }: { code: string }) {
   );
 }
 
-function AdminUserCreationForm({ config }: { config: AdminUserCreationConfig }) {
+function AdminUserCreationForm({
+  chapters,
+  config,
+}: {
+  chapters: ManagedChapter[];
+  config: AdminUserCreationConfig;
+}) {
   return (
     <section className="rounded-lg border border-sky-300/20 bg-sky-300/5 p-5">
       <div className="max-w-3xl">
@@ -647,11 +654,28 @@ function AdminUserCreationForm({ config }: { config: AdminUserCreationConfig }) 
             name="role"
           >
             <option value="general_member">General Member</option>
+            <option value="e_board_member">E-Board</option>
             <option value="coach">Coach</option>
             <option value="admin">Staff Admin</option>
             <option value="ds_admin">DS Admin</option>
             <option value="super_admin">Super Admin</option>
             <option value="test">TEST (staff/admin only)</option>
+          </select>
+        </label>
+        <label className="space-y-1 text-xs text-slate-400">
+          Chapter for E-Board
+          <select
+            className="w-full rounded border border-white/10 bg-[#0d1117] px-3 py-2 text-sm text-slate-100"
+            defaultValue=""
+            disabled={!config.enabled}
+            name="chapterId"
+          >
+            <option value="">Required only for E-Board</option>
+            {chapters.map((chapter) => (
+              <option key={chapter.id} value={chapter.id}>
+                {chapter.name}
+              </option>
+            ))}
           </select>
         </label>
         <label className="space-y-1 text-xs text-slate-400">
