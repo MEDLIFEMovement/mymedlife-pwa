@@ -249,6 +249,17 @@ export function mapAdminChapterRpcError(error: {
     );
   }
 
+  if (
+    message.includes("role term") ||
+    message.includes("term year") ||
+    message.includes("memberships_role_term_years_valid")
+  ) {
+    return failureResult(
+      "invalid_profile",
+      "Use a valid role year range before saving this chapter role history.",
+    );
+  }
+
   if (message.includes("invalid input value for enum app.chapter_status")) {
     return failureResult(
       "invalid_status",

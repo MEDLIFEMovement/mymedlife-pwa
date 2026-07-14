@@ -19,12 +19,38 @@ export type ManagedChapterStatus = "active" | "disabled" | "archived" | "deleted
 export type ManagedChapterMembership = {
   chapterId: string;
   roleKey: string;
+  status?: string;
+  roleTermLabel?: string | null;
+  roleTermStartYear?: number | null;
+  roleTermEndYear?: number | null;
+};
+
+export type ManagedChapterRoleAssignment = {
+  id: string;
+  userId: string;
+  roleKey: string;
+  status: string;
+  roleTermLabel?: string | null;
+  roleTermStartYear?: number | null;
+  roleTermEndYear?: number | null;
+  approvedAt?: string | null;
+  updatedAt?: string | null;
+};
+
+export type ManagedChapterCoachAssignment = {
+  id: string;
+  coachUserId: string;
+  status: string;
+  startsAt: string;
+  endsAt?: string | null;
+  handoffReason?: string | null;
 };
 
 export type ManagedUser = {
   id: string;
   name: string;
   email: string;
+  hubspotContactId?: string | null;
   status: ManagedUserStatus;
   chapterMemberships: ManagedChapterMembership[];
   staffRoles: string[];
@@ -37,12 +63,16 @@ export type ManagedChapter = {
   name: string;
   school: string;
   region: string;
+  country?: string | null;
+  hubspotCompanyId?: string | null;
   chapterType: ChapterType;
   status: ManagedChapterStatus;
   isTest?: boolean;
   coachOwnerId: string | null;
+  coachAssignments?: ManagedChapterCoachAssignment[];
   staffOwnerIds: string[];
   studentLeaderIds: string[];
+  studentLeaderAssignments?: ManagedChapterRoleAssignment[];
   activeModules: string[];
   activeMemberCount: number;
   activeEventCount: number;

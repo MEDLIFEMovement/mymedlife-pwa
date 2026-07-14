@@ -141,6 +141,7 @@ function mapAuthOnlyUserToManagedUser(user: AuthDirectoryUser): ManagedUser {
     name,
     email,
     status,
+    hubspotContactId: null,
     chapterMemberships: [],
     staffRoles: ["Auth user (profile missing)"],
     portfolioChapterIds: [],
@@ -192,6 +193,10 @@ function mapProfileToManagedUser(
     .map((membership) => ({
       chapterId: membership.chapter_id,
       roleKey: roleKeyToLabel(membership.role_key),
+      status: membership.status,
+      roleTermLabel: membership.role_term_label ?? null,
+      roleTermStartYear: membership.role_term_start_year ?? null,
+      roleTermEndYear: membership.role_term_end_year ?? null,
     }));
   const staffRoles = snapshot.staffRoles
     .filter((role) => role.user_id === profile.id && role.status === "active")
@@ -207,6 +212,7 @@ function mapProfileToManagedUser(
     name: profile.display_name,
     email: profile.email,
     status: profile.status === "active" ? "active" : "deactivated",
+    hubspotContactId: profile.hubspot_contact_id ?? null,
     chapterMemberships,
     staffRoles,
     portfolioChapterIds,
@@ -228,9 +234,39 @@ function mapChapterToManagedChapter(
       ),
     )
     .map((membership) => membership.user_id);
+  const studentLeaderAssignments = snapshot.memberships
+    .filter((membership) => {
+      return (
+        membership.chapter_id === chapter.id &&
+        ["action_committee_chair", "e_board_member", "president_vp"].includes(
+          membership.role_key,
+        )
+      );
+    })
+    .map((membership) => ({
+      id: membership.id,
+      userId: membership.user_id,
+      roleKey: roleKeyToLabel(membership.role_key),
+      status: membership.status,
+      roleTermLabel: membership.role_term_label ?? null,
+      roleTermStartYear: membership.role_term_start_year ?? null,
+      roleTermEndYear: membership.role_term_end_year ?? null,
+      approvedAt: membership.approved_at ?? null,
+      updatedAt: membership.updated_at ?? null,
+    }));
   const coachAssignment = snapshot.coachAssignments.find((assignment) => {
     return assignment.chapter_id === chapter.id && assignment.status === "active";
   });
+  const coachAssignments = snapshot.coachAssignments
+    .filter((assignment) => assignment.chapter_id === chapter.id)
+    .map((assignment) => ({
+      id: assignment.id,
+      coachUserId: assignment.coach_user_id,
+      status: assignment.status,
+      startsAt: assignment.starts_at,
+      endsAt: assignment.ends_at ?? null,
+      handoffReason: assignment.handoff_reason ?? null,
+    }));
   const activeEventCount = snapshot.chapterEventRows.filter((event) => {
     return event.chapter_id === chapter.id && event.status !== "canceled";
   }).length;
@@ -245,14 +281,18 @@ function mapChapterToManagedChapter(
     name: chapter.name,
     school: chapter.campus,
     region: chapter.region ?? "Unassigned",
+    country: chapter.country ?? null,
+    hubspotCompanyId: chapter.hubspot_company_id ?? null,
     chapterType: chapter.chapter_type
       ? normalizeChapterType(chapter.chapter_type)
       : inferChapterTypeFromCampus(chapter.campus),
     status: chapter.status === "inactive" ? "disabled" : chapter.status,
     isTest: chapter.is_test === true,
     coachOwnerId: coachAssignment?.coach_user_id ?? null,
+    coachAssignments,
     staffOwnerIds: [],
     studentLeaderIds,
+    studentLeaderAssignments,
     activeModules: ["Events", "RSVP", "Attendance", "Points"],
     activeMemberCount: activeMemberships.length,
     activeEventCount,

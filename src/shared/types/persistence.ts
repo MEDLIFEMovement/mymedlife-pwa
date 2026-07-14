@@ -129,6 +129,7 @@ export type ProfileRow = {
   id: Uuid;
   display_name: string;
   email: string;
+  hubspot_contact_id?: string | null;
   status: ProfileStatus;
   created_at: Timestamp;
   updated_at: Timestamp;
@@ -139,6 +140,8 @@ export type ChapterRow = {
   name: string;
   campus: string;
   region: string | null;
+  country?: string | null;
+  hubspot_company_id?: string | null;
   chapter_type?: ChapterType | null;
   status: ChapterStatus;
   is_test?: boolean;
@@ -156,6 +159,9 @@ export type MembershipRow = {
   requested_at: Timestamp;
   approved_at: Timestamp | null;
   approved_by: Uuid | null;
+  role_term_start_year?: number | null;
+  role_term_end_year?: number | null;
+  role_term_label?: string | null;
   created_at: Timestamp;
   updated_at: Timestamp;
 };

@@ -267,6 +267,10 @@ export function AdminChaptersManagementPanel({
                       </td>
                       <td className="px-5 py-4 text-xs leading-5 text-slate-400">
                         <div>Coach: {getUserName(users, chapter.coachOwnerId)}</div>
+                        <div>Country: {chapter.country || "Unassigned"}</div>
+                        <div>
+                          HubSpot company: {chapter.hubspotCompanyId || "Not linked"}
+                        </div>
                         <div>
                           Staff:{" "}
                           {chapter.staffOwnerIds.map((id) => getUserName(users, id)).join(", ") ||
@@ -329,6 +333,11 @@ export function AdminChaptersManagementPanel({
                   "Unassigned"
                 }
               />
+              <DetailRow label="Country" value={selectedChapter.country || "Unassigned"} />
+              <DetailRow
+                label="HubSpot company ID"
+                value={selectedChapter.hubspotCompanyId || "Not linked"}
+              />
               <DetailRow
                 label="Student leaders"
                 value={
@@ -341,6 +350,8 @@ export function AdminChaptersManagementPanel({
                 value={selectedChapter.activeModules.join(", ") || "None"}
               />
             </dl>
+
+            <ChapterRoleHistory chapter={selectedChapter} users={users} />
 
             <div className="mt-5 rounded border border-amber-400/20 bg-amber-400/10 p-3 text-xs leading-5 text-amber-100">
               Archive is preferred over delete. Hard delete is blocked when
@@ -359,6 +370,11 @@ export function AdminChaptersManagementPanel({
                   writes are explicitly enabled. Chapter type classification is
                   shown here for review; hosted persistence needs the later
                   chapter-type migration/RPC update.
+                </p>
+                <p className="mt-2 text-xs leading-5 text-slate-500">
+                  HubSpot company/contact IDs are stored as app-side references
+                  for review and matching. This page does not send live HubSpot
+                  updates yet.
                 </p>
                 <p className="mt-2 text-xs leading-5 text-sky-200/80">
                   This review shell keeps chapter mutation verbs visibly blocked until the
@@ -456,6 +472,13 @@ function ChapterCreateForm({
       <FormInput disabled={disabled} label="Chapter name" name="name" placeholder="TEST Pilot MEDLIFE" />
       <FormInput disabled={disabled} label="School" name="campus" placeholder="TEST Pilot University" />
       <FormInput disabled={disabled} label="Region / portfolio" name="region" placeholder="TEST West Coast" />
+      <FormInput disabled={disabled} label="Country" name="country" placeholder="United States" />
+      <FormInput
+        disabled={disabled}
+        label="HubSpot company ID"
+        name="hubspotCompanyId"
+        placeholder="HubSpot company ID"
+      />
       <SelectField
         disabled={disabled}
         label="Chapter type"
@@ -492,6 +515,18 @@ function ChapterEditForm({
       <FormInput disabled={disabled} label="Chapter name" name="name" value={chapter.name} />
       <FormInput disabled={disabled} label="School" name="campus" value={chapter.school} />
       <FormInput disabled={disabled} label="Region / portfolio" name="region" value={chapter.region} />
+      <FormInput
+        disabled={disabled}
+        label="Country"
+        name="country"
+        value={chapter.country ?? ""}
+      />
+      <FormInput
+        disabled={disabled}
+        label="HubSpot company ID"
+        name="hubspotCompanyId"
+        value={chapter.hubspotCompanyId ?? ""}
+      />
       <SelectField
         disabled={disabled}
         label="Chapter type"
@@ -590,6 +625,26 @@ function ChapterStudentLeaderForm({
           { label: "President / VP", value: "president_vp" },
         ]}
         value="action_committee_chair"
+      />
+      <div className="grid gap-3 md:grid-cols-2">
+        <FormInput
+          disabled={disabled}
+          label="Role start year"
+          name="roleTermStartYear"
+          placeholder="2024"
+        />
+        <FormInput
+          disabled={disabled}
+          label="Role end year"
+          name="roleTermEndYear"
+          placeholder="2025"
+        />
+      </div>
+      <FormInput
+        disabled={disabled}
+        label="Role term label"
+        name="roleTermLabel"
+        placeholder="President for 2024-2025"
       />
     </AdminChapterForm>
   );
@@ -720,6 +775,115 @@ function ChapterTestMarkerForm({
         TEST chapters are visible to Staff/Admin only and are excluded from member and leader readbacks.
       </p>
     </AdminChapterForm>
+  );
+}
+
+function ChapterRoleHistory({
+  chapter,
+  users,
+}: {
+  chapter: ManagedChapter;
+  users: ManagedUser[];
+}) {
+  const coachAssignments = chapter.coachAssignments ?? [];
+  const currentCoaches = coachAssignments.filter(
+    (assignment) => assignment.status === "active",
+  );
+  const roleAssignments = chapter.studentLeaderAssignments ?? [];
+  const currentRoles = roleAssignments.filter(
+    (assignment) => assignment.status === "approved",
+  );
+  const previousRoles = roleAssignments.filter(
+    (assignment) => assignment.status !== "approved",
+  );
+
+  return (
+    <div className="mt-5 space-y-3 rounded border border-white/10 bg-[#0d1117] p-4 text-xs leading-5 text-slate-400">
+      <h3 className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">
+        Coach and student role history
+      </h3>
+      <HistorySection
+        empty="No current coach assignment."
+        label="Current coach"
+        rows={currentCoaches.map((assignment) =>
+          [
+            getUserName(users, assignment.coachUserId),
+            `status: ${assignment.status}`,
+            `started: ${formatNullableDate(assignment.startsAt)}`,
+          ].join(" - "),
+        )}
+      />
+      <HistorySection
+        empty="No coach history yet."
+        label="Coach history"
+        rows={coachAssignments.map((assignment) =>
+          [
+            getUserName(users, assignment.coachUserId),
+            `status: ${assignment.status}`,
+            `started: ${formatNullableDate(assignment.startsAt)}`,
+            assignment.endsAt ? `ended: ${formatNullableDate(assignment.endsAt)}` : null,
+            assignment.handoffReason ? `reason: ${assignment.handoffReason}` : null,
+          ]
+            .filter(Boolean)
+            .join(" - "),
+        )}
+      />
+      <HistorySection
+        empty="No current Action Committee Chairs."
+        label="Current Action Committee Chairs"
+        rows={currentRoles
+          .filter((assignment) => assignment.roleKey === "Action Committee Chair")
+          .map((assignment) => formatRoleAssignment(assignment, users))}
+      />
+      <HistorySection
+        empty="No current E-Boarders."
+        label="Current E-Boarders"
+        rows={currentRoles
+          .filter((assignment) => assignment.roleKey === "E-Board Member")
+          .map((assignment) => formatRoleAssignment(assignment, users))}
+      />
+      <HistorySection
+        empty="No current President / VP."
+        label="Current President / VP"
+        rows={currentRoles
+          .filter((assignment) => assignment.roleKey === "President / VP")
+          .map((assignment) => formatRoleAssignment(assignment, users))}
+      />
+      <HistorySection
+        empty="No prior role history yet."
+        label="Previous role holders"
+        rows={previousRoles.map((assignment) =>
+          formatRoleAssignment(assignment, users),
+        )}
+      />
+    </div>
+  );
+}
+
+function HistorySection({
+  empty,
+  label,
+  rows,
+}: {
+  empty: string;
+  label: string;
+  rows: string[];
+}) {
+  return (
+    <div className="rounded border border-white/10 bg-[#161b22] p-3">
+      <div className="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500">
+        {label}
+      </div>
+      {rows.length > 0 ? (
+        <ul className="mt-2 list-disc space-y-1 pl-4">
+          {rows.map((row) => (
+            <li key={row}>{row}</li>
+          ))}
+        </ul>
+      ) : (
+        <p className="mt-2 text-slate-500">{empty}</p>
+      )}
+    </div>
   );
 }
 
@@ -1087,6 +1251,34 @@ function getUserName(users: ManagedUser[], userId: string | null | undefined): s
 
   const user = users.find((item) => item.id === userId);
   return user ? getVisibleUserName(user) : userId;
+}
+
+function formatRoleAssignment(
+  assignment: NonNullable<ManagedChapter["studentLeaderAssignments"]>[number],
+  users: ManagedUser[],
+) {
+  const label = assignment.roleTermLabel
+    ? assignment.roleTermLabel
+    : assignment.roleTermStartYear && assignment.roleTermEndYear
+      ? `${assignment.roleKey} for ${assignment.roleTermStartYear}-${assignment.roleTermEndYear}`
+      : assignment.roleKey;
+
+  return [
+    getUserName(users, assignment.userId),
+    label,
+    `status: ${assignment.status}`,
+    assignment.approvedAt ? `approved: ${formatNullableDate(assignment.approvedAt)}` : null,
+  ]
+    .filter(Boolean)
+    .join(" - ");
+}
+
+function formatNullableDate(value: string | null | undefined) {
+  if (!value) {
+    return "not recorded";
+  }
+
+  return value.slice(0, 10);
 }
 
 function getVisibleUserName(user: ManagedUser) {

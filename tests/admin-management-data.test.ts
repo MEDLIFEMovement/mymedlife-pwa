@@ -39,6 +39,7 @@ describe("admin management Supabase directory data", () => {
             id: "00000000-0000-4000-8000-000000000102",
             display_name: "Diego Director",
             email: "diego.director@mymedlife.test",
+            hubspot_contact_id: "hubspot-contact-diego",
           }),
           profileRow({
             id: "00000000-0000-4000-8000-000000000103",
@@ -78,6 +79,8 @@ describe("admin management Supabase directory data", () => {
             name: "UCLA MEDLIFE",
             campus: "UCLA",
             region: null,
+            country: "United States",
+            hubspot_company_id: "hubspot-company-ucla",
           }),
           chapterRow({
             id: "10000000-0000-4000-8000-000000000202",
@@ -100,6 +103,9 @@ describe("admin management Supabase directory data", () => {
             user_id: "00000000-0000-4000-8000-000000000102",
             chapter_id: "10000000-0000-4000-8000-000000000201",
             role_key: "action_committee_chair",
+            role_term_start_year: 2024,
+            role_term_end_year: 2025,
+            role_term_label: "Action Committee Chair for 2024-2025",
           }),
           membershipRow({
             id: "20000000-0000-4000-8000-000000000303",
@@ -107,6 +113,9 @@ describe("admin management Supabase directory data", () => {
             chapter_id: "10000000-0000-4000-8000-000000000201",
             role_key: "president_vp",
             status: "inactive",
+            role_term_start_year: 2023,
+            role_term_end_year: 2024,
+            role_term_label: "President for 2023-2024",
           }),
           membershipRow({
             id: "20000000-0000-4000-8000-000000000304",
@@ -205,23 +214,28 @@ describe("admin management Supabase directory data", () => {
       expect.arrayContaining([
         expect.objectContaining({
           id: "00000000-0000-4000-8000-000000000101",
-          chapterMemberships: [
-            {
+          chapterMemberships: expect.arrayContaining([
+            expect.objectContaining({
               chapterId: "10000000-0000-4000-8000-000000000201",
               roleKey: "General Member",
-            },
-          ],
+            }),
+          ]),
           inviteStatus: "accepted",
           status: "active",
         }),
         expect.objectContaining({
           id: "00000000-0000-4000-8000-000000000102",
-          chapterMemberships: [
-            {
+          hubspotContactId: "hubspot-contact-diego",
+          chapterMemberships: expect.arrayContaining([
+            expect.objectContaining({
               chapterId: "10000000-0000-4000-8000-000000000201",
               roleKey: "Action Committee Chair",
-            },
-          ],
+              roleTermEndYear: 2025,
+              roleTermLabel: "Action Committee Chair for 2024-2025",
+              roleTermStartYear: 2024,
+              status: "approved",
+            }),
+          ]),
         }),
         expect.objectContaining({
           id: "00000000-0000-4000-8000-000000000103",
@@ -235,30 +249,30 @@ describe("admin management Supabase directory data", () => {
         }),
         expect.objectContaining({
           id: "00000000-0000-4000-8000-000000000105",
-          chapterMemberships: [
-            {
+          chapterMemberships: expect.arrayContaining([
+            expect.objectContaining({
               chapterId: "10000000-0000-4000-8000-000000000201",
               roleKey: "E-Board Member",
-            },
-          ],
+            }),
+          ]),
         }),
         expect.objectContaining({
           id: "00000000-0000-4000-8000-000000000106",
-          chapterMemberships: [
-            {
+          chapterMemberships: expect.arrayContaining([
+            expect.objectContaining({
               chapterId: "10000000-0000-4000-8000-000000000201",
               roleKey: "President / VP",
-            },
-          ],
+            }),
+          ]),
         }),
         expect.objectContaining({
           id: "00000000-0000-4000-8000-000000000107",
-          chapterMemberships: [
-            {
+          chapterMemberships: expect.arrayContaining([
+            expect.objectContaining({
               chapterId: "10000000-0000-4000-8000-000000000201",
               roleKey: "Action Committee Member",
-            },
-          ],
+            }),
+          ]),
           staffRoles: ["Staff", "DS Admin"],
         }),
         expect.objectContaining({
@@ -272,13 +286,34 @@ describe("admin management Supabase directory data", () => {
         expect.objectContaining({
           id: "10000000-0000-4000-8000-000000000201",
           region: "Unassigned",
+          country: "United States",
+          hubspotCompanyId: "hubspot-company-ucla",
           chapterType: "college_university",
           coachOwnerId: "00000000-0000-4000-8000-000000000103",
+          coachAssignments: [
+            expect.objectContaining({
+              coachUserId: "00000000-0000-4000-8000-000000000103",
+              status: "active",
+            }),
+          ],
           studentLeaderIds: [
             "00000000-0000-4000-8000-000000000102",
             "00000000-0000-4000-8000-000000000105",
             "00000000-0000-4000-8000-000000000106",
           ],
+          studentLeaderAssignments: expect.arrayContaining([
+            expect.objectContaining({
+              userId: "00000000-0000-4000-8000-000000000102",
+              roleKey: "Action Committee Chair",
+              roleTermLabel: "Action Committee Chair for 2024-2025",
+            }),
+            expect.objectContaining({
+              userId: "00000000-0000-4000-8000-000000000104",
+              roleKey: "President / VP",
+              roleTermLabel: "President for 2023-2024",
+              status: "inactive",
+            }),
+          ]),
           activeMemberCount: 5,
           activeEventCount: 1,
           historicalRecordCount: 4,
@@ -545,12 +580,14 @@ function profileRow(input: {
   id: string;
   display_name: string;
   email: string;
+  hubspot_contact_id?: string | null;
   status?: ProfileRow["status"];
 }): ProfileRow {
   return {
     id: input.id,
     display_name: input.display_name,
     email: input.email,
+    hubspot_contact_id: input.hubspot_contact_id ?? null,
     status: input.status ?? "active",
     created_at: now,
     updated_at: now,
@@ -562,6 +599,8 @@ function chapterRow(input: {
   name: string;
   campus: string;
   chapter_type?: ChapterRow["chapter_type"];
+  country?: string | null;
+  hubspot_company_id?: string | null;
   region?: string | null;
   status?: ChapterRow["status"];
 }): ChapterRow {
@@ -570,6 +609,8 @@ function chapterRow(input: {
     name: input.name,
     campus: input.campus,
     region: input.region === undefined ? "Northeast" : input.region,
+    country: input.country ?? null,
+    hubspot_company_id: input.hubspot_company_id ?? null,
     chapter_type: input.chapter_type,
     status: input.status ?? "active",
     created_by: null,
@@ -583,6 +624,9 @@ function membershipRow(input: {
   user_id: string;
   chapter_id: string;
   role_key: MembershipRow["role_key"];
+  role_term_end_year?: number | null;
+  role_term_label?: string | null;
+  role_term_start_year?: number | null;
   status?: MembershipRow["status"];
 }): MembershipRow {
   return {
@@ -591,6 +635,9 @@ function membershipRow(input: {
     chapter_id: input.chapter_id,
     role_key: input.role_key,
     status: input.status ?? "approved",
+    role_term_start_year: input.role_term_start_year ?? null,
+    role_term_end_year: input.role_term_end_year ?? null,
+    role_term_label: input.role_term_label ?? null,
     requested_at: now,
     approved_at: now,
     approved_by: null,
