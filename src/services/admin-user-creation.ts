@@ -1,11 +1,18 @@
 import { createClient } from "@supabase/supabase-js";
 
 import type { AuthSessionState } from "@/services/auth-session";
+import { isUuid } from "@/services/action-start-write";
 import type { DatabaseRoleKey } from "@/shared/types/persistence";
 
 export type AdminUserCreationRole = Extract<
   DatabaseRoleKey,
-  "general_member" | "coach" | "admin" | "ds_admin" | "super_admin" | "test"
+  | "general_member"
+  | "e_board_member"
+  | "coach"
+  | "admin"
+  | "ds_admin"
+  | "super_admin"
+  | "test"
 >;
 
 export type AdminUserCreationConfig = {
@@ -155,9 +162,21 @@ export function parseAdminUserCreationRole(
 ): AdminUserCreationRole | null {
   const role = typeof value === "string" ? value.trim() : "";
 
-  return ["general_member", "coach", "admin", "ds_admin", "super_admin", "test"].includes(role)
+  return ["general_member", "e_board_member", "coach", "admin", "ds_admin", "super_admin", "test"].includes(role)
     ? (role as AdminUserCreationRole)
     : null;
+}
+
+export function normalizeAdminUserCreationChapterId(value: FormDataEntryValue | null): string {
+  return typeof value === "string" ? value.trim() : "";
+}
+
+export function requiresAdminUserCreationChapter(role: AdminUserCreationRole): boolean {
+  return role === "e_board_member";
+}
+
+export function isValidAdminUserCreationChapterId(chapterId: string): boolean {
+  return isUuid(chapterId);
 }
 
 export function normalizeAdminUserCreationEmail(value: FormDataEntryValue | null): string {

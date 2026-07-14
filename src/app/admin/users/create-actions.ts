@@ -8,9 +8,12 @@ import {
   createAdminUserCreationClient,
   getAdminUserCreationConfig,
   isPrivilegedAdminSession,
+  isValidAdminUserCreationChapterId,
+  normalizeAdminUserCreationChapterId,
   normalizeAdminUserCreationDisplayName,
   normalizeAdminUserCreationEmail,
   parseAdminUserCreationRole,
+  requiresAdminUserCreationChapter,
   type AdminUserCreationClient,
   type AdminUserCreationResult,
   type AdminUserCreationRole,
@@ -50,12 +53,20 @@ export async function submitAdminUserCreationForSupabase(
   const displayName = normalizeAdminUserCreationDisplayName(formData.get("displayName"));
   const password = getString(formData.get("temporaryPassword"));
   const role = parseAdminUserCreationRole(formData.get("role"));
+  const chapterId = normalizeAdminUserCreationChapterId(formData.get("chapterId"));
   const auditReason = getString(formData.get("auditReason"));
 
   if (!email.includes("@") || !displayName || password.length < 12 || !role) {
     return failure(
       "validation_error",
       "Enter a valid email, display name, role, and a temporary password of at least 12 characters.",
+    );
+  }
+
+  if (requiresAdminUserCreationChapter(role) && !isValidAdminUserCreationChapterId(chapterId)) {
+    return failure(
+      "validation_error",
+      "Choose a real Supabase chapter before creating an E-Board user.",
     );
   }
 
@@ -131,7 +142,21 @@ export async function submitAdminUserCreationForSupabase(
     return failure("server_error", "The profile row could not be created, so the auth account was rolled back.");
   }
 
-  if (role !== "general_member") {
+  if (role === "e_board_member") {
+    const membershipInsert = await serviceClient.schema("app").from("memberships").insert({
+      user_id: userId,
+      chapter_id: chapterId,
+      role_key: role,
+      status: "approved",
+      approved_at: new Date().toISOString(),
+      approved_by: actorUser.id,
+    }).select("id").single();
+
+    if (membershipInsert.error) {
+      await serviceClient.auth.admin.deleteUser(userId);
+      return failure("server_error", "The E-Board membership row could not be created, so the auth account was rolled back.");
+    }
+  } else if (role !== "general_member") {
     const roleInsert = await serviceClient.schema("app").from("staff_role_assignments").insert({
       user_id: userId,
       role_key: role,
