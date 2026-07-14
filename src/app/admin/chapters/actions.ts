@@ -359,17 +359,21 @@ export async function submitAdminChapterForLocalSupabase(
     };
   }
 
+  const rpcOperation =
+    operation === "delete_chapter" ? "update_chapter" : operation;
+  const rpcStatus = operation === "delete_chapter" ? "deleted" : status;
+
   const { data, error } = await client
     .schema("app")
     .rpc("admin_manage_chapter", {
-      operation_input: operation,
+      operation_input: rpcOperation,
       chapter_uuid: chapterId,
       name_input: name,
       campus_input: campus,
       region_input: region,
       country_input: country,
       hubspot_company_id_input: hubspotCompanyId,
-      status_input: status,
+      status_input: rpcStatus,
       target_user_uuid: targetUserId,
       role_key_input: roleKey,
       role_term_start_year_input:

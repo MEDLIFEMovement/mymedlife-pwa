@@ -19,7 +19,7 @@ export type DatabaseRoleKey =
   | "test";
 
 export type ProfileStatus = "active" | "inactive";
-export type ChapterStatus = "active" | "inactive" | "archived";
+export type ChapterStatus = "active" | "inactive" | "archived" | "deleted";
 export type ChapterType = "high_school" | "college_university" | "needs_review";
 export type MembershipStatus = "requested" | "approved" | "rejected" | "inactive";
 export type StaffRoleStatus = "active" | "inactive" | "ended";

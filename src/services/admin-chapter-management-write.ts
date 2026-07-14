@@ -6,6 +6,7 @@ export type AdminChapterOperation =
   | "create_chapter"
   | "update_chapter"
   | "archive_chapter"
+  | "delete_chapter"
   | "disable_chapter"
   | "assign_coach"
   | "remove_coach"
@@ -67,6 +68,7 @@ const adminChapterOperations = new Set<AdminChapterOperation>([
   "create_chapter",
   "update_chapter",
   "archive_chapter",
+  "delete_chapter",
   "disable_chapter",
   "assign_coach",
   "remove_coach",
@@ -78,6 +80,7 @@ const chapterStatuses = new Set<ChapterStatus>([
   "active",
   "inactive",
   "archived",
+  "deleted",
 ]);
 
 const studentLeaderRoles = new Set<DatabaseRoleKey>([
@@ -92,6 +95,7 @@ export const adminChapterOperationConfirmation: Partial<
   Record<AdminChapterOperation, string>
 > = {
   archive_chapter: "ARCHIVE CHAPTER",
+  delete_chapter: "DELETE CHAPTER",
   disable_chapter: "DEACTIVATE CHAPTER",
   remove_coach: "REMOVE COACH",
   remove_student_leader: "REMOVE STUDENT LEADER",
