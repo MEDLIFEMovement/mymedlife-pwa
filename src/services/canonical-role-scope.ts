@@ -90,6 +90,7 @@ const databaseRoleMappings: Record<DatabaseRoleKey, CanonicalRoleMapping> = {
   admin: { role: "department_staff", scope: "department" },
   ds_admin: { role: "ds_admin", scope: "all_platform" },
   super_admin: { role: "super_admin", scope: "all_platform" },
+  test: { role: "student_member", scope: "own" },
 };
 
 const chapterRoleLabelMappings: Record<string, CanonicalRoleMapping> = {

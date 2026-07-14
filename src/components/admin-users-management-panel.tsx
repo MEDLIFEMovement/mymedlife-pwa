@@ -1,5 +1,7 @@
 import type { ReactNode } from "react";
 import { submitAdminUserAccessAction } from "@/app/admin/users/actions";
+import { submitAdminUserCreationAction } from "@/app/admin/users/create-actions";
+import { submitAdminUserLifecycleAction } from "@/app/admin/users/lifecycle-actions";
 import {
   changeManagedUserAccess,
   deleteManagedUser,
@@ -22,6 +24,8 @@ import {
   type AdminAccessWriteConfig,
 } from "@/services/admin-management-write";
 import { AdminReviewShellHeader } from "@/components/admin-review-shell-header";
+import type { AdminUserCreationConfig } from "@/services/admin-user-creation";
+import type { AdminUserLifecycleConfig } from "@/services/admin-user-lifecycle";
 import type { LocalActorContext } from "@/services/local-actor-context";
 import type { DataSourceMeta } from "@/services/read-only-app-data";
 import { getWorkspaceLabel } from "@/services/workspace-access";
@@ -35,6 +39,8 @@ export type AdminUsersSearchParams = {
   targetUserId?: string | string[];
   adminAccessResult?: string | string[];
   operation?: string | string[];
+  adminUserCreationResult?: string | string[];
+  adminUserLifecycleResult?: string | string[];
 };
 
 type AdminUsersManagementPanelProps = {
@@ -44,6 +50,8 @@ type AdminUsersManagementPanelProps = {
   searchParams?: AdminUsersSearchParams;
   users?: ManagedUser[];
   writeConfig?: AdminAccessWriteConfig;
+  creationConfig?: AdminUserCreationConfig;
+  lifecycleConfig?: AdminUserLifecycleConfig;
 };
 
 type UserActionPreview = {
@@ -170,6 +178,16 @@ export function AdminUsersManagementPanel({
     externalWritesEnabled: false,
     reason: "Admin access writes are disabled for this review.",
   },
+  creationConfig = {
+    enabled: false,
+    environment: "local",
+    reason: "User creation is disabled for this review.",
+  },
+  lifecycleConfig = {
+    enabled: false,
+    environment: "local",
+    reason: "User lifecycle writes are disabled for this review.",
+  },
 }: AdminUsersManagementPanelProps) {
   const query = getSingleParam(searchParams.q);
   const role = getSingleParam(searchParams.role) || "all";
@@ -178,6 +196,8 @@ export function AdminUsersManagementPanel({
   const resultCode = getAdminAccessResultCode(
     getSingleParam(searchParams.adminAccessResult),
   );
+  const creationResult = getSingleParam(searchParams.adminUserCreationResult);
+  const lifecycleResult = getSingleParam(searchParams.adminUserLifecycleResult);
   const status = statusOptions.includes(rawStatus as ManagedUserStatus | "all")
     ? (rawStatus as ManagedUserStatus | "all")
     : "all";
@@ -253,6 +273,10 @@ export function AdminUsersManagementPanel({
         </section>
 
         {resultCode ? <AdminAccessResultBanner code={resultCode} /> : null}
+        {creationResult ? <AdminUserCreationResultBanner code={creationResult} /> : null}
+        {lifecycleResult ? <AdminUserLifecycleResultBanner code={lifecycleResult} /> : null}
+
+        <AdminUserCreationForm config={creationConfig} />
 
         <form className="rounded-lg border border-white/10 bg-[#161b22] p-4">
           <div className="grid gap-3 md:grid-cols-[1.5fr_1fr_1fr_1fr_auto]">
@@ -438,6 +462,7 @@ export function AdminUsersManagementPanel({
                 returnTo={returnTo}
                 selectedUser={selectedUser}
                 writeConfig={writeConfig}
+                lifecycleConfig={lifecycleConfig}
               />
             ) : null}
           </aside>
@@ -466,13 +491,167 @@ function AdminAccessResultBanner({ code }: { code: AdminAccessResultCode }) {
   );
 }
 
+function AdminUserCreationResultBanner({ code }: { code: string }) {
+  const isSuccess = code === "user_created";
+  const message =
+    code === "duplicate_email"
+      ? "An account with that email already exists."
+      : code === "creation_disabled"
+        ? "User creation is disabled for this environment."
+        : code === "permission_denied"
+          ? "Only a DS Admin or Super Admin can create users."
+          : code === "missing_auth"
+            ? "Sign in with a DS Admin or Super Admin account before creating a user."
+            : code === "validation_error"
+              ? "Check the email, display name, password, role, and audit reason."
+              : isSuccess
+                ? "User created with an audited profile and role."
+                : "User creation failed safely; no partial account should remain.";
+
+  return (
+    <div
+      className={`rounded-lg border px-4 py-3 text-sm ${
+        isSuccess
+          ? "border-emerald-300/30 bg-emerald-300/10 text-emerald-100"
+          : "border-rose-300/30 bg-rose-300/10 text-rose-100"
+      }`}
+      role="status"
+    >
+      <p className="font-semibold">Admin user creation: {code.replaceAll("_", " ")}</p>
+      <p className="mt-1">{message}</p>
+    </div>
+  );
+}
+
+function AdminUserLifecycleResultBanner({ code }: { code: string }) {
+  const success = code === "user_deactivated" || code === "user_deleted";
+  const message =
+    code === "user_deactivated"
+      ? "User access was suspended and the lifecycle change was audited."
+      : code === "user_deleted"
+        ? "User was permanently deleted from Auth and the deletion was audited."
+        : code === "lifecycle_disabled"
+          ? "User lifecycle writes are disabled for this environment."
+          : code === "confirmation_required"
+            ? "The required confirmation text was missing or did not match."
+            : code === "reason_required"
+              ? "A clear audit reason is required."
+              : code === "permission_denied"
+                ? "This signed-in role cannot perform that lifecycle action."
+                : "The lifecycle action failed safely; review the audit trail before retrying.";
+
+  return (
+    <div
+      className={`rounded-lg border px-4 py-3 text-sm ${
+        success
+          ? "border-emerald-300/30 bg-emerald-300/10 text-emerald-100"
+          : "border-rose-300/30 bg-rose-300/10 text-rose-100"
+      }`}
+      role="status"
+    >
+      <p className="font-semibold">Admin user lifecycle: {code.replaceAll("_", " ")}</p>
+      <p className="mt-1">{message}</p>
+    </div>
+  );
+}
+
+function AdminUserCreationForm({ config }: { config: AdminUserCreationConfig }) {
+  return (
+    <section className="rounded-lg border border-sky-300/20 bg-sky-300/5 p-5">
+      <div className="max-w-3xl">
+        <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-sky-300">
+          Account creation
+        </p>
+        <h2 className="mt-1 text-lg font-semibold text-white">Create a site user</h2>
+        <p className="mt-1 text-sm leading-6 text-slate-400">
+          Creates the Auth account, app profile, optional staff role, and audit record together.
+          The server rolls the Auth account back if any required row or audit write fails.
+        </p>
+        <p className={`mt-2 text-xs ${config.enabled ? "text-emerald-300" : "text-amber-200"}`}>
+          {config.enabled ? `Creation enabled for ${config.environment}.` : `Creation locked: ${config.reason}`}
+        </p>
+      </div>
+      <form action={submitAdminUserCreationAction} className="mt-4 grid gap-3 md:grid-cols-2">
+        <label className="space-y-1 text-xs text-slate-400">
+          Display name
+          <input
+            className="w-full rounded border border-white/10 bg-[#0d1117] px-3 py-2 text-sm text-slate-100"
+            name="displayName"
+            placeholder="Jordan Lee"
+            required
+            disabled={!config.enabled}
+          />
+        </label>
+        <label className="space-y-1 text-xs text-slate-400">
+          Email
+          <input
+            className="w-full rounded border border-white/10 bg-[#0d1117] px-3 py-2 text-sm text-slate-100"
+            name="email"
+            placeholder="jordan@example.com"
+            required
+            disabled={!config.enabled}
+            type="email"
+          />
+        </label>
+        <label className="space-y-1 text-xs text-slate-400">
+          Initial role
+          <select
+            className="w-full rounded border border-white/10 bg-[#0d1117] px-3 py-2 text-sm text-slate-100"
+            defaultValue="general_member"
+            disabled={!config.enabled}
+            name="role"
+          >
+            <option value="general_member">General Member</option>
+            <option value="coach">Coach</option>
+            <option value="admin">Staff Admin</option>
+            <option value="ds_admin">DS Admin</option>
+            <option value="super_admin">Super Admin</option>
+            <option value="test">TEST (staff/admin only)</option>
+          </select>
+        </label>
+        <label className="space-y-1 text-xs text-slate-400">
+          Temporary password
+          <input
+            className="w-full rounded border border-white/10 bg-[#0d1117] px-3 py-2 text-sm text-slate-100"
+            minLength={12}
+            name="temporaryPassword"
+            placeholder="At least 12 characters"
+            required
+            disabled={!config.enabled}
+            type="password"
+          />
+        </label>
+        <label className="space-y-1 text-xs text-slate-400 md:col-span-2">
+          Audit reason
+          <input
+            className="w-full rounded border border-white/10 bg-[#0d1117] px-3 py-2 text-sm text-slate-100"
+            minLength={12}
+            name="auditReason"
+            placeholder="Onboard approved staff member for chapter support"
+            required
+            disabled={!config.enabled}
+          />
+        </label>
+        <div className="md:col-span-2 flex flex-wrap items-center justify-between gap-3 rounded border border-amber-300/20 bg-amber-300/5 p-3 text-xs leading-5 text-amber-100">
+          <span>Use a temporary password and transfer it securely. No email or provider send is triggered.</span>
+          <button className="rounded bg-sky-500 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-400 disabled:cursor-not-allowed disabled:opacity-50" disabled={!config.enabled} type="submit">
+            Create user
+          </button>
+        </div>
+      </form>
+    </section>
+  );
+}
+
 function AdminAccessServerForms({
   chapters,
+  lifecycleConfig,
   returnTo,
   selectedUser,
   writeConfig,
 }: {
   chapters: ManagedChapter[];
+  lifecycleConfig: AdminUserLifecycleConfig;
   returnTo: string;
   selectedUser: ManagedUser;
   writeConfig: AdminAccessWriteConfig;
@@ -560,15 +739,87 @@ function AdminAccessServerForms({
         <SelectField disabled={!formsEnabled} label="Portfolio chapter" name="chapterId" options={chapterOptions(chapters)} value={defaultChapterId} />
       </AdminAccessFormShell>
 
-      <AdminAccessFormShell
-        buttonLabel="Deactivate user"
+      <AdminUserLifecycleForm
+        buttonLabel="Suspend / deactivate user"
         confirmation="DEACTIVATE USER"
-        disabled={!formsEnabled}
+        config={lifecycleConfig}
         operation="deactivate_user"
         returnTo={returnTo}
         selectedUser={selectedUser}
       />
+      <AdminUserLifecycleForm
+        buttonLabel="Permanently delete user"
+        confirmation="DELETE USER"
+        config={lifecycleConfig}
+        danger
+        operation="delete_user"
+        returnTo={returnTo}
+        selectedUser={selectedUser}
+      />
     </div>
+  );
+}
+
+function AdminUserLifecycleForm({
+  buttonLabel,
+  confirmation,
+  config,
+  danger = false,
+  operation,
+  returnTo,
+  selectedUser,
+}: {
+  buttonLabel: string;
+  confirmation: string;
+  config: AdminUserLifecycleConfig;
+  danger?: boolean;
+  operation: "deactivate_user" | "delete_user";
+  returnTo: string;
+  selectedUser: ManagedUser;
+}) {
+  const enabled = config.enabled && hasAdminAccessSupabaseIds({ targetUserId: selectedUser.id });
+
+  return (
+    <form action={submitAdminUserLifecycleAction} className="rounded border border-white/10 bg-[#0d1117] p-3">
+      <input type="hidden" name="operation" value={operation} />
+      <input type="hidden" name="targetUserId" value={selectedUser.id} />
+      <input type="hidden" name="returnTo" value={returnTo} />
+      <div className="grid gap-3">
+        <p className="text-xs leading-5 text-slate-500">
+          {operation === "delete_user"
+            ? "Permanent Auth deletion is Super Admin-only, irreversible, and requires an audit record first."
+            : "Suspension disables Auth access, marks the profile inactive, and closes active chapter/staff assignments."}
+        </p>
+        <label className="space-y-1 text-xs text-slate-400">
+          Confirmation
+          <input
+            className="w-full rounded border border-white/10 bg-[#161b22] px-3 py-2 text-sm text-slate-100 disabled:cursor-not-allowed disabled:text-slate-500"
+            disabled={!enabled}
+            name="confirmation"
+            placeholder={confirmation}
+          />
+        </label>
+        <label className="space-y-1 text-xs text-slate-400">
+          Audit reason
+          <textarea
+            className="min-h-20 w-full rounded border border-white/10 bg-[#161b22] px-3 py-2 text-sm text-slate-100 disabled:cursor-not-allowed disabled:text-slate-500"
+            defaultValue={`MED-509 production lifecycle action for ${selectedUser.email}.`}
+            disabled={!enabled}
+            name="auditReason"
+          />
+        </label>
+        <p className={`text-xs ${enabled ? "text-emerald-300" : "text-amber-200"}`}>
+          {enabled ? `Lifecycle enabled for ${config.environment}.` : `Lifecycle locked: ${config.reason}`}
+        </p>
+        <button
+          className={`rounded px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:bg-white/10 disabled:text-slate-500 ${danger ? "bg-rose-600 hover:bg-rose-500" : "bg-sky-500 hover:bg-sky-400"}`}
+          disabled={!enabled}
+          type="submit"
+        >
+          {buttonLabel}
+        </button>
+      </div>
+    </form>
   );
 }
 

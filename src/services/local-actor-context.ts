@@ -739,6 +739,8 @@ function roleKeyToLabel(roleKey: DatabaseRoleKey) {
       return "DS Admin";
     case "super_admin":
       return "Super Admin";
+    case "test":
+      return "TEST";
     case "general_member":
     default:
       return "General Member";

@@ -172,6 +172,7 @@ function mapChapterToManagedChapter(
       ? normalizeChapterType(chapter.chapter_type)
       : inferChapterTypeFromCampus(chapter.campus),
     status: chapter.status === "inactive" ? "disabled" : chapter.status,
+    isTest: chapter.is_test === true,
     coachOwnerId: coachAssignment?.coach_user_id ?? null,
     staffOwnerIds: [],
     studentLeaderIds,
@@ -200,6 +201,8 @@ function roleKeyToLabel(roleKey: DatabaseRoleKey): string {
       return "DS Admin";
     case "super_admin":
       return "Super Admin";
+    case "test":
+      return "TEST";
     case "general_member":
     default:
       return "General Member";

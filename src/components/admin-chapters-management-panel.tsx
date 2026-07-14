@@ -40,6 +40,7 @@ export type AdminChaptersSearchParams = {
 type AdminChaptersManagementPanelProps = {
   actor: LocalActorContext;
   chapterAction?: (formData: FormData) => Promise<void> | void;
+  testAction?: (formData: FormData) => Promise<void> | void;
   chapters?: ManagedChapter[];
   searchParams?: AdminChaptersSearchParams;
   users?: ManagedUser[];
@@ -70,6 +71,7 @@ const statusOptions: Array<ManagedChapterStatus | "all"> = [
 export function AdminChaptersManagementPanel({
   actor,
   chapterAction,
+  testAction,
   chapters = managedChapterFixtures,
   searchParams = {},
   users = managedUserFixtures,
@@ -260,6 +262,7 @@ export function AdminChaptersManagementPanel({
                         <div className="mt-1">
                           <TypePill type={chapter.chapterType} />
                         </div>
+                        {chapter.isTest ? <TestPill /> : null}
                         <StatusPill value={chapter.status} />
                       </td>
                       <td className="px-5 py-4 text-xs leading-5 text-slate-400">
@@ -310,6 +313,7 @@ export function AdminChaptersManagementPanel({
               </p>
               <div className="mt-2">
                 <TypePill type={selectedChapter.chapterType} />
+                {selectedChapter.isTest ? <TestPill /> : null}
               </div>
             </div>
             <dl className="mt-4 grid gap-3 text-sm">
@@ -403,6 +407,18 @@ export function AdminChaptersManagementPanel({
                 action={chapterAction}
                 chapter={selectedChapter}
                 disabled={!formsEnabled}
+                returnTo={selectedChapterReturnTo}
+              />
+              <ChapterLifecycleForm
+                action={chapterAction}
+                chapter={selectedChapter}
+                disabled={!formsEnabled}
+                returnTo={selectedChapterReturnTo}
+              />
+              <ChapterTestMarkerForm
+                action={testAction}
+                chapter={selectedChapter}
+                disabled={!formsEnabled || !testAction}
                 returnTo={selectedChapterReturnTo}
               />
             </div>
@@ -640,6 +656,70 @@ function ChapterArchiveForm({
       returnTo={returnTo}
       title="Archive chapter"
     />
+  );
+}
+
+function ChapterLifecycleForm({
+  action,
+  chapter,
+  disabled,
+  returnTo,
+}: {
+  action?: (formData: FormData) => Promise<void> | void;
+  chapter: ManagedChapter;
+  disabled: boolean;
+  returnTo: string;
+}) {
+  const isActive = chapter.status === "active";
+
+  return (
+    <AdminChapterForm
+      action={action}
+      buttonLabel={isActive ? "Deactivate / suspend chapter" : "Reactivate chapter"}
+      chapterId={chapter.id}
+      confirmation={isActive ? "DEACTIVATE CHAPTER" : undefined}
+      disabled={disabled}
+      operation={isActive ? "disable_chapter" : "update_chapter"}
+      returnTo={returnTo}
+      title="Chapter lifecycle"
+    >
+      <input name="status" type="hidden" value={isActive ? "inactive" : "active"} />
+      <p className="text-xs leading-5 text-slate-500">
+        Deactivate / suspend removes the chapter from active operations without deleting history. Reactivate restores its active status.
+      </p>
+    </AdminChapterForm>
+  );
+}
+
+function ChapterTestMarkerForm({
+  action,
+  chapter,
+  disabled,
+  returnTo,
+}: {
+  action?: (formData: FormData) => Promise<void> | void;
+  chapter: ManagedChapter;
+  disabled: boolean;
+  returnTo: string;
+}) {
+  const nextValue = !chapter.isTest;
+
+  return (
+    <AdminChapterForm
+      action={action}
+      buttonLabel={nextValue ? "Mark chapter TEST" : "Clear TEST marker"}
+      chapterId={chapter.id}
+      confirmation={nextValue ? "MARK CHAPTER TEST" : "CLEAR CHAPTER TEST"}
+      disabled={disabled}
+      operation="set_test_marker"
+      returnTo={returnTo}
+      title="Staff/Admin TEST visibility"
+    >
+      <input name="isTest" type="hidden" value={String(nextValue)} />
+      <p className="text-xs leading-5 text-slate-500">
+        TEST chapters are visible to Staff/Admin only and are excluded from member and leader readbacks.
+      </p>
+    </AdminChapterForm>
   );
 }
 
@@ -925,6 +1005,14 @@ function TypePill({ type }: { type: ChapterType }) {
   return (
     <span className="inline-flex rounded border border-blue-400/20 bg-blue-400/10 px-2 py-1 text-[11px] font-semibold text-blue-100">
       {getChapterTypeLabel(type)}
+    </span>
+  );
+}
+
+function TestPill() {
+  return (
+    <span className="ml-2 inline-flex rounded border border-amber-300/30 bg-amber-300/10 px-2 py-1 text-[11px] font-semibold text-amber-100">
+      TEST
     </span>
   );
 }
