@@ -29,8 +29,8 @@ const confirmations: Record<AdminUserLifecycleOperation, string> = {
 
 export async function submitAdminUserLifecycleAction(formData: FormData) {
   const result = await submitAdminUserLifecycleForSupabase(formData);
-  const targetUserId = String(formData.get("targetUserId") ?? "").trim();
-  redirect(`/admin/users?userId=${encodeURIComponent(targetUserId)}&adminUserLifecycleResult=${result.success ? result.code : result.code}`);
+  const targetUserId = getString(formData.get("targetUserId"));
+  redirect(`/admin/users?userId=${encodeURIComponent(targetUserId)}&adminUserLifecycleResult=${result.code}`);
 }
 
 export async function submitAdminUserLifecycleForSupabase(
@@ -42,20 +42,9 @@ export async function submitAdminUserLifecycleForSupabase(
     return failure("lifecycle_disabled", config.reason);
   }
 
-  const operation = parseOperation(formData.get("operation"));
-  const targetUserId = getString(formData.get("targetUserId"));
-  const confirmation = getString(formData.get("confirmation"));
-  const auditReason = getString(formData.get("auditReason"));
-
-  if (!operation || !targetUserId) {
-    return failure("target_not_found", "Choose a real Supabase-backed user before changing lifecycle status.");
-  }
-  if (confirmation !== confirmations[operation]) {
-    return failure("confirmation_required", `Type ${confirmations[operation]} before this action can run.`);
-  }
-  if (auditReason.length < 12) {
-    return failure("reason_required", "Add a clear audit reason of at least 12 characters.");
-  }
+  const request = parseLifecycleRequest(formData);
+  if (!request.success) return request.result;
+  const { operation, targetUserId, auditReason } = request;
 
   const createSessionClient = deps.createSessionClient ?? createSessionSupabaseClient;
   const { client, config: authConfig } = await createSessionClient();
@@ -65,14 +54,10 @@ export async function submitAdminUserLifecycleForSupabase(
 
   const getSessionState = deps.getSessionState ?? getAuthSessionState;
   const session = await getSessionState(client);
-  if (!isPrivilegedLifecycleSession(session) || !session.user) {
-    return failure(
-      session.status === "signed_in" ? "permission_denied" : "missing_auth",
-      "Sign in with a DS Admin or Super Admin account before changing a user lifecycle state.",
-    );
-  }
+  const actorId = session.user?.id;
+  if (!isPrivilegedLifecycleSession(session) || !actorId) return missingOrDenied(session.status);
 
-  if (session.user.id === targetUserId) {
+  if (actorId === targetUserId) {
     return failure("permission_denied", "Admins cannot deactivate or delete their own account.");
   }
 
@@ -81,18 +66,10 @@ export async function submitAdminUserLifecycleForSupabase(
     return failure("lifecycle_disabled", "The server-only lifecycle client is not configured.");
   }
 
-  const actorRoles = await readActiveRoles(serviceClient, session.user.id);
-  if (!actorRoles.includes("ds_admin") && !actorRoles.includes("super_admin")) {
-    return failure("permission_denied", "Only a DS Admin or Super Admin can change user lifecycle state.");
-  }
-
+  const actorRoles = await readActiveRoles(serviceClient, actorId);
   const targetRoles = await readActiveRoles(serviceClient, targetUserId);
-  if (targetRoles.includes("super_admin") && !actorRoles.includes("super_admin")) {
-    return failure("permission_denied", "Only a Super Admin can deactivate or delete a Super Admin account.");
-  }
-  if (operation === "delete_user" && !actorRoles.includes("super_admin")) {
-    return failure("permission_denied", "Only a Super Admin can permanently delete a user.");
-  }
+  const authorizationFailure = authorizeLifecycleTarget(operation, actorRoles, targetRoles);
+  if (authorizationFailure) return authorizationFailure;
 
   const now = new Date().toISOString();
   if (operation === "deactivate_user") {
@@ -115,20 +92,10 @@ export async function submitAdminUserLifecycleForSupabase(
     await serviceClient.schema("app").from("staff_role_assignments").update({ status: "inactive", ended_at: now, updated_at: now }).eq("user_id", targetUserId).select("id");
     await serviceClient.schema("app").from("coach_chapter_assignments").update({ status: "ended", ends_at: now.slice(0, 10), updated_at: now, handoff_reason: auditReason }).eq("coach_user_id", targetUserId).select("id");
 
-    const auditLogId = await writeAudit(serviceClient, session.user.id, targetUserId, "admin_user_deactivated", auditReason, now);
-    if (!auditLogId) {
-      return failure("server_error", "The account was suspended, but the audit record could not be confirmed.");
-    }
-    return {
-      success: true,
-      code: "user_deactivated",
-      userId: targetUserId,
-      auditLogId,
-      plainEnglishMessage: "User access was suspended in Auth, marked inactive, and audited.",
-    };
+    return finishDeactivation(serviceClient, actorId, targetUserId, auditReason, now);
   }
 
-  const auditLogId = await writeAudit(serviceClient, session.user.id, targetUserId, "admin_user_deleted", auditReason, now);
+  const auditLogId = await writeAudit(serviceClient, actorId, targetUserId, "admin_user_deleted", auditReason, now);
   if (!auditLogId) {
     return failure("server_error", "The deletion was blocked because the audit record could not be written.");
   }
@@ -144,6 +111,53 @@ export async function submitAdminUserLifecycleForSupabase(
     auditLogId,
     plainEnglishMessage: "User was permanently deleted from Auth and the deletion was audited.",
   };
+}
+
+function parseLifecycleRequest(formData: FormData):
+  | { success: true; operation: AdminUserLifecycleOperation; targetUserId: string; auditReason: string }
+  | { success: false; result: AdminUserLifecycleResult } {
+  const operation = parseOperation(formData.get("operation"));
+  const targetUserId = getString(formData.get("targetUserId"));
+  const confirmation = getString(formData.get("confirmation"));
+  const auditReason = getString(formData.get("auditReason"));
+  if (!operation || !targetUserId) {
+    return { success: false, result: failure("target_not_found", "Choose a real Supabase-backed user before changing lifecycle status.") };
+  }
+  if (confirmation !== confirmations[operation]) {
+    return { success: false, result: failure("confirmation_required", `Type ${confirmations[operation]} before this action can run.`) };
+  }
+  if (auditReason.length < 12) {
+    return { success: false, result: failure("reason_required", "Add a clear audit reason of at least 12 characters.") };
+  }
+  return { success: true, operation, targetUserId, auditReason };
+}
+
+function missingOrDenied(status: AuthSessionState["status"]): AdminUserLifecycleResult {
+  return failure(status === "signed_in" ? "permission_denied" : "missing_auth", "Sign in with a DS Admin or Super Admin account before changing a user lifecycle state.");
+}
+
+function authorizeLifecycleTarget(
+  operation: AdminUserLifecycleOperation,
+  actorRoles: string[],
+  targetRoles: string[],
+): AdminUserLifecycleResult | null {
+  const actorIsSuperAdmin = actorRoles.includes("super_admin");
+  if (!actorRoles.includes("ds_admin") && !actorIsSuperAdmin) return failure("permission_denied", "Only a DS Admin or Super Admin can change user lifecycle state.");
+  if (targetRoles.includes("super_admin") && !actorIsSuperAdmin) return failure("permission_denied", "Only a Super Admin can deactivate or delete a Super Admin account.");
+  if (operation === "delete_user" && !actorIsSuperAdmin) return failure("permission_denied", "Only a Super Admin can permanently delete a user.");
+  return null;
+}
+
+async function finishDeactivation(
+  client: AdminUserLifecycleClient,
+  actorId: string,
+  targetUserId: string,
+  auditReason: string,
+  now: string,
+): Promise<AdminUserLifecycleResult> {
+  const auditLogId = await writeAudit(client, actorId, targetUserId, "admin_user_deactivated", auditReason, now);
+  if (!auditLogId) return failure("server_error", "The account was suspended, but the audit record could not be confirmed.");
+  return { success: true, code: "user_deactivated", userId: targetUserId, auditLogId, plainEnglishMessage: "User access was suspended in Auth, marked inactive, and audited." };
 }
 
 async function createSessionSupabaseClient() {

@@ -87,12 +87,7 @@ export function getAdminUserLifecycleConfig(
     return disabled(environment, "User lifecycle writes are disabled because the server-only Supabase service-role key is missing.");
   }
 
-  const allowFlag =
-    environment === "production"
-      ? env.MYMEDLIFE_ALLOW_PRODUCTION_ADMIN_USER_LIFECYCLE
-      : environment === "staging"
-        ? env.MYMEDLIFE_ALLOW_STAGING_SUPABASE_WRITES
-        : env.MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES;
+  const allowFlag = getLifecycleApprovalFlag(environment, env);
 
   if (allowFlag !== "true") {
     return disabled(
@@ -106,6 +101,15 @@ export function getAdminUserLifecycleConfig(
     environment,
     reason: `Server-side user lifecycle writes are enabled for ${environment}. Deactivation is reversible; deletion is Super Admin-only and audited.`,
   };
+}
+
+function getLifecycleApprovalFlag(
+  environment: AdminUserLifecycleConfig["environment"],
+  env: Record<string, string | undefined>,
+) {
+  if (environment === "production") return env.MYMEDLIFE_ALLOW_PRODUCTION_ADMIN_USER_LIFECYCLE;
+  if (environment === "staging") return env.MYMEDLIFE_ALLOW_STAGING_SUPABASE_WRITES;
+  return env.MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES;
 }
 
 export function createAdminUserLifecycleClient(
