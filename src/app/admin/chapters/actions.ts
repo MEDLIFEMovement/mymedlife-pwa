@@ -40,14 +40,30 @@ type AdminChapterRpcParams = {
 type AdminChapterRpcClient = {
   schema: (schemaName: "app") => {
     rpc: (
-      functionName: "admin_manage_chapter",
-      params: AdminChapterRpcParams,
+      functionName: string,
+      params: Record<string, unknown>,
     ) => Promise<{
       data: unknown;
       error: { code?: string; message?: string } | null;
     }>;
   };
 };
+
+type AdminChapterTestMarkerResult =
+  | {
+      success: true;
+      code: "admin_chapter_test_changed";
+      chapterId: string;
+      isTest: boolean;
+      auditLogId: string;
+      plainEnglishMessage: string;
+    }
+  | {
+      success: false;
+      code: "write_disabled" | "missing_auth" | "permission_denied" | "target_not_found" | "audit_reason_required" | "server_error";
+      chapterId: null;
+      plainEnglishMessage: string;
+    };
 
 type AdminChapterActionDeps = {
   createServerClient?: () => Promise<{
@@ -87,6 +103,81 @@ export async function submitAdminChapterAction(formData: FormData) {
   });
 
   redirect(appendSearchParams(returnTo, params));
+}
+
+export async function submitAdminChapterTestMarkerAction(formData: FormData) {
+  const result = await submitAdminChapterTestMarkerForLocalSupabase(formData);
+  const returnTo = normalizeAdminChapterReturnTo(formData.get("returnTo"));
+  const chapterId = String(formData.get("chapterId") ?? "").trim();
+  const params = new URLSearchParams({
+    adminChapterResult: result.code,
+    chapterId: result.success ? result.chapterId : chapterId,
+    operation: "set_test_marker",
+  });
+
+  redirect(appendSearchParams(returnTo, params));
+}
+
+export async function submitAdminChapterTestMarkerForLocalSupabase(
+  formData: FormData,
+  deps: AdminChapterActionDeps = {},
+): Promise<AdminChapterTestMarkerResult> {
+  const config = getAdminChapterWriteConfig();
+  if (!config.enabled) {
+    return { success: false, code: "write_disabled", chapterId: null, plainEnglishMessage: config.reason };
+  }
+
+  const chapterId = getOptionalString(formData.get("chapterId"));
+  const isTest = String(formData.get("isTest") ?? "").trim() === "true";
+  const confirmation = String(formData.get("confirmation") ?? "").trim();
+  const auditReason = String(formData.get("auditReason") ?? "").trim();
+  const expectedConfirmation = isTest ? "MARK CHAPTER TEST" : "CLEAR CHAPTER TEST";
+
+  if (!chapterId || !hasAdminChapterSupabaseIds({ chapterId })) {
+    return { success: false, code: "target_not_found", chapterId: null, plainEnglishMessage: "Choose a real Supabase-backed chapter before changing its TEST marker." };
+  }
+  if (confirmation !== expectedConfirmation) {
+    return { success: false, code: "server_error", chapterId: null, plainEnglishMessage: `Type ${expectedConfirmation} before changing the TEST marker.` };
+  }
+  if (auditReason.length < 12) {
+    return { success: false, code: "audit_reason_required", chapterId: null, plainEnglishMessage: "Add a clear audit reason so DS can explain this TEST marker change." };
+  }
+
+  const createServerClient = deps.createServerClient ?? createSupabaseServerClientForAdminChapter;
+  const { client, config: authConfig } = await createServerClient();
+  if (!client) {
+    return { success: false, code: "write_disabled", chapterId: null, plainEnglishMessage: authConfig.reason };
+  }
+
+  const getSessionState = deps.getSessionState ?? getAuthSessionStateForAdminChapter;
+  const authSession = await getSessionState(client);
+  if (authSession.status !== "signed_in") {
+    return { success: false, code: "missing_auth", chapterId: null, plainEnglishMessage: "Sign in with a Staff Admin, DS Admin, or Super Admin account before changing TEST visibility." };
+  }
+
+  const { data, error } = await client.schema("app").rpc("admin_set_chapter_test", {
+    target_chapter_uuid: chapterId,
+    is_test_input: isTest,
+    audit_reason_input: auditReason,
+  });
+  if (error) {
+    const mapped = mapAdminChapterRpcError(error);
+    return { success: false, code: mapped.code === "permission_denied" ? "permission_denied" : mapped.code === "target_not_found" ? "target_not_found" : "server_error", chapterId: null, plainEnglishMessage: mapped.plainEnglishMessage };
+  }
+
+  const row = Array.isArray(data) ? (data[0] as { chapter_id?: string; is_test?: boolean; audit_log_id?: string } | undefined) : undefined;
+  if (!row?.chapter_id || !row.audit_log_id) {
+    return { success: false, code: "server_error", chapterId: null, plainEnglishMessage: "Supabase did not return the TEST marker audit record. No external automation ran." };
+  }
+
+  return {
+    success: true,
+    code: "admin_chapter_test_changed",
+    chapterId: row.chapter_id,
+    isTest: row.is_test === true,
+    auditLogId: row.audit_log_id,
+    plainEnglishMessage: `Chapter TEST visibility ${row.is_test === true ? "enabled" : "cleared"} through the audited Supabase function.`,
+  };
 }
 
 export async function submitAdminChapterForLocalSupabase(

@@ -39,6 +39,7 @@ export type ManagedChapter = {
   region: string;
   chapterType: ChapterType;
   status: ManagedChapterStatus;
+  isTest?: boolean;
   coachOwnerId: string | null;
   staffOwnerIds: string[];
   studentLeaderIds: string[];

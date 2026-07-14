@@ -15,7 +15,8 @@ export type DatabaseRoleKey =
   | "coach"
   | "admin"
   | "ds_admin"
-  | "super_admin";
+  | "super_admin"
+  | "test";
 
 export type ProfileStatus = "active" | "inactive";
 export type ChapterStatus = "active" | "inactive" | "archived";
@@ -140,6 +141,7 @@ export type ChapterRow = {
   region: string | null;
   chapter_type?: ChapterType | null;
   status: ChapterStatus;
+  is_test?: boolean;
   created_by: Uuid | null;
   created_at: Timestamp;
   updated_at: Timestamp;
@@ -161,7 +163,7 @@ export type MembershipRow = {
 export type StaffRoleAssignmentRow = {
   id: Uuid;
   user_id: Uuid;
-  role_key: Extract<DatabaseRoleKey, "coach" | "admin" | "ds_admin" | "super_admin">;
+  role_key: Extract<DatabaseRoleKey, "coach" | "admin" | "ds_admin" | "super_admin" | "test">;
   status: StaffRoleStatus;
   assigned_by: Uuid | null;
   assigned_at: Timestamp;

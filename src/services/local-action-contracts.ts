@@ -833,6 +833,7 @@ function databaseRoleKeyToChapterRole(roleKey: DatabaseRoleKey): ChapterRole | n
     case "admin":
     case "ds_admin":
     case "super_admin":
+    case "test":
       return null;
   }
 }

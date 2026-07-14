@@ -4,6 +4,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   submitAdminChapterAction,
   submitAdminChapterForLocalSupabase,
+  submitAdminChapterTestMarkerForLocalSupabase,
 } from "@/app/admin/chapters/actions";
 
 vi.mock("next/navigation", () => ({
@@ -106,6 +107,65 @@ describe("admin chapter management server action", () => {
     expect(result).toMatchObject({
       success: false,
       code: "confirmation_required",
+    });
+  });
+
+  it("requires confirmation before changing Staff/Admin-only TEST visibility", async () => {
+    enableAdminChapterWrites();
+
+    const formData = buildAdminChapterForm({
+      operation: "set_test_marker",
+      chapterId: "00000000-0000-4000-8000-000000000201",
+    });
+    formData.set("isTest", "true");
+
+    const result = await submitAdminChapterTestMarkerForLocalSupabase(formData);
+
+    expect(result).toMatchObject({
+      success: false,
+      code: "server_error",
+    });
+  });
+
+  it("maps an audited TEST marker RPC response", async () => {
+    enableAdminChapterWrites();
+
+    const rpc = vi.fn().mockResolvedValue({
+      data: [
+        {
+          chapter_id: "00000000-0000-4000-8000-000000000201",
+          is_test: true,
+          audit_log_id: "90000000-0000-4000-8000-000000000099",
+        },
+      ],
+      error: null,
+    });
+
+    const formData = buildAdminChapterForm({
+      operation: "set_test_marker",
+      chapterId: "00000000-0000-4000-8000-000000000201",
+    });
+    formData.set("isTest", "true");
+    formData.set("confirmation", "MARK CHAPTER TEST");
+
+    const result = await submitAdminChapterTestMarkerForLocalSupabase(formData, {
+      createServerClient: async () => ({
+        client: buildRpcClient(rpc),
+        config: { reason: "Test client is available." },
+      }),
+      getSessionState: async () => signedInSession(),
+    });
+
+    expect(rpc).toHaveBeenCalledWith("admin_set_chapter_test", {
+      target_chapter_uuid: "00000000-0000-4000-8000-000000000201",
+      is_test_input: true,
+      audit_reason_input: "MED-509 admin chapter test reason.",
+    });
+    expect(result).toMatchObject({
+      success: true,
+      code: "admin_chapter_test_changed",
+      isTest: true,
+      auditLogId: "90000000-0000-4000-8000-000000000099",
     });
   });
 

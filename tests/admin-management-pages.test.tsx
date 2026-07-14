@@ -65,6 +65,11 @@ describe("admin management pages", () => {
     expect(html).toContain(">API Keys<");
     expect(html).toContain(">MCP Connections<");
     expect(html).toContain(">Settings<");
+    expect(html).toContain("Create a site user");
+    expect(html).toContain("Create user");
+    expect(html).toContain("Temporary password");
+    expect(html).toContain("Onboard approved staff member for chapter support");
+    expect(html).toContain("Creation locked:");
     expect(html).toContain("Search name or email");
     expect(html).toContain("TEST Sofia Alvarez");
     expect(html).toContain("TEST Sofia, TEST coach, medlife.test");
@@ -73,7 +78,8 @@ describe("admin management pages", () => {
     expect(html).toContain("Promote / demote role");
     expect(html).toContain("Return to General Student App only");
     expect(html).toContain("Apply preview filters");
-    expect(html).toContain("Deactivate user (blocked)");
+    expect(html).toContain("Suspend / deactivate user");
+    expect(html).toContain("Permanently delete user");
     expect(html).toContain("Delete user safeguard");
     expect(html).toContain("Audit record preview");
     expect(html).toContain("Server-backed access changes");
@@ -160,6 +166,9 @@ describe("admin management pages", () => {
     expect(html).toContain("Edit chapter ownership and modules");
     expect(html).toContain("Apply preview filters");
     expect(html).toContain("Archive chapter (blocked)");
+    expect(html).toContain("Archive chapter");
+    expect(html).toContain("Deactivate / suspend chapter");
+    expect(html).toContain("Reactivate restores its active status");
     expect(html).toContain("Soft delete chapter");
     expect(html).toContain("Hard delete safeguard");
     expect(html).toContain("chapter_has_active_data");
@@ -311,7 +320,7 @@ describe("admin management pages", () => {
     expect(html).toContain("Archive chapter");
     expect(html).not.toContain("Create chapter (blocked)");
     expect(html).not.toContain("Archive chapter (blocked)");
-    expect(html).not.toContain(
+    expect(html).toContain(
       "This chapter-management change is blocked until audited local Supabase writes are approved.",
     );
     expect(html).toContain("writes-local-only");

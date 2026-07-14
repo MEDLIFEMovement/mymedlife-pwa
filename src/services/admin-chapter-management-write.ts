@@ -92,7 +92,7 @@ export const adminChapterOperationConfirmation: Partial<
   Record<AdminChapterOperation, string>
 > = {
   archive_chapter: "ARCHIVE CHAPTER",
-  disable_chapter: "DISABLE CHAPTER",
+  disable_chapter: "DEACTIVATE CHAPTER",
   remove_coach: "REMOVE COACH",
   remove_student_leader: "REMOVE STUDENT LEADER",
 };
