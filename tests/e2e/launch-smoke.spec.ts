@@ -340,29 +340,30 @@ test.describe("myMEDLIFE launch route smoke", () => {
     await selectPreviewActor(context, "ds.admin@mymedlife.test");
 
     const adminItems = [
-      { label: "Overview", heading: "Overview", view: "overview" },
-      { label: "Users", heading: "Users", view: "users" },
-      { label: "Chapters", heading: "Chapters", view: "chapters" },
-      { label: "Modules", heading: "Modules & Feature Flags", view: "modules" },
-      { label: "Luma Events", heading: "Luma Events", view: "luma" },
-      { label: "Points", heading: "Points", view: "points" },
-      { label: "Integrations", heading: "Integrations", view: "integrations" },
-      { label: "Audit Logs", heading: "Audit Logs", view: "audit" },
-      { label: "System Health", heading: "System Health", view: "health" },
-      { label: "API Keys", heading: "API Keys", view: "apikeys" },
-      { label: "MCP Connections", heading: "MCP Connections", view: "mcp" },
-      { label: "Settings", heading: "Settings", view: "settings" },
+      { label: "Overview", heading: "Overview", url: /\/admin$/ },
+      { label: "Users", heading: "User Access Management", url: /\/admin\/users$/ },
+      { label: "Chapters", heading: "Chapters", url: /\/admin\?view=chapters$/ },
+      { label: "Modules", heading: "Modules & Feature Flags", url: /\/admin\?view=modules$/ },
+      { label: "Luma Events", heading: "Luma Events", url: /\/admin\?view=luma$/ },
+      { label: "Points", heading: "Points", url: /\/admin\?view=points$/ },
+      { label: "Integrations", heading: "Integrations", url: /\/admin\?view=integrations$/ },
+      { label: "Audit Logs", heading: "Audit Logs", url: /\/admin\?view=audit$/ },
+      { label: "System Health", heading: "System Health", url: /\/admin\?view=health$/ },
+      { label: "API Keys", heading: "API Keys", url: /\/admin\?view=apikeys$/ },
+      { label: "MCP Connections", heading: "MCP Connections", url: /\/admin\?view=mcp$/ },
+      { label: "Settings", heading: "Settings", url: /\/admin\?view=settings$/ },
     ] as const;
 
     await page.goto("/admin");
     await expect(page).toHaveURL(/\/admin$/);
 
     for (const item of adminItems) {
+      await page.goto("/admin");
       await page
         .locator("aside")
         .getByRole("button", { name: item.label, exact: true })
         .click();
-      await expect(page).toHaveURL(new RegExp(`/admin\\?view=${item.view}$`));
+      await expect(page).toHaveURL(item.url);
       await expect(page.getByRole("heading", { name: item.heading })).toBeVisible();
     }
 

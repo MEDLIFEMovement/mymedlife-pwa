@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { submitAdminUserAccessAction } from "@/app/admin/users/actions";
 import { submitAdminUserCreationAction } from "@/app/admin/users/create-actions";
 import { submitAdminUserLifecycleAction } from "@/app/admin/users/lifecycle-actions";
+import { submitAdminUserPasswordResetAction } from "@/app/admin/users/password-reset-actions";
 import {
   changeManagedUserAccess,
   deleteManagedUser,
@@ -26,6 +27,7 @@ import {
 import { AdminReviewShellHeader } from "@/components/admin-review-shell-header";
 import type { AdminUserCreationConfig } from "@/services/admin-user-creation";
 import type { AdminUserLifecycleConfig } from "@/services/admin-user-lifecycle";
+import type { AdminUserPasswordResetConfig } from "@/services/admin-user-password-reset";
 import type { LocalActorContext } from "@/services/local-actor-context";
 import type { DataSourceMeta } from "@/services/read-only-app-data";
 import { getWorkspaceLabel } from "@/services/workspace-access";
@@ -41,6 +43,7 @@ export type AdminUsersSearchParams = {
   operation?: string | string[];
   adminUserCreationResult?: string | string[];
   adminUserLifecycleResult?: string | string[];
+  adminUserPasswordResetResult?: string | string[];
 };
 
 type AdminUsersManagementPanelProps = {
@@ -52,6 +55,7 @@ type AdminUsersManagementPanelProps = {
   writeConfig?: AdminAccessWriteConfig;
   creationConfig?: AdminUserCreationConfig;
   lifecycleConfig?: AdminUserLifecycleConfig;
+  passwordResetConfig?: AdminUserPasswordResetConfig;
 };
 
 type UserActionPreview = {
@@ -188,6 +192,12 @@ export function AdminUsersManagementPanel({
     environment: "local",
     reason: "User lifecycle writes are disabled for this review.",
   },
+  passwordResetConfig = {
+    enabled: false,
+    environment: "local",
+    reason: "Password reset emails are disabled for this review.",
+    redirectTo: "",
+  },
 }: AdminUsersManagementPanelProps) {
   const query = getSingleParam(searchParams.q);
   const role = getSingleParam(searchParams.role) || "all";
@@ -198,6 +208,7 @@ export function AdminUsersManagementPanel({
   );
   const creationResult = getSingleParam(searchParams.adminUserCreationResult);
   const lifecycleResult = getSingleParam(searchParams.adminUserLifecycleResult);
+  const passwordResetResult = getSingleParam(searchParams.adminUserPasswordResetResult);
   const status = statusOptions.includes(rawStatus as ManagedUserStatus | "all")
     ? (rawStatus as ManagedUserStatus | "all")
     : "all";
@@ -274,6 +285,7 @@ export function AdminUsersManagementPanel({
 
         {resultCode ? <AdminAccessResultBanner code={resultCode} /> : null}
         {creationResult ? <AdminUserCreationResultBanner code={creationResult} /> : null}
+        {passwordResetResult ? <AdminUserPasswordResetResultBanner code={passwordResetResult} /> : null}
         {lifecycleResult ? <AdminUserLifecycleResultBanner code={lifecycleResult} /> : null}
 
         <AdminUserCreationForm config={creationConfig} />
@@ -463,6 +475,7 @@ export function AdminUsersManagementPanel({
                 selectedUser={selectedUser}
                 writeConfig={writeConfig}
                 lifecycleConfig={lifecycleConfig}
+                passwordResetConfig={passwordResetConfig}
               />
             ) : null}
           </aside>
@@ -550,6 +563,38 @@ function AdminUserLifecycleResultBanner({ code }: { code: string }) {
       role="status"
     >
       <p className="font-semibold">Admin user lifecycle: {code.replaceAll("_", " ")}</p>
+      <p className="mt-1">{message}</p>
+    </div>
+  );
+}
+
+function AdminUserPasswordResetResultBanner({ code }: { code: string }) {
+  const success = code === "password_reset_sent";
+  const message =
+    code === "password_reset_sent"
+      ? "Password reset email was sent through Supabase Auth and the request was audited."
+      : code === "reset_disabled"
+        ? "Password reset emails are disabled for this environment."
+        : code === "confirmation_required"
+          ? "The required RESET PASSWORD confirmation text was missing or did not match."
+          : code === "reason_required"
+            ? "A clear audit reason is required."
+            : code === "permission_denied"
+              ? "This signed-in role cannot send a password reset email for the selected user."
+              : code === "target_not_found"
+                ? "The selected Auth user was not found, so no password reset email was sent."
+                : "The password reset request failed safely; review the audit trail before retrying.";
+
+  return (
+    <div
+      className={`rounded-lg border px-4 py-3 text-sm ${
+        success
+          ? "border-emerald-300/30 bg-emerald-300/10 text-emerald-100"
+          : "border-rose-300/30 bg-rose-300/10 text-rose-100"
+      }`}
+      role="status"
+    >
+      <p className="font-semibold">Admin password reset: {code.replaceAll("_", " ")}</p>
       <p className="mt-1">{message}</p>
     </div>
   );
@@ -646,12 +691,14 @@ function AdminUserCreationForm({ config }: { config: AdminUserCreationConfig }) 
 function AdminAccessServerForms({
   chapters,
   lifecycleConfig,
+  passwordResetConfig,
   returnTo,
   selectedUser,
   writeConfig,
 }: {
   chapters: ManagedChapter[];
   lifecycleConfig: AdminUserLifecycleConfig;
+  passwordResetConfig: AdminUserPasswordResetConfig;
   returnTo: string;
   selectedUser: ManagedUser;
   writeConfig: AdminAccessWriteConfig;
@@ -739,6 +786,11 @@ function AdminAccessServerForms({
         <SelectField disabled={!formsEnabled} label="Portfolio chapter" name="chapterId" options={chapterOptions(chapters)} value={defaultChapterId} />
       </AdminAccessFormShell>
 
+      <AdminUserPasswordResetForm
+        config={passwordResetConfig}
+        returnTo={returnTo}
+        selectedUser={selectedUser}
+      />
       <AdminUserLifecycleForm
         buttonLabel="Suspend / deactivate user"
         confirmation="DEACTIVATE USER"
@@ -817,6 +869,60 @@ function AdminUserLifecycleForm({
           type="submit"
         >
           {buttonLabel}
+        </button>
+      </div>
+    </form>
+  );
+}
+
+function AdminUserPasswordResetForm({
+  config,
+  returnTo,
+  selectedUser,
+}: {
+  config: AdminUserPasswordResetConfig;
+  returnTo: string;
+  selectedUser: ManagedUser;
+}) {
+  const enabled = config.enabled && hasAdminAccessSupabaseIds({ targetUserId: selectedUser.id });
+
+  return (
+    <form action={submitAdminUserPasswordResetAction} className="rounded border border-white/10 bg-[#0d1117] p-3">
+      <input type="hidden" name="targetUserId" value={selectedUser.id} />
+      <input type="hidden" name="returnTo" value={returnTo} />
+      <div className="grid gap-3">
+        <p className="text-xs leading-5 text-slate-500">
+          Sends a Supabase recovery email to the selected account. Admins never see
+          or set the user&apos;s password, and the request is audited before the email
+          leaves the server.
+        </p>
+        <label className="space-y-1 text-xs text-slate-400">
+          Confirmation
+          <input
+            className="w-full rounded border border-white/10 bg-[#161b22] px-3 py-2 text-sm text-slate-100 disabled:cursor-not-allowed disabled:text-slate-500"
+            disabled={!enabled}
+            name="confirmation"
+            placeholder="RESET PASSWORD"
+          />
+        </label>
+        <label className="space-y-1 text-xs text-slate-400">
+          Audit reason
+          <textarea
+            className="min-h-20 w-full rounded border border-white/10 bg-[#161b22] px-3 py-2 text-sm text-slate-100 disabled:cursor-not-allowed disabled:text-slate-500"
+            defaultValue={`Password reset requested for ${selectedUser.email}.`}
+            disabled={!enabled}
+            name="auditReason"
+          />
+        </label>
+        <p className={`text-xs ${enabled ? "text-emerald-300" : "text-amber-200"}`}>
+          {enabled ? `Password reset enabled for ${config.environment}.` : `Password reset locked: ${config.reason}`}
+        </p>
+        <button
+          className="rounded bg-sky-500 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-400 disabled:cursor-not-allowed disabled:bg-white/10 disabled:text-slate-500"
+          disabled={!enabled}
+          type="submit"
+        >
+          {enabled ? "Send password reset email" : "Send password reset email (blocked)"}
         </button>
       </div>
     </form>
