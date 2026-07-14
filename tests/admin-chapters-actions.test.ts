@@ -51,7 +51,7 @@ describe("admin chapter management server action", () => {
     enableAdminChapterWrites();
 
     await expectAdminChapterFailure(
-      buildAdminChapterForm({ operation: "delete_chapter" }),
+      buildAdminChapterForm({ operation: "hard_delete_chapter" }),
       "invalid_operation",
     );
     await expectAdminChapterFailure(
@@ -70,7 +70,7 @@ describe("admin chapter management server action", () => {
       buildAdminChapterForm({
         operation: "update_chapter",
         chapterId: "00000000-0000-4000-8000-000000000201",
-        status: "deleted",
+        status: "removed",
       }),
       "invalid_status",
     );
@@ -108,7 +108,7 @@ describe("admin chapter management server action", () => {
   it("requires confirmation before destructive chapter changes", async () => {
     enableAdminChapterWrites();
 
-    const result = await submitAdminChapterForLocalSupabase(
+    const archiveResult = await submitAdminChapterForLocalSupabase(
       buildAdminChapterForm({
         operation: "archive_chapter",
         chapterId: "00000000-0000-4000-8000-000000000201",
@@ -116,7 +116,20 @@ describe("admin chapter management server action", () => {
       }),
     );
 
-    expect(result).toMatchObject({
+    expect(archiveResult).toMatchObject({
+      success: false,
+      code: "confirmation_required",
+    });
+
+    const deleteResult = await submitAdminChapterForLocalSupabase(
+      buildAdminChapterForm({
+        operation: "delete_chapter",
+        chapterId: "00000000-0000-4000-8000-000000000201",
+        confirmation: "",
+      }),
+    );
+
+    expect(deleteResult).toMatchObject({
       success: false,
       code: "confirmation_required",
     });
@@ -340,6 +353,67 @@ describe("admin chapter management server action", () => {
       success: true,
       code: "admin_chapter_changed",
       chapterId: "00000000-0000-4000-8000-000000000201",
+      auditLogId: "90000000-0000-4000-8000-000000000099",
+    });
+  });
+
+  it("maps soft delete into an audited deleted chapter status update", async () => {
+    enableAdminChapterWrites();
+
+    const rpc = vi.fn().mockResolvedValue({
+      data: [
+        {
+          operation: "update_chapter",
+          chapter_id: "00000000-0000-4000-8000-000000000201",
+          membership_id: null,
+          coach_assignment_id: null,
+          audit_log_id: "90000000-0000-4000-8000-000000000099",
+          chapter_status: "deleted",
+          active_member_count: 0,
+          active_event_count: 0,
+          historical_record_count: 30,
+        },
+      ],
+      error: null,
+    });
+
+    const fakeClient = buildRpcClient(rpc);
+
+    const result = await submitAdminChapterForLocalSupabase(
+      buildAdminChapterForm({
+        operation: "delete_chapter",
+        chapterId: "00000000-0000-4000-8000-000000000201",
+        confirmation: "DELETE CHAPTER",
+      }),
+      {
+        createServerClient: async () => ({
+          client: fakeClient,
+          config: { reason: "Test client is available." },
+        }),
+        getSessionState: async () => signedInSession(),
+      },
+    );
+
+    expect(rpc).toHaveBeenCalledWith("admin_manage_chapter", {
+      operation_input: "update_chapter",
+      chapter_uuid: "00000000-0000-4000-8000-000000000201",
+      name_input: null,
+      campus_input: null,
+      region_input: null,
+      country_input: null,
+      hubspot_company_id_input: null,
+      status_input: "deleted",
+      target_user_uuid: null,
+      role_key_input: null,
+      role_term_start_year_input: null,
+      role_term_end_year_input: null,
+      role_term_label_input: null,
+      audit_reason_input: "MED-509 admin chapter test reason.",
+    });
+    expect(result).toMatchObject({
+      success: true,
+      code: "admin_chapter_changed",
+      chapterStatus: "deleted",
       auditLogId: "90000000-0000-4000-8000-000000000099",
     });
   });

@@ -425,6 +425,12 @@ export function AdminChaptersManagementPanel({
                 disabled={!formsEnabled}
                 returnTo={selectedChapterReturnTo}
               />
+              <ChapterDeleteForm
+                action={chapterAction}
+                chapter={selectedChapter}
+                disabled={!formsEnabled}
+                returnTo={selectedChapterReturnTo}
+              />
               <ChapterLifecycleForm
                 action={chapterAction}
                 chapter={selectedChapter}
@@ -711,6 +717,36 @@ function ChapterArchiveForm({
       returnTo={returnTo}
       title="Archive chapter"
     />
+  );
+}
+
+function ChapterDeleteForm({
+  action,
+  chapter,
+  disabled,
+  returnTo,
+}: {
+  action?: (formData: FormData) => Promise<void> | void;
+  chapter: ManagedChapter;
+  disabled: boolean;
+  returnTo: string;
+}) {
+  return (
+    <AdminChapterForm
+      action={action}
+      buttonLabel="Soft delete chapter"
+      chapterId={chapter.id}
+      confirmation="DELETE CHAPTER"
+      disabled={disabled}
+      operation="delete_chapter"
+      returnTo={returnTo}
+      title="Delete chapter"
+    >
+      <p className="text-xs leading-5 text-slate-500">
+        Soft delete removes the chapter from active administration while preserving
+        events, attendance, points, coach assignments, and role history.
+      </p>
+    </AdminChapterForm>
   );
 }
 
