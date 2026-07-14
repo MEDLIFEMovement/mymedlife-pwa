@@ -4,6 +4,7 @@ import {
   AdminUsersManagementPanel,
   type AdminUsersSearchParams,
 } from "@/components/admin-users-management-panel";
+import { FigmaAdminShellFrame } from "@/components/figma-admin-panel";
 import { WorkspaceAccountMenu } from "@/components/workspace-account-menu";
 import { getLandingRouteForActor } from "@/services/landing-route";
 import { buildLoginRedirectHref, shouldRedirectActorToLogin } from "@/services/login-route";
@@ -40,17 +41,24 @@ export default async function AdminUsersPage({
   return (
     <>
       <WorkspaceAccountMenu actor={actor} currentWorkspace="admin_backend" />
-      <AdminUsersManagementPanel
-        actor={actor}
-        chapters={directory.chapters}
-        source={directory.source}
-        searchParams={resolvedSearchParams}
-        users={directory.users}
-        writeConfig={directory.writeConfig}
-        creationConfig={getAdminUserCreationConfig()}
-        lifecycleConfig={getAdminUserLifecycleConfig()}
-        passwordResetConfig={getAdminUserPasswordResetConfig()}
-      />
+      <FigmaAdminShellFrame
+        activeView="users"
+        title="User Access Management"
+        subtitle="DS / Super Admin"
+      >
+        <AdminUsersManagementPanel
+          actor={actor}
+          chapters={directory.chapters}
+          embeddedInFigmaShell
+          source={directory.source}
+          searchParams={resolvedSearchParams}
+          users={directory.users}
+          writeConfig={directory.writeConfig}
+          creationConfig={getAdminUserCreationConfig()}
+          lifecycleConfig={getAdminUserLifecycleConfig()}
+          passwordResetConfig={getAdminUserPasswordResetConfig()}
+        />
+      </FigmaAdminShellFrame>
     </>
   );
 }

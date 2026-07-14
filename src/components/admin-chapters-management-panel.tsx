@@ -40,6 +40,7 @@ export type AdminChaptersSearchParams = {
 type AdminChaptersManagementPanelProps = {
   actor: LocalActorContext;
   chapterAction?: (formData: FormData) => Promise<void> | void;
+  embeddedInFigmaShell?: boolean;
   testAction?: (formData: FormData) => Promise<void> | void;
   chapters?: ManagedChapter[];
   searchParams?: AdminChaptersSearchParams;
@@ -71,6 +72,7 @@ const statusOptions: Array<ManagedChapterStatus | "all"> = [
 export function AdminChaptersManagementPanel({
   actor,
   chapterAction,
+  embeddedInFigmaShell = false,
   testAction,
   chapters = managedChapterFixtures,
   searchParams = {},
@@ -122,16 +124,19 @@ export function AdminChaptersManagementPanel({
   const resultOperation = getSingleParam(searchParams.operation);
   const formsEnabled = Boolean(writeConfig.enabled && chapterAction);
   const selectedChapterReturnTo = `/admin/chapters?chapterId=${selectedChapter.id}`;
+  const Container = embeddedInFigmaShell ? "div" : "main";
 
   return (
-    <main className="min-h-screen bg-[#0d1117] px-6 py-8 text-slate-100">
+    <Container className={`${embeddedInFigmaShell ? "px-6 py-6" : "min-h-screen px-6 py-8"} bg-[#0d1117] text-slate-100`}>
       <div className="mx-auto max-w-7xl space-y-6">
-        <AdminReviewShellHeader
-          activeView="chapters"
-          eyebrow="DS / Super Admin"
-          title="Chapter Management"
-          description="Manage chapter records, coach ownership, staff scope, student leaders, enabled launch modules, and archive/delete safeguards. Events, attendance, and points history are preserved by default. Return to the Command Center after this chapter review pass to keep the embedded DS Admin walkthrough coherent."
-        />
+        {!embeddedInFigmaShell && (
+          <AdminReviewShellHeader
+            activeView="chapters"
+            eyebrow="DS / Super Admin"
+            title="Chapter Management"
+            description="Manage chapter records, coach ownership, staff scope, student leaders, enabled launch modules, and archive/delete safeguards. Events, attendance, and points history are preserved by default. Return to the Command Center after this chapter review pass to keep the embedded DS Admin walkthrough coherent."
+          />
+        )}
 
         <section className="grid gap-3 md:grid-cols-4">
           <SummaryCard label="Managed chapters" value={String(chapters.length)} />
@@ -456,7 +461,7 @@ export function AdminChaptersManagementPanel({
           </aside>
         </section>
       </div>
-    </main>
+    </Container>
   );
 }
 

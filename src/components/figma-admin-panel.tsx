@@ -4416,6 +4416,41 @@ export function FigmaAdminPanel({
   );
 }
 
+export function FigmaAdminShellFrame({
+  activeView,
+  title,
+  subtitle,
+  children,
+}: {
+  activeView: string;
+  title: string;
+  subtitle?: string;
+  children: React.ReactNode;
+}) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const active = resolveAdminShellView(activeView);
+
+  const handleNav = (id: string) => {
+    router.replace(buildAdminShellHref(id, pathname, searchParams.toString()), {
+      scroll: false,
+    });
+  };
+
+  return (
+    <div className="flex min-h-screen bg-[#0d1117] overflow-hidden" style={{ fontFamily: "'Manrope', system-ui, sans-serif" }}>
+      <Sidebar active={active} onNav={handleNav} />
+      <div className="ml-[220px] flex-1 flex flex-col min-h-0 overflow-hidden">
+        <Header title={title} subtitle={subtitle} />
+        <main className="flex-1 overflow-y-auto scrollbar-hide bg-[#0d1117]">
+          {children}
+        </main>
+      </div>
+    </div>
+  );
+}
+
 function resolveAdminShellView(view: string | null | undefined): string {
   if (!view) return "overview";
   return Object.prototype.hasOwnProperty.call(PAGES, view) ? view : "overview";
@@ -4461,9 +4496,23 @@ function buildAdminShellHref(active: string, pathname: string, search: string): 
     params.set("view", "admin");
     params.set("adminView", active);
   } else {
+    if (pathname.startsWith("/admin/users") || pathname.startsWith("/admin/chapters")) {
+      return getAdminShellRouteHref(active);
+    }
+
     params.set("view", active);
   }
 
   const query = params.toString();
   return query ? `${pathname}?${query}` : pathname;
+}
+
+function getAdminShellRouteHref(active: string): string {
+  if (active === "overview") return "/admin";
+  if (active === "users") return "/admin/users";
+  if (active === "chapters") return "/admin/chapters";
+  if (active === "audit") return "/admin/audit-log";
+  if (active === "health") return "/admin/system-health";
+
+  return `/admin?view=${active}`;
 }

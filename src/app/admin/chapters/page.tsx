@@ -4,6 +4,7 @@ import {
   AdminChaptersManagementPanel,
   type AdminChaptersSearchParams,
 } from "@/components/admin-chapters-management-panel";
+import { FigmaAdminShellFrame } from "@/components/figma-admin-panel";
 import { WorkspaceAccountMenu } from "@/components/workspace-account-menu";
 import { getAdminManagementDirectory } from "@/services/admin-management-data";
 import { getLandingRouteForActor } from "@/services/landing-route";
@@ -41,15 +42,22 @@ export default async function AdminChaptersPage({
   return (
     <>
       <WorkspaceAccountMenu actor={actor} currentWorkspace="admin_backend" />
-      <AdminChaptersManagementPanel
-        actor={actor}
-        chapterAction={submitAdminChapterAction}
-        testAction={submitAdminChapterTestMarkerAction}
-        chapters={directory.chapters}
-        searchParams={resolvedSearchParams}
-        users={directory.users}
-        writeConfig={directory.writeConfig}
-      />
+      <FigmaAdminShellFrame
+        activeView="chapters"
+        title="Chapter Management"
+        subtitle="DS / Super Admin"
+      >
+        <AdminChaptersManagementPanel
+          actor={actor}
+          chapterAction={submitAdminChapterAction}
+          embeddedInFigmaShell
+          testAction={submitAdminChapterTestMarkerAction}
+          chapters={directory.chapters}
+          searchParams={resolvedSearchParams}
+          users={directory.users}
+          writeConfig={directory.writeConfig}
+        />
+      </FigmaAdminShellFrame>
     </>
   );
 }
