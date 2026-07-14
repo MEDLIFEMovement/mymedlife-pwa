@@ -1,4 +1,5 @@
 import { createSupabaseReadonlyAccess } from "@/lib/supabase-readonly";
+import { createClient } from "@supabase/supabase-js";
 import {
   inferChapterTypeFromCampus,
   normalizeChapterType,
@@ -38,6 +39,16 @@ export type AdminManagementDirectory = {
   chapters: ManagedChapter[];
 };
 
+type AuthDirectoryUser = {
+  id: string;
+  email?: string | null;
+  user_metadata?: Record<string, unknown> | null;
+  confirmed_at?: string | null;
+  email_confirmed_at?: string | null;
+  banned_until?: string | null;
+  deleted_at?: string | null;
+};
+
 export async function getAdminManagementDirectory(): Promise<AdminManagementDirectory> {
   const writeConfig = getAdminAccessWriteConfig();
   const access = await createSupabaseReadonlyAccess();
@@ -52,6 +63,7 @@ export async function getAdminManagementDirectory(): Promise<AdminManagementDire
       readStaffRoleAssignments(access.client),
       readCoachChapterAssignments(access.client),
     ]);
+    const authUsers = await readAuthDirectoryUsers();
     const snapshot: AdminDataSnapshot = {
       ...appSnapshot,
       staffRoles,
@@ -64,7 +76,7 @@ export async function getAdminManagementDirectory(): Promise<AdminManagementDire
         message: access.reason,
       },
       writeConfig,
-      ...mapSupabaseSnapshotToAdminDirectory(snapshot),
+      ...mapSupabaseSnapshotToAdminDirectory(snapshot, authUsers),
     };
   } catch (error) {
     const message =
@@ -78,13 +90,78 @@ export async function getAdminManagementDirectory(): Promise<AdminManagementDire
 
 export function mapSupabaseSnapshotToAdminDirectory(
   snapshot: AdminDataSnapshot,
+  authUsers: AuthDirectoryUser[] = [],
 ): Pick<AdminManagementDirectory, "users" | "chapters"> {
+  const profileUsers = snapshot.profiles.map((profile) =>
+    mapProfileToManagedUser(profile, snapshot),
+  );
   return {
-    users: snapshot.profiles.map((profile) => mapProfileToManagedUser(profile, snapshot)),
+    users: mergeAuthDirectoryUsers(profileUsers, authUsers),
     chapters: snapshot.chapters.map((chapter) =>
       mapChapterToManagedChapter(chapter, snapshot),
     ),
   };
+}
+
+async function readAuthDirectoryUsers(): Promise<AuthDirectoryUser[]> {
+  const url = process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !serviceRoleKey) return [];
+
+  const client = createClient(url, serviceRoleKey, {
+    auth: { autoRefreshToken: false, persistSession: false },
+  });
+
+  const result = await client.auth.admin.listUsers({ page: 1, perPage: 1000 });
+  if (result.error) return [];
+  return result.data.users;
+}
+
+function mergeAuthDirectoryUsers(
+  profileUsers: ManagedUser[],
+  authUsers: AuthDirectoryUser[],
+): ManagedUser[] {
+  const profileUserIds = new Set(profileUsers.map((user) => user.id));
+  const authOnlyUsers = authUsers
+    .filter((user) => user.email?.trim() && !profileUserIds.has(user.id))
+    .map(mapAuthOnlyUserToManagedUser);
+
+  return [...profileUsers, ...authOnlyUsers].sort((a, b) =>
+    a.email.localeCompare(b.email),
+  );
+}
+
+function mapAuthOnlyUserToManagedUser(user: AuthDirectoryUser): ManagedUser {
+  const email = user.email?.trim().toLowerCase() ?? "";
+  const name = getAuthDirectoryDisplayName(user, email);
+  const status = getAuthDirectoryStatus(user);
+
+  return {
+    id: user.id,
+    name,
+    email,
+    status,
+    chapterMemberships: [],
+    staffRoles: ["Auth user (profile missing)"],
+    portfolioChapterIds: [],
+    inviteStatus: status === "active" ? "accepted" : "sent",
+  };
+}
+
+function getAuthDirectoryDisplayName(user: AuthDirectoryUser, email: string) {
+  const metadata = user.user_metadata ?? {};
+  for (const key of ["display_name", "full_name", "name"]) {
+    const value = metadata[key];
+    if (typeof value === "string" && value.trim()) return value.trim();
+  }
+  return email.split("@")[0] || user.id;
+}
+
+function getAuthDirectoryStatus(user: AuthDirectoryUser): ManagedUser["status"] {
+  if (user.deleted_at) return "deleted";
+  if (user.banned_until) return "disabled";
+  if (!user.email_confirmed_at && !user.confirmed_at) return "pending";
+  return "active";
 }
 
 function getMockAdminManagementDirectory(

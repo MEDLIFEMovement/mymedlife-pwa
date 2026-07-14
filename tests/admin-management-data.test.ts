@@ -294,6 +294,71 @@ describe("admin management Supabase directory data", () => {
     );
   });
 
+  it("keeps Supabase Auth users visible when their profile row is missing", () => {
+    const directory = mapSupabaseSnapshotToAdminDirectory(
+      buildAdminSnapshot({
+        profiles: [
+          profileRow({
+            id: "00000000-0000-4000-8000-000000000201",
+            display_name: "Morgan Member",
+            email: "morgan.member@mymedlife.test",
+          }),
+        ],
+        memberships: [],
+        chapters: [],
+        chapterEventRows: [],
+        eventRows: [],
+        pointsEventRows: [],
+        kpiEventRows: [],
+        auditLogs: [],
+        staffRoles: [],
+        coachAssignments: [],
+      }),
+      [
+        {
+          id: "00000000-0000-4000-8000-000000000201",
+          email: "morgan.member@mymedlife.test",
+          confirmed_at: now,
+          email_confirmed_at: now,
+        },
+        {
+          id: "00000000-0000-4000-8000-000000000202",
+          email: "nick.admin@mymedlife.org",
+          user_metadata: { full_name: "Nick Admin" },
+          confirmed_at: now,
+          email_confirmed_at: now,
+        },
+        {
+          id: "00000000-0000-4000-8000-000000000203",
+          email: "pending.invite@mymedlife.org",
+        },
+      ],
+    );
+
+    expect(directory.users).toEqual([
+      expect.objectContaining({
+        id: "00000000-0000-4000-8000-000000000201",
+        email: "morgan.member@mymedlife.test",
+        staffRoles: [],
+      }),
+      expect.objectContaining({
+        id: "00000000-0000-4000-8000-000000000202",
+        name: "Nick Admin",
+        email: "nick.admin@mymedlife.org",
+        status: "active",
+        staffRoles: ["Auth user (profile missing)"],
+        inviteStatus: "accepted",
+      }),
+      expect.objectContaining({
+        id: "00000000-0000-4000-8000-000000000203",
+        name: "pending.invite",
+        status: "pending",
+        staffRoles: ["Auth user (profile missing)"],
+        inviteStatus: "sent",
+      }),
+    ]);
+  });
+
   it("uses mock fixtures when Supabase read access is disabled", async () => {
     const directory = await loadDirectoryWithMocks({
       enabled: false,
