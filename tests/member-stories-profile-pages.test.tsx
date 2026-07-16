@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 
 import { MemberProfilePanel } from "@/components/member-profile-panel";
@@ -54,6 +54,14 @@ function getSignedOutActor(email: string) {
 }
 
 describe("member stories and profile pages", () => {
+  beforeEach(async () => {
+    const dataModule = await import("@/services/read-only-app-data");
+
+    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
+      getMockReadOnlyAppData("Testing member stories and profile pages."),
+    );
+  });
+
   it("renders the route-backed stories surface with blocked publishing controls", async () => {
     const actorModule = await import("@/services/local-actor-context");
 
@@ -773,6 +781,105 @@ describe("member stories and profile pages", () => {
     expect(html).toContain("Back to Home");
     expect(html).not.toContain("member.a@mymedlife.test");
     expect(html).not.toContain("Profile Details");
+  });
+
+  it("keeps zero-count signed-in profile readback from borrowing demo activity", () => {
+    const html = renderToStaticMarkup(
+      <MemberProfilePanel
+        chapterName="myMEDLIFE Review Chapter"
+        displayName="Nick Ellis"
+        entrySource="home"
+        workspace={{
+          title: "Your myMEDLIFE profile",
+          summary: "Preview profile",
+          profileLabel: "General Member",
+          nextStep: {
+            label: "Open events",
+            href: "/app/events?source=profile",
+            detail: "Preview next step",
+          },
+          identityRows: [],
+          scopeRows: [],
+          futureStructuredEvents: [],
+          safetyNotes: [],
+          counts: {
+            chapterRoles: 1,
+            staffRoles: 0,
+            chapterScopes: 1,
+            coachPortfolioChapters: 0,
+            profileWritesExpected: 0,
+            membershipWritesExpected: 0,
+            roleWritesExpected: 0,
+            externalWritesExpected: 0,
+          },
+        }}
+        studentHome={{
+          greeting: "Hi, TEST Nick",
+          chapterName: "myMEDLIFE Review Chapter",
+          chapterMeta: "General Member - Review Campus",
+          primaryEvent: null,
+          pointsBalance: "0 pts",
+          pointsDetail: "Chapter rank #6",
+          pointsRankLabel: "#6",
+          pointsTotal: 0,
+          attendanceStatusLabel: "No attendance yet",
+          recognition: "Signed-in member readback",
+          recentHistory: [
+            {
+              label: "Borrowed TEST demo activity",
+              detail: "This should not show for a zero-count signed-in member.",
+            },
+          ],
+          chapterCard: {
+            title: "myMEDLIFE Review Chapter",
+            detail: "Profile preview",
+            profileHref: "/profile",
+          },
+          travelerHref: null,
+        }}
+        recognition={{
+          canReadRecognition: true,
+          title: "Recognition",
+          summary: "Preview recognition",
+          selectedMember: {
+            displayName: "Nick Ellis",
+            rank: 6,
+            points: 0,
+            recognition: "Signed-in member readback",
+            completedActions: 0,
+          },
+          leaderboard: [],
+          impacts: [],
+          topStats: [],
+          campaignPoints: [],
+          badges: [
+            { label: "Event Starter", tone: "gold" },
+            { label: "Connector", tone: "blue" },
+            { label: "Evidence Pro", tone: "blue" },
+            { label: "Chapter MVP", tone: "slate" },
+          ],
+          recentApprovedActions: [],
+          explainer: {
+            title: "How points work",
+            body: "Preview only",
+            ctaLabel: "See how to earn more points",
+            ctaHref: "/app/events?source=profile",
+          },
+          pointsLedgerPosture: "mock_read_only",
+        }}
+      />,
+    );
+
+    expect(html).toContain("TEST Nick Ellis");
+    expect(html).toContain("TEST myMEDLIFE Review Chapter");
+    expect(html).toContain("TEST-REVIEW-0847");
+    expect(html).toContain("Total Points");
+    expect(html).toContain("Events");
+    expect(html).toContain("Tasks Done");
+    expect(html).toContain("No completed TEST activity yet");
+    expect(html).not.toContain("Borrowed TEST demo activity");
+    expect(html).not.toContain("TEST-UCLA-0847");
+    expect(html).not.toContain(">Earned</span>");
   });
 
   it("keeps custom designation labels and single-name avatars inside the mobile profile shell", () => {

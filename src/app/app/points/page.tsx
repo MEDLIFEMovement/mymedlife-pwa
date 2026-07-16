@@ -1,4 +1,5 @@
 import { renderMemberMobileShellPage } from "@/app/app/member-mobile-shell-page";
+import { buildMemberRouteKey } from "@/services/member-route-key";
 import { getStaticRouteMetadata } from "@/services/static-route-metadata";
 
 export const metadata = getStaticRouteMetadata("rushMonthLeaderboard");
@@ -30,6 +31,7 @@ export default async function AppPointsPage(props: AppPointsPageProps) {
   const resolvedSearchParams: { source?: string; event?: string; campaign?: string; storyFilter?: string; story?: string } = await (
     props.searchParams ?? Promise.resolve({})
   );
+  const repaintKey = buildMemberRouteKey("/app/points", resolvedSearchParams);
 
   return renderMemberMobileShellPage({
     initialScreen: "points",
@@ -39,5 +41,6 @@ export default async function AppPointsPage(props: AppPointsPageProps) {
     pointsReturnCampaign: getPointsReturnCampaign(resolvedSearchParams.campaign),
     pointsStoryFilter: resolvedSearchParams.storyFilter ?? null,
     pointsStoryId: resolvedSearchParams.story ?? null,
+    repaintKey,
   });
 }

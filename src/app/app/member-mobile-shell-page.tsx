@@ -9,6 +9,13 @@ import { WorkspacePreviewBanner } from "@/components/workspace-preview-banner";
 import { getLandingRouteForActor } from "@/services/landing-route";
 import { buildLoginRedirectHref, shouldRedirectActorToLogin } from "@/services/login-route";
 import { getLocalActorContext } from "@/services/local-actor-context";
+import { getMemberRecognitionSummary } from "@/services/member-recognition";
+import {
+  buildMemberIdentityContext,
+  ensureVisibleTestLabel,
+} from "@/services/member-mobile-identity-context";
+import { getMvpMemberHome } from "@/services/mvp-event-tracking-workspace";
+import { getReadOnlyAppData } from "@/services/read-only-app-data";
 import { canAccessMemberWorkspace, hasTravelerAccess } from "@/services/role-visibility";
 import { getSltTripPrepWorkspace } from "@/services/slt-trip-prep-workspace";
 import { isPreviewWorkspaceAccess } from "@/services/workspace-access";
@@ -27,6 +34,7 @@ export async function renderMemberMobileShellPage({
   eventsSource,
   eventsProfileSource,
   eventsStoryFilter,
+  repaintKey,
 }: {
   initialScreen?: MemberMobileLaunchScreen;
   redirectPath: string;
@@ -41,10 +49,17 @@ export async function renderMemberMobileShellPage({
   eventsSource?: "events" | "home" | "profile" | "points" | "stories";
   eventsProfileSource?: "points" | null;
   eventsStoryFilter?: string | null;
+  repaintKey?: string;
 }) {
-  const actor = await getLocalActorContext();
+  const [actor, data] = await Promise.all([
+    getLocalActorContext(),
+    getReadOnlyAppData(),
+  ]);
   const landingRoute = getLandingRouteForActor(actor);
   const sltPrepWorkspace = hasTravelerAccess(actor) ? getSltTripPrepWorkspace(actor) : null;
+  const studentHome = getMvpMemberHome(actor, data);
+  const recognition = getMemberRecognitionSummary(actor, data);
+  const memberContext = buildMemberIdentityContext(actor, studentHome, recognition, data.chapter.campus);
   const sltPrepEntry =
     sltPrepWorkspace?.canReadWorkspace && sltPrepWorkspace.traveler
       ? {
@@ -85,11 +100,9 @@ export async function renderMemberMobileShellPage({
         eventsSource={eventsSource}
         eventsProfileSource={eventsProfileSource}
         eventsStoryFilter={eventsStoryFilter}
+        memberContext={memberContext}
+        repaintKey={repaintKey}
       />
     </>
   );
-}
-
-function ensureVisibleTestLabel(value: string) {
-  return /\bTEST\b/.test(value) ? value : `TEST ${value}`;
 }

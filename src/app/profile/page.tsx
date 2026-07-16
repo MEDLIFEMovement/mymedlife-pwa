@@ -1,3 +1,4 @@
+import { ChromeDesktopPaintShell } from "@/components/chrome-desktop-paint-shell";
 import { MemberBottomNav } from "@/components/member-bottom-nav";
 import { MemberProfilePanel } from "@/components/member-profile-panel";
 import { getLocalActorContext } from "@/services/local-actor-context";
@@ -7,6 +8,7 @@ import { getProfileWorkspace } from "@/services/profile-workspace";
 import { getReadOnlyAppData } from "@/services/read-only-app-data";
 import { getLandingRouteForActor } from "@/services/landing-route";
 import { buildLoginRedirectHref, shouldRedirectActorToLogin } from "@/services/login-route";
+import { buildMemberRouteKey } from "@/services/member-route-key";
 import { canAccessMemberWorkspace } from "@/services/role-visibility";
 import { getStaticRouteMetadata } from "@/services/static-route-metadata";
 import { isPreviewWorkspaceAccess } from "@/services/workspace-access";
@@ -46,6 +48,7 @@ export default async function ProfilePage(props: ProfilePageProps) {
   const profileCampaign = resolvedSearchParams.campaign ?? null;
   const profileStoryFilter = resolvedSearchParams.storyFilter ?? null;
   const profileStoryId = resolvedSearchParams.story ?? null;
+  const repaintKey = buildMemberRouteKey("/profile", resolvedSearchParams);
   const workspace = getProfileWorkspace(actor, data);
   const isMemberProfile = canAccessMemberWorkspace(actor);
   const studentHome = isMemberProfile
@@ -65,7 +68,7 @@ export default async function ProfilePage(props: ProfilePageProps) {
 
   return (
     <main className="min-h-screen bg-[#d6e0f0] px-0 py-0 text-[#10223f] md:px-4 md:py-8">
-      <div className="mx-auto flex min-h-screen w-full max-w-[430px] flex-col overflow-hidden bg-white md:min-h-0 md:rounded-[44px] md:border-4 md:border-white/40 md:shadow-2xl">
+      <ChromeDesktopPaintShell repaintKey={repaintKey} className="mx-auto flex min-h-screen w-full max-w-[430px] flex-col overflow-hidden bg-white [backface-visibility:hidden] [transform:translateZ(0)] md:min-h-0 md:rounded-[44px] md:border-4 md:border-white/40 md:shadow-2xl">
         <div className="flex-1 overflow-y-auto pb-24">
           {studentHome && recognition ? (
             <MemberProfilePanel
@@ -97,7 +100,7 @@ export default async function ProfilePage(props: ProfilePageProps) {
             ),
           }}
         />
-      </div>
+      </ChromeDesktopPaintShell>
     </main>
   );
 }

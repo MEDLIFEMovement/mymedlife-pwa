@@ -37,6 +37,36 @@ function getSignedInActor(email: string) {
   );
 }
 
+function getProductionLikeNickActor() {
+  const actor = getSignedInActor("member.a@mymedlife.test");
+
+  return {
+    ...actor,
+    user: {
+      ...actor.user,
+      displayName: "Nick Ellis",
+      email: "nick.ellis@medlifemovement.org",
+    },
+    selectedEmail: "nick.ellis@medlifemovement.org",
+    chapterNames: ["myMEDLIFE Review Chapter"],
+  };
+}
+
+function getReviewChapterData() {
+  const data = getMockReadOnlyAppData(
+    "Testing production-like signed-in member chapter continuity.",
+  );
+
+  return {
+    ...data,
+    chapter: {
+      ...data.chapter,
+      name: "myMEDLIFE Review Chapter",
+      campus: "myMEDLIFE Review Campus",
+    },
+  };
+}
+
 describe("member event detail route", () => {
   it("parks unknown event ids back to the member events route", async () => {
     const actorModule = await import("@/services/local-actor-context");
@@ -131,6 +161,38 @@ describe("member event detail route", () => {
     expect(html).toContain('href="/app/events/chapter-event-ucla-kickoff?source=events&amp;step=rsvp"');
     expect(html).toContain('href="/app/events/chapter-event-ucla-kickoff?source=events&amp;step=checkin"');
     expect(html).toContain('href="/app/events/chapter-event-ucla-kickoff?source=events&amp;step=points"');
+  });
+
+  it("uses the signed-in member chapter and identity on direct event states", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const dataModule = await import("@/services/read-only-app-data");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getProductionLikeNickActor(),
+    );
+    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
+      getReviewChapterData(),
+    );
+
+    const { default: EventDetailPage } = await import("@/app/app/events/[eventId]/page");
+    const detailHtml = renderToStaticMarkup(
+      await EventDetailPage({
+        params: Promise.resolve({ eventId: "chapter-event-ucla-kickoff" }),
+        searchParams: Promise.resolve({ source: "home" }),
+      }),
+    );
+    const pointsHtml = renderToStaticMarkup(
+      await EventDetailPage({
+        params: Promise.resolve({ eventId: "chapter-event-ucla-kickoff" }),
+        searchParams: Promise.resolve({ source: "home", step: "points" }),
+      }),
+    );
+
+    expect(detailHtml).toContain("TEST myMEDLIFE Review Chapter");
+    expect(detailHtml).not.toContain("TEST UCLA MEDLIFE");
+    expect(pointsHtml).toContain("You (TEST Nick Ellis)");
+    expect(pointsHtml).toContain("TEST myMEDLIFE Review Chapter");
+    expect(pointsHtml).not.toContain("You (TEST Sofia");
   });
 
   it("renders the RSVP confirmation step as a route-backed preview state", async () => {

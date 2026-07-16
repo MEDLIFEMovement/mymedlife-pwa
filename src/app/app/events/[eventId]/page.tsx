@@ -18,6 +18,8 @@ import {
   MemberBottomNav,
   type MemberBottomNavTab,
 } from "@/components/member-bottom-nav";
+import { ChromeDesktopPaintShell } from "@/components/chrome-desktop-paint-shell";
+import type { MemberMobileIdentityContext } from "@/components/figma-member-mobile-home";
 import { getLaunchLaneMemberPointsHref } from "@/services/events-points-launch-lane";
 import { getLandingRouteForActor } from "@/services/landing-route";
 import {
@@ -30,6 +32,12 @@ import {
   getMemberLaunchLaneEventRowById,
 } from "@/services/member-launch-lane-events";
 import { getLocalActorContext } from "@/services/local-actor-context";
+import { getMemberRecognitionSummary } from "@/services/member-recognition";
+import {
+  buildMemberIdentityContext,
+  getVisibleMemberLeaderboardRows,
+} from "@/services/member-mobile-identity-context";
+import { getMvpMemberHome } from "@/services/mvp-event-tracking-workspace";
 import {
   getMockReadOnlyAppData,
   getReadOnlyAppData,
@@ -91,7 +99,16 @@ export default async function AppEventDetailPage({
     redirect("/app/events");
   }
 
+  const studentHome = getMvpMemberHome(actor, data);
+  const recognition = getMemberRecognitionSummary(actor, data);
+  const memberContext = buildMemberIdentityContext(
+    actor,
+    studentHome,
+    recognition,
+    data.chapter.campus,
+  );
   const step = getEventDetailStep(resolvedSearchParams.step);
+  const repaintKey = buildRouteKey(`/app/events/${eventId}`, resolvedSearchParams);
   const backHref =
     step === "detail"
       ? getEventReturnHref(
@@ -143,11 +160,12 @@ export default async function AppEventDetailPage({
 
   return (
     <main className="min-h-screen bg-[#d6e0f0] px-0 py-0 text-[#10223f] md:px-4 md:py-8">
-      <div className="mx-auto flex min-h-screen w-full max-w-[430px] flex-col overflow-hidden bg-white md:min-h-0 md:rounded-[44px] md:border-4 md:border-white/40 md:shadow-2xl">
+      <ChromeDesktopPaintShell repaintKey={repaintKey} className="mx-auto flex min-h-screen w-full max-w-[430px] flex-col overflow-hidden bg-white [backface-visibility:hidden] [transform:translateZ(0)] md:min-h-0 md:rounded-[44px] md:border-4 md:border-white/40 md:shadow-2xl">
         <div className="flex-1 overflow-y-auto pb-24">
           {step === "detail" ? (
             <EventDetailView
               event={event}
+              memberContext={memberContext}
               snapshot={snapshot}
               source={resolvedSearchParams.source}
               profileSource={resolvedSearchParams.profileSource}
@@ -158,6 +176,7 @@ export default async function AppEventDetailPage({
           ) : step === "rsvp" ? (
             <EventRsvpConfirmView
               event={event}
+              memberContext={memberContext}
               snapshot={snapshot}
               backHref={backHref}
               source={resolvedSearchParams.source}
@@ -169,6 +188,7 @@ export default async function AppEventDetailPage({
           ) : step === "checkin" ? (
             <EventCheckInView
               event={event}
+              memberContext={memberContext}
               snapshot={snapshot}
               backHref={backHref}
               source={resolvedSearchParams.source}
@@ -180,6 +200,7 @@ export default async function AppEventDetailPage({
           ) : (
             <EventPointsImpactView
               event={event}
+              memberContext={memberContext}
               snapshot={snapshot}
               backHref={backHref}
               source={resolvedSearchParams.source}
@@ -191,9 +212,50 @@ export default async function AppEventDetailPage({
           )}
         </div>
         <MemberBottomNav activeTab={activeTab} hrefOverrides={navHrefOverrides} />
-      </div>
+      </ChromeDesktopPaintShell>
     </main>
   );
+}
+
+function buildRouteKey(
+  pathname: string,
+  params: {
+    source?: string;
+    step?: string;
+    profileSource?: string;
+    campaign?: string;
+    storyFilter?: string;
+    story?: string;
+  },
+) {
+  const searchParams = new URLSearchParams();
+
+  if (params.source) {
+    searchParams.set("source", params.source);
+  }
+
+  if (params.step) {
+    searchParams.set("step", params.step);
+  }
+
+  if (params.profileSource) {
+    searchParams.set("profileSource", params.profileSource);
+  }
+
+  if (params.campaign) {
+    searchParams.set("campaign", params.campaign);
+  }
+
+  if (params.storyFilter) {
+    searchParams.set("storyFilter", params.storyFilter);
+  }
+
+  if (params.story) {
+    searchParams.set("story", params.story);
+  }
+
+  const query = searchParams.toString();
+  return query ? `${pathname}?${query}` : pathname;
 }
 
 function getResolvedEventDetailData(
@@ -227,6 +289,7 @@ function ensureVisibleTestLabel(value: string) {
 
 function EventDetailView({
   event,
+  memberContext,
   snapshot,
   source,
   profileSource,
@@ -235,6 +298,7 @@ function EventDetailView({
   storyId,
 }: {
   event: NonNullable<ReturnType<typeof getMemberLaunchLaneEventRowById>>;
+  memberContext: MemberMobileIdentityContext;
   snapshot: NonNullable<ReturnType<typeof getLaunchLaneEventSnapshotById>>;
   source?: string;
   profileSource?: string;
@@ -250,7 +314,7 @@ function EventDetailView({
   const returnLabel = getEventReturnLabel(source);
   const sourceContext = getEventSourceContext(event.id, source, profileSource, campaign, storyFilter, storyId);
   const visibleEventTitle = ensureVisibleTestLabel(event.title);
-  const visibleChapterName = ensureVisibleTestLabel(snapshot.chapterName);
+  const visibleChapterName = memberContext.chapterName;
   const visibleLocationLabel = ensureVisibleTestLabel(snapshot.memberLocationLabel);
 
   return (
@@ -460,6 +524,7 @@ function EventDetailView({
 
 function EventRsvpConfirmView({
   event,
+  memberContext,
   snapshot,
   backHref,
   source,
@@ -469,6 +534,7 @@ function EventRsvpConfirmView({
   storyId,
 }: {
   event: NonNullable<ReturnType<typeof getMemberLaunchLaneEventRowById>>;
+  memberContext: MemberMobileIdentityContext;
   snapshot: NonNullable<ReturnType<typeof getLaunchLaneEventSnapshotById>>;
   backHref: string;
   source?: string;
@@ -494,6 +560,9 @@ function EventRsvpConfirmView({
         <Card className="mb-4 w-full text-left">
           <p className="mb-3 text-xs font-bold uppercase tracking-wide text-[#1b4b8e]">Event Summary</p>
           <div className="space-y-2 text-sm text-slate-600">
+            <DetailRow icon={<Users size={14} className="text-[#1b4b8e]" />}>
+              {memberContext.chapterName}
+            </DetailRow>
             <DetailRow icon={<CalendarDays size={14} className="text-[#1b4b8e]" />}>
               {snapshot.memberDateTimeLabel}
             </DetailRow>
@@ -537,6 +606,7 @@ function EventRsvpConfirmView({
 
 function EventCheckInView({
   event,
+  memberContext,
   snapshot,
   backHref,
   source,
@@ -546,6 +616,7 @@ function EventCheckInView({
   storyId,
 }: {
   event: NonNullable<ReturnType<typeof getMemberLaunchLaneEventRowById>>;
+  memberContext: MemberMobileIdentityContext;
   snapshot: NonNullable<ReturnType<typeof getLaunchLaneEventSnapshotById>>;
   backHref: string;
   source?: string;
@@ -561,6 +632,7 @@ function EventCheckInView({
         <Card className="mb-6 border-[#dbeafe] bg-[#eff6ff]">
           <div className="mb-2 flex items-center gap-2">
             <Pill label="RSVP'd" variant="green" />
+            <Pill label={memberContext.chapterName} variant="blue" />
           </div>
           <h2 className="text-lg font-extrabold text-slate-950">{visibleEventTitle}</h2>
           <p className="mt-1 flex items-center gap-1.5 text-sm text-slate-600">
@@ -601,6 +673,7 @@ function EventCheckInView({
 
 function EventPointsImpactView({
   event,
+  memberContext,
   snapshot,
   backHref,
   source,
@@ -610,6 +683,7 @@ function EventPointsImpactView({
   storyId,
 }: {
   event: NonNullable<ReturnType<typeof getMemberLaunchLaneEventRowById>>;
+  memberContext: MemberMobileIdentityContext;
   snapshot: NonNullable<ReturnType<typeof getLaunchLaneEventSnapshotById>>;
   backHref: string;
   source?: string;
@@ -618,14 +692,15 @@ function EventPointsImpactView({
   storyFilter?: string;
   storyId?: string;
 }) {
-  const visibleChapterName = ensureVisibleTestLabel(snapshot.chapterName);
+  const visibleChapterName = memberContext.chapterName;
   const returnHref = getEventReturnHref(event.id, source, profileSource, campaign, storyFilter, storyId);
   const returnLabel = getEventReturnLabel(source);
-  const chapterRows = [
-    { rank: "🥇", name: "TEST Aisha N.", points: 220 },
-    { rank: "🥈", name: "TEST Marcus T.", points: 185 },
-    { rank: "🥉", name: "You (TEST Sofia R.)", points: 165, highlight: true },
-  ];
+  const chapterRows = getVisibleMemberLeaderboardRows(memberContext, 3).map((row) => ({
+    rank: formatLeaderboardRank(row.rank),
+    name: row.me ? `You (${row.name})` : row.name,
+    points: row.pts,
+    highlight: Boolean(row.me),
+  }));
 
   return (
     <StepShell backHref={backHref} title="">
@@ -636,7 +711,7 @@ function EventPointsImpactView({
         <h1 className="mb-1 text-2xl font-extrabold text-slate-950">Checked in!</h1>
         <p className="mt-2 mb-1 text-4xl font-extrabold text-amber-500">+{event.pointsAwarded} points</p>
         <p className="mb-8 text-sm text-slate-600">
-          Local preview of the post-check-in state for {visibleChapterName}.
+          Local preview of the post-check-in state for {visibleChapterName} after {snapshot.memberDateTimeLabel}.
         </p>
 
         <Card className="mb-6 w-full border-[#dbeafe] bg-[#eff6ff] text-left">
@@ -681,6 +756,19 @@ function EventPointsImpactView({
       </div>
     </StepShell>
   );
+}
+
+function formatLeaderboardRank(rank: number) {
+  switch (rank) {
+    case 1:
+      return "🥇";
+    case 2:
+      return "🥈";
+    case 3:
+      return "🥉";
+    default:
+      return String(rank);
+  }
 }
 
 function StepShell({

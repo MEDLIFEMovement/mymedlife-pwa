@@ -9,6 +9,26 @@ type MemberHomePageProps = {
 
 export default async function MemberHomePage(props: MemberHomePageProps) {
   const emptySearchParams: { lumaResult?: string; lumaMessage?: string } = {};
-  await (props.searchParams ?? Promise.resolve(emptySearchParams));
-  return renderMemberMobileShellPage({ redirectPath: "/app" });
+  const resolvedSearchParams = await (props.searchParams ?? Promise.resolve(emptySearchParams));
+  const repaintKey = buildRouteKey("/app", resolvedSearchParams);
+
+  return renderMemberMobileShellPage({
+    redirectPath: "/app",
+    repaintKey,
+  });
+}
+
+function buildRouteKey(pathname: string, params: { lumaResult?: string; lumaMessage?: string }) {
+  const searchParams = new URLSearchParams();
+
+  if (params.lumaResult) {
+    searchParams.set("lumaResult", params.lumaResult);
+  }
+
+  if (params.lumaMessage) {
+    searchParams.set("lumaMessage", params.lumaMessage);
+  }
+
+  const query = searchParams.toString();
+  return query ? `${pathname}?${query}` : pathname;
 }
