@@ -13,11 +13,28 @@ type AppStoriesPageProps = {
 
 export default async function AppStoriesPage(props: AppStoriesPageProps) {
   const query = (await props.searchParams) ?? {};
+  const repaintKey = buildRouteKey("/app/stories", query);
 
   return renderMemberMobileShellPage({
     initialScreen: "stories",
     redirectPath: "/app/stories",
     initialStoriesFilter: query.filter ?? null,
     initialStoryId: query.story ?? null,
+    repaintKey,
   });
+}
+
+function buildRouteKey(pathname: string, params: { filter?: string; story?: string }) {
+  const searchParams = new URLSearchParams();
+
+  if (params.filter) {
+    searchParams.set("filter", params.filter);
+  }
+
+  if (params.story) {
+    searchParams.set("story", params.story);
+  }
+
+  const query = searchParams.toString();
+  return query ? `${pathname}?${query}` : pathname;
 }

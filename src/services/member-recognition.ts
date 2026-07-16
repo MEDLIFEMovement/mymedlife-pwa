@@ -100,7 +100,7 @@ export function getMemberRecognitionSummary(
   }
 
   const sortedLeaderboard = sortLeaderboard(leaderboard);
-  const selectedRow = findSelectedMember(actor, sortedLeaderboard) ?? sortedLeaderboard[0];
+  const selectedRow = findSelectedMember(actor, sortedLeaderboard);
   const selectedMember = selectedRow
     ? {
         displayName: selectedRow.displayName,
@@ -109,7 +109,7 @@ export function getMemberRecognitionSummary(
         recognition: selectedRow.recognition,
         completedActions: selectedRow.completedActions,
       }
-    : undefined;
+    : buildActorFallbackMember(actor, sortedLeaderboard.length);
 
   return {
     canReadRecognition: true,
@@ -147,12 +147,12 @@ export function getMemberRecognitionSummary(
             : "Mock Luma/event posture only.",
       },
     ],
-    topStats: buildTopStats(selectedMember, data),
+    topStats: buildTopStats(selectedMember),
     campaignPoints: [
       {
         id: "event-loop",
         label: "Event loop",
-        earned: selectedRow?.points ?? data.pointsSummary.earned,
+        earned: selectedMember?.points ?? 0,
         available: 150,
         detail:
           "Recognition in the launch lane should reward the real event, RSVP, attendance, and follow-through that moves chapter momentum.",
@@ -164,7 +164,7 @@ export function getMemberRecognitionSummary(
       { label: "Evidence Pro", tone: "blue" },
       { label: "Chapter MVP", tone: "slate" },
     ],
-    recentApprovedActions: buildRecentApprovedActions(actor, data),
+    recentApprovedActions: buildRecentApprovedActions(actor, data, Boolean(selectedRow)),
     explainer: {
       title: "How points work",
       body:
@@ -178,17 +178,13 @@ export function getMemberRecognitionSummary(
 
 function buildTopStats(
   selectedRow: MemberRecognitionSummary["selectedMember"],
-  data: ReadOnlyAppData,
 ): MemberRecognitionTopStat[] {
-  const weeklyMomentum = Math.max(
-    data.pointsSummary.approvedActions * 25,
-    data.kpiSummary.invitePushes * 10,
-  );
+  const weeklyMomentum = Math.max((selectedRow?.completedActions ?? 0) * 25, 0);
 
   return [
     {
       label: "Total Points",
-      value: `${selectedRow?.points ?? data.pointsSummary.earned}`,
+      value: `${selectedRow?.points ?? 0}`,
       note: "Earned in the live event loop",
     },
     {
@@ -207,6 +203,7 @@ function buildTopStats(
 function buildRecentApprovedActions(
   actor: LocalActorContext,
   data: ReadOnlyAppData,
+  hasMatchedLeaderboardMember: boolean,
 ): MemberRecognitionRecentAction[] {
   const approvedAssignments = getVisibleAssignmentsForActor(actor, data.assignments).filter(
     (assignment) => assignment.status === "approved",
@@ -219,6 +216,10 @@ function buildRecentApprovedActions(
       pointsLabel: `+${assignment.points} pts`,
       href: getLaunchLaneMemberPointsHref("points"),
     }));
+  }
+
+  if (!hasMatchedLeaderboardMember) {
+    return [];
   }
 
   return [
@@ -274,6 +275,19 @@ function findSelectedMember(
   return leaderboard.find(
     (row) => row.displayName.toLowerCase() === actor.user.displayName.toLowerCase(),
   );
+}
+
+function buildActorFallbackMember(
+  actor: LocalActorContext,
+  leaderboardLength: number,
+): NonNullable<MemberRecognitionSummary["selectedMember"]> {
+  return {
+    displayName: actor.user.displayName,
+    rank: leaderboardLength + 1,
+    points: 0,
+    recognition: "Signed-in member readback",
+    completedActions: 0,
+  };
 }
 
 function getTitle(surfaceFamily: ActorSurfaceFamily): string {

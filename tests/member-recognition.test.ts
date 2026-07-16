@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { rushMonthLeaderboard } from "@/data/mock-leaderboard";
-import { getMockLocalActorContext } from "@/services/local-actor-context";
+import {
+  getMissingProfileActorContext,
+  getMockLocalActorContext,
+} from "@/services/local-actor-context";
 import { getMemberRecognitionSummary } from "@/services/member-recognition";
 import { getMockReadOnlyAppData } from "@/services/read-only-app-data";
 
@@ -86,6 +89,28 @@ describe("member recognition", () => {
     ]);
 
     expect(recognition.leaderboard[0]?.id).toBe("tie-b");
+  });
+
+  it("does not assign the first mock leaderboard row to an unmatched signed-in actor", () => {
+    const actor = getMissingProfileActorContext(
+      "nick.ellis@medlifemovement.org",
+      "Testing signed-in actor recognition fallback.",
+    );
+    const recognition = getMemberRecognitionSummary(actor, data);
+
+    expect(recognition.selectedMember).toMatchObject({
+      displayName: "Nick Ellis",
+      points: 0,
+      completedActions: 0,
+    });
+    expect(recognition.selectedMember?.displayName).not.toBe("Aisha N.");
+    expect(recognition.topStats).toEqual([
+      expect.objectContaining({ label: "Total Points", value: "0" }),
+      expect.objectContaining({ label: "This Week", value: "+0" }),
+      expect.objectContaining({ label: "Chapter Rank", value: "#6" }),
+    ]);
+    expect(recognition.campaignPoints[0]).toEqual(expect.objectContaining({ earned: 0 }));
+    expect(recognition.recentApprovedActions).toEqual([]);
   });
 
   it("gives leaders a member recognition readout", () => {

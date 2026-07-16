@@ -29,6 +29,7 @@ export default async function AppEventsPage({ searchParams }: AppEventsPageProps
   const resolvedSearchParams: { source?: string; campaign?: string; profileSource?: string; storyFilter?: string } = await (
     searchParams ?? Promise.resolve({})
   );
+  const repaintKey = buildRouteKey("/app/events", resolvedSearchParams);
 
   return renderMemberMobileShellPage({
     initialScreen: "events",
@@ -37,5 +38,32 @@ export default async function AppEventsPage({ searchParams }: AppEventsPageProps
     eventsSource: getEventsSource(resolvedSearchParams.source),
     eventsProfileSource: resolvedSearchParams.profileSource === "points" ? "points" : null,
     eventsStoryFilter: resolvedSearchParams.storyFilter ?? null,
+    repaintKey,
   });
+}
+
+function buildRouteKey(
+  pathname: string,
+  params: { source?: string; campaign?: string; profileSource?: string; storyFilter?: string },
+) {
+  const searchParams = new URLSearchParams();
+
+  if (params.source) {
+    searchParams.set("source", params.source);
+  }
+
+  if (params.campaign) {
+    searchParams.set("campaign", params.campaign);
+  }
+
+  if (params.profileSource) {
+    searchParams.set("profileSource", params.profileSource);
+  }
+
+  if (params.storyFilter) {
+    searchParams.set("storyFilter", params.storyFilter);
+  }
+
+  const query = searchParams.toString();
+  return query ? `${pathname}?${query}` : pathname;
 }

@@ -1,3 +1,4 @@
+import { ChromeDesktopPaintShell } from "@/components/chrome-desktop-paint-shell";
 import { MemberBottomNav } from "@/components/member-bottom-nav";
 import { MemberProfilePanel } from "@/components/member-profile-panel";
 import { getLocalActorContext } from "@/services/local-actor-context";
@@ -46,6 +47,7 @@ export default async function ProfilePage(props: ProfilePageProps) {
   const profileCampaign = resolvedSearchParams.campaign ?? null;
   const profileStoryFilter = resolvedSearchParams.storyFilter ?? null;
   const profileStoryId = resolvedSearchParams.story ?? null;
+  const repaintKey = buildRouteKey("/profile", resolvedSearchParams);
   const workspace = getProfileWorkspace(actor, data);
   const isMemberProfile = canAccessMemberWorkspace(actor);
   const studentHome = isMemberProfile
@@ -65,7 +67,7 @@ export default async function ProfilePage(props: ProfilePageProps) {
 
   return (
     <main className="min-h-screen bg-[#d6e0f0] px-0 py-0 text-[#10223f] md:px-4 md:py-8">
-      <div className="mx-auto flex min-h-screen w-full max-w-[430px] flex-col overflow-hidden bg-white md:min-h-0 md:rounded-[44px] md:border-4 md:border-white/40 md:shadow-2xl">
+      <ChromeDesktopPaintShell repaintKey={repaintKey} className="mx-auto flex min-h-screen w-full max-w-[430px] flex-col overflow-hidden bg-white [backface-visibility:hidden] [transform:translateZ(0)] md:min-h-0 md:rounded-[44px] md:border-4 md:border-white/40 md:shadow-2xl">
         <div className="flex-1 overflow-y-auto pb-24">
           {studentHome && recognition ? (
             <MemberProfilePanel
@@ -97,9 +99,39 @@ export default async function ProfilePage(props: ProfilePageProps) {
             ),
           }}
         />
-      </div>
+      </ChromeDesktopPaintShell>
     </main>
   );
+}
+
+function buildRouteKey(
+  pathname: string,
+  params: { source?: string; event?: string; campaign?: string; storyFilter?: string; story?: string },
+) {
+  const searchParams = new URLSearchParams();
+
+  if (params.source) {
+    searchParams.set("source", params.source);
+  }
+
+  if (params.event) {
+    searchParams.set("event", params.event);
+  }
+
+  if (params.campaign) {
+    searchParams.set("campaign", params.campaign);
+  }
+
+  if (params.storyFilter) {
+    searchParams.set("storyFilter", params.storyFilter);
+  }
+
+  if (params.story) {
+    searchParams.set("story", params.story);
+  }
+
+  const query = searchParams.toString();
+  return query ? `${pathname}?${query}` : pathname;
 }
 
 function buildProfileEventsHref(

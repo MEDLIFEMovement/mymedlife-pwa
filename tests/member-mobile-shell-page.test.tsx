@@ -53,6 +53,43 @@ describe("member mobile shell routes", () => {
     expect(html).toContain('href="/profile?source=home"');
   });
 
+  it("keeps zero-count signed-in members from inheriting demo progress", () => {
+    const zeroContext = {
+      displayName: "TEST Nick Ellis",
+      firstName: "TEST Nick",
+      chapterName: "TEST myMEDLIFE Review Chapter",
+      campusName: "TEST myMEDLIFE Review Campus",
+      pointsTotal: 0,
+      pointsWeeklyLabel: "+0",
+      pointsRankLabel: "#6",
+      completedActions: 0,
+      leaderboardRows: [
+        { rank: 1, name: "TEST Aisha N.", role: "President", pts: 220 },
+        { rank: 2, name: "TEST Marcus T.", role: "VP Outreach", pts: 185 },
+        { rank: 6, name: "TEST Nick Ellis", role: "General Member", pts: 0, me: true },
+      ],
+    };
+
+    const homeHtml = renderToStaticMarkup(
+      <FigmaMemberMobileHome memberContext={zeroContext} />,
+    );
+    const pointsHtml = renderToStaticMarkup(
+      <FigmaMemberMobileHome initialScreen="points" memberContext={zeroContext} />,
+    );
+
+    expect(homeHtml).toContain("Hi, TEST Nick");
+    expect(homeHtml).toContain("0 / 3 actions done");
+    expect(homeHtml).not.toContain("1 / 3 actions done");
+    expect(pointsHtml).toContain("TEST myMEDLIFE Review Chapter");
+    expect(pointsHtml).toContain("0 / 150 pts");
+    expect(pointsHtml).toContain("0 / 100 pts");
+    expect(pointsHtml).toContain("0 / 80 pts");
+    expect(pointsHtml).toContain("No approved TEST actions yet");
+    expect(pointsHtml).toContain("You (TEST Nick Ellis)");
+    expect(pointsHtml).not.toContain("75 / 150 pts");
+    expect(pointsHtml).not.toContain("Approved 2h ago in preview");
+  });
+
   it("renders the Stories route through the shared Figma member shell", async () => {
     const actorModule = await import("@/services/local-actor-context");
 
@@ -765,7 +802,7 @@ describe("member mobile shell routes", () => {
     expect(htmlByScreen.get("evidence")).toContain("Privacy Reminder");
     expect(htmlByScreen.get("confirm")).toContain("TEST Marcus T. will review your submission");
     expect(htmlByScreen.get("points")).toContain("TEST Rush Month");
-    expect(htmlByScreen.get("points")).toContain("You (TEST Sofia R.)");
+    expect(htmlByScreen.get("points")).toContain("You (TEST Sofia Alvarez)");
     expect(htmlByScreen.get("points")).toContain("Share TEST Rush Week flyer on Instagram");
     expect(htmlByScreen.get("events")).toContain("TEST Spring Showcase Kickoff");
     expect(htmlByScreen.get("event-detail")).toContain("TEST Ackerman Union 2100");

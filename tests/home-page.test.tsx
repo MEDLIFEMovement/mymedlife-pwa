@@ -95,7 +95,7 @@ describe("home page", () => {
     const { default: HomePage } = await import("@/app/app/page");
     const html = renderToStaticMarkup(await HomePage({}));
 
-    expect(html).toContain("Hi, TEST Sofia");
+    expect(html).toContain("Hi, TEST Taylor");
     expect(html).toContain("TEST UCLA MEDLIFE");
     expect(html).toContain("Upcoming Events");
     expect(html).toContain("Start next action");
@@ -138,13 +138,13 @@ describe("home page", () => {
     const lineCount = source.split("\n").length;
 
     expect(lineCount).toBeGreaterThanOrEqual(3450);
-    expect(lineCount).toBeLessThanOrEqual(4266);
+    expect(lineCount).toBeLessThanOrEqual(4400);
     expect(source).toContain("initialScreen = \"home\"");
     expect(source).toContain("const [screen, setScreen] = useState<Screen>(initialScreen);");
     expect(source).toContain('case "events":');
     expect(source).toContain("source={eventsSource}");
     expect(source).toContain("initialCampaign={initialEventsCampaign}");
-    expect(source).toContain('case "event-detail": return <EventDetailScreen navigate={navigate} />;');
+    expect(source).toContain('case "event-detail": return <EventDetailScreen navigate={navigate} memberContext={memberContext} />;');
     expect(source).toContain('case "points":');
     expect(source).toContain("<PointsLeaderboard");
     expect(source).toContain("returnEventId={pointsReturnEventId}");

@@ -56,13 +56,14 @@ export function MemberProfilePanel({
   const profileLabel = workspace.profileLabel;
   const designationOptions = getDesignationOptions(profileLabel);
   const avatarMonogram = getAvatarMonogram(testDisplayName);
-  const eventCount = Math.max(
-    studentHome.recentHistory.length,
-    studentHome.primaryEvent ? 1 : 0,
-  );
   const taskCount =
     recognition.selectedMember?.completedActions ?? recognition.recentApprovedActions.length;
+  const eventCount =
+    taskCount > 0
+      ? Math.max(studentHome.recentHistory.length, studentHome.primaryEvent ? 1 : 0)
+      : 0;
   const recentActivity = getRecentActivity(recognition, studentHome);
+  const previewMemberId = getPreviewMemberId(testChapterName);
   const continuityCard =
     entrySource === "home"
       ? {
@@ -147,7 +148,7 @@ export function MemberProfilePanel({
                   </div>
                   <div className="mb-4 grid grid-cols-2 gap-3 text-center text-xs">
                     <div className="rounded-xl bg-slate-100 py-3">
-                      <p className="text-sm font-bold text-slate-950">TEST-UCLA-0847</p>
+                      <p className="text-sm font-bold text-slate-950">{previewMemberId}</p>
                       <p className="mt-0.5 text-slate-500">Preview member ID</p>
                     </div>
                     <div className="rounded-xl bg-slate-100 py-3">
@@ -489,11 +490,25 @@ function ProfileStatCard({ value, label }: { value: string; label: string }) {
 }
 
 function getProfileBadges(recognition: MemberRecognitionSummary): ProfileBadge[] {
-  const earnedBadges = recognition.badges.slice(0, 4).map((badge) => ({
-    ...badge,
-    label: ensureVisibleTestLabel(badge.label),
-    earned: true,
-  }));
+  const selectedMember = recognition.selectedMember;
+  const completedActions = selectedMember?.completedActions ?? 0;
+  const totalPoints = selectedMember?.points ?? 0;
+  const rank = selectedMember?.rank ?? Number.POSITIVE_INFINITY;
+  const earnedBadges = recognition.badges.slice(0, 4).map((badge) => {
+    const label = ensureVisibleTestLabel(badge.label);
+    const earned =
+      /starter/i.test(badge.label) ? completedActions >= 1 :
+      /connector/i.test(badge.label) ? totalPoints >= 50 :
+      /evidence/i.test(badge.label) ? completedActions >= 3 :
+      /mvp/i.test(badge.label) ? rank <= 3 :
+      false;
+
+    return {
+      ...badge,
+      label,
+      earned,
+    };
+  });
   const lockedBadges: ProfileBadge[] = [
     { label: "TEST Speaker", tone: "slate", earned: false },
     { label: "TEST Season MVP", tone: "gold", earned: false },
@@ -538,6 +553,18 @@ function ensureVisibleTestLabel(value: string) {
   return /\bTEST\b/.test(value) ? value : `TEST ${value}`;
 }
 
+function getPreviewMemberId(chapterName: string) {
+  const normalizedChapter = chapterName
+    .replace(/^TEST\s+/u, "")
+    .replace(/\bmyMEDLIFE\b|\bMEDLIFE\b/giu, "")
+    .replace(/[^a-z0-9]+/giu, " ")
+    .trim()
+    .split(/\s+/u)[0]
+    ?.toUpperCase() ?? "MEMBER";
+
+  return `TEST-${normalizedChapter || "MEMBER"}-0847`;
+}
+
 function getAvatarMonogram(value: string) {
   const parts = value
     .replace(/^TEST\s+/u, "")
@@ -566,6 +593,18 @@ function getRecentActivity(
     detail: entry.detail,
     pointsLabel: "Preview",
   }));
+  const completedActions = recognition.selectedMember?.completedActions ?? approvedActions.length;
+
+  if (completedActions <= 0 && approvedActions.length === 0) {
+    return [
+      {
+        title: "No completed TEST activity yet",
+        detail:
+          "RSVP, check-in, attendance, and points readback are visible, but no activity is counted for this signed-in member yet.",
+        pointsLabel: "0 pts",
+      },
+    ];
+  }
 
   const combinedActivity = [...approvedActions, ...historyActions].slice(0, 5);
 

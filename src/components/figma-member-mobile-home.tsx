@@ -4,7 +4,9 @@
 
 import Link from "next/link";
 import React, { useState } from "react";
+import { ChromeDesktopPaintShell } from "@/components/chrome-desktop-paint-shell";
 import { MemberBottomNav, type MemberBottomNavTab } from "@/components/member-bottom-nav";
+import { getVisibleMemberLeaderboardRows } from "@/services/member-mobile-identity-context";
 import {
   Home, BarChart2, CalendarDays, Trophy, User, Users,
   ChevronRight, ChevronLeft, CheckCircle2, Clock, Circle,
@@ -35,6 +37,42 @@ type MemberSltPrepEntry = {
   countdownLabel: string;
   readinessLabel: string;
   nextStepLabel: string;
+};
+
+export type MemberMobileIdentityContext = {
+  displayName: string;
+  firstName: string;
+  chapterName: string;
+  campusName: string;
+  pointsTotal: number;
+  pointsWeeklyLabel: string;
+  pointsRankLabel: string;
+  completedActions: number;
+  leaderboardRows: Array<{
+    rank: number;
+    name: string;
+    role?: string;
+    pts: number;
+    me?: boolean;
+  }>;
+};
+
+const DEFAULT_MEMBER_IDENTITY_CONTEXT: MemberMobileIdentityContext = {
+  displayName: "TEST Sofia Alvarez",
+  firstName: "TEST Sofia",
+  chapterName: "TEST UCLA MEDLIFE",
+  campusName: "TEST UCLA",
+  pointsTotal: 145,
+  pointsWeeklyLabel: "+75",
+  pointsRankLabel: "#3",
+  completedActions: 3,
+  leaderboardRows: [
+    { rank: 1, name: "TEST Aisha N.", role: "President", pts: 220 },
+    { rank: 2, name: "TEST Marcus T.", role: "VP Outreach", pts: 185 },
+    { rank: 3, name: "TEST Sofia Alvarez", role: "General Member", pts: 145, me: true },
+    { rank: 4, name: "TEST James L.", role: "General Member", pts: 130 },
+    { rank: 5, name: "TEST Priya K.", role: "Committee Chair", pts: 110 },
+  ],
 };
 
 type Role = "student" | "leader" | "coach" | "admin";
@@ -353,16 +391,20 @@ function StudentHome({
   navigate,
   setRole,
   sltPrepEntry,
+  memberContext,
 }: {
   navigate: (s: Screen) => void;
   setRole: (r: Role) => void;
   sltPrepEntry?: MemberSltPrepEntry | null;
+  memberContext: MemberMobileIdentityContext;
 }) {
   const allDesignations: UserDesignation[] = ["General Member", "E-Board", "Staff", "DS", "Sales", "Super Admin"];
   const [designation, setDesignation] = useState<UserDesignation>("General Member");
   const permitted = (["leader", "coach", "admin"] as const).filter(
     (v) => VIEW_ACCESS[v].includes(designation)
   );
+  const selfLeaderboardRows = getVisibleMemberLeaderboardRows(memberContext, 4);
+  const campaignActionsCompleted = Math.min(Math.max(memberContext.completedActions, 0), 3), campaignProgressPct = Math.round((campaignActionsCompleted / 3) * 100);
 
   return (
     <div className="pb-24 font-[Plus_Jakarta_Sans,sans-serif]">
@@ -370,8 +412,8 @@ function StudentHome({
       <div className="bg-primary px-5 pt-12 pb-8">
         <div className="flex items-start justify-between">
           <div>
-            <p className="text-blue-200 text-xs font-semibold uppercase tracking-wider">TEST UCLA MEDLIFE</p>
-            <h1 className="text-white text-2xl font-extrabold mt-1">Hi, TEST Sofia 👋</h1>
+            <p className="text-blue-200 text-xs font-semibold uppercase tracking-wider">{memberContext.chapterName}</p>
+            <h1 className="text-white text-2xl font-extrabold mt-1">Hi, {memberContext.firstName} 👋</h1>
             <p className="text-blue-200 text-sm mt-1">You are making a difference.</p>
           </div>
           <button disabled title="Notifications are blocked in this preview" className="relative p-2.5 rounded-xl bg-white/10 mt-1">
@@ -406,10 +448,10 @@ function StudentHome({
           <div>
             <p className="text-blue-200 text-xs font-semibold">My Points · Rush Month</p>
             <div className="flex items-baseline gap-1.5 mt-0.5">
-              <span className="text-white text-3xl font-extrabold">145</span>
+              <span className="text-white text-3xl font-extrabold">{memberContext.pointsTotal}</span>
               <span className="text-blue-200 text-sm font-medium">pts earned</span>
             </div>
-            <p className="text-blue-200 text-xs mt-0.5">+75 this week · Chapter rank #3</p>
+            <p className="text-blue-200 text-xs mt-0.5">{memberContext.pointsWeeklyLabel} this week · Chapter rank {memberContext.pointsRankLabel}</p>
           </div>
           <div className="flex flex-col items-end gap-1">
             <Trophy size={32} className="text-accent" />
@@ -475,7 +517,7 @@ function StudentHome({
             {[
               { id: 1, name: "TEST Intro GBM", date: "Thu Nov 15 · 6:00 PM", loc: "Ackerman 2100", rsvp: false },
               { id: 2, name: "TEST Tabling at Bruin Walk", date: "Tue Nov 13 · 11:00 AM", loc: "Bruin Walk Table 7", rsvp: true },
-            ].map((e, i) => (
+            ].map((e) => (
               <Card key={e.id} padding={false}>
                 <div className="flex items-center gap-3 p-4">
                   <Link href={getMemberEventHomeDetailHref(e.id)} className="flex min-w-0 flex-1 items-center gap-3">
@@ -524,9 +566,9 @@ function StudentHome({
                   <div className="mt-3 space-y-1.5">
                     <div className="flex justify-between text-xs text-muted-foreground">
                       <span>Your progress</span>
-                      <span className="font-semibold">1 / 3 actions done</span>
+                      <span className="font-semibold">{campaignActionsCompleted} / 3 actions done</span>
                     </div>
-                    <Bar pct={33} />
+                    <Bar pct={campaignProgressPct} />
                   </div>
                 </div>
                 <ChevronRight size={18} className="text-muted-foreground ml-3 mt-1 flex-shrink-0" />
@@ -585,16 +627,11 @@ function StudentHome({
             <Link href="/app/points?source=home" className="text-primary text-xs font-semibold">Full board</Link>
           </div>
           <Card>
-            {[
-              { rank: 1, name: "TEST Aisha N.", pts: 220, me: false },
-              { rank: 2, name: "TEST Marcus T.", pts: 185, me: false },
-              { rank: 3, name: "TEST Sofia R.", pts: 145, me: true },
-              { rank: 4, name: "TEST James L.", pts: 130, me: false },
-            ].map((m) => (
+            {selfLeaderboardRows.map((m) => (
               <div key={m.rank} className={cn("flex items-center gap-3 py-3 border-b border-border last:border-0", m.me && "bg-primary/5 -mx-4 px-4 rounded-xl")}>
                 <span className="w-6 text-center text-sm">{m.rank === 1 ? "🥇" : m.rank === 2 ? "🥈" : m.rank === 3 ? "🥉" : m.rank}</span>
                 <span className={cn("flex-1 text-sm", m.me ? "font-extrabold text-primary" : "font-medium")}>
-                  {m.me ? "You (TEST Sofia R.)" : m.name}
+                  {m.me ? `You (${m.name})` : m.name}
                 </span>
                 <span className="text-sm font-bold text-foreground font-[DM_Mono,monospace]">{m.pts} pts</span>
               </div>
@@ -612,7 +649,7 @@ function StudentHome({
                 <span className="text-xs text-muted-foreground">· Nov 12</span>
               </div>
               <p className="text-sm text-foreground leading-relaxed">
-                "TEST great energy this week, TEST UCLA! Focus on TEST Intro GBM follow-ups — this is where we convert interest into TEST members. Keep it up."
+                "TEST great energy this week, {memberContext.campusName}! Focus on TEST Intro GBM follow-ups — this is where we convert interest into TEST members. Keep it up."
               </p>
               <Link href="/profile?source=home" className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-primary">
                 Open TEST profile & chapter scope <ChevronRight size={12} />
@@ -1883,19 +1920,19 @@ function PointsLeaderboard({
   returnCampaign = null,
   storyFilter = null,
   storyId = null,
+  memberContext,
 }: {
   source: MemberLoopSource;
   returnEventId?: string | null;
   returnCampaign?: string | null;
   storyFilter?: string | null;
   storyId?: string | null;
+  memberContext: MemberMobileIdentityContext;
 }) {
-  const badges = [
-    { name: "TEST Rush Starter", desc: "Complete your first TEST Rush Month action", earned: true },
-    { name: "TEST Connector", desc: "Invite 10+ TEST members to a TEST chapter event", earned: true },
-    { name: "TEST Evidence Pro", desc: "3 TEST approvals in a single week", earned: false },
-    { name: "TEST Chapter MVP", desc: "Top 3 on the TEST leaderboard for 2 weeks", earned: false },
-  ];
+  const leaderboardRows = getVisibleMemberLeaderboardRows(memberContext, 6);
+  const campaignPointRows = getMemberCampaignPointRows(memberContext);
+  const badges = getMemberBadgeRows(memberContext);
+  const recentApprovedActions = getMemberRecentApprovedActionRows(memberContext);
   const previewReadback: Record<MemberLoopSource, { title: string; detail: string }> = {
     events: { title: "Opened from the TEST event loop", detail: "This route-backed readback keeps the RSVP, attendance, and points loop visible. Leaderboard movement, rewards, and ledger writes stay preview-only until those writes are approved." },
     home: { title: "Opened from the TEST home walkthrough", detail: "This route-backed readback keeps the home-to-events-to-points student flow visible. Recognition stays preview-only and does not claim a live award, reward, or provider update." },
@@ -1952,17 +1989,17 @@ function PointsLeaderboard({
     <div className="pb-24">
       {/* Header */}
       <div className="bg-primary px-5 pt-12 pb-8">
-        <p className="text-blue-200 text-xs font-bold uppercase tracking-wide">TEST UCLA MEDLIFE</p>
+        <p className="text-blue-200 text-xs font-bold uppercase tracking-wide">{memberContext.chapterName}</p>
         <h1 className="text-white text-2xl font-extrabold mt-1">Points & Recognition</h1>
         <p className="text-blue-200 text-sm mt-1">
           Preview-only TEST points come from route-backed member actions.
         </p>
 
         <div className="mt-5 grid grid-cols-3 gap-3">
-          {[
-            { label: "Total Points", value: "145" },
-            { label: "This Week", value: "+75" },
-            { label: "Chapter Rank", value: "#3" },
+              {[
+                { label: "Total Points", value: `${memberContext.pointsTotal}` },
+                { label: "This Week", value: memberContext.pointsWeeklyLabel },
+                { label: "Chapter Rank", value: memberContext.pointsRankLabel },
           ].map((s) => (
             <div key={s.label} className="bg-white/10 rounded-xl p-3 text-center">
               <p className="text-xl font-extrabold text-white">{s.value}</p>
@@ -2024,11 +2061,7 @@ function PointsLeaderboard({
           <SLabel>Points by Campaign</SLabel>
           <Card>
             <div className="space-y-3">
-              {[
-                { campaign: "TEST Rush Month", pts: 75, max: 150, color: "bg-primary" },
-                { campaign: "TEST Spring Showcase (prev.)", pts: 45, max: 100, color: "bg-emerald-500" },
-                { campaign: "TEST Community Health Fair", pts: 25, max: 80, color: "bg-amber-400" },
-              ].map((c) => (
+              {campaignPointRows.map((c) => (
                 <div key={c.campaign}>
                   <div className="flex justify-between text-xs mb-1.5">
                     <span className="text-muted-foreground">{c.campaign}</span>
@@ -2065,14 +2098,7 @@ function PointsLeaderboard({
         <div>
           <SLabel>Chapter Leaderboard — TEST Rush Month</SLabel>
           <Card>
-            {[
-              { rank: 1, name: "TEST Aisha N.", role: "President", pts: 220 },
-              { rank: 2, name: "TEST Marcus T.", role: "VP Outreach", pts: 185 },
-              { rank: 3, name: "TEST Sofia R.", role: "General Member", pts: 145, me: true },
-              { rank: 4, name: "TEST James L.", role: "General Member", pts: 130 },
-              { rank: 5, name: "TEST Priya K.", role: "Committee Chair", pts: 110 },
-              { rank: 6, name: "TEST Kevin M.", role: "General Member", pts: 95 },
-            ].map((m) => (
+            {leaderboardRows.map((m) => (
               <div
                 key={m.rank}
                 className={cn(
@@ -2085,7 +2111,7 @@ function PointsLeaderboard({
                 </span>
                 <div className="flex-1 min-w-0">
                   <p className={cn("text-sm", m.me ? "font-extrabold text-primary" : "font-semibold text-foreground")}>
-                    {m.me ? "You (TEST Sofia R.)" : m.name}
+                    {m.me ? `You (${m.name})` : m.name}
                   </p>
                   <p className="text-xs text-muted-foreground">{m.role}</p>
                 </div>
@@ -2099,11 +2125,7 @@ function PointsLeaderboard({
         <div>
           <SLabel>Recent Approved Actions</SLabel>
           <div className="space-y-2">
-            {[
-              { action: "Share TEST Rush Week flyer on Instagram", pts: 20, time: "Approved 2h ago in preview" },
-              { action: "Attend TEST Bruin Walk tabling shift", pts: 15, time: "Approved yesterday in preview" },
-              { action: "Add 5 TEST leads to the TEST chapter spreadsheet", pts: 25, time: "Approved 3d ago in preview" },
-            ].map((a) => (
+            {recentApprovedActions.length > 0 ? recentApprovedActions.map((a) => (
               <Card key={a.action} padding={false}>
                 <div className="flex items-center gap-3 p-4">
                   <CheckCircle2 size={20} className="text-emerald-500 flex-shrink-0" />
@@ -2116,7 +2138,14 @@ function PointsLeaderboard({
                   </span>
                 </div>
               </Card>
-            ))}
+            )) : (
+              <Card>
+                <p className="text-sm font-semibold text-foreground">No approved TEST actions yet</p>
+                <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                  RSVP and check-in previews stay visible, but no completed action, attendance, or points award is counted for this signed-in member yet.
+                </p>
+              </Card>
+            )}
           </div>
         </div>
 
@@ -2141,6 +2170,68 @@ function PointsLeaderboard({
       </div>
     </div>
   );
+}
+
+function getMemberCampaignPointRows(memberContext: MemberMobileIdentityContext) {
+  if (memberContext.pointsTotal <= 0) {
+    return [
+      { campaign: "TEST Rush Month", pts: 0, max: 150, color: "bg-primary" },
+      { campaign: "TEST Spring Showcase (prev.)", pts: 0, max: 100, color: "bg-emerald-500" },
+      { campaign: "TEST Community Health Fair", pts: 0, max: 80, color: "bg-amber-400" },
+    ];
+  }
+  return [
+    { campaign: "TEST Rush Month", pts: Math.min(memberContext.pointsTotal, 75), max: 150, color: "bg-primary" },
+    {
+      campaign: "TEST Spring Showcase (prev.)",
+      pts: Math.min(Math.max(memberContext.pointsTotal - 75, 0), 45),
+      max: 100,
+      color: "bg-emerald-500",
+    },
+    {
+      campaign: "TEST Community Health Fair",
+      pts: Math.min(Math.max(memberContext.pointsTotal - 120, 0), 25),
+      max: 80,
+      color: "bg-amber-400",
+    },
+  ];
+}
+
+function getMemberBadgeRows(memberContext: MemberMobileIdentityContext) {
+  return [
+    {
+      name: "TEST Rush Starter",
+      desc: "Complete your first TEST Rush Month action",
+      earned: memberContext.completedActions >= 1,
+    },
+    {
+      name: "TEST Connector",
+      desc: "Invite 10+ TEST members to a TEST chapter event",
+      earned: memberContext.pointsTotal >= 50,
+    },
+    {
+      name: "TEST Evidence Pro",
+      desc: "3 TEST approvals in a single week",
+      earned: memberContext.completedActions >= 3,
+    },
+    {
+      name: "TEST Chapter MVP",
+      desc: "Top 3 on the TEST leaderboard for 2 weeks",
+      earned: memberContext.pointsRankLabel === "#1" || memberContext.pointsRankLabel === "#2" || memberContext.pointsRankLabel === "#3",
+    },
+  ];
+}
+
+function getMemberRecentApprovedActionRows(memberContext: MemberMobileIdentityContext) {
+  if (memberContext.completedActions <= 0) {
+    return [];
+  }
+
+  return [
+    { action: "Share TEST Rush Week flyer on Instagram", pts: 20, time: "Approved 2h ago in preview" },
+    { action: "Attend TEST Bruin Walk tabling shift", pts: 15, time: "Approved yesterday in preview" },
+    { action: "Add 5 TEST leads to the TEST chapter spreadsheet", pts: 25, time: "Approved 3d ago in preview" },
+  ].slice(0, memberContext.completedActions);
 }
 // ─── SCREEN · Events ──────────────────────────────────────────────────────────
 // ─── SCREEN · Events Feed ────────────────────────────────────────────────────
@@ -2332,12 +2423,14 @@ function EventsScreen({
   initialCampaign,
   profileSource = null,
   storyFilter = null,
+  memberContext,
 }: {
   navigate: (s: Screen) => void;
   source: MemberLoopSource;
   initialCampaign?: string | null;
   profileSource?: "points" | null;
   storyFilter?: string | null;
+  memberContext: MemberMobileIdentityContext;
 }) {
   const activeCampaign = resolveEventsCampaign(initialCampaign);
   const rsvpdIds = [2];
@@ -2372,7 +2465,7 @@ function EventsScreen({
   return (
     <div className="pb-28">
       <div className="bg-primary px-5 pt-12 pb-5">
-        <p className="text-blue-200 text-xs font-bold uppercase tracking-wide">TEST UCLA MEDLIFE</p>
+        <p className="text-blue-200 text-xs font-bold uppercase tracking-wide">{memberContext.chapterName}</p>
         <h1 className="text-white text-2xl font-extrabold mt-1">Events</h1>
         <p className="text-blue-200 text-sm mt-0.5">Show up. Check in. Earn points.</p>
       </div>
@@ -2605,7 +2698,13 @@ function EventsScreen({
 
 // ─── SCREEN · Event Detail ────────────────────────────────────────────────────
 
-function EventDetailScreen({ navigate }: { navigate: (s: Screen) => void }) {
+function EventDetailScreen({
+  navigate,
+  memberContext,
+}: {
+  navigate: (s: Screen) => void;
+  memberContext: MemberMobileIdentityContext;
+}) {
   const [rsvpd, setRsvpd] = useState(false);
 
   return (
@@ -2638,7 +2737,7 @@ function EventDetailScreen({ navigate }: { navigate: (s: Screen) => void }) {
               <Pill label="TEST Rush Month" variant="blue" />
             </div>
             <h1 className="text-white text-2xl font-extrabold leading-snug">TEST Intro GBM</h1>
-            <p className="text-blue-200 text-sm mt-1">TEST UCLA MEDLIFE · Thu Nov 15 · 6:00 PM</p>
+            <p className="text-blue-200 text-sm mt-1">{memberContext.chapterName} · Thu Nov 15 · 6:00 PM</p>
           </div>
         </div>
 
@@ -2721,7 +2820,7 @@ function EventDetailScreen({ navigate }: { navigate: (s: Screen) => void }) {
             </div>
             <div className="flex items-center gap-2.5">
               <MapPin size={15} className="text-primary flex-shrink-0" />
-              <span>TEST Ackerman Union 2100 · TEST UCLA Campus</span>
+              <span>TEST Ackerman Union 2100 · {memberContext.campusName} Campus</span>
             </div>
             <div className="flex items-center gap-2.5">
               <Users size={15} className="text-primary flex-shrink-0" />
@@ -2735,7 +2834,7 @@ function EventDetailScreen({ navigate }: { navigate: (s: Screen) => void }) {
           <p className="text-xs font-bold text-primary uppercase tracking-wide mb-2">About this event</p>
           <p className="text-sm text-muted-foreground leading-relaxed">
             Our TEST Intro GBM is the main event for TEST Rush Month — the first time potential new TEST members
-            experience what TEST UCLA MEDLIFE is all about. Come learn about our mission, meet current TEST members,
+            experience what {memberContext.chapterName} is all about. Come learn about our mission, meet current TEST members,
             and find out how to get involved in global health equity work.
           </p>
         </Card>
@@ -2767,7 +2866,13 @@ function EventDetailScreen({ navigate }: { navigate: (s: Screen) => void }) {
 
 // ─── SCREEN · RSVP Confirmation ──────────────────────────────────────────────
 
-function RsvpConfirmScreen({ navigate }: { navigate: (s: Screen) => void }) {
+function RsvpConfirmScreen({
+  navigate,
+  memberContext,
+}: {
+  navigate: (s: Screen) => void;
+  memberContext: MemberMobileIdentityContext;
+}) {
   return (
     <div className="pb-10 min-h-screen flex flex-col">
       <TopBar title="" onBack={() => navigate("event-detail")} />
@@ -2785,12 +2890,16 @@ function RsvpConfirmScreen({ navigate }: { navigate: (s: Screen) => void }) {
           <p className="text-xs font-bold text-primary uppercase tracking-wide mb-3">Event Summary</p>
           <div className="space-y-2 text-sm text-muted-foreground">
             <div className="flex items-center gap-2">
+              <Users size={14} className="text-primary" />
+              <span>{memberContext.chapterName}</span>
+            </div>
+            <div className="flex items-center gap-2">
               <CalendarDays size={14} className="text-primary" />
               <span>Thu Nov 15 · 6:00 PM – 8:00 PM</span>
             </div>
             <div className="flex items-center gap-2">
               <MapPin size={14} className="text-primary" />
-              <span>TEST Ackerman Union 2100 · TEST UCLA</span>
+              <span>TEST Ackerman Union 2100 · {memberContext.campusName}</span>
             </div>
           </div>
         </Card>
@@ -2824,8 +2933,15 @@ function RsvpConfirmScreen({ navigate }: { navigate: (s: Screen) => void }) {
 
 // ─── SCREEN · Check-In ───────────────────────────────────────────────────────
 
-function CheckInScreen({ navigate }: { navigate: (s: Screen) => void }) {
+function CheckInScreen({
+  navigate,
+  memberContext,
+}: {
+  navigate: (s: Screen) => void;
+  memberContext: MemberMobileIdentityContext;
+}) {
   const [checked, setChecked] = useState(false);
+  const selfLeaderboardRows = getVisibleMemberLeaderboardRows(memberContext, 3);
 
   return (
     <div className="pb-10 min-h-screen flex flex-col">
@@ -2877,19 +2993,15 @@ function CheckInScreen({ navigate }: { navigate: (s: Screen) => void }) {
             </div>
             <h1 className="text-2xl font-extrabold text-foreground mb-1">Checked in!</h1>
             <p className="text-4xl font-extrabold text-amber-500 mb-1 mt-2">+20 points</p>
-            <p className="text-muted-foreground text-sm mb-8">Thanks for coming out, TEST Sofia!</p>
+            <p className="text-muted-foreground text-sm mb-8">Thanks for coming out, {memberContext.firstName}!</p>
 
             {/* Mini leaderboard */}
             <Card className="w-full bg-secondary/50 border-secondary text-left mb-6">
               <p className="text-xs font-bold text-primary uppercase tracking-wide mb-3">Chapter Leaderboard</p>
-              {[
-                { name: "TEST Aisha N.", pts: 220 },
-                { name: "TEST Marcus T.", pts: 185 },
-                { name: "TEST Sofia R. (you)", pts: 165, me: true },
-              ].map((m, i) => (
+              {selfLeaderboardRows.map((m, i) => (
                 <div key={m.name} className={cn("flex items-center gap-3 py-2 border-b border-border last:border-0", m.me && "font-bold text-primary")}>
                   <span className="text-sm w-5 text-center">{i === 0 ? "🥇" : i === 1 ? "🥈" : "🥉"}</span>
-                  <span className="flex-1 text-sm">{m.name}</span>
+                  <span className="flex-1 text-sm">{m.me ? `${m.name} (you)` : m.name}</span>
                   <PointsPill pts={m.pts} />
                 </div>
               ))}
@@ -3836,6 +3948,8 @@ export function FigmaMemberMobileHome({
   eventsSource = "events",
   eventsProfileSource = null,
   eventsStoryFilter = null,
+  memberContext = DEFAULT_MEMBER_IDENTITY_CONTEXT,
+  repaintKey,
 }: {
   initialScreen?: MemberMobileLaunchScreen;
   sltPrepEntry?: MemberSltPrepEntry | null;
@@ -3850,9 +3964,12 @@ export function FigmaMemberMobileHome({
   eventsSource?: MemberLoopSource;
   eventsProfileSource?: "points" | null;
   eventsStoryFilter?: string | null;
+  memberContext?: MemberMobileIdentityContext;
+  repaintKey?: string;
 }) {
   const [screen, setScreen] = useState<Screen>(initialScreen);
   const [role, setRole] = useState<Role>("student");
+
   function navigate(s: Screen) {
     setScreen(s);
     window.scrollTo({ top: 0 });
@@ -3893,7 +4010,15 @@ export function FigmaMemberMobileHome({
   });
   const content = () => {
     switch (screen) {
-      case "home": return <StudentHome navigate={navigate} setRole={setRole} sltPrepEntry={sltPrepEntry} />;
+      case "home":
+        return (
+          <StudentHome
+            navigate={navigate}
+            setRole={setRole}
+            sltPrepEntry={sltPrepEntry}
+            memberContext={memberContext}
+          />
+        );
       case "campaign": return <CampaignPage navigate={navigate} />;
       case "action": return <ActionDetail navigate={navigate} />;
       case "evidence": return <EvidenceSubmission navigate={navigate} />;
@@ -3906,6 +4031,7 @@ export function FigmaMemberMobileHome({
             returnCampaign={pointsReturnCampaign}
             storyFilter={pointsStoryFilter}
             storyId={pointsStoryId}
+            memberContext={memberContext}
           />
         );
       case "events":
@@ -3916,11 +4042,12 @@ export function FigmaMemberMobileHome({
             initialCampaign={initialEventsCampaign}
             profileSource={eventsProfileSource}
             storyFilter={eventsStoryFilter}
+            memberContext={memberContext}
           />
         );
-      case "event-detail": return <EventDetailScreen navigate={navigate} />;
-      case "rsvp-confirm": return <RsvpConfirmScreen navigate={navigate} />;
-      case "checkin": return <CheckInScreen navigate={navigate} />;
+      case "event-detail": return <EventDetailScreen navigate={navigate} memberContext={memberContext} />;
+      case "rsvp-confirm": return <RsvpConfirmScreen navigate={navigate} memberContext={memberContext} />;
+      case "checkin": return <CheckInScreen navigate={navigate} memberContext={memberContext} />;
       case "stories":
         return (
           <StoriesScreen
@@ -3934,18 +4061,26 @@ export function FigmaMemberMobileHome({
       case "review": return <ReviewEvidence navigate={navigate} />;
       case "coach": return <CoachDashboard navigate={navigate} />;
       case "admin": return <AdminDashboard navigate={navigate} />;
-      default: return <StudentHome navigate={navigate} setRole={setRole} sltPrepEntry={sltPrepEntry} />;
+      default:
+        return (
+          <StudentHome
+            navigate={navigate}
+            setRole={setRole}
+            sltPrepEntry={sltPrepEntry}
+            memberContext={memberContext}
+          />
+        );
     }
   };
 
   return (
     <div
-      className="min-h-screen bg-[#D6E0F0] flex items-start justify-center font-[Plus_Jakarta_Sans,sans-serif] py-0 md:py-8"
+      className="flex min-h-screen w-full items-start justify-center bg-[#D6E0F0] py-0 font-[Plus_Jakarta_Sans,sans-serif] md:py-8"
     >
       {isStudentScreen ? (
         /* Phone frame for mobile screens */
-        <div className="relative w-full max-w-[430px] min-h-screen md:min-h-0 md:h-[812px] bg-background overflow-hidden md:rounded-[44px] md:shadow-2xl md:border-4 md:border-white/40 flex flex-col">
-          <div className="flex-1 overflow-y-auto scrollbar-hide">
+        <ChromeDesktopPaintShell repaintKey={repaintKey} className="relative flex min-h-screen w-full max-w-[430px] min-h-0 flex-col overflow-hidden bg-background [backface-visibility:hidden] [transform:translateZ(0)] md:h-[812px] md:min-h-0 md:rounded-[44px] md:border-4 md:border-white/40 md:shadow-2xl">
+          <div className="min-h-0 flex-1 overflow-y-auto scrollbar-hide">
             {content()}
           </div>
           {!["confirm", "event-detail", "rsvp-confirm", "checkin"].includes(screen) && (
@@ -3955,12 +4090,12 @@ export function FigmaMemberMobileHome({
               hrefOverrides={bottomNavHrefOverrides}
             />
           )}
-        </div>
+        </ChromeDesktopPaintShell>
       ) : (
         /* Full width for dashboards */
-        <div className="w-full min-h-screen bg-background md:rounded-2xl md:shadow-xl overflow-hidden md:max-w-5xl">
+        <ChromeDesktopPaintShell repaintKey={repaintKey} className="w-full min-h-screen overflow-hidden bg-background [backface-visibility:hidden] [transform:translateZ(0)] md:max-w-5xl md:rounded-2xl md:shadow-xl">
           {content()}
-        </div>
+        </ChromeDesktopPaintShell>
       )}
 
       {/* Global scrollbar hide */}
@@ -4240,7 +4375,6 @@ function getEventsBottomNavProfileHref(
   if (source === "home") {
     return `/profile?source=home${campaignSuffix}`;
   }
-
   if (source === "points") {
     return `/profile?source=points${campaignSuffix}`;
   }
