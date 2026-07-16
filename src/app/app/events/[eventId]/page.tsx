@@ -765,7 +765,7 @@ function EventPointsImpactView({
   const chapterRows = getVisibleMemberLeaderboardRows(memberContext, 3).map((row) => ({
     rank: formatLeaderboardRank(row.rank),
     name: row.me ? `You (${row.name})` : row.name,
-    points: row.pts,
+    points: row.me && event.memberPointsAwarded > 0 ? event.memberPointsAwarded : row.pts,
     highlight: Boolean(row.me),
   }));
 

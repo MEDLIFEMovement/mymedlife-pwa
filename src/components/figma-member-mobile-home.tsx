@@ -7,6 +7,7 @@ import React, { useState } from "react";
 import { ChromeDesktopPaintShell } from "@/components/chrome-desktop-paint-shell";
 import { MemberBottomNav, type MemberBottomNavTab } from "@/components/member-bottom-nav";
 import { getVisibleMemberLeaderboardRows } from "@/services/member-mobile-identity-context";
+import type { LaunchLaneMemberPointsReadback } from "@/services/launch-lane-points-readback";
 import {
   Home, BarChart2, CalendarDays, Trophy, User, Users,
   ChevronRight, ChevronLeft, CheckCircle2, Clock, Circle,
@@ -1921,6 +1922,7 @@ function PointsLeaderboard({
   storyFilter = null,
   storyId = null,
   memberContext,
+  pointsReadback = null,
 }: {
   source: MemberLoopSource;
   returnEventId?: string | null;
@@ -1928,11 +1930,18 @@ function PointsLeaderboard({
   storyFilter?: string | null;
   storyId?: string | null;
   memberContext: MemberMobileIdentityContext;
+  pointsReadback?: LaunchLaneMemberPointsReadback | null;
 }) {
+  const hasLiveEventLoopPoints = Boolean(
+    pointsReadback && pointsReadback.memberPointsAwarded > 0,
+  );
   const leaderboardRows = getVisibleMemberLeaderboardRows(memberContext, 6);
   const campaignPointRows = getMemberCampaignPointRows(memberContext);
   const badges = getMemberBadgeRows(memberContext);
-  const recentApprovedActions = getMemberRecentApprovedActionRows(memberContext);
+  const recentApprovedActions = getMemberRecentApprovedActionRows(
+    memberContext,
+    pointsReadback,
+  );
   const previewReadback: Record<MemberLoopSource, { title: string; detail: string }> = {
     events: { title: "Opened from the TEST event loop", detail: "This route-backed readback keeps the RSVP, attendance, and points loop visible. Leaderboard movement, rewards, and ledger writes stay preview-only until those writes are approved." },
     home: { title: "Opened from the TEST home walkthrough", detail: "This route-backed readback keeps the home-to-events-to-points student flow visible. Recognition stays preview-only and does not claim a live award, reward, or provider update." },
@@ -1992,7 +2001,9 @@ function PointsLeaderboard({
         <p className="text-blue-200 text-xs font-bold uppercase tracking-wide">{memberContext.chapterName}</p>
         <h1 className="text-white text-2xl font-extrabold mt-1">Points & Recognition</h1>
         <p className="text-blue-200 text-sm mt-1">
-          Preview-only TEST points come from route-backed member actions.
+          {hasLiveEventLoopPoints
+            ? "Live TEST event-loop points from internal myMEDLIFE readback."
+            : "Preview-only TEST points come from route-backed member actions."}
         </p>
 
         <div className="mt-5 grid grid-cols-3 gap-3">
@@ -2022,6 +2033,23 @@ function PointsLeaderboard({
           </div>
         </Card>
 
+        {hasLiveEventLoopPoints && pointsReadback ? (
+          <Card className="border-emerald-200 bg-emerald-50">
+            <p className="text-[0.68rem] font-bold uppercase tracking-[0.18em] text-emerald-700">
+              Live TEST points readback
+            </p>
+            <h2 className="mt-2 text-base font-extrabold text-foreground">
+              {pointsReadback.eventTitle}
+            </h2>
+            <p className="mt-2 text-sm leading-6 text-muted-foreground">
+              {pointsReadback.memberPointsAwarded} points are recorded for your
+              signed-in TEST member on this event. Attendance count is{" "}
+              {pointsReadback.attendanceCount}, and duplicate check-ins stay
+              blocked from awarding more points.
+            </p>
+          </Card>
+        ) : null}
+
         {returnEvent ? (
           <Card className="border-[#bfdbfe] bg-[#eff6ff]">
             <p className="text-[0.68rem] font-bold uppercase tracking-[0.18em] text-primary">
@@ -2031,7 +2059,9 @@ function PointsLeaderboard({
               {returnEvent.title} brought you here
             </h2>
             <p className="mt-2 text-sm leading-6 text-muted-foreground">
-              This preview keeps the member loop compact: event detail, RSVP posture, check-in posture, and points readback all stay route-backed without pretending a live reward or attendance write happened.
+              {hasLiveEventLoopPoints && pointsReadback
+                ? "This TEST event now has internal RSVP, attendance, and points readback for the signed-in member. Rewards and external provider writes still stay off."
+                : "This preview keeps the member loop compact: event detail, RSVP posture, check-in posture, and points readback all stay route-backed without pretending a live reward or attendance write happened."}
             </p>
             <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-3">
               <Link
@@ -2222,7 +2252,20 @@ function getMemberBadgeRows(memberContext: MemberMobileIdentityContext) {
   ];
 }
 
-function getMemberRecentApprovedActionRows(memberContext: MemberMobileIdentityContext) {
+function getMemberRecentApprovedActionRows(
+  memberContext: MemberMobileIdentityContext,
+  pointsReadback: LaunchLaneMemberPointsReadback | null = null,
+) {
+  if (pointsReadback && pointsReadback.memberPointsAwarded > 0) {
+    return [
+      {
+        action: `Checked in to ${pointsReadback.eventTitle}`,
+        pts: pointsReadback.memberPointsAwarded,
+        time: "Recorded in myMEDLIFE internal TEST ledger",
+      },
+    ];
+  }
+
   if (memberContext.completedActions <= 0) {
     return [];
   }
@@ -3945,6 +3988,7 @@ export function FigmaMemberMobileHome({
   pointsReturnCampaign = null,
   pointsStoryFilter = null,
   pointsStoryId = null,
+  pointsReadback = null,
   eventsSource = "events",
   eventsProfileSource = null,
   eventsStoryFilter = null,
@@ -3961,6 +4005,7 @@ export function FigmaMemberMobileHome({
   pointsReturnCampaign?: string | null;
   pointsStoryFilter?: string | null;
   pointsStoryId?: string | null;
+  pointsReadback?: LaunchLaneMemberPointsReadback | null;
   eventsSource?: MemberLoopSource;
   eventsProfileSource?: "points" | null;
   eventsStoryFilter?: string | null;
@@ -4031,6 +4076,7 @@ export function FigmaMemberMobileHome({
             returnCampaign={pointsReturnCampaign}
             storyFilter={pointsStoryFilter}
             storyId={pointsStoryId}
+            pointsReadback={pointsReadback}
             memberContext={memberContext}
           />
         );

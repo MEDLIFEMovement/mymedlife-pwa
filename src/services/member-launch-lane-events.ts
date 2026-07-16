@@ -35,6 +35,7 @@ export type MemberLaunchLaneEventRow = {
   rsvpCount: number;
   attendanceCount: number;
   pointsAwarded: number;
+  memberPointsAwarded: number;
 };
 
 export function buildMemberLaunchLaneEventDetailHref(
@@ -111,5 +112,6 @@ function toMemberLaunchLaneEventRow(
     rsvpCount: event.rsvpCount,
     attendanceCount: event.attendanceCount,
     pointsAwarded: event.pointsAwarded,
+    memberPointsAwarded,
   };
 }

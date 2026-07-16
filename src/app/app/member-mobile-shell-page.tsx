@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 
 import {
   FigmaMemberMobileHome,
+  type MemberMobileIdentityContext,
   type MemberMobileLaunchScreen,
 } from "@/components/figma-member-mobile-home";
 import { WorkspaceAccountMenu } from "@/components/workspace-account-menu";
@@ -14,6 +15,10 @@ import {
   buildMemberIdentityContext,
   ensureVisibleTestLabel,
 } from "@/services/member-mobile-identity-context";
+import {
+  getLaunchLaneMemberPointsReadback,
+  type LaunchLaneMemberPointsReadback,
+} from "@/services/launch-lane-points-readback";
 import { getMvpMemberHome } from "@/services/mvp-event-tracking-workspace";
 import { getReadOnlyAppData } from "@/services/read-only-app-data";
 import { canAccessMemberWorkspace, hasTravelerAccess } from "@/services/role-visibility";
@@ -59,7 +64,13 @@ export async function renderMemberMobileShellPage({
   const sltPrepWorkspace = hasTravelerAccess(actor) ? getSltTripPrepWorkspace(actor) : null;
   const studentHome = getMvpMemberHome(actor, data);
   const recognition = getMemberRecognitionSummary(actor, data);
-  const memberContext = buildMemberIdentityContext(actor, studentHome, recognition, data.chapter.campus);
+  const pointsReadback = pointsReturnEventId
+    ? getLaunchLaneMemberPointsReadback(actor, data, pointsReturnEventId)
+    : null;
+  const memberContext = applyEventLoopPointsReadback(
+    buildMemberIdentityContext(actor, studentHome, recognition, data.chapter.campus),
+    pointsReadback,
+  );
   const sltPrepEntry =
     sltPrepWorkspace?.canReadWorkspace && sltPrepWorkspace.traveler
       ? {
@@ -97,6 +108,7 @@ export async function renderMemberMobileShellPage({
         pointsReturnCampaign={pointsReturnCampaign}
         pointsStoryFilter={pointsStoryFilter}
         pointsStoryId={pointsStoryId}
+        pointsReadback={pointsReadback}
         eventsSource={eventsSource}
         eventsProfileSource={eventsProfileSource}
         eventsStoryFilter={eventsStoryFilter}
@@ -105,4 +117,36 @@ export async function renderMemberMobileShellPage({
       />
     </>
   );
+}
+
+function applyEventLoopPointsReadback(
+  memberContext: MemberMobileIdentityContext,
+  pointsReadback: LaunchLaneMemberPointsReadback | null,
+): MemberMobileIdentityContext {
+  if (!pointsReadback || pointsReadback.memberPointsAwarded <= 0) {
+    return memberContext;
+  }
+
+  const leaderboardRows = memberContext.leaderboardRows.map((row) =>
+    row.me ? { ...row, pts: pointsReadback.memberPointsAwarded } : row,
+  );
+
+  return {
+    ...memberContext,
+    pointsTotal: pointsReadback.memberPointsAwarded,
+    pointsWeeklyLabel: `+${pointsReadback.memberPointsAwarded}`,
+    completedActions: Math.max(memberContext.completedActions, 1),
+    leaderboardRows: leaderboardRows.some((row) => row.me)
+      ? leaderboardRows
+      : [
+          ...leaderboardRows,
+          {
+            rank: leaderboardRows.length + 1,
+            name: memberContext.displayName,
+            role: "General Member",
+            pts: pointsReadback.memberPointsAwarded,
+            me: true,
+          },
+        ],
+  };
 }

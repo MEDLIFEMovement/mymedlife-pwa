@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  buildHostedTestProductionAuthUsersCompatibilitySql,
   buildLocalSupabaseAuthUsersCompatibilitySql,
   getLocalTestProductionSeedApplyPlan,
   getLocalTestProductionDbContainerName,
@@ -59,5 +60,15 @@ describe("test production seed apply helpers", () => {
     expect(sql).toContain("email_change = coalesce(email_change, '')");
     expect(sql).toContain("reauthentication_token = coalesce(reauthentication_token, '')");
     expect(sql).toContain("is_super_admin = coalesce(is_super_admin, false)");
+  });
+
+  it("scopes hosted auth compatibility updates to generated Test users", () => {
+    const sql = buildHostedTestProductionAuthUsersCompatibilitySql();
+
+    expect(sql).toContain("update auth.users");
+    expect(sql).toContain("email like 'test.%@example.com'");
+    expect(sql).toContain("raw_user_meta_data->>'name' like 'Test %'");
+    expect(sql).toContain("confirmation_token = coalesce(confirmation_token, '')");
+    expect(sql).toContain("and (aud is null");
   });
 });

@@ -45,6 +45,21 @@ describe("launch lane points readback", () => {
     });
   });
 
+  it("can target the exact event from the member points route", () => {
+    const actor = getMockLocalActorContext("member.a@mymedlife.test");
+    const data = getMockReadOnlyAppData("Testing member launch-lane readback.");
+
+    expect(
+      getLaunchLaneMemberPointsReadback(actor, data, "chapter-event-ucla-kickoff"),
+    ).toMatchObject({
+      eventTitle: "Rush Month kickoff social",
+      memberPointsAwarded: 20,
+    });
+    expect(
+      getLaunchLaneMemberPointsReadback(actor, data, "missing-event"),
+    ).toBeNull();
+  });
+
   it("builds an org readback for staff from chapter-level event and points data", () => {
     const data = getMockReadOnlyAppData("Testing org launch-lane readback.");
 

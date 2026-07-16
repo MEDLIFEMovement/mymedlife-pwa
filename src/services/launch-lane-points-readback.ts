@@ -9,6 +9,7 @@ import {
   countLaunchLaneChapterEventsByChapter,
   countLaunchLaneRsvpsByChapter,
   findLaunchLaneProfileIdByEmail,
+  getLaunchLaneEventSnapshotById,
   getLaunchLaneEventSnapshots,
   getMostRecentLaunchLaneEventSnapshot,
   hasLaunchLaneRecordedRsvp,
@@ -196,8 +197,11 @@ const leaderAttendanceSeed: LaunchLaneLeaderAttendanceReadback[] = [
 export function getLaunchLaneMemberPointsReadback(
   actor: LocalActorContext,
   data: ReadOnlyAppData,
+  eventId?: string | null,
 ): LaunchLaneMemberPointsReadback | null {
-  const event = getMostRecentLaunchLaneEventSnapshot(data);
+  const event = eventId
+    ? getLaunchLaneEventSnapshotById(data, eventId)
+    : getMostRecentLaunchLaneEventSnapshot(data);
 
   if (!event) {
     return null;

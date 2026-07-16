@@ -12,6 +12,7 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "coverage/**",
+    ".vercel/**",
     "docs/figma-code/raw/**",
     "playwright-report/**",
     "test-results/**",
