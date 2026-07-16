@@ -362,12 +362,18 @@ test.describe("myMEDLIFE launch route smoke", () => {
         .getByRole("button", { name: item.label, exact: true })
         .click();
       await expect(page).toHaveURL(item.url);
-      await expect(page.getByRole("heading", { name: item.heading })).toBeVisible();
+      await expect(page.getByRole("heading", { name: item.heading }).first()).toBeVisible();
     }
 
     await page.locator("aside").getByRole("button", { name: "Integrations", exact: true }).click();
     await expect(
-      page.getByText("Smile.io sync stays visible for DS review, but point awards, tier sync, and reward writes remain blocked in this preview"),
+      page.getByText("Route-backed admin integrations"),
+    ).toBeVisible();
+    await expect(
+      page.getByText("No browser-side provider writes"),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("link", { name: "Open Luma status" }),
     ).toBeVisible();
 
     await page.locator("aside").getByRole("button", { name: "Audit Logs", exact: true }).click();

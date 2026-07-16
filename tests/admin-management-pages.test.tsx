@@ -127,6 +127,32 @@ describe("admin management pages", () => {
     expect(html).not.toContain("sofia.alvarez@mymedlife.test");
   });
 
+  it("renders the query-string admin integrations page as route-backed readback", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("ds.admin@mymedlife.test"),
+    );
+
+    const { default: AdminPage } = await import("@/app/admin/page");
+    const html = renderToStaticMarkup(
+      await AdminPage({
+        searchParams: Promise.resolve({ view: "integrations" }),
+      }),
+    );
+
+    expect(html).toContain("Route-backed admin integrations");
+    expect(html).toContain("Luma mode");
+    expect(html).toContain("Open Luma status");
+    expect(html).toContain("HubSpot");
+    expect(html).toContain("Data warehouse");
+    expect(html).toContain("Integration events and outbox");
+    expect(html).toContain("No browser-side provider writes");
+    expect(html).toContain("Test blocked");
+    expect(html).toContain("External writes");
+    expect(html).not.toContain("this integrations surface is preview-only");
+    expect(html).not.toContain("LUMA_API_KEY");
+  });
+
   it("blocks non-DS staff from the admin user management page", async () => {
     const actorModule = await import("@/services/local-actor-context");
     vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
