@@ -80,10 +80,11 @@ export function getStudentHomeWorkspace(
   const activeCampaign = visibleCampaigns.find((campaign) => campaign.status === "active");
   const eventPlans = getEventPlansForCampaign("rush-month");
   const recognition = getMemberRecognitionSummary(actor, data);
-  const selectedMember = recognition.selectedMember?.displayName.toLowerCase() ===
-      actor.user.displayName.toLowerCase()
-    ? recognition.selectedMember
-    : undefined;
+  const selectedMember =
+    recognition.selectedMember?.source === "leaderboard" &&
+    recognition.selectedMember.displayName.toLowerCase() === actor.user.displayName.toLowerCase()
+      ? recognition.selectedMember
+      : undefined;
   const progress = getStudentCampaignProgress(data.assignments);
   const firstEvent = eventPlans[0];
 

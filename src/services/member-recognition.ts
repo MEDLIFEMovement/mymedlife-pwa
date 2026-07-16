@@ -54,6 +54,7 @@ export type MemberRecognitionSummary = {
     points: number;
     recognition: string;
     completedActions: number;
+    source?: "leaderboard" | "signed_in_actor";
   };
   leaderboard: LeaderboardRow[];
   impacts: MemberRecognitionImpact[];
@@ -108,6 +109,7 @@ export function getMemberRecognitionSummary(
         points: selectedRow.points,
         recognition: selectedRow.recognition,
         completedActions: selectedRow.completedActions,
+        source: "leaderboard" as const,
       }
     : buildActorFallbackMember(actor, sortedLeaderboard.length);
 
@@ -287,6 +289,7 @@ function buildActorFallbackMember(
     points: 0,
     recognition: "Signed-in member readback",
     completedActions: 0,
+    source: "signed_in_actor",
   };
 }
 
