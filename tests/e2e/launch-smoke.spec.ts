@@ -111,15 +111,16 @@ test.describe("myMEDLIFE launch route smoke", () => {
     await page.getByRole("link", { name: "Go to Check-In" }).click();
     await expect(page).toHaveURL(/step=checkin/);
     await expect(page.getByText("Preview event QR code")).toBeVisible();
-    await page.getByRole("link", { name: "Confirm Check-In" }).click();
+    await page.getByRole("button", { name: "Confirm Check-In" }).click();
     await expect(page.getByRole("heading", { name: "Checked in!" })).toBeVisible();
+    await expect(page.getByText("Write honesty")).toBeVisible();
     await expect(page.getByText(/\+\d+ points/)).toBeVisible();
 
     await page.getByRole("link", { name: "View leaderboard impact" }).click();
     await expect(page.getByText("Chapter Leaderboard")).toBeVisible();
   });
 
-  test("walks the direct member event-detail route through its preview-only steps", async ({
+  test("walks the direct member event-detail route through its production-safe steps", async ({
     context,
     page,
   }) => {
@@ -128,7 +129,7 @@ test.describe("myMEDLIFE launch route smoke", () => {
     await page.goto("/app/events/chapter-event-ucla-kickoff");
     await expect(page.getByText("Event RSVP")).toBeVisible();
     await expect(page.getByText("RSVP'd", { exact: true })).toBeVisible();
-    await expect(page.getByText("Route-backed preview")).toBeVisible();
+    await expect(page.getByText("Production-safe event loop")).toBeVisible();
 
     await page.getByRole("link", { name: "RSVP", exact: true }).click();
     await expect(page).toHaveURL(/step=rsvp/);
@@ -138,9 +139,10 @@ test.describe("myMEDLIFE launch route smoke", () => {
     await expect(page).toHaveURL(/step=checkin/);
     await expect(page.getByText("Preview event QR code")).toBeVisible();
 
-    await page.getByRole("link", { name: "Confirm Check-In" }).click();
+    await page.getByRole("button", { name: "Confirm Check-In" }).click();
     await expect(page).toHaveURL(/step=points/);
     await expect(page.getByRole("heading", { name: "Checked in!" })).toBeVisible();
+    await expect(page.getByText("Write honesty")).toBeVisible();
     await expect(page.getByRole("link", { name: "View leaderboard impact" })).toHaveAttribute(
       "href",
       "/app/points?source=events&event=chapter-event-ucla-kickoff",

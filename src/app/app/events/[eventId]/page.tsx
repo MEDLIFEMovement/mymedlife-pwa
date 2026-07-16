@@ -31,6 +31,10 @@ import {
   buildMemberLaunchLaneEventDetailHref,
   getMemberLaunchLaneEventRowById,
 } from "@/services/member-launch-lane-events";
+import {
+  mapMemberEventLoopWriteResultMessage,
+  memberEventLoopWriteResultParam,
+} from "@/services/member-event-loop-write";
 import { getLocalActorContext } from "@/services/local-actor-context";
 import { getMemberRecognitionSummary } from "@/services/member-recognition";
 import {
@@ -45,6 +49,10 @@ import {
 } from "@/services/read-only-app-data";
 import { canAccessMemberWorkspace } from "@/services/role-visibility";
 import { getStaticRouteMetadata } from "@/services/static-route-metadata";
+import {
+  submitMemberEventCheckInAction,
+  submitMemberEventRsvpAction,
+} from "./actions";
 
 type AppEventDetailPageProps = {
   params: Promise<{
@@ -57,10 +65,12 @@ type AppEventDetailPageProps = {
     campaign?: string;
     storyFilter?: string;
     story?: string;
+    memberEventLoopWriteResult?: string;
   }>;
 };
 
 type EventDetailStep = "detail" | "rsvp" | "checkin" | "points";
+type EventLoopResultState = ReturnType<typeof mapMemberEventLoopWriteResultMessage>;
 
 export const metadata = getStaticRouteMetadata("rushMonthEventDetail");
 export const dynamic = "force-dynamic";
@@ -76,6 +86,7 @@ export default async function AppEventDetailPage({
     campaign?: string;
     storyFilter?: string;
     story?: string;
+    memberEventLoopWriteResult?: string;
   } = {};
   const [{ eventId }, resolvedSearchParams, actor, data] = await Promise.all([
     params,
@@ -109,6 +120,9 @@ export default async function AppEventDetailPage({
   );
   const step = getEventDetailStep(resolvedSearchParams.step);
   const repaintKey = buildRouteKey(`/app/events/${eventId}`, resolvedSearchParams);
+  const resultState = mapMemberEventLoopWriteResultMessage(
+    resolvedSearchParams.memberEventLoopWriteResult,
+  );
   const backHref =
     step === "detail"
       ? getEventReturnHref(
@@ -172,6 +186,7 @@ export default async function AppEventDetailPage({
               campaign={resolvedSearchParams.campaign}
               storyFilter={resolvedSearchParams.storyFilter}
               storyId={resolvedSearchParams.story}
+              resultState={resultState}
             />
           ) : step === "rsvp" ? (
             <EventRsvpConfirmView
@@ -184,6 +199,7 @@ export default async function AppEventDetailPage({
               campaign={resolvedSearchParams.campaign}
               storyFilter={resolvedSearchParams.storyFilter}
               storyId={resolvedSearchParams.story}
+              resultState={resultState}
             />
           ) : step === "checkin" ? (
             <EventCheckInView
@@ -196,6 +212,7 @@ export default async function AppEventDetailPage({
               campaign={resolvedSearchParams.campaign}
               storyFilter={resolvedSearchParams.storyFilter}
               storyId={resolvedSearchParams.story}
+              resultState={resultState}
             />
           ) : (
             <EventPointsImpactView
@@ -208,6 +225,7 @@ export default async function AppEventDetailPage({
               campaign={resolvedSearchParams.campaign}
               storyFilter={resolvedSearchParams.storyFilter}
               storyId={resolvedSearchParams.story}
+              resultState={resultState}
             />
           )}
         </div>
@@ -226,6 +244,7 @@ function buildRouteKey(
     campaign?: string;
     storyFilter?: string;
     story?: string;
+    memberEventLoopWriteResult?: string;
   },
 ) {
   const searchParams = new URLSearchParams();
@@ -252,6 +271,10 @@ function buildRouteKey(
 
   if (params.story) {
     searchParams.set("story", params.story);
+  }
+
+  if (params.memberEventLoopWriteResult) {
+    searchParams.set(memberEventLoopWriteResultParam, params.memberEventLoopWriteResult);
   }
 
   const query = searchParams.toString();
@@ -296,6 +319,7 @@ function EventDetailView({
   campaign,
   storyFilter,
   storyId,
+  resultState,
 }: {
   event: NonNullable<ReturnType<typeof getMemberLaunchLaneEventRowById>>;
   memberContext: MemberMobileIdentityContext;
@@ -305,6 +329,7 @@ function EventDetailView({
   campaign?: string;
   storyFilter?: string;
   storyId?: string;
+  resultState: EventLoopResultState;
 }) {
   const detailHref = buildEventStepHref(event.id, "detail", source, profileSource, campaign, storyFilter, storyId);
   const rsvpHref = buildEventStepHref(event.id, "rsvp", source, profileSource, campaign, storyFilter, storyId);
@@ -369,13 +394,18 @@ function EventDetailView({
             </div>
           </div>
         ) : (
-          <Link
-            href={rsvpHref}
-            className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#f5a623] px-4 py-4 text-lg font-extrabold text-[#10223f] shadow-lg transition hover:opacity-90"
-          >
-            <CheckCircle2 size={20} />
-            RSVP to Event
-          </Link>
+          <EventLoopActionForm
+            action={submitMemberEventRsvpAction}
+            eventId={event.id}
+            source={source ?? "events"}
+            profileSource={profileSource}
+            campaign={campaign}
+            storyFilter={storyFilter}
+            storyId={storyId}
+            label="RSVP to Event"
+            icon={<CheckCircle2 size={20} />}
+            className="bg-[#f5a623] text-lg text-[#10223f] shadow-lg hover:opacity-90"
+          />
         )}
 
         <div className="mt-4 grid grid-cols-3 gap-2">
@@ -386,6 +416,8 @@ function EventDetailView({
       </div>
 
       <div className="space-y-4 px-4 pt-5">
+        <EventLoopResultBanner resultState={resultState} />
+
         {sourceContext ? (
           <Card className="border-[#bfdbfe] bg-[#eff6ff]">
             <p className="text-xs font-bold uppercase tracking-wide text-[#1b4b8e]">
@@ -491,16 +523,16 @@ function EventDetailView({
 
         <div className="rounded-2xl border border-[#bfdbfe] bg-[#eff6ff] p-4">
           <p className="text-xs font-bold uppercase tracking-wide text-[#1b4b8e]">
-            Route-backed preview
+            Production-safe event loop
           </p>
           <p className="mt-2 text-sm leading-6 text-slate-700">
-            This event detail route is wired for review. RSVP, check-in, and points-impact
-            steps are route-backed local preview states here, with no live writes or external
-            sends.
+            RSVP, check-in, attendance, and points can be recorded as internal myMEDLIFE TEST
+            rows when the approved event-loop write gate is enabled. Luma and external provider
+            writes stay off.
           </p>
           <p className="mt-2 text-xs leading-5 text-slate-600">
-            Review the full TEST event loop here, then use the approved in-person attendance flow
-            for real RSVP, check-in, and points-award writes.
+            If the write gate is off, the app will show a blocked state and keep the page read-only
+            instead of pretending the event was saved.
           </p>
           <div className="mt-4 flex flex-wrap gap-2">
             <Link href={detailHref} className="rounded-full border border-[#bfdbfe] bg-white px-3 py-1.5 text-xs font-semibold text-slate-700">
@@ -532,6 +564,7 @@ function EventRsvpConfirmView({
   campaign,
   storyFilter,
   storyId,
+  resultState,
 }: {
   event: NonNullable<ReturnType<typeof getMemberLaunchLaneEventRowById>>;
   memberContext: MemberMobileIdentityContext;
@@ -542,19 +575,25 @@ function EventRsvpConfirmView({
   campaign?: string;
   storyFilter?: string;
   storyId?: string;
+  resultState: EventLoopResultState;
 }) {
   const visibleLocationLabel = ensureVisibleTestLabel(snapshot.memberLocationLabel);
   const returnHref = getEventReturnHref(event.id, source, profileSource, campaign, storyFilter, storyId);
   const returnLabel = getEventReturnLabel(source);
+  const rsvpConfirmed = event.memberRsvpState === "registered" || resultState?.tone === "success";
   return (
     <StepShell backHref={backHref} title="">
       <div className="flex flex-1 flex-col items-center justify-center px-6 py-8 text-center">
         <div className="mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-emerald-100">
           <CheckCircle2 size={40} className="text-emerald-600" />
         </div>
-        <h1 className="mb-2 text-2xl font-extrabold text-slate-950">You&apos;re RSVP&apos;d!</h1>
+        <h1 className="mb-2 text-2xl font-extrabold text-slate-950">
+          {rsvpConfirmed ? "You're RSVP'd!" : "Record your RSVP"}
+        </h1>
         <p className="mb-8 max-w-xs text-sm leading-relaxed text-slate-600">
-          We&apos;ll see you there. Don&apos;t forget to check in when you arrive to preview your points impact.
+          {rsvpConfirmed
+            ? "We'll see you there. Don't forget to check in when you arrive to record your points impact."
+            : "Save your TEST RSVP in myMEDLIFE, then check in when you arrive to record attendance and points."}
         </p>
 
         <Card className="mb-4 w-full text-left">
@@ -579,19 +618,34 @@ function EventRsvpConfirmView({
           </div>
           <p className="ml-7 text-3xl font-extrabold text-amber-600">{event.pointsAwarded} points</p>
           <p className="ml-7 mt-1 text-xs text-amber-700">
-            Route-backed preview only. No attendance write is sent from this screen.
+            RSVP can be recorded in myMEDLIFE when the approved internal write gate is enabled.
+            Luma and external provider writes stay off.
           </p>
         </div>
+
+        <EventLoopResultBanner resultState={resultState} className="mb-5 w-full text-left" />
 
         <div className="mb-8 flex w-full items-start gap-2 rounded-2xl bg-[#eef2ff] p-3">
           <QrCode size={18} className="mt-0.5 flex-shrink-0 text-[#1b4b8e]" />
           <p className="text-left text-sm font-medium text-[#1b4b8e]">
-            The real pilot flow still requires approved attendance handling. This route shows the
-            next check-in state without writing to Luma or your points ledger.
+            This production-safe TEST flow records only internal myMEDLIFE rows after the write
+            gate is approved. It does not write to Luma or any external provider.
           </p>
         </div>
 
         <div className="w-full space-y-2.5">
+          <EventLoopActionForm
+            action={submitMemberEventRsvpAction}
+            eventId={event.id}
+            source={source ?? "events"}
+            profileSource={profileSource}
+            campaign={campaign}
+            storyFilter={storyFilter}
+            storyId={storyId}
+            label="Record RSVP in myMEDLIFE"
+            icon={<CheckCircle2 size={16} />}
+            className="bg-[#1b4b8e] text-base text-white hover:opacity-90"
+          />
           <PrimaryLink
             href={buildEventStepHref(event.id, "checkin", source, profileSource, campaign, storyFilter, storyId)}
             label="Go to Check-In"
@@ -614,6 +668,7 @@ function EventCheckInView({
   campaign,
   storyFilter,
   storyId,
+  resultState,
 }: {
   event: NonNullable<ReturnType<typeof getMemberLaunchLaneEventRowById>>;
   memberContext: MemberMobileIdentityContext;
@@ -624,6 +679,7 @@ function EventCheckInView({
   campaign?: string;
   storyFilter?: string;
   storyId?: string;
+  resultState: EventLoopResultState;
 }) {
   const visibleEventTitle = ensureVisibleTestLabel(event.title);
   return (
@@ -653,18 +709,27 @@ function EventCheckInView({
             </div>
           </div>
           <p className="mb-1.5 text-sm text-slate-600">
-            Use the approved attendance flow at the event. This route only previews the next state.
+            Confirm the TEST check-in to record attendance and award points once in myMEDLIFE.
           </p>
           <div className="mb-6 flex items-center gap-1.5 text-sm font-bold text-amber-600">
             <Star size={14} className="fill-amber-400 text-amber-400" />
-            Preview {event.pointsAwarded} points after check-in
+            {event.pointsAwarded} points after check-in
           </div>
         </div>
 
-        <PrimaryLink
-          href={buildEventStepHref(event.id, "points", source, profileSource, campaign, storyFilter, storyId)}
+        <EventLoopResultBanner resultState={resultState} className="mb-4" />
+
+        <EventLoopActionForm
+          action={submitMemberEventCheckInAction}
+          eventId={event.id}
+          source={source ?? "events"}
+          profileSource={profileSource}
+          campaign={campaign}
+          storyFilter={storyFilter}
+          storyId={storyId}
           label="Confirm Check-In"
           icon={<UserCheck size={20} />}
+          className="bg-[#1b4b8e] text-base text-white hover:opacity-90"
         />
       </div>
     </StepShell>
@@ -681,6 +746,7 @@ function EventPointsImpactView({
   campaign,
   storyFilter,
   storyId,
+  resultState,
 }: {
   event: NonNullable<ReturnType<typeof getMemberLaunchLaneEventRowById>>;
   memberContext: MemberMobileIdentityContext;
@@ -691,6 +757,7 @@ function EventPointsImpactView({
   campaign?: string;
   storyFilter?: string;
   storyId?: string;
+  resultState: EventLoopResultState;
 }) {
   const visibleChapterName = memberContext.chapterName;
   const returnHref = getEventReturnHref(event.id, source, profileSource, campaign, storyFilter, storyId);
@@ -711,7 +778,7 @@ function EventPointsImpactView({
         <h1 className="mb-1 text-2xl font-extrabold text-slate-950">Checked in!</h1>
         <p className="mt-2 mb-1 text-4xl font-extrabold text-amber-500">+{event.pointsAwarded} points</p>
         <p className="mb-8 text-sm text-slate-600">
-          Local preview of the post-check-in state for {visibleChapterName} after {snapshot.memberDateTimeLabel}.
+          Internal myMEDLIFE readback for {visibleChapterName} after {snapshot.memberDateTimeLabel}.
         </p>
 
         <Card className="mb-6 w-full border-[#dbeafe] bg-[#eff6ff] text-left">
@@ -735,13 +802,16 @@ function EventPointsImpactView({
           ))}
         </Card>
 
+        <EventLoopResultBanner resultState={resultState} className="mb-4 w-full text-left" />
+
         <div className="w-full rounded-2xl border border-[#bfdbfe] bg-[#eff6ff] p-4 text-left">
           <p className="text-xs font-bold uppercase tracking-wide text-[#1b4b8e]">
-            Preview honesty
+            Write honesty
           </p>
           <p className="mt-2 text-sm leading-6 text-slate-700">
-            This is a route-backed member preview of the exported points-earned state. The real
-            points ledger still depends on the approved attendance and write sequence.
+            This route reflects the approved internal TEST event-loop write path. Duplicate
+            check-ins are blocked from awarding duplicate points, and Luma/external provider
+            writes remain off.
           </p>
         </div>
 
@@ -856,6 +926,73 @@ function PointsCard({
       <p className="text-2xl font-extrabold text-slate-950">{value}</p>
       <p className="text-xs text-slate-500">{detail}</p>
     </div>
+  );
+}
+
+function EventLoopResultBanner({
+  resultState,
+  className = "",
+}: {
+  resultState: EventLoopResultState;
+  className?: string;
+}) {
+  if (!resultState) {
+    return null;
+  }
+
+  const classes =
+    resultState.tone === "success"
+      ? "border-emerald-200 bg-emerald-50 text-emerald-900"
+      : resultState.tone === "warning"
+        ? "border-amber-200 bg-amber-50 text-amber-900"
+        : "border-[#bfdbfe] bg-[#eff6ff] text-[#1b4b8e]";
+
+  return (
+    <div className={`rounded-2xl border p-4 text-sm font-semibold leading-6 ${classes} ${className}`} role="status">
+      {resultState.message}
+    </div>
+  );
+}
+
+function EventLoopActionForm({
+  action,
+  eventId,
+  source,
+  profileSource,
+  campaign,
+  storyFilter,
+  storyId,
+  label,
+  icon,
+  className,
+}: {
+  action: (formData: FormData) => Promise<void>;
+  eventId: string;
+  source?: string;
+  profileSource?: string;
+  campaign?: string;
+  storyFilter?: string;
+  storyId?: string;
+  label: string;
+  icon?: ReactNode;
+  className: string;
+}) {
+  return (
+    <form action={action} className="w-full">
+      <input type="hidden" name="eventId" value={eventId} />
+      <input type="hidden" name="source" value={source ?? ""} />
+      <input type="hidden" name="profileSource" value={profileSource ?? ""} />
+      <input type="hidden" name="campaign" value={campaign ?? ""} />
+      <input type="hidden" name="storyFilter" value={storyFilter ?? ""} />
+      <input type="hidden" name="story" value={storyId ?? ""} />
+      <button
+        type="submit"
+        className={`flex w-full items-center justify-center gap-2 rounded-2xl px-4 py-4 font-extrabold transition ${className}`}
+      >
+        {icon}
+        {label}
+      </button>
+    </form>
   );
 }
 

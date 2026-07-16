@@ -120,7 +120,7 @@ describe("member event detail route", () => {
     );
 
     expect(html).toContain("You&#x27;re RSVP&#x27;d!");
-    expect(html).toContain("Route-backed preview only");
+    expect(html).toContain("RSVP can be recorded in myMEDLIFE");
     expect(html).toContain('href="/app/events/chapter-event-ucla-kickoff?source=home&amp;step=checkin"');
   });
 
@@ -147,8 +147,8 @@ describe("member event detail route", () => {
     expect(html).toContain("TEST Rush Month kickoff social");
     expect(html).toContain("Points Available");
     expect(html).toContain("preview link only");
-    expect(html).toContain("Route-backed preview");
-    expect(html).toContain("Review the full TEST event loop here");
+    expect(html).toContain("Production-safe event loop");
+    expect(html).toContain("Luma and external provider");
     expect(html).toContain("Add to Calendar");
     expect(html).toContain("Share");
     expect(html).toContain('aria-label="Member bottom navigation"');
@@ -216,7 +216,8 @@ describe("member event detail route", () => {
 
     expect(html).toContain("You&#x27;re RSVP&#x27;d!");
     expect(html).toContain("Go to Check-In");
-    expect(html).toContain("Route-backed preview only");
+    expect(html).toContain("Record RSVP in myMEDLIFE");
+    expect(html).toContain("Luma and external provider writes stay off");
     expect(html).toContain('href="/app/events/chapter-event-ucla-kickoff?source=home&amp;step=checkin"');
     expect(html).toContain('href="/app"');
     expect(html).toContain("Back to Home");
@@ -243,9 +244,8 @@ describe("member event detail route", () => {
 
     expect(html).toContain("Preview event QR code");
     expect(html).toContain("TEST Rush Month kickoff social");
-    expect(html).toContain("This route only previews the next state.");
+    expect(html).toContain("Confirm the TEST check-in");
     expect(html).toContain("Confirm Check-In");
-    expect(html).toContain('href="/app/events/chapter-event-ucla-kickoff?source=events&amp;step=points"');
   });
 
   it("renders the points-impact step with chapter leaderboard context", async () => {
@@ -270,7 +270,7 @@ describe("member event detail route", () => {
     expect(html).toContain("Checked in!");
     expect(html).toContain("Chapter Leaderboard");
     expect(html).toContain("View leaderboard impact");
-    expect(html).toContain("Local preview of the post-check-in state");
+    expect(html).toContain("Internal myMEDLIFE readback");
     expect(html).toContain('href="/app/points?source=events&amp;event=chapter-event-ucla-kickoff"');
     expect(html).toContain('aria-current="page"');
     expect(html).toContain('href="/app/points?source=events&amp;event=chapter-event-ucla-kickoff"');
