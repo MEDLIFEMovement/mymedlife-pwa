@@ -7,7 +7,10 @@ import { getMvpMemberHome } from "@/services/mvp-event-tracking-workspace";
 import { getProfileWorkspace } from "@/services/profile-workspace";
 import { getReadOnlyAppData } from "@/services/read-only-app-data";
 import { getLandingRouteForActor } from "@/services/landing-route";
-import { buildLoginRedirectHref, shouldRedirectActorToLogin } from "@/services/login-route";
+import {
+  buildLoginRedirectHrefForPath,
+  shouldRedirectActorToLogin,
+} from "@/services/login-route";
 import { buildMemberRouteKey } from "@/services/member-route-key";
 import { canAccessMemberWorkspace } from "@/services/role-visibility";
 import { getStaticRouteMetadata } from "@/services/static-route-metadata";
@@ -59,7 +62,7 @@ export default async function ProfilePage(props: ProfilePageProps) {
     : null;
 
   if (shouldRedirectActorToLogin(actor)) {
-    redirect(buildLoginRedirectHref("/profile"));
+    redirect(buildLoginRedirectHrefForPath("/profile", resolvedSearchParams));
   }
 
   if (!isMemberProfile) {

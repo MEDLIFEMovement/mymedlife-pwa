@@ -10,7 +10,10 @@ import { WorkspaceAccountMenu } from "@/components/workspace-account-menu";
 import { WorkspacePreviewBanner } from "@/components/workspace-preview-banner";
 import { getChapterLeaderCommandCenter } from "@/services/chapter-leader-command-center";
 import { getLandingRouteForActor } from "@/services/landing-route";
-import { buildLoginRedirectHref, shouldRedirectActorToLogin } from "@/services/login-route";
+import {
+  buildLoginRedirectHrefForPath,
+  shouldRedirectActorToLogin,
+} from "@/services/login-route";
 import { getLocalActorContext } from "@/services/local-actor-context";
 import { canAccessLeaderWorkspace, getActorSurfaceFamily } from "@/services/role-visibility";
 import { getReadOnlyAppData } from "@/services/read-only-app-data";
@@ -72,7 +75,7 @@ export default async function LeaderPage({ searchParams }: LeaderPageProps) {
     actorSurfaceFamily === "super_admin";
 
   if (shouldRedirectActorToLogin(actor)) {
-    redirect(buildLoginRedirectHref("/leader?view=overview"));
+    redirect(buildLoginRedirectHrefForPath("/leader", resolvedSearchParams));
   }
 
   if (!canAccessLeaderWorkspace(actor)) {

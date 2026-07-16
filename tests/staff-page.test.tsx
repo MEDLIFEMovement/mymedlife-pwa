@@ -89,7 +89,18 @@ describe("staff page", () => {
     const { default: StaffPage } = await import("@/app/staff/page");
 
     await expect(StaffPage({})).rejects.toThrow(
-      "NEXT_REDIRECT:/login?redirectTo=%2Fstaff%3Fview%3Dchapters",
+      "NEXT_REDIRECT:/login?redirectTo=%2Fstaff",
+    );
+
+    await expect(
+      StaffPage({
+        searchParams: Promise.resolve({
+          view: "events",
+          chapter: "Test UCLA",
+        }),
+      }),
+    ).rejects.toThrow(
+      "NEXT_REDIRECT:/login?redirectTo=%2Fstaff%3Fview%3Devents%26chapter%3DTest%2BUCLA",
     );
   });
 

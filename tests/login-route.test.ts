@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { getMockLocalActorContext } from "@/services/local-actor-context";
 import {
   buildLoginRedirectHref,
+  buildLoginRedirectHrefForPath,
   shouldRedirectActorToLogin,
 } from "@/services/login-route";
 
@@ -42,5 +43,21 @@ describe("login route service", () => {
     expect(buildLoginRedirectHref("/staff?view=chapters")).toBe(
       "/login?redirectTo=%2Fstaff%3Fview%3Dchapters",
     );
+  });
+
+  it("preserves protected route search params while building login redirects", () => {
+    expect(
+      buildLoginRedirectHrefForPath("/admin", {
+        view: "integrations",
+        tab: ["luma", "outbox"],
+        empty: undefined,
+      }),
+    ).toBe(
+      "/login?redirectTo=%2Fadmin%3Fview%3Dintegrations%26tab%3Dluma%26tab%3Doutbox",
+    );
+
+    expect(
+      buildLoginRedirectHrefForPath("//evil.example", { view: "admin" }),
+    ).toBe("/login?redirectTo=%2F%3Fview%3Dadmin");
   });
 });

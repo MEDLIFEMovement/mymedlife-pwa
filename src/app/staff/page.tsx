@@ -3,7 +3,10 @@ import { redirect } from "next/navigation";
 import { FigmaStaffCommandCenter } from "@/components/figma-staff-command-center";
 import { WorkspaceAccountMenu } from "@/components/workspace-account-menu";
 import { getLandingRouteForActor } from "@/services/landing-route";
-import { buildLoginRedirectHref, shouldRedirectActorToLogin } from "@/services/login-route";
+import {
+  buildLoginRedirectHrefForPath,
+  shouldRedirectActorToLogin,
+} from "@/services/login-route";
 import { getLocalActorContext } from "@/services/local-actor-context";
 import { canAccessAdminWorkspace, canAccessStaffWorkspace } from "@/services/role-visibility";
 import { getStaffLaunchLaneCanonicalHref } from "@/services/staff-launch-lane";
@@ -21,7 +24,7 @@ export default async function StaffPage({ searchParams }: StaffPageProps) {
   const resolvedSearchParams = await searchParams;
 
   if (shouldRedirectActorToLogin(actor)) {
-    redirect(buildLoginRedirectHref("/staff?view=chapters"));
+    redirect(buildLoginRedirectHrefForPath("/staff", resolvedSearchParams));
   }
 
   if (!canReadStaffWorkspace(actor)) {
