@@ -594,8 +594,9 @@ function getRecentActivity(
     pointsLabel: "Preview",
   }));
   const completedActions = recognition.selectedMember?.completedActions ?? approvedActions.length;
+  const memberPointsTotal = recognition.selectedMember?.points ?? studentHome.pointsTotal;
 
-  if (completedActions <= 0 && approvedActions.length === 0) {
+  if (completedActions <= 0 && memberPointsTotal <= 0) {
     return [
       {
         title: "No completed TEST activity yet",
