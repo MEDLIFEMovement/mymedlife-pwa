@@ -1,0 +1,698 @@
+import { createClient } from "@supabase/supabase-js";
+
+import { isUuid } from "@/services/action-start-write";
+
+type EnvSource = Record<string, string | undefined>;
+type MemberEventLoopEnvironment = "local" | "staging" | "production";
+type MemberEventLoopOperation = "rsvp" | "checkin";
+
+type SupabaseQueryError = { message?: string } | null;
+type SupabaseQueryResult<TData> = {
+  data: TData | null;
+  error: SupabaseQueryError;
+};
+type SupabaseQueryBuilder<TData = Record<string, unknown>[]> =
+  PromiseLike<SupabaseQueryResult<TData>> & {
+    select<TRow = Record<string, unknown>>(
+      columns: string,
+    ): SupabaseQueryBuilder<TRow[]>;
+    eq(column: string, value: unknown): SupabaseQueryBuilder<TData>;
+    ilike(column: string, value: string): SupabaseQueryBuilder<TData>;
+    order(
+      column: string,
+      options?: { ascending?: boolean; nullsFirst?: boolean },
+    ): SupabaseQueryBuilder<TData>;
+    limit(count: number): SupabaseQueryBuilder<TData>;
+    maybeSingle<TRow>(): Promise<SupabaseQueryResult<TRow>>;
+    single<TRow>(): Promise<SupabaseQueryResult<TRow>>;
+  };
+type SupabaseTableClient = {
+  select<TRow = Record<string, unknown>>(columns: string): SupabaseQueryBuilder<TRow[]>;
+  insert(row: Record<string, unknown>): SupabaseQueryBuilder;
+  update(row: Record<string, unknown>): SupabaseQueryBuilder;
+};
+export type SupabaseServiceClient = {
+  schema(schemaName: "app"): {
+    from(tableName: string): SupabaseTableClient;
+  };
+};
+
+export const memberEventLoopPointAward = 20;
+export const memberEventLoopWriteResultParam = "memberEventLoopWriteResult";
+
+export type MemberEventLoopWriteConfig = {
+  enabled: boolean;
+  environment: MemberEventLoopEnvironment;
+  externalWritesEnabled: false;
+  reason: string;
+};
+
+export type MemberEventLoopWriteResult =
+  | {
+      success: true;
+      code: "rsvp_recorded" | "already_rsvpd" | "checked_in" | "already_checked_in";
+      eventId: string;
+      pointsAwarded: number;
+      attendanceCount: number;
+      externalWritesEnabled: false;
+      plainEnglishMessage: string;
+    }
+  | {
+      success: false;
+      code:
+        | "write_disabled"
+        | "missing_auth"
+        | "profile_not_found"
+        | "membership_required"
+        | "event_not_found"
+        | "permission_denied"
+        | "server_error";
+      eventId: string;
+      externalWritesEnabled: false;
+      plainEnglishMessage: string;
+    };
+
+type ProfileRow = {
+  id: string;
+  display_name: string;
+  email: string;
+  status: string;
+};
+
+type MembershipRow = {
+  id: string;
+  chapter_id: string;
+  role_key: string;
+  status: string;
+};
+
+type CampaignRow = {
+  id: string;
+  chapter_id: string;
+  status: string;
+};
+
+type ChapterEventRow = {
+  id: string;
+  chapter_id: string;
+  campaign_id: string | null;
+  title: string;
+  status: string;
+  attendance_count: number | null;
+};
+
+type EventRow = {
+  id: string;
+};
+
+type PointsEventRow = {
+  id: string;
+  awarded_to_user_id: string;
+  points_delta: number;
+};
+
+type RecordMemberEventLoopInput = {
+  operation: MemberEventLoopOperation;
+  routeEventId: string;
+  actorUserId: string;
+  actorEmail: string;
+};
+
+const testEventRouteAliases = new Map([
+  [
+    "chapter-event-ucla-kickoff",
+    {
+      title: "TEST Intro GBM",
+      eventType: "social",
+      promotionSummary:
+        "Production-safe TEST event loop for RSVP, check-in, attendance, and points. No Luma or external provider write runs from this event.",
+      locationLabel: "TEST chapter event",
+    },
+  ],
+]);
+
+export function getMemberEventLoopWriteConfig(
+  env: EnvSource = process.env,
+): MemberEventLoopWriteConfig {
+  const environment = getEnvironment(env);
+
+  if (env.MYMEDLIFE_ENABLE_MEMBER_EVENT_LOOP_WRITE !== "true") {
+    return disabled(
+      environment,
+      "Member event-loop writes are disabled by configuration.",
+    );
+  }
+
+  if (!env.SUPABASE_SERVICE_ROLE_KEY) {
+    return disabled(
+      environment,
+      "Member event-loop writes are disabled because the server-only Supabase service-role key is missing.",
+    );
+  }
+
+  const approvalFlag = getApprovalFlag(environment, env);
+
+  if (approvalFlag !== "true") {
+    return disabled(
+      environment,
+      `${capitalize(environment)} member event-loop writes require the explicit environment approval flag before RSVP, check-in, attendance, or points rows can be recorded.`,
+    );
+  }
+
+  return {
+    enabled: true,
+    environment,
+    externalWritesEnabled: false,
+    reason:
+      "Member event-loop writes are enabled for internal myMEDLIFE TEST rows only. Luma, reminders, warehouse exports, and other external provider writes remain disabled.",
+  };
+}
+
+export function createMemberEventLoopWriteClient(
+  env: EnvSource = process.env,
+): SupabaseServiceClient | null {
+  const config = getMemberEventLoopWriteConfig(env);
+  const url = env.SUPABASE_URL ?? env.NEXT_PUBLIC_SUPABASE_URL;
+  const serviceRoleKey = env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!config.enabled || !url || !serviceRoleKey) {
+    return null;
+  }
+
+  return createClient(url, serviceRoleKey, {
+    auth: { autoRefreshToken: false, persistSession: false },
+  }) as unknown as SupabaseServiceClient;
+}
+
+export async function recordMemberEventLoopStep(
+  client: SupabaseServiceClient,
+  input: RecordMemberEventLoopInput,
+): Promise<MemberEventLoopWriteResult> {
+  try {
+    const profile = await resolveActorProfile(client, input.actorUserId, input.actorEmail);
+
+    if (!profile || profile.status !== "active") {
+      return failure(
+        "profile_not_found",
+        input.routeEventId,
+        "The signed-in user does not have an active myMEDLIFE profile, so no RSVP, attendance, or points rows were recorded.",
+      );
+    }
+
+    const membership = await resolveActorMembership(client, profile.id);
+
+    if (!membership) {
+      return failure(
+        "membership_required",
+        input.routeEventId,
+        "The signed-in user needs an approved chapter membership before RSVP, attendance, or points can be recorded.",
+      );
+    }
+
+    const campaign = await resolveActiveCampaign(client, membership.chapter_id);
+    const event = await resolveOrCreateEvent(client, {
+      routeEventId: input.routeEventId,
+      profileId: profile.id,
+      chapterId: membership.chapter_id,
+      campaignId: campaign?.id ?? null,
+    });
+
+    if (!event) {
+      return failure(
+        "event_not_found",
+        input.routeEventId,
+        "The event could not be found or safely materialized, so no event-loop write ran.",
+      );
+    }
+
+    if (event.chapter_id !== membership.chapter_id) {
+      return failure(
+        "permission_denied",
+        input.routeEventId,
+        "The signed-in member cannot write RSVP, attendance, or points rows for a different chapter.",
+      );
+    }
+
+    const rsvpResult = await recordRsvp(client, {
+      event,
+      profile,
+      campaignId: event.campaign_id ?? campaign?.id ?? null,
+      operation: input.operation,
+    });
+
+    if (input.operation === "rsvp") {
+      return {
+        success: true,
+        code: rsvpResult.created ? "rsvp_recorded" : "already_rsvpd",
+        eventId: event.id,
+        pointsAwarded: 0,
+        attendanceCount: event.attendance_count ?? 0,
+        externalWritesEnabled: false,
+        plainEnglishMessage: rsvpResult.created
+          ? "RSVP recorded in myMEDLIFE. No Luma or external provider write ran."
+          : "RSVP was already recorded for this event. No duplicate RSVP row was created.",
+      };
+    }
+
+    return recordCheckInAndPoints(client, {
+      event,
+      profile,
+      campaignId: event.campaign_id ?? campaign?.id ?? null,
+    });
+  } catch (error) {
+    return failure(
+      "server_error",
+      input.routeEventId,
+      error instanceof Error
+        ? `The app could not safely record this event-loop step: ${error.message}`
+        : "The app could not safely record this event-loop step.",
+    );
+  }
+}
+
+export function mapMemberEventLoopWriteResultMessage(
+  code: string | undefined,
+): { tone: "success" | "info" | "warning"; message: string } | null {
+  switch (code) {
+    case "rsvp_recorded":
+      return {
+        tone: "success",
+        message:
+          "RSVP recorded in myMEDLIFE. No Luma or external provider write ran.",
+      };
+    case "already_rsvpd":
+      return {
+        tone: "info",
+        message:
+          "RSVP was already recorded for this event, so no duplicate RSVP row was created.",
+      };
+    case "checked_in":
+      return {
+        tone: "success",
+        message:
+          "Check-in recorded, attendance updated, and points awarded once in the myMEDLIFE ledger. External writes stayed off.",
+      };
+    case "already_checked_in":
+      return {
+        tone: "info",
+        message:
+          "This check-in was already recorded. Duplicate points were blocked.",
+      };
+    case "write_disabled":
+      return {
+        tone: "warning",
+        message:
+          "Event-loop writes are disabled for this environment, so this screen remains read-only.",
+      };
+    case "missing_auth":
+      return {
+        tone: "warning",
+        message:
+          "Sign in before recording RSVP, check-in, attendance, or points.",
+      };
+    case "profile_not_found":
+    case "membership_required":
+    case "event_not_found":
+    case "permission_denied":
+    case "server_error":
+      return {
+        tone: "warning",
+        message:
+          "The app could not safely record this event-loop step. No RSVP, attendance, points, Luma, or external provider write ran.",
+      };
+    default:
+      return null;
+  }
+}
+
+async function resolveActorProfile(
+  client: SupabaseServiceClient,
+  actorUserId: string,
+  actorEmail: string,
+): Promise<ProfileRow | null> {
+  const byId = await client
+    .schema("app")
+    .from("profiles")
+    .select("id,display_name,email,status")
+    .eq("id", actorUserId)
+    .maybeSingle<ProfileRow>();
+
+  if (byId.data && !byId.error) {
+    return byId.data;
+  }
+
+  const byEmail = await client
+    .schema("app")
+    .from("profiles")
+    .select("id,display_name,email,status")
+    .ilike("email", actorEmail)
+    .maybeSingle<ProfileRow>();
+
+  return byEmail.data && !byEmail.error ? byEmail.data : null;
+}
+
+async function resolveActorMembership(
+  client: SupabaseServiceClient,
+  profileId: string,
+): Promise<MembershipRow | null> {
+  const result = await client
+    .schema("app")
+    .from("memberships")
+    .select("id,chapter_id,role_key,status")
+    .eq("user_id", profileId)
+    .eq("status", "approved")
+    .order("approved_at", { ascending: true, nullsFirst: false })
+    .limit(1)
+    .maybeSingle<MembershipRow>();
+
+  return result.data && !result.error ? result.data : null;
+}
+
+async function resolveActiveCampaign(
+  client: SupabaseServiceClient,
+  chapterId: string,
+): Promise<CampaignRow | null> {
+  const active = await client
+    .schema("app")
+    .from("campaigns")
+    .select("id,chapter_id,status")
+    .eq("chapter_id", chapterId)
+    .eq("status", "active")
+    .order("opened_at", { ascending: false, nullsFirst: false })
+    .limit(1)
+    .maybeSingle<CampaignRow>();
+
+  if (active.data && !active.error) {
+    return active.data;
+  }
+
+  const fallback = await client
+    .schema("app")
+    .from("campaigns")
+    .select("id,chapter_id,status")
+    .eq("chapter_id", chapterId)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle<CampaignRow>();
+
+  return fallback.data && !fallback.error ? fallback.data : null;
+}
+
+async function resolveOrCreateEvent(
+  client: SupabaseServiceClient,
+  input: {
+    routeEventId: string;
+    profileId: string;
+    chapterId: string;
+    campaignId: string | null;
+  },
+): Promise<ChapterEventRow | null> {
+  if (isUuid(input.routeEventId)) {
+    const existing = await client
+      .schema("app")
+      .from("chapter_events")
+      .select("id,chapter_id,campaign_id,title,status,attendance_count")
+      .eq("id", input.routeEventId)
+      .maybeSingle<ChapterEventRow>();
+
+    return existing.data && !existing.error ? existing.data : null;
+  }
+
+  const template =
+    testEventRouteAliases.get(input.routeEventId) ??
+    testEventRouteAliases.get("chapter-event-ucla-kickoff");
+
+  if (!template) {
+    return null;
+  }
+
+  const existing = await client
+    .schema("app")
+    .from("chapter_events")
+    .select("id,chapter_id,campaign_id,title,status,attendance_count")
+    .eq("chapter_id", input.chapterId)
+    .eq("title", template.title)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle<ChapterEventRow>();
+
+  if (existing.data && !existing.error) {
+    return existing.data;
+  }
+
+  const now = new Date();
+  const endsAt = new Date(now.getTime() + 2 * 60 * 60 * 1000);
+  const created = await client
+    .schema("app")
+    .from("chapter_events")
+    .insert({
+      chapter_id: input.chapterId,
+      campaign_id: input.campaignId,
+      title: template.title,
+      event_type: template.eventType,
+      status: "published",
+      planned_by_user_id: input.profileId,
+      owner_user_id: input.profileId,
+      starts_at: now.toISOString(),
+      ends_at: endsAt.toISOString(),
+      promotion_summary: template.promotionSummary,
+      attendance_count: 0,
+      eligible_member_count: 1,
+      attendance_rate: 0,
+      warehouse_status: "disabled",
+    })
+    .select("id,chapter_id,campaign_id,title,status,attendance_count")
+    .single<ChapterEventRow>();
+
+  return created.data && !created.error ? created.data : null;
+}
+
+async function recordRsvp(
+  client: SupabaseServiceClient,
+  input: {
+    event: ChapterEventRow;
+    profile: ProfileRow;
+    campaignId: string | null;
+    operation: MemberEventLoopOperation;
+  },
+) {
+  const existing = await client
+    .schema("app")
+    .from("events")
+    .select("id")
+    .eq("event_type", "event_rsvp_recorded")
+    .eq("chapter_event_id", input.event.id)
+    .eq("actor_user_id", input.profile.id)
+    .limit(1)
+    .maybeSingle<EventRow>();
+
+  if (existing.data && !existing.error) {
+    return { created: false };
+  }
+
+  const inserted = await client
+    .schema("app")
+    .from("events")
+    .insert({
+      event_type: "event_rsvp_recorded",
+      actor_user_id: input.profile.id,
+      chapter_id: input.event.chapter_id,
+      campaign_id: input.campaignId,
+      chapter_event_id: input.event.id,
+      payload: {
+        source: "member_event_loop",
+        operation: input.operation,
+        userId: input.profile.id,
+        userEmail: input.profile.email,
+        liveExternalWrite: false,
+      },
+      correlation_id: `member_event_loop:rsvp:${input.event.id}:${input.profile.id}`,
+    });
+
+  if (inserted.error) {
+    throw new Error(`RSVP insert failed: ${inserted.error.message}`);
+  }
+
+  return { created: true };
+}
+
+async function recordCheckInAndPoints(
+  client: SupabaseServiceClient,
+  input: {
+    event: ChapterEventRow;
+    profile: ProfileRow;
+    campaignId: string | null;
+  },
+): Promise<MemberEventLoopWriteResult> {
+  const existingPoints = await client
+    .schema("app")
+    .from("points_events")
+    .select("id,awarded_to_user_id,points_delta")
+    .eq("chapter_event_id", input.event.id)
+    .eq("awarded_to_user_id", input.profile.id)
+    .limit(1)
+    .maybeSingle<PointsEventRow>();
+
+  if (existingPoints.data && !existingPoints.error) {
+    const attendanceCount = await countUniquePointRecipients(client, input.event.id);
+
+    return {
+      success: true,
+      code: "already_checked_in",
+      eventId: input.event.id,
+      pointsAwarded: existingPoints.data.points_delta,
+      attendanceCount,
+      externalWritesEnabled: false,
+      plainEnglishMessage:
+        "This member was already checked in for the event. Duplicate points were blocked.",
+    };
+  }
+
+  const pointInsert = await client
+    .schema("app")
+    .from("points_events")
+    .insert({
+      chapter_id: input.event.chapter_id,
+      campaign_id: input.campaignId,
+      assignment_id: null,
+      chapter_event_id: input.event.id,
+      evidence_item_id: null,
+      approval_id: null,
+      awarded_to_user_id: input.profile.id,
+      points_delta: memberEventLoopPointAward,
+      reason: "Attendance confirmed through the production-safe TEST event loop.",
+      created_by: input.profile.id,
+    })
+    .select("id")
+    .single<{ id: string }>();
+
+  if (pointInsert.error || !pointInsert.data) {
+    return failure(
+      "server_error",
+      input.event.id,
+      "The app could not record the points row, so check-in was not completed.",
+    );
+  }
+
+  const attendanceCount = await countUniquePointRecipients(client, input.event.id);
+
+  const attendanceEvent = await client
+    .schema("app")
+    .from("events")
+    .insert({
+      event_type: "event_attendance_recorded",
+      actor_user_id: input.profile.id,
+      chapter_id: input.event.chapter_id,
+      campaign_id: input.campaignId,
+      chapter_event_id: input.event.id,
+      payload: {
+        source: "member_event_loop",
+        checkedInUserId: input.profile.id,
+        attendanceCount,
+        pointsEventId: pointInsert.data.id,
+        pointsDelta: memberEventLoopPointAward,
+        duplicatePointsPrevented: true,
+        liveExternalWrite: false,
+      },
+      correlation_id: `member_event_loop:checkin:${input.event.id}:${input.profile.id}`,
+    });
+
+  if (attendanceEvent.error) {
+    throw new Error(`Attendance event insert failed: ${attendanceEvent.error.message}`);
+  }
+
+  const eventUpdate = await client
+    .schema("app")
+    .from("chapter_events")
+    .update({
+      status: "feedback_collected",
+      attendance_count: attendanceCount,
+      attendance_rate: 1,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", input.event.id);
+
+  if (eventUpdate.error) {
+    throw new Error(`Chapter event attendance update failed: ${eventUpdate.error.message}`);
+  }
+
+  return {
+    success: true,
+    code: "checked_in",
+    eventId: input.event.id,
+    pointsAwarded: memberEventLoopPointAward,
+    attendanceCount,
+    externalWritesEnabled: false,
+    plainEnglishMessage:
+      "Check-in recorded, attendance updated, and points awarded once in myMEDLIFE. No Luma or external provider write ran.",
+  };
+}
+
+async function countUniquePointRecipients(
+  client: SupabaseServiceClient,
+  chapterEventId: string,
+) {
+  const rows = await client
+    .schema("app")
+    .from("points_events")
+    .select("awarded_to_user_id")
+    .eq("chapter_event_id", chapterEventId);
+
+  if (rows.error || !rows.data) {
+    return 0;
+  }
+
+  return new Set(
+    rows.data
+      .map((row) => row.awarded_to_user_id)
+      .filter((value): value is string => typeof value === "string" && value.length > 0),
+  ).size;
+}
+
+function getEnvironment(env: EnvSource): MemberEventLoopEnvironment {
+  if (env.MYMEDLIFE_AUTH_MODE === "production_supabase") return "production";
+  if (env.MYMEDLIFE_AUTH_MODE === "staging_supabase") return "staging";
+  return "local";
+}
+
+function getApprovalFlag(environment: MemberEventLoopEnvironment, env: EnvSource) {
+  if (environment === "production") {
+    return env.MYMEDLIFE_ALLOW_PRODUCTION_MEMBER_EVENT_LOOP_WRITE;
+  }
+
+  if (environment === "staging") {
+    return env.MYMEDLIFE_ALLOW_STAGING_SUPABASE_WRITES;
+  }
+
+  return env.MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES;
+}
+
+function disabled(
+  environment: MemberEventLoopEnvironment,
+  reason: string,
+): MemberEventLoopWriteConfig {
+  return {
+    enabled: false,
+    environment,
+    externalWritesEnabled: false,
+    reason,
+  };
+}
+
+function failure(
+  code: Extract<MemberEventLoopWriteResult, { success: false }>["code"],
+  eventId: string,
+  plainEnglishMessage: string,
+): MemberEventLoopWriteResult {
+  return {
+    success: false,
+    code,
+    eventId,
+    externalWritesEnabled: false,
+    plainEnglishMessage,
+  };
+}
+
+function capitalize(value: string) {
+  return `${value[0]?.toUpperCase() ?? ""}${value.slice(1)}`;
+}
