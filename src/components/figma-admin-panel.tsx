@@ -2,6 +2,8 @@
 
 import React, { useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { getChapterTypeLabel } from "@/services/chapter-type";
+import type { ChapterType } from "@/shared/types/persistence";
 import {
   LayoutDashboard, Users, BookOpen, ToggleLeft, CalendarDays,
   Award, Link2, FileText, Activity, Settings, X, Search,
@@ -130,12 +132,12 @@ const USERS_DATA = [
 ];
 
 const CHAPTERS_DATA = [
-  { id: 1, name: "TEST Howard University", school: "TEST Howard University", region: "TEST DC-Metro", coach: "TEST Dr. S. Williams", members: 42, upcomingEvents: 3, rsvps: 87, attendance: 74, points: 3240, pointsWeek: 410, modules: ["Events", "RSVP", "Attendance", "Points"], risk: "low" },
-  { id: 2, name: "TEST UCLA MEDLIFE", school: "TEST UCLA", region: "TEST West Coast", coach: "TEST Dr. R. Patel", members: 68, upcomingEvents: 5, rsvps: 142, attendance: 118, points: 5890, pointsWeek: 980, modules: ["Events", "RSVP", "Attendance", "Points"], risk: "low" },
-  { id: 3, name: "TEST Emory University", school: "TEST Emory University", region: "TEST Southeast", coach: "TEST Dr. K. Brown", members: 31, upcomingEvents: 1, rsvps: 28, attendance: 20, points: 840, pointsWeek: 240, modules: ["Events", "RSVP", "Points"], risk: "medium" },
-  { id: 4, name: "TEST Morehouse College", school: "TEST Morehouse College", region: "TEST Southeast", coach: "TEST Dr. T. Jackson", members: 28, upcomingEvents: 2, rsvps: 41, attendance: 35, points: 1450, pointsWeek: 360, modules: ["Events", "RSVP", "Attendance", "Points"], risk: "low" },
-  { id: 5, name: "TEST Michigan State", school: "TEST Michigan State University", region: "TEST Midwest", coach: "TEST Dr. L. Chen", members: 39, upcomingEvents: 0, rsvps: 12, attendance: 8, points: 290, pointsWeek: 90, modules: ["Events"], risk: "high" },
-  { id: 6, name: "TEST Spelman College", school: "TEST Spelman College", region: "TEST Southeast", coach: "TEST Dr. N. Osei", members: 24, upcomingEvents: 1, rsvps: 19, attendance: 14, points: 560, pointsWeek: 180, modules: ["Events", "RSVP"], risk: "medium" },
+  { id: 1, name: "TEST Howard University", school: "TEST Howard University", region: "TEST DC-Metro", coach: "TEST Dr. S. Williams", chapterType: "college_university" as ChapterType, members: 42, upcomingEvents: 3, rsvps: 87, attendance: 74, points: 3240, pointsWeek: 410, modules: ["Events", "RSVP", "Attendance", "Points"], risk: "low" },
+  { id: 2, name: "TEST UCLA MEDLIFE", school: "TEST UCLA", region: "TEST West Coast", coach: "TEST Dr. R. Patel", chapterType: "college_university" as ChapterType, members: 68, upcomingEvents: 5, rsvps: 142, attendance: 118, points: 5890, pointsWeek: 980, modules: ["Events", "RSVP", "Attendance", "Points"], risk: "low" },
+  { id: 3, name: "TEST Emory University", school: "TEST Emory University", region: "TEST Southeast", coach: "TEST Dr. K. Brown", chapterType: "needs_review" as ChapterType, members: 31, upcomingEvents: 1, rsvps: 28, attendance: 20, points: 840, pointsWeek: 240, modules: ["Events", "RSVP", "Points"], risk: "medium" },
+  { id: 4, name: "TEST Morehouse College", school: "TEST Morehouse College", region: "TEST Southeast", coach: "TEST Dr. T. Jackson", chapterType: "college_university" as ChapterType, members: 28, upcomingEvents: 2, rsvps: 41, attendance: 35, points: 1450, pointsWeek: 360, modules: ["Events", "RSVP", "Attendance", "Points"], risk: "low" },
+  { id: 5, name: "TEST Michigan State", school: "TEST Michigan State University", region: "TEST Midwest", coach: "TEST Dr. L. Chen", chapterType: "high_school" as ChapterType, members: 39, upcomingEvents: 0, rsvps: 12, attendance: 8, points: 290, pointsWeek: 90, modules: ["Events"], risk: "high" },
+  { id: 6, name: "TEST Spelman College", school: "TEST Spelman College", region: "TEST Southeast", coach: "TEST Dr. N. Osei", chapterType: "needs_review" as ChapterType, members: 24, upcomingEvents: 1, rsvps: 19, attendance: 14, points: 560, pointsWeek: 180, modules: ["Events", "RSVP"], risk: "medium" },
 ];
 
 const MODULES_DATA = [
@@ -1026,6 +1028,11 @@ function ChaptersPage({
                     : "No weekly points readback",
                   note: `${activeEmbeddedReadback.chapterContext} points posture stays oversight-only`,
                 },
+                {
+                  label: "Chapter type",
+                  value: getChapterTypeLabel(selected?.chapterType ?? "needs_review"),
+                  note: `Keep staff and admin chapter type vocabulary aligned for ${activeEmbeddedReadback.chapterContext}`,
+                },
               ].map(({ label, value, note }) => (
                 <div key={label} className="rounded border border-sky-500/10 bg-[#0d1117]/50 px-3 py-2">
                   <div className="text-[10px] text-sky-400/70 font-mono uppercase tracking-wider">{label}</div>
@@ -1067,7 +1074,7 @@ function ChaptersPage({
           <table className="w-full text-[13px]">
             <thead>
               <tr className="border-b border-white/[0.06]">
-                {["Chapter", "Region", "Coach", "Members", "Events", "RSVPs", "Attendance", "Points", "Risk", ""].map((h) => (
+                {["Chapter", "Chapter Type", "Region", "Coach", "Members", "Events", "RSVPs", "Attendance", "Points", "Risk", ""].map((h) => (
                   <th key={h} className="text-left px-4 py-3 text-[10px] text-slate-600 font-mono uppercase tracking-wider">{h}</th>
                 ))}
               </tr>
@@ -1079,6 +1086,7 @@ function ChaptersPage({
                     <div className="font-semibold text-slate-200">{c.name}</div>
                     <div className="text-[11px] text-slate-600">{c.school}</div>
                   </td>
+                  <td className="px-4 py-3 text-slate-300">{getChapterTypeLabel(c.chapterType)}</td>
                   <td className="px-4 py-3 text-slate-400">{c.region}</td>
                   <td className="px-4 py-3 text-slate-400">{c.coach}</td>
                   <td className="px-4 py-3 text-slate-300 font-mono">{c.members}</td>
@@ -1132,6 +1140,7 @@ function ChaptersPage({
             <div className="grid grid-cols-2 gap-2">
               {[
                 { label: "Coach", value: selected.coach },
+                { label: "Chapter Type", value: getChapterTypeLabel(selected.chapterType) },
                 { label: "Active Members", value: String(selected.members) },
                 { label: "Events This Month", value: String(selected.upcomingEvents) },
                 { label: "Points This Year", value: selected.points.toLocaleString() },
@@ -1202,6 +1211,7 @@ function buildEmbeddedReadbackChapter(embeddedReadback: EmbeddedChapterReadback)
     school: embeddedReadback.school ?? embeddedReadback.chapterContext,
     region: embeddedReadback.region ?? `${fallbackPrefix}Region readback pending`,
     coach: embeddedReadback.coach ?? `${fallbackPrefix}Coach readback pending`,
+    chapterType: matchedEmbeddedChapterType(embeddedReadback.chapterContext),
     members: Number(embeddedReadback.members ?? 0),
     upcomingEvents: Number(embeddedReadback.events ?? 0),
     rsvps: Number(embeddedReadback.rsvps ?? 0),
@@ -1254,6 +1264,17 @@ function buildEmbeddedChapterReturnHref(
   params.set("chapterPoints", String(chapter.points));
   params.set("chapterPointsWeek", String(chapter.pointsWeek));
   return `${path}?${params.toString()}`;
+}
+
+function matchedEmbeddedChapterType(chapterContext: string): ChapterType {
+  const normalizedChapterContext = normalizeEmbeddedChapterContext(chapterContext);
+  const matchedChapter = CHAPTERS_DATA.find((chapter) => {
+    const name = normalizeEmbeddedChapterContext(chapter.name);
+    const school = normalizeEmbeddedChapterContext(chapter.school);
+    return name === normalizedChapterContext || school === normalizedChapterContext;
+  });
+
+  return matchedChapter?.chapterType ?? "needs_review";
 }
 
 // ─── Modules / Feature Flags ────────────────────────────────────────────────────

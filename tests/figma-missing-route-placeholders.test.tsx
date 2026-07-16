@@ -150,6 +150,14 @@ describe("Figma missing route placeholders", () => {
     const source = readFileSync("src/components/figma-admin-panel.tsx", "utf8");
 
     mockPathname = "/admin";
+    mockSearchParams = new URLSearchParams("view=chapters");
+    const chaptersHtml = renderToStaticMarkup(<FigmaAdminPanel />);
+    expect(chaptersHtml).toContain(">Chapters</h1>");
+    expect(chaptersHtml).toContain("Chapter Type");
+    expect(chaptersHtml).toContain("High School Chapter");
+    expect(chaptersHtml).toContain("College / University Chapter");
+
+    mockPathname = "/admin";
     mockSearchParams = new URLSearchParams("view=mcp");
     const mcpHtml = renderToStaticMarkup(<FigmaAdminPanel />);
     expect(mcpHtml).toContain(">MCP Connections</h1>");
@@ -310,6 +318,10 @@ describe("Figma missing route placeholders", () => {
 
     const chaptersHtml = renderToStaticMarkup(<FigmaAdminPanel initialActive="chapters" />);
     expect(chaptersHtml).toContain("This chapter directory is preview-only.");
+    expect(chaptersHtml).toContain("Chapter Type");
+    expect(chaptersHtml).toContain("High School Chapter");
+    expect(chaptersHtml).toContain("College / University Chapter");
+    expect(chaptersHtml).toContain("Needs Review");
     expect(source).toContain("Chapter metrics, module access, and risk posture shown here are preview/readback data.");
     expect(source).toContain("Module edits for ${selected.name} remain blocked until the secure module-management workflow is approved.");
   });
