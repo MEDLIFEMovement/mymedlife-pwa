@@ -8,6 +8,7 @@ import { getProfileWorkspace } from "@/services/profile-workspace";
 import { getReadOnlyAppData } from "@/services/read-only-app-data";
 import { getLandingRouteForActor } from "@/services/landing-route";
 import { buildLoginRedirectHref, shouldRedirectActorToLogin } from "@/services/login-route";
+import { buildMemberRouteKey } from "@/services/member-route-key";
 import { canAccessMemberWorkspace } from "@/services/role-visibility";
 import { getStaticRouteMetadata } from "@/services/static-route-metadata";
 import { isPreviewWorkspaceAccess } from "@/services/workspace-access";
@@ -47,7 +48,7 @@ export default async function ProfilePage(props: ProfilePageProps) {
   const profileCampaign = resolvedSearchParams.campaign ?? null;
   const profileStoryFilter = resolvedSearchParams.storyFilter ?? null;
   const profileStoryId = resolvedSearchParams.story ?? null;
-  const repaintKey = buildRouteKey("/profile", resolvedSearchParams);
+  const repaintKey = buildMemberRouteKey("/profile", resolvedSearchParams);
   const workspace = getProfileWorkspace(actor, data);
   const isMemberProfile = canAccessMemberWorkspace(actor);
   const studentHome = isMemberProfile
@@ -102,36 +103,6 @@ export default async function ProfilePage(props: ProfilePageProps) {
       </ChromeDesktopPaintShell>
     </main>
   );
-}
-
-function buildRouteKey(
-  pathname: string,
-  params: { source?: string; event?: string; campaign?: string; storyFilter?: string; story?: string },
-) {
-  const searchParams = new URLSearchParams();
-
-  if (params.source) {
-    searchParams.set("source", params.source);
-  }
-
-  if (params.event) {
-    searchParams.set("event", params.event);
-  }
-
-  if (params.campaign) {
-    searchParams.set("campaign", params.campaign);
-  }
-
-  if (params.storyFilter) {
-    searchParams.set("storyFilter", params.storyFilter);
-  }
-
-  if (params.story) {
-    searchParams.set("story", params.story);
-  }
-
-  const query = searchParams.toString();
-  return query ? `${pathname}?${query}` : pathname;
 }
 
 function buildProfileEventsHref(
