@@ -494,7 +494,7 @@ describe("leader page", () => {
     }
   });
 
-  it("routes create_event into the service-backed events lane with preview ownership intact", async () => {
+  it("renders the clean create_event route as the leader create-event preview", async () => {
     const actorModule = await import("@/services/local-actor-context");
     const dataModule = await import("@/services/read-only-app-data");
 
@@ -507,17 +507,21 @@ describe("leader page", () => {
 
     const { default: LeaderPage } = await import("@/app/leader/page");
 
-    await expect(
-      LeaderPage({
+    const html = renderToStaticMarkup(
+      await LeaderPage({
         searchParams: Promise.resolve({
           view: "create_event",
           member: "member-ivy",
           eventCommittee: "events",
         }),
       }),
-    ).rejects.toThrow(
-      "NEXT_REDIRECT:/leader?view=events&member=member-ivy&eventCommittee=events&quickAction=create_event",
     );
+
+    expect(html).toContain("Create Event Preview");
+    expect(html).toContain("Stage Event Preview");
+    expect(html).toContain("TEST Event Operations Loop");
+    expect(html).toContain("Live publishing, RSVP sharing, attendance updates, points awards, and provider writes stay blocked");
+    expect(html).not.toContain("Open the chapter event preview lane with ownership and follow-through in mind.");
   });
 
   it.each([
@@ -528,7 +532,7 @@ describe("leader page", () => {
     ["impact"],
     ["leaderboard"],
   ] as const)(
-    "preserves the supported %s review source when create_event redirects into the event shell",
+    "keeps the supported %s review source on the create-event preview route without redirecting to events",
     async (source) => {
       const actorModule = await import("@/services/local-actor-context");
       const dataModule = await import("@/services/read-only-app-data");
@@ -542,8 +546,8 @@ describe("leader page", () => {
 
       const { default: LeaderPage } = await import("@/app/leader/page");
 
-      await expect(
-        LeaderPage({
+      const html = renderToStaticMarkup(
+        await LeaderPage({
           searchParams: Promise.resolve({
             view: "create_event",
             source,
@@ -551,9 +555,11 @@ describe("leader page", () => {
             eventCommittee: "events",
           }),
         }),
-      ).rejects.toThrow(
-        `NEXT_REDIRECT:/leader?view=events&source=${source}&member=member-ivy&eventCommittee=events&quickAction=create_event`,
       );
+
+      expect(html).toContain("Create Event Preview");
+      expect(html).toContain("Back to Event Performance");
+      expect(html).toContain("stages TEST event previews only");
     },
   );
 

@@ -174,14 +174,10 @@ test.describe("myMEDLIFE launch route smoke", () => {
     await expect(page.getByRole("heading", { name: "Event Performance" })).toBeVisible();
 
     await page.goto("/leader?view=overview");
-    await page.locator('a[href*="view=events"][href*="quickAction=create_event"]').first().click();
-    await expect(page).toHaveURL(/\/leader\?view=events/);
-    await expect(
-      page.getByRole("heading", {
-        name: "Open the chapter event preview lane with ownership and follow-through in mind.",
-      }),
-    ).toBeVisible();
-    await expect(page.getByRole("link", { name: "Open event preview flow" })).toBeVisible();
+    await page.locator('a[href*="view=create_event"]').first().click();
+    await expect(page).toHaveURL(/\/leader\?view=create_event/);
+    await expect(page.getByRole("heading", { name: "Create Event Preview" })).toBeVisible();
+    await expect(page.getByRole("button", { name: /Stage Event Preview/ })).toBeVisible();
   });
 
   test("clicks every student command center menu item into its matching screen", async ({
@@ -204,8 +200,8 @@ test.describe("myMEDLIFE launch route smoke", () => {
       { label: "Event Performance", view: "events", heading: "Event Performance" },
       {
         label: "Create Event",
-        view: "events",
-        heading: "Open the chapter event preview lane with ownership and follow-through in mind.",
+        view: "create_event",
+        heading: "Create Event Preview",
       },
       { label: "Impact", view: "impact", heading: "Impact Dashboard" },
       { label: "Bridge Videos", view: "bridge_videos", heading: "Bridge Video Hub" },

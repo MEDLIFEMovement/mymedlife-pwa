@@ -98,6 +98,13 @@ export function getLeaderLaunchLaneCanonicalHref(
   const resolvedScreen = resolveLeaderCommandCenterScreen(normalizedView);
   const canonicalView = getLeaderCommandCenterViewForScreen(resolvedScreen);
 
+  if (normalizedView === "events" && searchParams.quickAction === "create_event") {
+    return buildLeaderCommandCenterHrefForScreen("create-event", {
+      pathname: "/leader",
+      search: buildCanonicalSearch(searchParams),
+    });
+  }
+
   if (normalizedView === canonicalView) {
     return null;
   }

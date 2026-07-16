@@ -137,4 +137,16 @@ describe("leader launch lane", () => {
       }),
     ).toBeNull();
   });
+
+  it("canonicalizes the stale create-event quick action into the clean create-event route", () => {
+    expect(
+      getLeaderLaunchLaneCanonicalHref({
+        view: "events",
+        source: "overview",
+        member: "member-ivy",
+        eventCommittee: "events",
+        quickAction: "create_event",
+      }),
+    ).toBe("/leader?view=create_event");
+  });
 });
