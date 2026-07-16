@@ -829,6 +829,10 @@ describe("member stories and profile pages", () => {
               label: "Borrowed TEST demo activity",
               detail: "This should not show for a zero-count signed-in member.",
             },
+            {
+              label: "Borrowed TEST Test Boston University Attendance and Points Review",
+              detail: "3511 event point(s) awarded",
+            },
           ],
           chapterCard: {
             title: "myMEDLIFE Review Chapter",
@@ -858,7 +862,14 @@ describe("member stories and profile pages", () => {
             { label: "Evidence Pro", tone: "blue" },
             { label: "Chapter MVP", tone: "slate" },
           ],
-          recentApprovedActions: [],
+          recentApprovedActions: [
+            {
+              title: "Borrowed TEST Follow up with new members",
+              detail: "test_luma_event_created · Due 7/25/2026",
+              pointsLabel: "+45 pts",
+              href: "/app/points?source=profile",
+            },
+          ],
           explainer: {
             title: "How points work",
             body: "Preview only",
@@ -878,6 +889,9 @@ describe("member stories and profile pages", () => {
     expect(html).toContain("Tasks Done");
     expect(html).toContain("No completed TEST activity yet");
     expect(html).not.toContain("Borrowed TEST demo activity");
+    expect(html).not.toContain("Borrowed TEST Follow up with new members");
+    expect(html).not.toContain("+45 pts");
+    expect(html).not.toContain("3511 event point");
     expect(html).not.toContain("TEST-UCLA-0847");
     expect(html).not.toContain(">Earned</span>");
   });
