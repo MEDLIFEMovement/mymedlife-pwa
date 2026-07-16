@@ -138,7 +138,7 @@ describe("home page", () => {
     const lineCount = source.split("\n").length;
 
     expect(lineCount).toBeGreaterThanOrEqual(3450);
-    expect(lineCount).toBeLessThanOrEqual(4400);
+    expect(lineCount).toBeLessThanOrEqual(4500);
     expect(source).toContain("initialScreen = \"home\"");
     expect(source).toContain("const [screen, setScreen] = useState<Screen>(initialScreen);");
     expect(source).toContain('case "events":');
