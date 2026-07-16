@@ -6,7 +6,10 @@ import { WorkspaceAccountMenu } from "@/components/workspace-account-menu";
 import { getAdminIntegrationOutboxWorkspace } from "@/services/admin-integration-outbox-workspace";
 import { getAdminLumaIntegrationStatus } from "@/services/admin-luma-integration-status";
 import { getLandingRouteForActor } from "@/services/landing-route";
-import { buildLoginRedirectHref, shouldRedirectActorToLogin } from "@/services/login-route";
+import {
+  buildLoginRedirectHrefForPath,
+  shouldRedirectActorToLogin,
+} from "@/services/login-route";
 import { getLocalActorContext } from "@/services/local-actor-context";
 import { getReadOnlyAppData } from "@/services/read-only-app-data";
 import { canAccessAdminWorkspace } from "@/services/role-visibility";
@@ -32,7 +35,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
   const actor = await getLocalActorContext();
 
   if (shouldRedirectActorToLogin(actor)) {
-    redirect(buildLoginRedirectHref("/admin"));
+    redirect(buildLoginRedirectHrefForPath("/admin", resolvedSearchParams));
   }
 
   if (!canAccessAdminWorkspace(actor)) {

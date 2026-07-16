@@ -78,7 +78,18 @@ describe("leader page", () => {
     const { default: LeaderPage } = await import("@/app/leader/page");
 
     await expect(LeaderPage({})).rejects.toThrow(
-      "NEXT_REDIRECT:/login?redirectTo=%2Fleader%3Fview%3Doverview",
+      "NEXT_REDIRECT:/login?redirectTo=%2Fleader",
+    );
+
+    await expect(
+      LeaderPage({
+        searchParams: Promise.resolve({
+          view: "events",
+          source: "overview",
+        }),
+      }),
+    ).rejects.toThrow(
+      "NEXT_REDIRECT:/login?redirectTo=%2Fleader%3Fview%3Devents%26source%3Doverview",
     );
   });
 

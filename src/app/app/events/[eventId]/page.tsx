@@ -23,7 +23,7 @@ import type { MemberMobileIdentityContext } from "@/components/figma-member-mobi
 import { getLaunchLaneMemberPointsHref } from "@/services/events-points-launch-lane";
 import { getLandingRouteForActor } from "@/services/landing-route";
 import {
-  buildLoginRedirectHref,
+  buildLoginRedirectHrefForPath,
   shouldRedirectActorToLogin,
 } from "@/services/login-route";
 import { getLaunchLaneEventSnapshotById } from "@/services/launch-lane-event-snapshots";
@@ -96,7 +96,9 @@ export default async function AppEventDetailPage({
   ]);
 
   if (shouldRedirectActorToLogin(actor)) {
-    redirect(buildLoginRedirectHref(`/app/events/${eventId}`));
+    redirect(
+      buildLoginRedirectHrefForPath(`/app/events/${eventId}`, resolvedSearchParams),
+    );
   }
 
   if (!canAccessMemberWorkspace(actor)) {
