@@ -46,7 +46,7 @@ describe("chapter leader command center", () => {
       "Review Leaderboard",
     ]);
     expect(commandCenter.quickActions.find((action) => action.label === "Create Event")?.href).toBe(
-      "/leader?view=events&source=overview&quickAction=create_event",
+      "/leader?view=create_event",
     );
     expect(commandCenter.quickActions.find((action) => action.label === "Confirm Attendance")?.href).toBe(
       "/leader?view=events&source=overview&quickAction=assign_action",
@@ -558,7 +558,7 @@ describe("chapter leader command center", () => {
       "/leader?view=members&member=member-ivy&quickAction=review_members",
     );
     expect(commandCenter.quickActions.find((action) => action.label === "Create Event")?.href).toBe(
-      "/leader?view=events&source=overview&member=member-ivy&quickAction=create_event",
+      "/leader?view=create_event",
     );
     expect(commandCenter.quickActions.find((action) => action.label === "Confirm Attendance")?.href).toBe(
       "/leader?view=events&source=overview&member=member-ivy&quickAction=assign_action",
@@ -4433,7 +4433,7 @@ describe("chapter leader command center", () => {
       "href=\"/leader?view=events&amp;member=member-ivy&amp;eventCommittee=events&amp;quickAction=assign_action\"",
     );
     expect(markup).toContain(
-      "href=\"/leader?view=events&amp;member=member-ivy&amp;eventCommittee=events&amp;quickAction=create_event\"",
+      "href=\"/leader?view=create_event\"",
     );
     expect(markup).toContain(
       "href=\"/leader?view=committees&amp;member=member-ivy&amp;committee=committee-events\"",
@@ -4626,10 +4626,10 @@ describe("chapter leader command center", () => {
     expect(markup).toContain("Preview-only event operations");
     expect(markup).toContain("Open event preview flow");
     expect(markup).toContain(
-      "href=\"/rush-month/events?source=chapter_create_event&amp;returnTo=%2Fleader%3Fview%3Devents%26member%3Dmember-ivy%26eventCommittee%3Devents%26quickAction%3Dcreate_event\"",
+      "href=\"/rush-month/events?source=chapter_create_event&amp;returnTo=%2Fleader%3Fview%3Dcreate_event\"",
     );
     expect(markup).toContain(
-      "/leader?view=events&amp;member=member-ivy&amp;eventCommittee=events&amp;quickAction=create_event",
+      "/leader?view=create_event",
     );
   });
 
@@ -4675,7 +4675,7 @@ describe("chapter leader command center", () => {
       "href=\"/leader?view=events&amp;member=member-ivy&amp;eventCommittee=events&amp;event=bc-event-moving-mountains-kickoff&amp;quickAction=assign_action\"",
     );
     expect(markup).toContain(
-      "href=\"/leader?view=events&amp;member=member-ivy&amp;eventCommittee=events&amp;quickAction=create_event\"",
+      "href=\"/leader?view=create_event\"",
     );
     expect(markup).toContain("Open event review flow");
     expect(markup).toContain(
@@ -5284,7 +5284,7 @@ describe("chapter leader command center", () => {
       expect.arrayContaining([
         expect.objectContaining({
           label: "Create Event",
-          href: "/leader?view=events&source=member_home&quickAction=create_event",
+          href: "/leader?view=create_event",
         }),
         expect.objectContaining({
           label: "Confirm Attendance",
@@ -6284,7 +6284,7 @@ describe("chapter leader command center href", () => {
         quickAction: "create_event",
       }),
     ).toBe(
-      "/rush-month/events?source=chapter_create_event&returnTo=%2Fleader%3Fview%3Devents%26member%3Dmember-zara%26eventCommittee%3Devents%26quickAction%3Dcreate_event",
+      "/rush-month/events?source=chapter_create_event&returnTo=%2Fleader%3Fview%3Dcreate_event",
     );
     expect(
       buildChapterLeaderEventFlowHref({

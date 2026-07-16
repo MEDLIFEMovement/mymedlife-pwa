@@ -167,35 +167,6 @@ export default async function LeaderPage({ searchParams }: LeaderPageProps) {
     );
   }
 
-  if (requestedView === "create_event") {
-    redirect(
-      buildChapterLeaderCommandCenterHref("events", {
-        source: requestedSource,
-        memberId: resolvedSearchParams?.member,
-        eventCommitteeFilter: resolvedSearchParams?.eventCommittee as
-          | "all"
-          | "events"
-          | "slt_promotion"
-          | "recruitment"
-          | "fundraising"
-          | "service"
-          | "comms"
-          | undefined,
-        pipelineFilter: resolvedSearchParams?.pipeline as
-          | "all"
-          | "e_board"
-          | "chair"
-          | "chair_candidate"
-          | "active_contributor"
-          | "general_member"
-          | "follow_up"
-          | undefined,
-        searchQuery: resolvedSearchParams?.q,
-        quickAction: "create_event",
-      }),
-    );
-  }
-
   const shouldUseServiceShell =
     SERVICE_BACKED_LEADER_VIEWS.has(requestedView) && !shouldRenderFigmaLeaderPreview;
 

@@ -19,7 +19,6 @@ import { getMemberRecognitionSummary } from "@/services/member-recognition";
 import type { ReadOnlyAppData } from "@/services/read-only-app-data";
 import {
   canAccessLeaderWorkspace,
-  getActorSurfaceFamily,
   getVisibleAssignmentsForActor,
 } from "@/services/role-visibility";
 import type { ProofLibraryItem } from "@/shared/types/campaigns";
@@ -2640,15 +2639,18 @@ export function buildChapterLeaderEventFlowHref(options: {
   quickAction?: ChapterLeaderQuickActionState | null;
 }) {
   const searchParams = new URLSearchParams();
-  const returnTo = buildChapterLeaderCommandCenterHref("events", {
-    source: options.source,
-    memberId: options.memberId,
-    pipelineFilter: options.pipelineFilter,
-    searchQuery: options.searchQuery,
-    eventCommitteeFilter: options.eventCommitteeFilter,
-    eventId: options.eventId,
-    quickAction: options.quickAction,
-  });
+  const returnTo =
+    options.quickAction === "create_event" && !options.eventId
+      ? "/leader?view=create_event"
+      : buildChapterLeaderCommandCenterHref("events", {
+          source: options.source,
+          memberId: options.memberId,
+          pipelineFilter: options.pipelineFilter,
+          searchQuery: options.searchQuery,
+          eventCommitteeFilter: options.eventCommitteeFilter,
+          eventId: options.eventId,
+          quickAction: options.quickAction,
+        });
 
   searchParams.set(
     "source",
@@ -3564,18 +3566,7 @@ function getQuickActions(
   return [
     {
       label: "Create Event",
-      href: buildChapterLeaderCommandCenterHref("events", {
-        source: commandCenterSource,
-        memberId: selectedMemberId,
-        eventCommitteeFilter: context.eventCommitteeFilter,
-        eventId: shouldPreserveEventContext ? context.eventId : null,
-        bestPracticeChapterId: preservedBestPracticeChapterId,
-        leaderboardMetric: context.leaderboardMetric,
-        leaderboardRegion: preservedLeaderboardRegion,
-        pipelineFilter: selectedMemberId ? undefined : context.pipelineFilter,
-        searchQuery: selectedMemberId ? undefined : context.searchQuery,
-        quickAction: "create_event",
-      }),
+      href: "/leader?view=create_event",
       helper: "Mock-linked Luma planning",
       tone: "primary",
     },
