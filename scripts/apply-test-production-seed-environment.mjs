@@ -94,6 +94,7 @@ try {
     queryArgs.push("--linked");
     console.log(`Applying ${mode} SQL from ${sqlPath}`);
     await run("pnpm", queryArgs);
+    await normalizeHostedTestAuthUsersAfterSeed({ mode, outDir, targetArgs: ["--linked"] });
   } else if (args.dbUrlEnv) {
     const dbUrl = process.env[args.dbUrlEnv];
 
@@ -104,6 +105,11 @@ try {
     queryArgs.push("--db-url", dbUrl);
     console.log(`Applying ${mode} SQL from ${sqlPath}`);
     await run("pnpm", queryArgs);
+    await normalizeHostedTestAuthUsersAfterSeed({
+      mode,
+      outDir,
+      targetArgs: ["--db-url", dbUrl],
+    });
   } else {
     throw new Error("Choose exactly one target: --local, --linked, or --db-url-env NAME.");
   }
@@ -114,6 +120,32 @@ try {
   console.error("");
   console.error(usage);
   process.exit(1);
+}
+
+async function normalizeHostedTestAuthUsersAfterSeed({ mode, outDir, targetArgs }) {
+  if (mode !== "seed") {
+    return;
+  }
+
+  const { buildHostedTestProductionAuthUsersCompatibilitySql } = await import(
+    "../src/services/test-production-seed-apply.ts"
+  );
+  const authCompatibilityPath = join(outDir, "seed-hosted-auth-users-compatibility.sql");
+
+  await writeFile(
+    authCompatibilityPath,
+    buildHostedTestProductionAuthUsersCompatibilitySql(),
+  );
+  console.log(`Normalizing hosted TEST auth.users compatibility fields via ${authCompatibilityPath}`);
+  await run("pnpm", [
+    "dlx",
+    "supabase@2.106.0",
+    "db",
+    "query",
+    "--file",
+    authCompatibilityPath,
+    ...targetArgs,
+  ]);
 }
 
 function parseArgs(args) {

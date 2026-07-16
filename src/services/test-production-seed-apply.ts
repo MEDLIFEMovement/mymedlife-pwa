@@ -33,6 +33,32 @@ export function getLocalTestProductionSeedApplyPlan(mode: "seed" | "cleanup") {
 }
 
 export function buildLocalSupabaseAuthUsersCompatibilitySql(): string {
+  return buildAuthUsersCompatibilitySql("all");
+}
+
+export function buildHostedTestProductionAuthUsersCompatibilitySql(): string {
+  return buildAuthUsersCompatibilitySql("test_seed");
+}
+
+function buildAuthUsersCompatibilitySql(scope: "all" | "test_seed"): string {
+  const scopePredicate =
+    scope === "test_seed"
+      ? "(email like 'test.%@example.com' or raw_user_meta_data->>'name' like 'Test %')"
+      : "true";
+  const compatibilityPredicates = [
+    "aud is null",
+    "role is null",
+    "confirmation_token is null",
+    "recovery_token is null",
+    "email_change_token_new is null",
+    "email_change is null",
+    "phone_change is null",
+    "phone_change_token is null",
+    "email_change_token_current is null",
+    "reauthentication_token is null",
+    "is_super_admin is null",
+  ];
+
   return [
     "update auth.users",
     "set aud = coalesce(aud, 'authenticated'),",
@@ -46,16 +72,7 @@ export function buildLocalSupabaseAuthUsersCompatibilitySql(): string {
     "  email_change_token_current = coalesce(email_change_token_current, ''),",
     "  reauthentication_token = coalesce(reauthentication_token, ''),",
     "  is_super_admin = coalesce(is_super_admin, false)",
-    "where aud is null",
-    "   or role is null",
-    "   or confirmation_token is null",
-    "   or recovery_token is null",
-    "   or email_change_token_new is null",
-    "   or email_change is null",
-    "   or phone_change is null",
-    "   or phone_change_token is null",
-    "   or email_change_token_current is null",
-    "   or reauthentication_token is null",
-    "   or is_super_admin is null;",
+    `where ${scopePredicate}`,
+    `  and (${compatibilityPredicates.join("\n   or ")});`,
   ].join("\n");
 }

@@ -813,6 +813,60 @@ describe("member mobile shell routes", () => {
     expect(htmlByScreen.get("stories")).toContain("TEST UConn MEDLIFE chapter packed the room");
   });
 
+  it("renders live TEST event-loop points readback on the points screen", () => {
+    const html = renderToStaticMarkup(
+      <FigmaMemberMobileHome
+        initialScreen="points"
+        pointsSource="home"
+        pointsReturnEventId="chapter-event-ucla-kickoff"
+        memberContext={{
+          displayName: "TEST Boston University General Member Sam",
+          firstName: "TEST Sam",
+          chapterName: "TEST Test Boston University",
+          campusName: "TEST Boston University",
+          pointsTotal: 20,
+          pointsWeeklyLabel: "+20",
+          pointsRankLabel: "#6",
+          completedActions: 1,
+          leaderboardRows: [
+            { rank: 1, name: "TEST Aisha N.", role: "President / VP", pts: 220 },
+            { rank: 2, name: "TEST Marcus T.", role: "Action Committee Chair", pts: 185 },
+            {
+              rank: 6,
+              name: "TEST Test Boston University General Member Sam",
+              role: "General Member",
+              pts: 20,
+              me: true,
+            },
+          ],
+        }}
+        pointsReadback={{
+          eventTitle: "TEST Intro GBM",
+          chapterName: "TEST Test Boston University",
+          timing: "Jul 16, 10:35 AM - 12:35 PM",
+          loopStage: "points_awarded",
+          rsvpCount: 1,
+          attendanceCount: 1,
+          eventPointsAwarded: 20,
+          memberPointsAwarded: 20,
+          chapterTotalPoints: 20,
+          memberStatusLabel: "Points awarded",
+          memberStatusDetail: "Attendance and points are recorded.",
+          eventDetailHref: "/app/events/chapter-event-ucla-kickoff?source=points",
+          leaderboardHref: "/app/points?source=points",
+          nextStepLabel: "Open leaderboard",
+          nextStepDetail: "Review points.",
+        }}
+      />,
+    );
+
+    expect(html).toContain("Live TEST event-loop points from internal myMEDLIFE readback.");
+    expect(html).toContain("20 points are recorded for your");
+    expect(html).toContain("Checked in to TEST Intro GBM");
+    expect(html).toContain("Recorded in myMEDLIFE internal TEST ledger");
+    expect(html).not.toContain("No approved TEST actions yet");
+  });
+
   it("keeps assignment and admin communication controls preview-only", () => {
     const source = readFileSync(
       join(process.cwd(), "src/components/figma-member-mobile-home.tsx"),
