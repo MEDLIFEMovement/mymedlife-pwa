@@ -41,7 +41,7 @@ describe("admin user password reset", () => {
     })).toMatchObject({
       enabled: true,
       environment: "production",
-      redirectTo: "https://www.mymedlife.org/auth/callback?type=recovery&redirectTo=%2Fadmin%2Fusers",
+      redirectTo: "https://www.mymedlife.org/auth/callback/recovery/L2FkbWluL3VzZXJz",
     });
   });
 
@@ -65,7 +65,7 @@ describe("admin user password reset", () => {
     })).toMatchObject({
       enabled: false,
       environment: "staging",
-      redirectTo: "https://mymedlife-preview.vercel.app/auth/callback?type=recovery&redirectTo=%2Fadmin%2Fusers",
+      redirectTo: "https://mymedlife-preview.vercel.app/auth/callback/recovery/L2FkbWluL3VzZXJz",
       reason: "Staging password reset emails are disabled until the explicit password-reset approval flag is enabled.",
     });
   });
@@ -276,7 +276,7 @@ describe("admin user password reset", () => {
       target_id: "00000000-0000-4000-8000-000000000099",
     }));
     expect(resetPasswordForEmail).toHaveBeenCalledWith("member@example.com", {
-      redirectTo: "https://www.mymedlife.org/auth/callback?type=recovery&redirectTo=%2Fadmin%2Fusers",
+      redirectTo: "https://www.mymedlife.org/auth/callback/recovery/L2FkbWluL3VzZXJz",
     });
     expect(result).toMatchObject({
       success: true,

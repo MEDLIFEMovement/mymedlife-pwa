@@ -10,7 +10,7 @@ describe("auth recovery redirect", () => {
         NEXT_PUBLIC_SITE_URL: "https://www.mymedlife.org",
       }),
     ).toBe(
-      "https://www.mymedlife.org/auth/callback?type=recovery&next=update-password&redirectTo=%2Fleader%3Fview%3Devents",
+      "https://www.mymedlife.org/auth/callback/recovery/L2xlYWRlcj92aWV3PWV2ZW50cw",
     );
   });
 
@@ -20,7 +20,7 @@ describe("auth recovery redirect", () => {
         MYMEDLIFE_AUTH_MODE: "production_supabase",
       }),
     ).toBe(
-      "https://www.mymedlife.org/auth/callback?type=recovery&next=update-password&redirectTo=%2F",
+      "https://www.mymedlife.org/auth/callback/recovery/Lw",
     );
   });
 
@@ -30,7 +30,7 @@ describe("auth recovery redirect", () => {
         MYMEDLIFE_AUTH_MODE: "local_supabase",
       }),
     ).toBe(
-      "http://127.0.0.1:3000/auth/callback?type=recovery&next=update-password&redirectTo=%2Fapp",
+      "http://127.0.0.1:3000/auth/callback/recovery/L2FwcA",
     );
   });
 });

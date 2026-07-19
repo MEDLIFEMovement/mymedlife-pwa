@@ -1,6 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 
 import type { AuthSessionState } from "@/services/auth-session";
+import { getAuthRecoveryRedirectUrl } from "@/services/auth-recovery";
 import { getAdminUserLifecycleConfig } from "@/services/admin-user-lifecycle";
 
 export type AdminUserPasswordResetConfig = {
@@ -139,14 +140,11 @@ export function isAuthenticatedPasswordResetSession(
 function getPasswordResetRedirectUrl(
   env: Record<string, string | undefined>,
 ) {
-  const siteUrl =
-    env.NEXT_PUBLIC_SITE_URL ??
-    env.SITE_URL ??
-    (env.VERCEL_URL ? `https://${env.VERCEL_URL}` : "https://www.mymedlife.org");
-  const url = new URL("/auth/callback", siteUrl);
-  url.searchParams.set("type", "recovery");
-  url.searchParams.set("redirectTo", "/admin/users");
-  return url.toString();
+  const recoveryEnv = env.VERCEL_URL && !env.NEXT_PUBLIC_SITE_URL && !env.SITE_URL
+    ? { ...env, SITE_URL: `https://${env.VERCEL_URL}` }
+    : env;
+
+  return getAuthRecoveryRedirectUrl("/admin/users", recoveryEnv);
 }
 
 function getPasswordResetApprovalFlag(
