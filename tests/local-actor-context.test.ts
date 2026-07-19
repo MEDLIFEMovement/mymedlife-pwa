@@ -4,6 +4,7 @@ import {
   getMissingProfileActorContext,
   getMockLocalActorContext,
   getSupabaseLocalActorContext,
+  getUnavailableSignedInActorContext,
   readLocalActorSnapshot,
   resolveActorEmailFromSession,
   resolveLocalActorPreviewSelection,
@@ -242,6 +243,26 @@ describe("local actor context service", () => {
     expect(actor.authSessionStatus).toBe("signed_in");
     expect(actor.identitySource).toBe("local_auth_session");
     expect(actor.accessSummary).toContain("profile, chapter, and role");
+  });
+
+  it("never replaces a signed-in hosted identity with a mock persona when operational reads fail", () => {
+    const actor = getUnavailableSignedInActorContext(
+      {
+        email: "real.member@example.org",
+        identitySource: "local_auth_session",
+        authSessionStatus: "signed_in",
+      },
+      "Hosted database unavailable.",
+    );
+
+    expect(actor.source).toMatchObject({
+      mode: "supabase",
+      status: "auth_profile_missing",
+    });
+    expect(actor.user.email).toBe("real.member@example.org");
+    expect(actor.user.displayName).toBe("Real Member");
+    expect(actor.user.displayName).not.toBe("Sofia Alvarez");
+    expect(actor.chapterNames).toEqual([]);
   });
 
   it("resolves signed-in auth email before the debug actor email", () => {

@@ -7,6 +7,7 @@ import {
 } from "@/components/figma-member-mobile-home";
 import { WorkspaceAccountMenu } from "@/components/workspace-account-menu";
 import { WorkspacePreviewBanner } from "@/components/workspace-preview-banner";
+import { MemberOperationalDataUnavailable } from "@/components/member-operational-data-unavailable";
 import { getLandingRouteForActor } from "@/services/landing-route";
 import { buildLoginRedirectHref, shouldRedirectActorToLogin } from "@/services/login-route";
 import { getLocalActorContext } from "@/services/local-actor-context";
@@ -69,6 +70,10 @@ export async function renderMemberMobileShellPage({
   }
 
   const data = await getReadOnlyAppData({ actorUserId: actor.user.id });
+  if (data.source.status === "chapter_access_missing") {
+    return <MemberOperationalDataUnavailable actor={actor} message={data.source.message} />;
+  }
+
   const sltPrepWorkspace = hasTravelerAccess(actor) ? getSltTripPrepWorkspace(actor) : null;
   const studentHome = getMvpMemberHome(actor, data);
   const recognition = getMemberRecognitionSummary(actor, data);

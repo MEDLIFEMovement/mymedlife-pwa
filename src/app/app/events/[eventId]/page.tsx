@@ -21,6 +21,7 @@ import {
 } from "@/components/member-bottom-nav";
 import { ChromeDesktopPaintShell } from "@/components/chrome-desktop-paint-shell";
 import type { MemberMobileIdentityContext } from "@/components/figma-member-mobile-home";
+import { MemberOperationalDataUnavailable } from "@/components/member-operational-data-unavailable";
 import { getLaunchLaneMemberPointsHref } from "@/services/events-points-launch-lane";
 import { getLandingRouteForActor } from "@/services/landing-route";
 import {
@@ -107,6 +108,9 @@ export default async function AppEventDetailPage({
   }
 
   const data = await getReadOnlyAppData({ actorUserId: actor.user.id });
+  if (data.source.status === "chapter_access_missing") {
+    return <MemberOperationalDataUnavailable actor={actor} message={data.source.message} />;
+  }
 
   const resolvedEventData = getResolvedEventDetailData(actor, data, eventId);
   const { event, snapshot } = resolvedEventData;

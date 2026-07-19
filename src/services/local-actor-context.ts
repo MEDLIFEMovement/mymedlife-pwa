@@ -263,6 +263,15 @@ export async function getLocalActorContext(): Promise<LocalActorContext> {
         resolvedActor.authSessionStatus,
       );
     } catch (error) {
+      if (resolvedActor.authSessionStatus === "signed_in") {
+        return getUnavailableSignedInActorContext(
+          resolvedActor,
+          error instanceof Error
+            ? `Hosted actor read failed: ${error.message}`
+            : "Hosted actor read failed.",
+        );
+      }
+
       return getMockLocalActorContext(
         resolvedActor.email,
         error instanceof Error
@@ -310,12 +319,32 @@ export async function getLocalActorContext(): Promise<LocalActorContext> {
     }
   }
 
+  if (resolvedActor.authSessionStatus === "signed_in") {
+    return getUnavailableSignedInActorContext(resolvedActor, hostedSession.reason);
+  }
+
   return getMockLocalActorContext(
     resolvedActor.email,
     actorContextMessage(resolvedActor, hostedSession.reason),
     "mock_fallback",
     resolvedActor.identitySource,
     resolvedActor.authSessionStatus,
+  );
+}
+
+export function getUnavailableSignedInActorContext(
+  resolvedActor: Pick<
+    ActorEmailResolution,
+    "authSessionStatus" | "email" | "identitySource"
+  >,
+  reason: string,
+): LocalActorContext {
+  return getMissingProfileActorContext(
+    resolvedActor.email,
+    `The signed-in myMEDLIFE identity could not be verified against operational data. ${reason}`,
+    resolvedActor.identitySource,
+    resolvedActor.authSessionStatus,
+    false,
   );
 }
 

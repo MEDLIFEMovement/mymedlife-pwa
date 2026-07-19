@@ -3,7 +3,10 @@ import { renderToStaticMarkup } from "react-dom/server";
 
 import { MemberProfilePanel } from "@/components/member-profile-panel";
 import { getMockLocalActorContext } from "@/services/local-actor-context";
-import { getMockReadOnlyAppData } from "@/services/read-only-app-data";
+import {
+  getMockReadOnlyAppData,
+  getUnavailableReadOnlyAppData,
+} from "@/services/read-only-app-data";
 
 vi.mock("next/navigation", () => ({
   redirect: vi.fn(),
@@ -271,6 +274,34 @@ describe("member stories and profile pages", () => {
     expect(html).toContain('aria-current="page"');
 
     previewSpy.mockRestore();
+  });
+
+  it("renders an honest account-data failure instead of a mock member or chapter", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const dataModule = await import("@/services/read-only-app-data");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue({
+      ...getSignedInActor("real.member@example.org"),
+      user: {
+        id: "real-member-id",
+        displayName: "Real Member",
+        email: "real.member@example.org",
+      },
+      selectedEmail: "real.member@example.org",
+    });
+    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
+      getUnavailableReadOnlyAppData("Approved chapter membership could not be read."),
+    );
+
+    const { default: ProfilePage } = await import("@/app/profile/page");
+    const html = renderToStaticMarkup(await ProfilePage({}));
+
+    expect(html).toContain("We could not load your approved chapter");
+    expect(html).toContain("Approved chapter membership could not be read.");
+    expect(html).toContain("No TEST member, chapter, event, or points data has been substituted.");
+    expect(html).toContain('href="/onboarding"');
+    expect(html).not.toContain("Sofia Alvarez");
+    expect(html).not.toContain("UCLA MEDLIFE");
   });
 
   it("keeps profile inside the exact event-detail loop when opened from events", async () => {
