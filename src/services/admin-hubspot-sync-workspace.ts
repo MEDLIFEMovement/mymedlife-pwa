@@ -38,9 +38,16 @@ export type AdminHubSpotSyncWorkspace = {
   message: string;
 };
 
-export async function getAdminHubSpotSyncWorkspace(): Promise<AdminHubSpotSyncWorkspace> {
-  const config = getHubSpotReadSyncConfig();
-  const { client, config: authConfig } = await createLocalSupabaseServerClient();
+type AdminHubSpotSyncWorkspaceDeps = {
+  createServerClient?: typeof createLocalSupabaseServerClient;
+  getSyncConfig?: typeof getHubSpotReadSyncConfig;
+};
+
+export async function getAdminHubSpotSyncWorkspace(
+  deps: AdminHubSpotSyncWorkspaceDeps = {},
+): Promise<AdminHubSpotSyncWorkspace> {
+  const config = (deps.getSyncConfig ?? getHubSpotReadSyncConfig)();
+  const { client, config: authConfig } = await (deps.createServerClient ?? createLocalSupabaseServerClient)();
   if (!client) return emptyWorkspace(config, authConfig.reason);
 
   const app = client.schema("app");
