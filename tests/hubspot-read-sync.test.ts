@@ -37,6 +37,15 @@ describe("HubSpot read sync foundation", () => {
 
     expect(getHubSpotReadSyncConfig({
       ...enabledEnv,
+      SUPABASE_SERVICE_ROLE_KEY: undefined,
+      SUPABASE_URL: undefined,
+    })).toMatchObject({
+      enabled: false,
+      reason: "HubSpot read sync is disabled because the server-only Supabase client is incomplete.",
+    });
+
+    expect(getHubSpotReadSyncConfig({
+      ...enabledEnv,
       MYMEDLIFE_ALLOW_PRODUCTION_HUBSPOT_READ_SYNC: undefined,
     })).toMatchObject({ enabled: false, environment: "production" });
 
@@ -87,6 +96,20 @@ describe("HubSpot read sync foundation", () => {
     expect(String(fetchMock.mock.calls[1]?.[1]?.body)).toContain("next-page");
   });
 
+  it("filters incremental member reads against the last successful checkpoint", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(jsonResponse({
+      results: [
+        { id: "old", properties: { email: "old@example.org", hs_lastmodifieddate: "2026-07-18T20:00:00.000Z" }, associations: { companies: { results: [{ id: "company-1" }] } } },
+        { id: "new", properties: { email: "new@example.org", hs_lastmodifieddate: "2026-07-19T20:00:00.000Z" }, associations: { companies: { results: [{ id: "company-1" }] } } },
+        { id: "unknown", properties: { email: "unknown@example.org" }, associations: { companies: { results: [{ id: "company-1" }] } } },
+      ],
+    }));
+    const client = createHubSpotReadClient(enabledEnv, fetchMock);
+
+    await expect(client?.readContactsWithCompanies("2026-07-19T00:00:00.000Z"))
+      .resolves.toEqual([expect.objectContaining({ id: "new" })]);
+  });
+
   it("reads contact-company associations without sending provider writes", async () => {
     const fetchMock = vi.fn().mockResolvedValue(jsonResponse({
       results: [{
@@ -116,6 +139,19 @@ describe("HubSpot read sync foundation", () => {
       expect.objectContaining({ cache: "no-store" }),
     );
     expect(fetchMock.mock.calls[0]?.[1]?.method).toBeUndefined();
+  });
+
+  it("surfaces non-retryable HubSpot failures without leaking response content", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(new Response("private provider response", {
+      status: 400,
+      headers: { "retry-after": "5" },
+    }));
+    const client = createHubSpotReadClient(enabledEnv, fetchMock);
+
+    await expect(client?.readActiveChapterCompanies()).rejects.toThrow(
+      "HubSpot request failed (400); retry after 5s.",
+    );
+    expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
   it("maps HubSpot school types into the app-owned chapter taxonomy", () => {
@@ -200,7 +236,9 @@ describe("HubSpot read sync foundation", () => {
       expect.objectContaining({ table: "chapters", operation: "insert" }),
       expect.objectContaining({ table: "profiles", operation: "update" }),
       expect.objectContaining({ table: "memberships", operation: "insert" }),
+      expect.objectContaining({ table: "audit_logs", operation: "insert" }),
     ]));
+    expect(queries.filter((query) => query.table === "audit_logs")).toHaveLength(3);
     const finalRunUpdate = queries.findLast((query) => query.table === "hubspot_sync_runs" && query.operation === "update");
     expect(finalRunUpdate?.payload).toMatchObject({ status: "succeeded", source_company_count: 1, source_contact_count: 1 });
   });
@@ -242,6 +280,182 @@ describe("HubSpot read sync foundation", () => {
       expect.objectContaining({ table: "hubspot_sync_failures", operation: "insert" }),
       expect.objectContaining({ table: "hubspot_sync_runs", operation: "update" }),
     ]));
+  });
+
+  it("honors the sync lock before reading HubSpot", async () => {
+    const hubspotClient = {
+      readActiveChapterCompanies: vi.fn(),
+      readContactsWithCompanies: vi.fn(),
+    };
+    const appClient = createFakeAppClient((query) => {
+      if (query.table === "staff_role_assignments") return ok([{ role_key: "ds_admin" }]);
+      if (query.table === "hubspot_sync_runs") return ok([{ id: "running-1" }]);
+      return ok([]);
+    });
+
+    await expect(runHubSpotReadSync("actor-1", "incremental", {
+      env: enabledEnv,
+      appClient: appClient as never,
+      hubspotClient,
+    })).resolves.toMatchObject({ success: false, code: "sync_already_running" });
+    expect(hubspotClient.readActiveChapterCompanies).not.toHaveBeenCalled();
+  });
+
+  it("links existing records and leaves unmatched membership associations visibly waiting", async () => {
+    const queries: FakeQuery[] = [];
+    const appClient = createFakeAppClient((query) => {
+      queries.push(query);
+      if (query.table === "staff_role_assignments") return ok([{ role_key: "super_admin" }]);
+      if (query.table === "hubspot_sync_runs" && query.operation === "select") {
+        return ok(query.filterValue("status") === "succeeded"
+          ? [{ checkpoint_after: "2026-07-18T00:00:00.000Z" }]
+          : []);
+      }
+      if (query.table === "hubspot_sync_runs" && query.operation === "insert") return ok({ id: "run-existing" });
+      if (query.table === "chapters" && query.operation === "select") {
+        return ok([{ id: "chapter-existing", hubspot_company_id: "company-1" }]);
+      }
+      if (query.table === "profiles" && query.operation === "select") {
+        return query.filterValue("email") === "matched@example.org"
+          ? ok([{ id: "profile-existing", hubspot_contact_id: "contact-matched" }])
+          : ok([]);
+      }
+      if (query.table === "memberships" && query.operation === "select") {
+        return ok([{ id: "membership-existing", hubspot_association_key: null }]);
+      }
+      return ok([]);
+    });
+    const hubspotClient = {
+      readActiveChapterCompanies: async () => [{
+        id: "company-1",
+        name: "University One",
+        domain: "one.edu",
+        lifecycleStage: "23925577",
+        chapterStatus: "As expected",
+        region: "Northeast",
+        country: "United States",
+        schoolType: "University",
+        updatedAt: "2026-07-19T20:00:00.000Z",
+        source: { id: "company-1" },
+      }],
+      readContactsWithCompanies: async () => [
+        {
+          id: "contact-matched",
+          email: "matched@example.org",
+          firstName: "Matched",
+          lastName: "Member",
+          graduationYear: 2028,
+          updatedAt: "2026-07-19T21:00:00.000Z",
+          companyIds: ["company-1"],
+          source: { id: "contact-matched" },
+        },
+        {
+          id: "contact-unmatched",
+          email: "unmatched@example.org",
+          firstName: "Unmatched",
+          lastName: "Member",
+          graduationYear: 2029,
+          updatedAt: "2026-07-19T21:00:00.000Z",
+          companyIds: ["company-1"],
+          source: { id: "contact-unmatched" },
+        },
+      ],
+    };
+
+    await expect(runHubSpotReadSync("super-1", "incremental", {
+      env: enabledEnv,
+      appClient: appClient as never,
+      hubspotClient,
+      now: () => new Date("2026-07-19T22:00:00.000Z"),
+    })).resolves.toMatchObject({ success: true, code: "hubspot_sync_succeeded" });
+
+    expect(queries).toEqual(expect.arrayContaining([
+      expect.objectContaining({ table: "memberships", operation: "update" }),
+      expect.objectContaining({
+        table: "hubspot_membership_imports",
+        operation: "upsert",
+        payload: expect.objectContaining({ reconciliation_status: "waiting_for_match" }),
+      }),
+    ]));
+  });
+
+  it("records ambiguous chapter matches as a partial run instead of guessing", async () => {
+    const appClient = createFakeAppClient((query) => {
+      if (query.table === "staff_role_assignments") return ok([{ role_key: "ds_admin" }]);
+      if (query.table === "hubspot_sync_runs" && query.operation === "select") return ok([]);
+      if (query.table === "hubspot_sync_runs" && query.operation === "insert") return ok({ id: "run-conflict" });
+      if (query.table === "chapters" && query.operation === "select") {
+        return query.filters.some((filter) => filter.column === "name")
+          ? ok([{ id: "chapter-a" }, { id: "chapter-b" }])
+          : ok([]);
+      }
+      return ok([]);
+    });
+    const hubspotClient = {
+      readActiveChapterCompanies: async () => [{
+        id: "company-conflict",
+        name: "Duplicate University",
+        domain: null,
+        lifecycleStage: "23925577",
+        chapterStatus: null,
+        region: null,
+        country: null,
+        schoolType: "University",
+        updatedAt: "2026-07-19T20:00:00.000Z",
+        source: { id: "company-conflict" },
+      }],
+      readContactsWithCompanies: async () => [],
+    };
+
+    await expect(runHubSpotReadSync("actor-1", "backfill", {
+      env: enabledEnv,
+      appClient: appClient as never,
+      hubspotClient,
+      now: () => new Date("2026-07-19T22:00:00.000Z"),
+    })).resolves.toMatchObject({
+      success: true,
+      code: "hubspot_sync_partial",
+      counts: { conflicts: 1 },
+    });
+  });
+
+  it("marks a run partial when the shared audit ledger cannot record a materialization", async () => {
+    const appClient = createFakeAppClient((query) => {
+      if (query.table === "staff_role_assignments") return ok([{ role_key: "ds_admin" }]);
+      if (query.table === "hubspot_sync_runs" && query.operation === "select") return ok([]);
+      if (query.table === "hubspot_sync_runs" && query.operation === "insert") return ok({ id: "run-audit-failure" });
+      if (query.table === "chapters" && query.operation === "select") {
+        return ok([{ id: "chapter-existing", hubspot_company_id: "company-1" }]);
+      }
+      if (query.table === "audit_logs") return failed("audit unavailable");
+      return ok([]);
+    });
+    const hubspotClient = {
+      readActiveChapterCompanies: async () => [{
+        id: "company-1",
+        name: "University One",
+        domain: null,
+        lifecycleStage: "23925577",
+        chapterStatus: null,
+        region: null,
+        country: null,
+        schoolType: "University",
+        updatedAt: "2026-07-19T20:00:00.000Z",
+        source: { id: "company-1" },
+      }],
+      readContactsWithCompanies: async () => [],
+    };
+
+    await expect(runHubSpotReadSync("actor-1", "backfill", {
+      env: enabledEnv,
+      appClient: appClient as never,
+      hubspotClient,
+      now: () => new Date("2026-07-19T22:00:00.000Z"),
+    })).resolves.toMatchObject({
+      success: true,
+      code: "hubspot_sync_partial",
+      counts: { failures: 1 },
+    });
   });
 
   it("returns database-backed admin sync readback and fails closed on query errors", async () => {
@@ -309,6 +523,7 @@ describe("HubSpot read sync foundation", () => {
     expect(sql).toContain("create table app.hubspot_membership_imports");
     expect(sql).toContain("create table app.hubspot_sync_failures");
     expect(sql).toContain("memberships_hubspot_association_key_unique");
+    expect(sql).toContain("waiting_for_match");
     expect(sql).toContain("enable row level security");
     expect(sql).toContain("using (app.is_ds_admin())");
     expect(sql).not.toContain("HUBSPOT_ACCESS_TOKEN");
@@ -361,4 +576,8 @@ function createFakeAppClient(handler: (query: FakeQuery) => FakeResult) {
 
 function ok(data: unknown): FakeResult {
   return { data, error: null };
+}
+
+function failed(message: string): FakeResult {
+  return { data: null, error: { message } };
 }

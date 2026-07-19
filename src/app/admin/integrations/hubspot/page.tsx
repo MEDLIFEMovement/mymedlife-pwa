@@ -113,8 +113,8 @@ function SyncForm({ mode, enabled }: { mode: "backfill" | "incremental"; enabled
   const confirmation = mode === "backfill" ? "BACKFILL HUBSPOT" : "SYNC HUBSPOT";
   return (
     <form action={submitHubSpotReadSyncAction} className="rounded-lg border border-white/10 bg-white/[0.04] p-5">
-      <h2 className="text-lg font-semibold text-white">{mode === "backfill" ? "Initial backfill" : "Incremental sync"}</h2>
-      <p className="mt-2 text-sm leading-6 text-white/60">Reads HubSpot, writes only app-owned reconciliation records, and never sends invitations or HubSpot mutations.</p>
+      <h2 className="text-lg font-semibold text-white">{mode === "backfill" ? "Initial backfill" : "Incremental reconciliation"}</h2>
+      <p className="mt-2 text-sm leading-6 text-white/60">{mode === "backfill" ? "Reads the full active HubSpot chapter and member set." : "Refreshes the active chapter index and applies member records changed after the last successful checkpoint."} Writes only app-owned records and never sends invitations or HubSpot mutations.</p>
       <input type="hidden" name="mode" value={mode} />
       <label className="mt-4 block text-xs font-semibold uppercase tracking-[0.14em] text-white/60" htmlFor={`confirmation-${mode}`}>Type {confirmation}</label>
       <input id={`confirmation-${mode}`} name="confirmation" disabled={!enabled} className="mt-2 w-full rounded-md border border-white/15 bg-black/20 px-3 py-2 text-sm text-white" />

@@ -83,7 +83,7 @@ create table app.hubspot_membership_imports (
   source_payload jsonb not null default '{}'::jsonb,
   materialized_membership_id uuid references app.memberships(id) on delete set null,
   reconciliation_status text not null default 'pending'
-    check (reconciliation_status in ('pending', 'matched', 'materialized', 'conflict', 'ignored')),
+    check (reconciliation_status in ('pending', 'waiting_for_match', 'matched', 'materialized', 'conflict', 'ignored')),
   reconciliation_note text,
   last_seen_run_id uuid references app.hubspot_sync_runs(id) on delete set null,
   first_imported_at timestamptz not null default now(),

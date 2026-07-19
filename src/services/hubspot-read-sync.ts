@@ -1,3 +1,5 @@
+import "server-only";
+
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
 const ACTIVE_CHAPTER_LIFECYCLE_STAGES = ["23878512", "23925576", "23925577"];
@@ -37,7 +39,7 @@ export type HubSpotContactRecord = {
 
 export type HubSpotReadClient = {
   readActiveChapterCompanies: () => Promise<HubSpotCompanyRecord[]>;
-  readContactsWithCompanies: () => Promise<HubSpotContactRecord[]>;
+  readContactsWithCompanies: (modifiedAfter?: string | null) => Promise<HubSpotContactRecord[]>;
 };
 
 export type HubSpotReadSyncResult =
@@ -198,7 +200,7 @@ export function createHubSpotReadClient(
       return records;
     },
 
-    async readContactsWithCompanies() {
+    async readContactsWithCompanies(modifiedAfter) {
       const records: HubSpotContactRecord[] = [];
       let after: string | number | undefined;
       do {
@@ -219,7 +221,7 @@ export function createHubSpotReadClient(
         records.push(...(page.results ?? []).map(mapContact).filter(isPresent));
         after = page.paging?.next?.after;
       } while (after !== undefined);
-      return records;
+      return records.filter((record) => changedAfter(record.updatedAt, modifiedAfter));
     },
   };
 }
@@ -270,7 +272,7 @@ export async function runHubSpotReadSync(
   try {
     const [companies, allContacts] = await Promise.all([
       hubspotClient.readActiveChapterCompanies(),
-      hubspotClient.readContactsWithCompanies(),
+      hubspotClient.readContactsWithCompanies(mode === "incremental" ? checkpointBefore : null),
     ]);
     const activeCompanyIds = new Set(companies.map((company) => company.id));
     const contacts = allContacts
@@ -290,7 +292,7 @@ export async function runHubSpotReadSync(
 
     const profileIds = new Map<string, string>();
     for (const contact of contacts) {
-      await syncContact(appClient, runId, contact, counts, profileIds);
+      await syncContact(appClient, runId, actorUserId, contact, counts, profileIds);
     }
 
     for (const contact of contacts) {
@@ -298,6 +300,7 @@ export async function runHubSpotReadSync(
         await syncMembership(
           appClient,
           runId,
+          actorUserId,
           contact,
           companyId,
           profileIds.get(contact.id) ?? null,
@@ -443,11 +446,16 @@ async function syncCompany(
 
   chapterIds.set(company.id, chapterId);
   await markCompanyReconciliation(client, company.id, "materialized", null, chapterId);
+  await recordAudit(client, runId, actorUserId, chapterId, "hubspot_chapter_materialized", "chapters", chapterId, {
+    hubspot_company_id: company.id,
+    name: company.name,
+  }, counts);
 }
 
 async function syncContact(
   client: AppClient,
   runId: string,
+  actorUserId: string,
   contact: HubSpotContactRecord,
   counts: HubSpotSyncCounts,
   profileIds: Map<string, string>,
@@ -503,11 +511,15 @@ async function syncContact(
   profileIds.set(contact.id, profileId);
   counts.matchedProfiles += 1;
   await markContactReconciliation(client, contact.id, "matched", null, profileId);
+  await recordAudit(client, runId, actorUserId, null, "hubspot_profile_linked", "profiles", profileId, {
+    hubspot_contact_id: contact.id,
+  }, counts);
 }
 
 async function syncMembership(
   client: AppClient,
   runId: string,
+  actorUserId: string,
   contact: HubSpotContactRecord,
   companyId: string,
   profileId: string | null,
@@ -521,7 +533,7 @@ async function syncMembership(
     role_key: "general_member",
     source_updated_at: contact.updatedAt,
     source_payload: { associationKey },
-    reconciliation_status: profileId && chapterId ? "pending" : "pending",
+    reconciliation_status: profileId && chapterId ? "pending" : "waiting_for_match",
     reconciliation_note: profileId && chapterId ? null : "Waiting for both an app profile and app chapter match.",
     last_seen_run_id: runId,
     last_imported_at: new Date().toISOString(),
@@ -565,6 +577,7 @@ async function syncMembership(
       role_key: "general_member",
       status: "approved",
       approved_at: new Date().toISOString(),
+      approved_by: actorUserId,
       hubspot_association_key: associationKey,
     }).select("id").single();
     membershipId = inserted.error ? null : String(inserted.data?.id ?? "") || null;
@@ -576,6 +589,39 @@ async function syncMembership(
     return;
   }
   await markMembershipReconciliation(client, contact.id, companyId, "materialized", null, membershipId);
+  await recordAudit(client, runId, actorUserId, chapterId, "hubspot_membership_materialized", "memberships", membershipId, {
+    hubspot_association_key: associationKey,
+    status: "approved",
+  }, counts);
+}
+
+async function recordAudit(
+  client: AppClient,
+  runId: string,
+  actorUserId: string,
+  chapterId: string | null,
+  action: string,
+  targetTable: string,
+  targetId: string,
+  afterValue: Record<string, unknown>,
+  counts: HubSpotSyncCounts,
+) {
+  const audit = await client.schema("app").from("audit_logs").insert({
+    actor_user_id: actorUserId,
+    chapter_id: chapterId,
+    action,
+    target_table: targetTable,
+    target_id: targetId,
+    after_value: { ...afterValue, hubspot_sync_run_id: runId },
+    reason: "Authorized HubSpot read sync materialization into app-owned records.",
+  });
+  if (audit.error) {
+    counts.failures += 1;
+    await recordFailure(client, runId, "run", targetId, "audit_log_failed", audit.error.message, {
+      action,
+      targetTable,
+    });
+  }
 }
 
 async function markCompanyReconciliation(client: AppClient, id: string, status: string, note: string | null, chapterId: string | null) {
@@ -705,6 +751,14 @@ function optional(value: string | null | undefined): string | null {
 
 function isPresent<T>(value: T | null): value is T {
   return value !== null;
+}
+
+function changedAfter(updatedAt: string | null, modifiedAfter?: string | null) {
+  if (!modifiedAfter) return true;
+  if (!updatedAt) return false;
+  const updatedTime = Date.parse(updatedAt);
+  const checkpointTime = Date.parse(modifiedAfter);
+  return Number.isFinite(updatedTime) && Number.isFinite(checkpointTime) && updatedTime > checkpointTime;
 }
 
 function getEnvironment(env: Record<string, string | undefined>): HubSpotReadSyncConfig["environment"] {

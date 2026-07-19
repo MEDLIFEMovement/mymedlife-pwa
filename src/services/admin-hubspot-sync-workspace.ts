@@ -1,3 +1,5 @@
+import "server-only";
+
 import { createLocalSupabaseServerClient } from "@/lib/supabase-server";
 import { getHubSpotReadSyncConfig } from "@/services/hubspot-read-sync";
 
