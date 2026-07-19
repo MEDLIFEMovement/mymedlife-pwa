@@ -105,6 +105,46 @@ describe("home page", () => {
     expect(html).toContain('href="/app/slt-prep?source=home"');
   });
 
+  it("renders actor-scoped Supabase events instead of cross-chapter Figma fixtures", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const dataModule = await import("@/services/read-only-app-data");
+    const data = getMockReadOnlyAppData("Testing production event scoping.");
+    const bostonEventId = "f9589a94-0119-4c28-8ca2-870cb2fce97c";
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("member.a@mymedlife.test"),
+    );
+    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue({
+      ...data,
+      source: {
+        mode: "supabase",
+        status: "supabase_ready",
+        message: "Reading actor-scoped production data.",
+      },
+      chapterEventRows: [
+        {
+          ...data.chapterEventRows[0],
+          id: bostonEventId,
+          title: "Test Boston University Luma RSVP Night",
+          starts_at: "2026-11-20T23:00:00Z",
+          attendance_count: 0,
+        },
+      ],
+      lumaEventLinkRows: [],
+      pointsEventRows: [],
+    });
+
+    const { default: HomePage } = await import("@/app/app/page");
+    const html = renderToStaticMarkup(await HomePage({}));
+
+    expect(html).toContain("TEST Test Boston University Luma RSVP Night");
+    expect(html).toContain(`/app/events/${bostonEventId}?source=home`);
+    expect(html).toContain("Location not set");
+    expect(html).not.toContain("Ackerman 2100");
+    expect(html).not.toContain("Bruin Walk Table 7");
+    expect(html).not.toContain("chapter-event-lakeside-welcome");
+  });
+
   it("keeps committee members on the owned mobile home route instead of redirecting them away", async () => {
     const actorModule = await import("@/services/local-actor-context");
     const dataModule = await import("@/services/read-only-app-data");

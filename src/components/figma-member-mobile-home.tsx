@@ -7,6 +7,11 @@ import React, { useState } from "react";
 import { ChromeDesktopPaintShell } from "@/components/chrome-desktop-paint-shell";
 import { MemberBottomNav, type MemberBottomNavTab } from "@/components/member-bottom-nav";
 import { getVisibleMemberLeaderboardRows } from "@/services/member-mobile-identity-context";
+import type {
+  MemberMobileCampaignContext,
+  MemberMobileEventContext,
+  MemberMobileEventType,
+} from "@/services/member-mobile-event-context";
 import type { LaunchLaneMemberPointsReadback } from "@/services/launch-lane-points-readback";
 import {
   Home, BarChart2, CalendarDays, Trophy, User, Users,
@@ -108,14 +113,16 @@ const MEMBER_EVENT_DETAIL_HREFS: Record<number, string> = {
 };
 
 function getMemberEventDetailHref(
-  eventId: number,
+  eventId: number | string,
   source: MemberLoopSource = "events",
   campaign: string | null = null,
   profileSource: "points" | null = null,
   storyFilter: string | null = null,
   storyId: string | null = null,
 ) {
-  const detailHref = MEMBER_EVENT_DETAIL_HREFS[eventId] ?? "/app/events";
+  const detailHref = typeof eventId === "string"
+    ? `/app/events/${encodeURIComponent(eventId)}`
+    : MEMBER_EVENT_DETAIL_HREFS[eventId] ?? "/app/events";
   const url = new URL(`https://mymedlife.local${detailHref}`);
 
   if (source !== "events") {
@@ -142,7 +149,7 @@ function getMemberEventDetailHref(
 }
 
 function getMemberEventRsvpHref(
-  eventId: number,
+  eventId: number | string,
   source: MemberLoopSource = "events",
   campaign: string | null = null,
   profileSource: "points" | null = null,
@@ -153,16 +160,16 @@ function getMemberEventRsvpHref(
   return detailHref.includes("?") ? `${detailHref}&step=rsvp` : `${detailHref}?step=rsvp`;
 }
 
-function getMemberEventHomeRsvpHref(eventId: number) {
+function getMemberEventHomeRsvpHref(eventId: number | string) {
   return getMemberEventRsvpHref(eventId, "home");
 }
 
-function getMemberEventHomeDetailHref(eventId: number) {
+function getMemberEventHomeDetailHref(eventId: number | string) {
   return getMemberEventDetailHref(eventId, "home");
 }
 
 function isMemberEventDetailHref(href: string) {
-  return href.startsWith("/app/events/chapter-event-");
+  return href.startsWith("/app/events/");
 }
 
 type MemberLoopSource = "events" | "home" | "profile" | "points" | "stories";
@@ -393,11 +400,15 @@ function StudentHome({
   setRole,
   sltPrepEntry,
   memberContext,
+  memberEvents,
+  memberCampaign,
 }: {
   navigate: (s: Screen) => void;
   setRole: (r: Role) => void;
   sltPrepEntry?: MemberSltPrepEntry | null;
   memberContext: MemberMobileIdentityContext;
+  memberEvents?: MemberMobileEventContext[];
+  memberCampaign?: MemberMobileCampaignContext | null;
 }) {
   const allDesignations: UserDesignation[] = ["General Member", "E-Board", "Staff", "DS", "Sales", "Super Admin"];
   const [designation, setDesignation] = useState<UserDesignation>("General Member");
@@ -406,6 +417,11 @@ function StudentHome({
   );
   const selfLeaderboardRows = getVisibleMemberLeaderboardRows(memberContext, 4);
   const campaignActionsCompleted = Math.min(Math.max(memberContext.completedActions, 0), 3), campaignProgressPct = Math.round((campaignActionsCompleted / 3) * 100);
+  const homeEvents = memberEvents ?? [
+    { id: "1", routeId: "chapter-event-ucla-kickoff", title: "TEST Intro GBM", date: "Thu Nov 15 · 6:00 PM", loc: "Ackerman 2100", pts: 20, status: "RSVP Open" as const, campaign: "Rush Month", eventType: "GBM" as const, featured: true, luma: true, rsvps: 23 },
+    { id: "2", routeId: "chapter-event-lakeside-welcome", title: "TEST Tabling at Bruin Walk", date: "Tue Nov 13 · 11:00 AM", loc: "Bruin Walk Table 7", pts: 15, status: "RSVP Open" as const, campaign: "Rush Month", eventType: "Local Volunteering" as const, featured: false, luma: false, rsvps: null },
+  ];
+  const priorityEvent = homeEvents[0] ?? null;
 
   return (
     <div className="pb-24 font-[Plus_Jakarta_Sans,sans-serif]">
@@ -430,11 +446,13 @@ function StudentHome({
             <p className="text-yellow-200 text-xs font-bold uppercase tracking-wide">This Week's Priority</p>
           </div>
           <p className="text-white font-bold text-[15px] leading-snug">
-            Invite 3 TEST friends to the TEST Intro GBM
+            {priorityEvent ? `Show up for ${priorityEvent.title}` : "No upcoming chapter event is scheduled"}
           </p>
-          <p className="text-blue-200 text-xs mt-1">Rush Month · Due Nov 15 · 30 pts</p>
+          <p className="text-blue-200 text-xs mt-1">
+            {priorityEvent ? `${priorityEvent.campaign} · ${priorityEvent.date}` : "Check back after a chapter leader publishes an event."}
+          </p>
           <Link
-            href={getMemberEventHomeDetailHref(1)}
+            href={priorityEvent ? getMemberEventHomeDetailHref(priorityEvent.routeId) : "/app/events?source=home"}
             className="mt-3 inline-flex items-center gap-2 rounded-xl bg-accent px-4 py-2 text-sm font-bold text-accent-foreground transition-all active:scale-[0.97]"
           >
             Start next action <ArrowRight size={14} />
@@ -515,38 +533,38 @@ function StudentHome({
         <div>
           <SLabel>Upcoming Events</SLabel>
           <div className="space-y-2">
-            {[
-              { id: 1, name: "TEST Intro GBM", date: "Thu Nov 15 · 6:00 PM", loc: "Ackerman 2100", rsvp: false },
-              { id: 2, name: "TEST Tabling at Bruin Walk", date: "Tue Nov 13 · 11:00 AM", loc: "Bruin Walk Table 7", rsvp: true },
-            ].map((e) => (
+            {homeEvents.slice(0, 2).map((e) => (
               <Card key={e.id} padding={false}>
                 <div className="flex items-center gap-3 p-4">
-                  <Link href={getMemberEventHomeDetailHref(e.id)} className="flex min-w-0 flex-1 items-center gap-3">
+                  <Link href={getMemberEventHomeDetailHref(e.routeId)} className="flex min-w-0 flex-1 items-center gap-3">
                     <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center flex-shrink-0">
                       <CalendarDays size={18} className="text-primary" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-bold text-foreground">{e.name}</p>
+                      <p className="text-sm font-bold text-foreground">{e.title}</p>
                       <p className="text-xs text-muted-foreground">{e.date}</p>
                       <p className="text-xs text-muted-foreground flex items-center gap-0.5 mt-0.5">
                         <MapPin size={9} className="flex-shrink-0" />{e.loc}
                       </p>
                     </div>
                   </Link>
-                  {e.rsvp ? (
-                    <Link href={getMemberEventHomeDetailHref(e.id)}><Pill label="RSVP'd" variant="green" /></Link>
-                  ) : (
+                  {e.status === "RSVP Open" ? (
                     <Link
-                      href={getMemberEventHomeRsvpHref(e.id)}
+                      href={getMemberEventHomeRsvpHref(e.routeId)}
                       onClick={(event) => event.stopPropagation()}
                       className="flex-shrink-0 rounded-xl border border-primary/50 px-3 py-1.5 text-xs font-bold text-primary hover:bg-primary/5"
                     >
                       RSVP
                     </Link>
+                  ) : (
+                    <Link href={getMemberEventHomeDetailHref(e.routeId)}><Pill label={e.status} variant="gray" /></Link>
                   )}
                 </div>
               </Card>
             ))}
+            {homeEvents.length === 0 ? (
+              <Card><p className="text-sm text-muted-foreground">No upcoming events are published for this chapter.</p></Card>
+            ) : null}
           </div>
         </div>
 
@@ -562,8 +580,8 @@ function StudentHome({
                     <Pill label="Active" variant="green" />
                     <Pill label="Week 1 of 4" variant="blue" />
                   </div>
-                  <h3 className="font-bold text-base text-foreground">Rush Month</h3>
-                  <p className="text-sm text-muted-foreground mt-0.5">Recruit new members, build your chapter.</p>
+                  <h3 className="font-bold text-base text-foreground">{memberCampaign?.name ?? "Rush Month"}</h3>
+                  <p className="text-sm text-muted-foreground mt-0.5">{memberCampaign?.objective ?? "Recruit new members, build your chapter."}</p>
                   <div className="mt-3 space-y-1.5">
                     <div className="flex justify-between text-xs text-muted-foreground">
                       <span>Your progress</span>
@@ -2326,12 +2344,7 @@ function buildEventsHref({
   return query ? `/app/events?${query}` : "/app/events";
 }
 
-type EventType =
-  | "GBM" | "Fundraising" | "Local Volunteering" | "Growing the Movement"
-  | "Meet People / Social" | "MED Talk" | "Pre-MED" | "Pre-Dental"
-  | "Smiles Movement" | "Safe Homes" | "Engaged Education" | "SLT Prep"
-  | "SLT Reflection" | "Eboard Transition" | "Moving Mountains" | "Rush Month"
-  | "Mentorship Meeting" | "Tutoring" | "Skills Session";
+type EventType = MemberMobileEventType;
 
 interface EventTypeConfig {
   color: string;   // border + icon accent
@@ -2376,19 +2389,19 @@ function EventTypePill({ type }: { type: EventType }) {
 }
 
 interface ChapterEvent {
-  id: number;
+  id: number | string;
   routeId?: string;
   title: string;
   date: string;
   loc: string;
   pts: number;
   status: "RSVP Open" | "Upcoming" | "Completed";
-  campaign: CampaignTag | "General";
+  campaign: string;
   eventType: EventType;
   featured?: boolean;
   luma?: boolean;
   organizer?: string;
-  rsvps?: number;
+  rsvps?: number | null;
 }
 
 const CAMPAIGNS: { name: CampaignTag; phase: string; color: string; accent: string; description: string; progress: number }[] = [
@@ -2449,7 +2462,7 @@ function getMemberLoopEventByRouteId(routeId: string | null) {
 }
 
 function getMemberEventStepHref(
-  eventId: number,
+  eventId: number | string,
   source: MemberLoopSource,
   step: "rsvp" | "checkin",
   campaign: string | null = null,
@@ -2467,6 +2480,8 @@ function EventsScreen({
   profileSource = null,
   storyFilter = null,
   memberContext,
+  memberEvents,
+  memberCampaign,
 }: {
   navigate: (s: Screen) => void;
   source: MemberLoopSource;
@@ -2474,13 +2489,30 @@ function EventsScreen({
   profileSource?: "points" | null;
   storyFilter?: string | null;
   memberContext: MemberMobileIdentityContext;
+  memberEvents?: MemberMobileEventContext[];
+  memberCampaign?: MemberMobileCampaignContext | null;
 }) {
-  const activeCampaign = resolveEventsCampaign(initialCampaign);
-  const rsvpdIds = [2];
-  const visibleEvents = activeCampaign === "All" ? ALL_EVENTS : ALL_EVENTS.filter((e) => e.campaign === activeCampaign);
+  const availableEvents: ChapterEvent[] = memberEvents ?? ALL_EVENTS;
+  const availableCampaigns = memberEvents
+    ? Array.from(new Set(memberEvents.map((event) => event.campaign)))
+    : CAMPAIGNS.map((campaign) => campaign.name);
+  const activeCampaign = !initialCampaign || initialCampaign === "All" || !availableCampaigns.includes(initialCampaign)
+    ? "All"
+    : initialCampaign;
+  const rsvpdIds: Array<number | string> = memberEvents ? [] : [2];
+  const visibleEvents = activeCampaign === "All" ? availableEvents : availableEvents.filter((e) => e.campaign === activeCampaign);
   const featuredEvent = visibleEvents.find((e) => e.featured);
   const listEvents = visibleEvents.filter((e) => !e.featured);
-  const activeCampaignData = activeCampaign !== "All" ? CAMPAIGNS.find((c) => c.name === activeCampaign) : null;
+  const activeCampaignData = activeCampaign !== "All"
+    ? CAMPAIGNS.find((c) => c.name === activeCampaign) ?? {
+        name: activeCampaign,
+        phase: "Active chapter campaign",
+        color: "from-primary to-blue-600",
+        accent: "bg-primary/10 text-primary border-primary/20",
+        description: memberCampaign?.objective ?? "Chapter campaign details are not available yet.",
+        progress: 0,
+      }
+    : null;
   const detailLoopSource: MemberLoopSource = source;
   const pointsReturnHref = getEventsBottomNavPointsHref(
     source,
@@ -2526,19 +2558,19 @@ function EventsScreen({
           >
             All Events
           </Link>
-          {CAMPAIGNS.map((c) => (
+          {availableCampaigns.map((campaignName) => (
             <Link
-              key={c.name}
-              href={buildEventsHref({ source, campaign: c.name, profileSource, storyFilter })}
-              aria-label={`Filter TEST events by ${c.name}`}
+              key={campaignName}
+              href={buildEventsHref({ source, campaign: campaignName as CampaignTag, profileSource, storyFilter })}
+              aria-label={`Filter TEST events by ${campaignName}`}
               className={cn(
                 "flex-shrink-0 px-3.5 py-1.5 rounded-full text-xs font-bold border transition-all whitespace-nowrap",
-                activeCampaign === c.name
+                activeCampaign === campaignName
                   ? "bg-white text-primary border-white"
                   : "bg-white/15 text-white border-white/30 hover:bg-white/25"
               )}
             >
-              {c.name}
+              {campaignName}
             </Link>
           ))}
         </div>
@@ -3993,6 +4025,8 @@ export function FigmaMemberMobileHome({
   eventsProfileSource = null,
   eventsStoryFilter = null,
   memberContext = DEFAULT_MEMBER_IDENTITY_CONTEXT,
+  memberEvents,
+  memberCampaign = null,
   repaintKey,
 }: {
   initialScreen?: MemberMobileLaunchScreen;
@@ -4010,6 +4044,8 @@ export function FigmaMemberMobileHome({
   eventsProfileSource?: "points" | null;
   eventsStoryFilter?: string | null;
   memberContext?: MemberMobileIdentityContext;
+  memberEvents?: MemberMobileEventContext[];
+  memberCampaign?: MemberMobileCampaignContext | null;
   repaintKey?: string;
 }) {
   const [screen, setScreen] = useState<Screen>(initialScreen);
@@ -4062,6 +4098,8 @@ export function FigmaMemberMobileHome({
             setRole={setRole}
             sltPrepEntry={sltPrepEntry}
             memberContext={memberContext}
+            memberEvents={memberEvents}
+            memberCampaign={memberCampaign}
           />
         );
       case "campaign": return <CampaignPage navigate={navigate} />;
@@ -4089,6 +4127,8 @@ export function FigmaMemberMobileHome({
             profileSource={eventsProfileSource}
             storyFilter={eventsStoryFilter}
             memberContext={memberContext}
+            memberEvents={memberEvents}
+            memberCampaign={memberCampaign}
           />
         );
       case "event-detail": return <EventDetailScreen navigate={navigate} memberContext={memberContext} />;
