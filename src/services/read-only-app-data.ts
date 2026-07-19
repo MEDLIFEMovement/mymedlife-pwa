@@ -63,7 +63,8 @@ export type DataSourceStatus =
   | "mock_fallback"
   | "supabase_ready"
   | "supabase_error"
-  | "auth_profile_missing";
+  | "auth_profile_missing"
+  | "chapter_access_missing";
 
 export type DataSourceMeta = {
   mode: DataSourceMode;
@@ -120,12 +121,24 @@ export async function getReadOnlyAppData(
   const access = await createSupabaseReadonlyAccess();
 
   if (!access.enabled) {
+    if (scope.actorUserId && !access.isLocalOnly) {
+      return getUnavailableReadOnlyAppData(access.reason);
+    }
+
     return getMockReadOnlyAppData(access.reason);
   }
 
   try {
     return await getSupabaseReadOnlyAppData(access.client, access.reason, scope);
   } catch (error) {
+    if (scope.actorUserId && !access.isLocalOnly) {
+      return getUnavailableReadOnlyAppData(
+        error instanceof Error
+          ? `Operational data could not be read: ${error.message}`
+          : "Operational data could not be read.",
+      );
+    }
+
     return getMockReadOnlyAppData(
       error instanceof Error
         ? `Supabase read failed, so mock fallback is active: ${error.message}`
@@ -144,6 +157,12 @@ export async function getSupabaseReadOnlyAppData(
   const chapter = selectChapterForActor(snapshot, scope.actorUserId);
 
   if (!chapter) {
+    if (scope.actorUserId) {
+      return getUnavailableReadOnlyAppData(
+        "No approved active chapter is available for this signed-in user. Contact a myMEDLIFE administrator to verify the profile and chapter membership.",
+      );
+    }
+
     return getMockReadOnlyAppData("Supabase returned no chapters, so mock fallback is active.");
   }
 
@@ -243,6 +262,8 @@ function selectChapterForActor(
     if (actorChapter) {
       return actorChapter;
     }
+
+    return null;
   }
 
   return (
@@ -1470,6 +1491,70 @@ export function getMockReadOnlyAppData(
     integrationEventRows: mockIntegrationEventRows,
     automationOutboxRows: mockAutomationOutboxRows,
     auditLogs: mockAuditLogs,
+  };
+}
+
+export function getUnavailableReadOnlyAppData(message: string): ReadOnlyAppData {
+  const ledger = buildEventPointsLedger({
+    assignments: [],
+    integrationEvents: [],
+    pointsEventRows: [],
+    kpiEventRows: [],
+  });
+
+  return {
+    source: {
+      mode: "supabase",
+      status: "chapter_access_missing",
+      message,
+    },
+    chapter: {
+      id: "chapter-access-missing",
+      name: "Chapter access unavailable",
+      campus: "No approved chapter",
+      region: "Unavailable",
+      coachName: "Unavailable",
+    },
+    campaign: {
+      id: "campaign-access-missing",
+      name: "No active campaign",
+      objective: "Chapter access must be restored before campaign data can load.",
+      weekLabel: "Unavailable",
+      status: "draft",
+    },
+    chapterRows: [],
+    campaignRows: [],
+    profiles: [],
+    memberships: [],
+    phases: [],
+    assignments: [],
+    campaignTemplates: [],
+    campaignPhaseTemplates: [],
+    campaignRoleAssignments: [],
+    readinessReviews: [],
+    riskFlags: [],
+    closeouts: [],
+    evidenceItems: [],
+    chapterEventRows: [],
+    lumaEventLinkRows: [],
+    chapterLumaCalendarRows: [],
+    pointsEvents: ledger.pointsEvents,
+    kpiEvents: ledger.kpiEvents,
+    pointsSummary: ledger.pointsSummary,
+    kpiSummary: ledger.kpiSummary,
+    metricsPosture: ledger.posture,
+    integrationEvents: [],
+    outboxItems: [],
+    eventRows: [],
+    allEventRows: [],
+    allChapterEventRows: [],
+    allLumaEventLinkRows: [],
+    allPointsEventRows: [],
+    pointsEventRows: [],
+    kpiEventRows: [],
+    integrationEventRows: [],
+    automationOutboxRows: [],
+    auditLogs: [],
   };
 }
 

@@ -1,6 +1,7 @@
 import { ChromeDesktopPaintShell } from "@/components/chrome-desktop-paint-shell";
 import { MemberBottomNav } from "@/components/member-bottom-nav";
 import { MemberProfilePanel } from "@/components/member-profile-panel";
+import { MemberOperationalDataUnavailable } from "@/components/member-operational-data-unavailable";
 import { getLocalActorContext } from "@/services/local-actor-context";
 import { getMemberRecognitionSummary } from "@/services/member-recognition";
 import { getMvpMemberHome } from "@/services/mvp-event-tracking-workspace";
@@ -60,6 +61,10 @@ export default async function ProfilePage(props: ProfilePageProps) {
   }
 
   const data = await getReadOnlyAppData({ actorUserId: actor.user.id });
+  if (data.source.status === "chapter_access_missing") {
+    return <MemberOperationalDataUnavailable actor={actor} message={data.source.message} />;
+  }
+
   const workspace = getProfileWorkspace(actor, data);
   const studentHome = getMvpMemberHome(actor, data);
   const recognition = getMemberRecognitionSummary(actor, data);

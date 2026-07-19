@@ -15,6 +15,24 @@ describe("read-only app data service", () => {
     expect(data.assignments.length).toBeGreaterThan(0);
   });
 
+  it("does not assign the first active chapter when an actor has no approved membership", async () => {
+    const data = await getSupabaseReadOnlyAppData(
+      createFakeClient({ chapters: fakeRows.chapters }),
+      "Reading hosted production data.",
+      { actorUserId: "unassigned-user" },
+    );
+
+    expect(data.source).toMatchObject({
+      mode: "supabase",
+      status: "chapter_access_missing",
+    });
+    expect(data.chapter.name).toBe("Chapter access unavailable");
+    expect(data.chapter.name).not.toBe("UCLA MEDLIFE");
+    expect(data.chapterRows).toEqual([]);
+    expect(data.profiles).toEqual([]);
+    expect(data.memberships).toEqual([]);
+  });
+
   it("reads every Goal 8 table in the local data snapshot", async () => {
     const requestedTables: string[] = [];
     const client = createFakeClient({}, requestedTables);
