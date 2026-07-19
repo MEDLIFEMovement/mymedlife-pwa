@@ -126,6 +126,31 @@ describe("member event-loop write gate", () => {
     expect(client.inserts.events ?? []).toHaveLength(0);
   });
 
+  it("blocks RSVP, cancellation, and check-in writes once an event is completed", async () => {
+    for (const operation of ["rsvp", "cancel_rsvp", "checkin"] as const) {
+      const client = new FakeSupabaseClient();
+      enqueueValidActorPath(client, {
+        event: { ...chapterEventRow, status: "feedback_collected" },
+      });
+
+      const result = await recordMemberEventLoopStep(asServiceClient(client), {
+        operation,
+        routeEventId: chapterEventRow.id,
+        actorUserId: profileRow.id,
+        actorEmail: profileRow.email,
+      });
+
+      expect(result).toMatchObject({
+        success: false,
+        code: "event_closed",
+        eventId: chapterEventRow.id,
+        externalWritesEnabled: false,
+      });
+      expect(client.inserts).toEqual({});
+      expect(client.updates).toEqual({});
+    }
+  });
+
   it("records an RSVP cancellation event before check-in", async () => {
     const client = new FakeSupabaseClient();
     enqueueValidActorPath(client);

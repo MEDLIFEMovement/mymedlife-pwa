@@ -10,6 +10,11 @@ import {
   type MemberLaunchLaneLoopStage,
 } from "@/services/member-launch-lane-loop-state";
 import { getLaunchLaneAttendancePointsLabel } from "@/services/launch-lane-points-policy";
+import {
+  getMemberEventLifecycleLabel,
+  getMemberEventLifecycleState,
+  type MemberEventLifecycleState,
+} from "@/services/member-event-lifecycle";
 import type { MemberActionRouteSource } from "@/services/member-action-route-href";
 import type { ReadOnlyAppData } from "@/services/read-only-app-data";
 
@@ -24,6 +29,9 @@ export type MemberLaunchLaneEventRow = {
   memberPointsLabel: string;
   memberRsvpLabel: string;
   memberRsvpState: "registered" | "open";
+  memberLifecycleState: MemberEventLifecycleState;
+  memberLifecycleLabel: string | null;
+  memberActionsClosed: boolean;
   memberCanCancelRsvp: boolean;
   memberRsvpLockLabel: string | null;
   memberLumaLabel: string | null;
@@ -81,11 +89,13 @@ function toMemberLaunchLaneEventRow(
     profileId,
   });
   const hasLumaLink = event.hasLumaLink;
+  const memberLifecycleState = getMemberEventLifecycleState(event.status);
+  const memberActionsClosed = memberLifecycleState !== "open";
   const rsvpState = alreadyRecorded ? "registered" : "open";
   const memberPointsAwarded = profileId
     ? sumLaunchLanePointsForEvent(data.allPointsEventRows, event.id, profileId)
     : 0;
-  const memberCanCancelRsvp = alreadyRecorded && memberPointsAwarded <= 0;
+  const memberCanCancelRsvp = alreadyRecorded && memberPointsAwarded <= 0 && !memberActionsClosed;
   const loopState = getMemberLaunchLaneLoopState({
     alreadyRecorded,
     attendanceCount: event.attendanceCount,
@@ -104,6 +114,9 @@ function toMemberLaunchLaneEventRow(
     memberPointsLabel: getLaunchLaneAttendancePointsLabel(),
     memberRsvpLabel: alreadyRecorded ? "RSVP'd" : "RSVP",
     memberRsvpState: rsvpState,
+    memberLifecycleState,
+    memberLifecycleLabel: getMemberEventLifecycleLabel(memberLifecycleState),
+    memberActionsClosed,
     memberCanCancelRsvp,
     memberRsvpLockLabel:
       alreadyRecorded && !memberCanCancelRsvp
