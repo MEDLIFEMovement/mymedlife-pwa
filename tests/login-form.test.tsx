@@ -44,6 +44,7 @@ describe("login form", () => {
     );
 
     expect(html).toContain("Invalid email or password.");
+    expect(html).toContain('href="/auth/forgot-password?redirectTo=%2Fapp"');
     expect(html).toContain("#fca5a5");
     expect(html).toContain("rgba(184,37,58,0.15)");
     expect(html).toContain("1px solid rgba(184,37,58,0.3)");
