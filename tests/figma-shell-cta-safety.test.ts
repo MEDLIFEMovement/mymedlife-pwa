@@ -66,7 +66,7 @@ describe("copied Figma shell CTA safety", () => {
     expect(memberSource).toContain("Inputs on this screen are not saved.");
     expect(memberSource).toContain("No evidence, notification, review task, or points change will be created.");
     expect(memberSource).not.toContain('onClick={() => navigate("confirm")}');
-    expect(memberSource).toContain('onClick={() => navigate("campaign")} className="text-primary text-xs font-semibold">See all');
+    expect(memberSource).toContain('onClick={() => navigate("campaign")} className="text-primary text-xs font-semibold">Campaign details');
     expect(memberSource).toContain(
       "Roles are assigned by authorized administrators and cannot be changed from the member app.",
     );
