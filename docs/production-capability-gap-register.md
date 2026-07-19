@@ -2,7 +2,7 @@
 
 Date: 2026-07-19
 
-Status: Phase 0 source-of-truth audit
+Status: Phase 0 audit complete; Phase 1 auth lifecycle production-proven
 
 This register separates rendered surfaces from real product capability. A route,
 TEST record, preview control, green unit test, or READY deployment is not proof
@@ -11,7 +11,9 @@ that the corresponding workflow is production-capable.
 ## Evidence Baseline
 
 - GitHub `main` and production Vercel both point to
-  `edee86c34fc33195f41fb8df52d23b6c543c0dc3` (PR #703).
+  `9d907451922d80408d6544f540828aa442b3ab0e` (PR #706). Production
+  deployment `dpl_EXDb4ZoMF91k7TEynpPTEYNfZTqJ` is READY and serves both
+  `mymedlife.org` and `www.mymedlife.org`.
 - The production Supabase project `fnlhontvvprwgooevzdl` is `ACTIVE_HEALTHY`
   on Postgres 17.6.
 - Production contains 122 Auth users and 122 active app profiles. At least 115
@@ -29,22 +31,22 @@ that the corresponding workflow is production-capable.
   has been exercised, not that a full live member cohort or Luma loop is ready.
 - Supabase Storage has one bucket and zero stored objects. There are no app
   tables for stories, story media, story reactions, or story moderation.
-- The production Supabase security advisor reports leaked-password protection
-  disabled. The performance advisor also reports multiple unindexed foreign
-  keys and overlapping permissive SELECT policies.
+- Production Auth leaked-password protection is enabled. The performance
+  advisor still reports multiple unindexed foreign keys and overlapping
+  permissive SELECT policies.
 
 ## Capability Register
 
 | Domain | Current state | Classification | Launch-critical gaps | Evidence |
 | --- | --- | --- | --- | --- |
-| Auth | Password login, logout, callback code/OTP exchange, set-password, signed-session reads, and page-level role redirects exist. Production Auth has real accounts. | Partially functional | There is no member-facing `resetPasswordForEmail` request flow. There is no middleware/proxy session refresh boundary. Route guards are repeated page by page, so full protected-route coverage is unproved. Recovery, expiry, cross-tab/session persistence, logout invalidation, and every role/unauthorized matrix still need real browser proof. Production leaked-password protection is disabled. | `src/app/login/actions.ts`, `src/app/auth/callback/route.ts`, `src/app/auth/set-password/actions.ts`, `src/services/auth-session.ts`, `src/services/local-actor-context.ts`, [Supabase password security](https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection) |
+| Auth | Password login, logout, self-service recovery request, one-time recovery callback, set-password, proxy session refresh, signed-session reads, and role-aware redirects are deployed. Production Auth has real accounts. | Functional and production-proven for the Phase 1 lifecycle | Expired-link and simultaneous cross-tab edge cases remain regression coverage. Password minimum length is still six and should be raised only with matching client validation and migration communication. Later rollout proof still needs the approved launch cohort; Phase 1 production proof does not establish whole-product readiness. | `src/app/login/actions.ts`, `src/app/auth/forgot-password`, `src/app/auth/callback/route.ts`, `src/app/auth/callback/recovery/[continuation]/route.ts`, `src/app/auth/set-password/actions.ts`, `src/proxy.ts`, `src/services/auth-session.ts`, `src/services/local-actor-context.ts`, PR #706, deployment `dpl_EXDb4ZoMF91k7TEynpPTEYNfZTqJ` |
 | Users and chapters | App-owned profiles, chapters, memberships, roles, staff roles, and coach assignments exist with RLS. Production has real rows. | Real tables, incomplete lifecycle | Most current profiles are TEST accounts. Launch-critical reads still allow mock fallback, and `getReadOnlyAppData` selects the first active chapter/campaign rather than deriving the scope from the signed-in actor. The identity/chapter path must be actor-scoped everywhere. | `supabase/migrations/20260615110000_initial_supabase_foundation.sql`, `src/services/read-only-app-data.ts`, `src/services/local-actor-context.ts` |
 | HubSpot sync | Mapping columns exist on profiles and chapters. | Unbuilt | Zero production mappings. No backfill, incremental sync, retry/conflict ledger, sync run table, admin sync evidence, or practical import filters exist. Page loads must continue to use app tables, not live HubSpot fetches. | `app.profiles.hubspot_contact_id`, `app.chapters.hubspot_company_id`, repository search for HubSpot adapters |
 | Events and Luma | App-owned chapter events and stable Luma link rows exist. Member event detail is route-backed. | Internal model partial; provider path mocked | Every production Luma link is `mocked`. There is no real ingestion client, scheduled/manual sync, cursor/checkpoint, failure/retry contract, or provider reconciliation. Event reads also inherit the global first-chapter fallback risk. | `app.chapter_events`, `app.luma_event_links`, `src/services/luma-dry-run-adapter.ts`, `src/services/read-only-app-data.ts` |
 | RSVP, check-in, attendance, points | The production-gated server path persists RSVP, cancellation, attendance, and points rows. Cancellation is append-only and re-RSVP uses latest intent. TEST production proof exists for RSVP and cancellation. | Functional TEST path, incomplete production design | Writes use a server service-role client and application checks instead of one transactional, permission-checking database RPC. Attendance count update, attendance event insert, and points insert are not proven atomic under concurrency. Complete role readback, duplicate/race handling, real-event proof, audit readback, staging evidence, and production cohort proof remain. | `src/services/member-event-loop-write.ts`, `src/services/launch-lane-event-snapshots.ts`, `src/services/launch-lane-points-readback.ts`, `src/app/app/events/[eventId]/actions.ts` |
 | Stories, media, likes | Member and leader story shells render proof items or TEST fallback stories. Like/save controls are disabled previews. | Shell only | No story create/ingest model, media records, storage objects, thumbnails, reactions, moderation state, or persistent member interactions exist. | `src/components/figma-member-stories-page.tsx`, `src/components/figma-leader-stories-screen.tsx`, `storage.objects` |
 | Admin and permissions | RLS is enabled on app tables. Audited RPCs exist for selected user, chapter, membership, assignment, proof, and event operations. Many controls are visibly gated. | Mixed real and review-only | Enabled admin operations need an explicit inventory and browser proof by role. Risky writes need rollback procedures and readback verification. External integrations remain disabled. Review-only controls must stay disabled until their own permission, audit, rollback, and proof requirements pass. The live advisor's overlapping permissive SELECT policies must be reviewed for both intended scope and query cost. | `supabase/migrations`, `src/app/admin`, `src/services/admin-*`, `app.audit_logs`, `app.automation_outbox` |
-| QA, CI, staging, production | The repo has broad Vitest, Playwright, RLS, route, and rollout tooling. The current production deployment is READY. One production RSVP/cancel path was recently re-proved. | Broad automated coverage, narrow real-site proof | Green checks and route smoke are not functional completion. There is no current all-controls, all-roles production click-through after the latest deployment. Staging proof is not current. Browser, CI, staging, production, and audit evidence need one requirement-linked matrix. | `tests`, `supabase/tests`, `tests/e2e/launch-smoke.spec.ts`, Vercel deployment `dpl_7YR8ypS34txdE199KqkerDyr5Jkr` |
+| QA, CI, staging, production | The repo has broad Vitest, Playwright, RLS, route, and rollout tooling. PR #706 passed all required checks. The exact merge commit is deployed, and the complete Phase 1 recovery/session/role matrix was clicked on production with an isolated TEST account. | Phase 1 production-proven; later phases remain unproved | Green checks remain supporting evidence only. Staging was not separately exercised for Phase 1 because the exact merged artifact was directly proved on production. Member workflow, provider integration, stories, and full admin-control proof remain phase-specific work. | `tests`, `supabase/tests`, `tests/e2e/launch-smoke.spec.ts`, PR #706 checks, Vercel deployment `dpl_EXDb4ZoMF91k7TEynpPTEYNfZTqJ`, production audit rows `866e5535-0a7a-49c2-bfe6-8f92a0667ab2` through `e3a0cabc-dbdf-43eb-9e41-262b2de1037c` |
 
 ## Source-Of-Truth Map
 
@@ -66,24 +68,21 @@ that the corresponding workflow is production-capable.
 
 ## Prioritized Implementation Order
 
-1. Finish Auth lifecycle: add self-service password recovery, centralize session
-   refresh/route protection, enable leaked-password protection, and prove the
-   complete role matrix with real accounts.
-2. Make all launch-critical reads actor-scoped and remove production mock
+1. Make all launch-critical reads actor-scoped and remove production mock
    fallback. Then implement HubSpot-backed user/chapter/membership
    materialization with sync-run evidence.
-3. Build real Luma ingestion into `app.chapter_events` and
+2. Build real Luma ingestion into `app.chapter_events` and
    `app.luma_event_links`, including reconciliation, retry, and admin-visible
    sync status.
-4. Move the member event-loop write into an idempotent transactional database
+3. Move the member event-loop write into an idempotent transactional database
    boundary and prove RSVP, cancellation, re-RSVP, check-in, attendance, points,
    role readback, and audit history end to end.
-5. Add the real stories/media/reactions schema, private storage, thumbnail
+4. Add the real stories/media/reactions schema, private storage, thumbnail
    processing, moderation, and browser-verifiable interactions.
-6. Inventory and activate only safe admin operations with explicit permission,
+5. Inventory and activate only safe admin operations with explicit permission,
    audit, rollback, and deployed browser proof. Review overlapping RLS policies
    and add indexes for launch-critical foreign-key access paths before scale.
-7. Run one requirement-linked launch gate that keeps local, CI, browser,
+6. Run one requirement-linked launch gate that keeps local, CI, browser,
    staging, production, and audit/readback evidence separate.
 
 ## Phase 0 Verdict
@@ -92,3 +91,67 @@ PASS. The current state, intended source-of-truth boundaries, and prioritized
 gaps are now explicit and tied to repository and live production evidence.
 This verdict does not advance any later phase and is not a rollout-readiness
 claim.
+
+## Phase 1 Verdict
+
+### 1. Built
+
+- Self-service recovery request, one-time recovery continuation, set-password,
+  login/logout, proxy session refresh, and role-aware workspace routing are on
+  `main` at `9d907451922d80408d6544f540828aa442b3ab0e`.
+- Production redirect allowlists cover both apex and `www` callback paths,
+  including `/auth/callback/recovery/**`.
+- Supabase Auth leaked-password protection is enabled.
+
+### 2. Locally Tested
+
+- PR #706 passed typecheck, lint, build, the focused auth/admin suite (15 files,
+  77 tests), and the full Vitest suite (340 files, 2,027 tests).
+- Required GitHub App checks, browser smoke, Supabase RLS tests, CodeQL,
+  dependency review, Sonar, Claude review, and Codecov completed successfully.
+
+### 3. Browser Verified
+
+- Browser: isolated Chromium session `recovery706`.
+- Role/account: `nellis+mymedlife-recovery-test@medlifemovement.org`, visibly
+  labeled `TEST Phase 1 Recovery`.
+- Click path: `/auth/forgot-password` -> freshly delivered email link ->
+  `/auth/callback/recovery/Lw` -> `/auth/set-password?redirectTo=%2F` -> `/app`.
+- Password set, hard-reload session persistence, `/profile`, logout, anonymous
+  `/app` redirect, restored-password login, and post-HIBP login all passed.
+- The same account was moved through member, President / VP, Admin, and Super
+  Admin using the audited production RPC. `/leader`, `/staff`, and `/admin`
+  loaded only for allowed roles; denied workspace attempts returned to the
+  account's allowed default workspace.
+
+### 4. Staging Validated
+
+- Not separately exercised. The exact merged artifact was deployed directly to
+  production and proved there. This is recorded explicitly rather than treating
+  production proof as retroactive staging evidence.
+
+### 5. Production Proven
+
+- Vercel deployment `dpl_EXDb4ZoMF91k7TEynpPTEYNfZTqJ` serves the exact merge
+  commit on both production domains.
+- Gmail message `19f7bf5747e0b24c` supplied the fresh one-time recovery link used
+  in the browser proof.
+- Production audit rows record all temporary role transitions. Final database
+  readback shows one approved `general_member` membership and inactive
+  `president_vp`, `admin`, and `super_admin` assignments.
+- Final browser readback showed the TEST member identity and chapter on `/app`;
+  a subsequent `/admin` attempt returned to `/app`.
+
+### 6. Remaining Blocked
+
+- No Phase 1 launch-critical blocker remains. Expired-link and concurrent
+  cross-tab cases remain regression tests, and password-policy strengthening is
+  deferred until matching client validation and user communication exist.
+- Phase 2 user/chapter/membership materialization and HubSpot synchronization
+  remain unbuilt. This Phase 1 result does not move those gates.
+
+### 7. PASS/PARTIAL/BLOCKED
+
+**PASS.** Phase 1 meets its build, automated-proof, real-browser, deployed-site,
+authorization-readback, and cleanup requirements. This is an auth lifecycle
+verdict only, not a whole-product rollout-readiness claim.
