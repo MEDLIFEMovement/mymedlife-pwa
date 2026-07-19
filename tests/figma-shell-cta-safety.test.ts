@@ -59,9 +59,19 @@ describe("copied Figma shell CTA safety", () => {
   });
 
   it("documents fail-closed helpers for copied member and leader shell buttons", () => {
-    expect(readProjectFile("src/components/figma-member-mobile-home.tsx")).toContain(
-      "disabled={!onClick}",
+    const memberSource = readProjectFile("src/components/figma-member-mobile-home.tsx");
+
+    expect(memberSource).toContain("disabled={!onClick}");
+    expect(memberSource).toContain('label="Preview only - submission blocked"');
+    expect(memberSource).toContain("Inputs on this screen are not saved.");
+    expect(memberSource).toContain("No evidence, notification, review task, or points change will be created.");
+    expect(memberSource).not.toContain('onClick={() => navigate("confirm")}');
+    expect(memberSource).toContain('onClick={() => navigate("campaign")} className="text-primary text-xs font-semibold">See all');
+    expect(memberSource).toContain(
+      "Roles are assigned by authorized administrators and cannot be changed from the member app.",
     );
+    expect(memberSource).not.toContain("setDesignation");
+    expect(memberSource).not.toContain("VIEW_ACCESS");
     expect(readProjectFile("src/components/figma-leader-command-center.tsx")).toContain(
       "disabled={isBlocked}",
     );

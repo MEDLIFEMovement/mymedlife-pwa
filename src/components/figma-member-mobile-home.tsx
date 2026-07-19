@@ -81,8 +81,6 @@ const DEFAULT_MEMBER_IDENTITY_CONTEXT: MemberMobileIdentityContext = {
   ],
 };
 
-type Role = "student" | "leader" | "coach" | "admin";
-
 type UserDesignation =
   | "General Member"
   | "E-Board"
@@ -90,19 +88,6 @@ type UserDesignation =
   | "DS"
   | "Sales"
   | "Super Admin";
-
-// Which designations can access each privileged view
-const VIEW_ACCESS: Record<"leader" | "coach" | "admin", UserDesignation[]> = {
-  leader: ["E-Board"],
-  coach:  ["Staff", "DS", "Sales", "Super Admin"],
-  admin:  ["DS", "Super Admin"],
-};
-
-const VIEW_LABELS: Record<"leader" | "coach" | "admin", string> = {
-  leader: "Leader Hub",
-  coach:  "Coach View",
-  admin:  "Admin",
-};
 
 const MEMBER_EVENT_DETAIL_HREFS: Record<number, string> = {
   1: "/app/events/chapter-event-ucla-kickoff?source=events",
@@ -397,24 +382,18 @@ function TopBar({
 
 function StudentHome({
   navigate,
-  setRole,
   sltPrepEntry,
   memberContext,
   memberEvents,
   memberCampaign,
 }: {
   navigate: (s: Screen) => void;
-  setRole: (r: Role) => void;
   sltPrepEntry?: MemberSltPrepEntry | null;
   memberContext: MemberMobileIdentityContext;
   memberEvents?: MemberMobileEventContext[];
   memberCampaign?: MemberMobileCampaignContext | null;
 }) {
   const allDesignations: UserDesignation[] = ["General Member", "E-Board", "Staff", "DS", "Sales", "Super Admin"];
-  const [designation, setDesignation] = useState<UserDesignation>("General Member");
-  const permitted = (["leader", "coach", "admin"] as const).filter(
-    (v) => VIEW_ACCESS[v].includes(designation)
-  );
   const selfLeaderboardRows = getVisibleMemberLeaderboardRows(memberContext, 4);
   const campaignActionsCompleted = Math.min(Math.max(memberContext.completedActions, 0), 3), campaignProgressPct = Math.round((campaignActionsCompleted / 3) * 100);
   const homeEvents = memberEvents ?? [
@@ -605,7 +584,7 @@ function StudentHome({
         <div>
           <div className="flex items-center justify-between mb-3">
             <SLabel>Take Action: My Tasks</SLabel>
-            <button onClick={() => navigate("action")} className="text-primary text-xs font-semibold">See all</button>
+            <button onClick={() => navigate("campaign")} className="text-primary text-xs font-semibold">See all</button>
           </div>
           <div className="space-y-2">
             {[
@@ -683,40 +662,23 @@ function StudentHome({
             <SLabel>Assigned Permissions</SLabel>
             <div className="flex gap-1.5 flex-wrap">
               {allDesignations.map((r) => (
-                <button
+                <span
                   key={r}
-                  onClick={() => setDesignation(r)}
                   className={cn(
                     "px-3 py-1.5 rounded-full text-xs font-semibold border transition-all",
-                    designation === r
+                    r === "General Member"
                       ? "bg-primary/10 text-primary border-primary/40"
-                      : "bg-card text-muted-foreground border-border hover:border-primary/30 hover:text-foreground"
+                      : "bg-card text-muted-foreground border-border opacity-60"
                   )}
                 >
                   {r}
-                </button>
+                </span>
               ))}
             </div>
+            <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+              Preview only. Roles are assigned by authorized administrators and cannot be changed from the member app.
+            </p>
           </div>
-
-          {permitted.length > 0 && (
-            <div>
-              <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">Available Views</p>
-              <div className={cn("grid gap-2", permitted.length === 1 ? "grid-cols-1" : "grid-cols-2")}>
-                {permitted.map((v) => (
-                  <button
-                    key={v}
-                    onClick={() => { setRole(v); navigate(v); }}
-                    className="flex items-center gap-2.5 px-4 py-3 rounded-xl border border-border bg-card text-sm font-semibold text-foreground hover:bg-muted hover:border-primary/30 transition-colors"
-                  >
-                    {v === "leader" ? <Users size={16} className="text-primary" /> : v === "coach" ? <Award size={16} className="text-primary" /> : <Settings size={16} className="text-primary" />}
-                    {VIEW_LABELS[v]}
-                    <ChevronRight size={14} className="text-muted-foreground ml-auto" />
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
         </div>
       </div>
     </div>
@@ -1009,6 +971,13 @@ function EvidenceSubmission({ navigate }: { navigate: (s: Screen) => void }) {
       <TopBar title="Submit Evidence" onBack={() => navigate("action")} />
 
       <div className="px-4 pt-5 space-y-5">
+        <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4">
+          <p className="text-xs font-bold uppercase tracking-wide text-amber-800">Preview only</p>
+          <p className="mt-1 text-sm leading-relaxed text-amber-800">
+            Evidence submission is blocked until the durable review workflow is approved. Inputs on this screen are not saved.
+          </p>
+        </div>
+
         {/* Assignment summary */}
         <Card className="bg-secondary/50 border-secondary">
           <p className="text-xs font-bold text-primary uppercase tracking-wide mb-1">Submitting for</p>
@@ -1119,13 +1088,12 @@ function EvidenceSubmission({ navigate }: { navigate: (s: Screen) => void }) {
       {/* Fixed CTA */}
       <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] bg-card border-t border-border px-4 py-4 z-40">
         <PrimaryBtn
-          label="Submit for review"
-          onClick={() => navigate("confirm")}
+          label="Preview only - submission blocked"
           full
           icon={<ArrowRight size={16} />}
         />
         <p className="text-xs text-center text-muted-foreground mt-2">
-          Your leader will review and approve within 24–48 hours.
+          No evidence, notification, review task, or points change will be created.
         </p>
       </div>
     </div>
@@ -4049,7 +4017,6 @@ export function FigmaMemberMobileHome({
   repaintKey?: string;
 }) {
   const [screen, setScreen] = useState<Screen>(initialScreen);
-  const [role, setRole] = useState<Role>("student");
 
   function navigate(s: Screen) {
     setScreen(s);
@@ -4095,7 +4062,6 @@ export function FigmaMemberMobileHome({
         return (
           <StudentHome
             navigate={navigate}
-            setRole={setRole}
             sltPrepEntry={sltPrepEntry}
             memberContext={memberContext}
             memberEvents={memberEvents}
@@ -4151,7 +4117,6 @@ export function FigmaMemberMobileHome({
         return (
           <StudentHome
             navigate={navigate}
-            setRole={setRole}
             sltPrepEntry={sltPrepEntry}
             memberContext={memberContext}
           />
