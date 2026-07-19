@@ -324,7 +324,7 @@ function EventDetailView({
   storyFilter,
   storyId,
   resultState,
-}: {
+}: Readonly<{
   event: NonNullable<ReturnType<typeof getMemberLaunchLaneEventRowById>>;
   memberContext: MemberMobileIdentityContext;
   snapshot: NonNullable<ReturnType<typeof getLaunchLaneEventSnapshotById>>;
@@ -334,7 +334,7 @@ function EventDetailView({
   storyFilter?: string;
   storyId?: string;
   resultState: EventLoopResultState;
-}) {
+}>) {
   const detailHref = buildEventStepHref(event.id, "detail", source, profileSource, campaign, storyFilter, storyId);
   const rsvpHref = buildEventStepHref(event.id, "rsvp", source, profileSource, campaign, storyFilter, storyId);
   const checkInHref = buildEventStepHref(event.id, "checkin", source, profileSource, campaign, storyFilter, storyId);
@@ -361,6 +361,7 @@ function EventDetailView({
             Event RSVP
           </p>
           <button
+            type="button"
             disabled
             title="Event sharing is blocked in this preview until Luma sharing is approved"
             className="rounded-full bg-white/15 p-2.5 text-white backdrop-blur-sm"
@@ -470,6 +471,7 @@ function EventDetailView({
           </div>
           <div className="flex gap-2 border-t border-slate-200 pt-3">
             <button
+              type="button"
               disabled
               title="Calendar export is blocked in this preview"
               className="flex-1 rounded-xl bg-slate-100 px-3 py-2.5 text-sm font-semibold text-slate-800"
@@ -479,6 +481,7 @@ function EventDetailView({
               </span>
             </button>
             <button
+              type="button"
               disabled
               title="Event sharing is blocked in this preview until Luma sharing is approved"
               className="flex-1 rounded-xl bg-slate-100 px-3 py-2.5 text-sm font-semibold text-slate-800"
@@ -580,7 +583,7 @@ function EventRsvpConfirmView({
   storyFilter,
   storyId,
   resultState,
-}: {
+}: Readonly<{
   event: NonNullable<ReturnType<typeof getMemberLaunchLaneEventRowById>>;
   memberContext: MemberMobileIdentityContext;
   snapshot: NonNullable<ReturnType<typeof getLaunchLaneEventSnapshotById>>;
@@ -591,7 +594,7 @@ function EventRsvpConfirmView({
   storyFilter?: string;
   storyId?: string;
   resultState: EventLoopResultState;
-}) {
+}>) {
   const visibleLocationLabel = ensureVisibleTestLabel(snapshot.memberLocationLabel);
   const returnHref = getEventReturnHref(event.id, source, profileSource, campaign, storyFilter, storyId);
   const returnLabel = getEventReturnLabel(source);
@@ -699,7 +702,7 @@ function EventCheckInView({
   storyFilter,
   storyId,
   resultState,
-}: {
+}: Readonly<{
   event: NonNullable<ReturnType<typeof getMemberLaunchLaneEventRowById>>;
   memberContext: MemberMobileIdentityContext;
   snapshot: NonNullable<ReturnType<typeof getLaunchLaneEventSnapshotById>>;
@@ -710,7 +713,7 @@ function EventCheckInView({
   storyFilter?: string;
   storyId?: string;
   resultState: EventLoopResultState;
-}) {
+}>) {
   const visibleEventTitle = ensureVisibleTestLabel(event.title);
   const hasActiveRsvp = event.memberRsvpState === "registered";
   return (
@@ -872,7 +875,7 @@ function RsvpCancelControl({
   storyFilter,
   storyId,
   variant,
-}: {
+}: Readonly<{
   event: NonNullable<ReturnType<typeof getMemberLaunchLaneEventRowById>>;
   source?: string;
   profileSource?: string;
@@ -880,7 +883,7 @@ function RsvpCancelControl({
   storyFilter?: string;
   storyId?: string;
   variant: "hero" | "step";
-}) {
+}>) {
   if (!event.memberCanCancelRsvp) {
     return (
       <div
@@ -1020,25 +1023,25 @@ function PointsCard({
 function EventLoopResultBanner({
   resultState,
   className = "",
-}: {
+}: Readonly<{
   resultState: EventLoopResultState;
   className?: string;
-}) {
+}>) {
   if (!resultState) {
     return null;
   }
 
-  const classes =
-    resultState.tone === "success"
-      ? "border-emerald-200 bg-emerald-50 text-emerald-900"
-      : resultState.tone === "warning"
-        ? "border-amber-200 bg-amber-50 text-amber-900"
-        : "border-[#bfdbfe] bg-[#eff6ff] text-[#1b4b8e]";
+  const classesByTone = {
+    success: "border-emerald-200 bg-emerald-50 text-emerald-900",
+    warning: "border-amber-200 bg-amber-50 text-amber-900",
+    info: "border-[#bfdbfe] bg-[#eff6ff] text-[#1b4b8e]",
+  } satisfies Record<NonNullable<EventLoopResultState>["tone"], string>;
+  const classes = classesByTone[resultState.tone];
 
   return (
-    <div className={`rounded-2xl border p-4 text-sm font-semibold leading-6 ${classes} ${className}`} role="status">
+    <output className={`block rounded-2xl border p-4 text-sm font-semibold leading-6 ${classes} ${className}`}>
       {resultState.message}
-    </div>
+    </output>
   );
 }
 
@@ -1053,7 +1056,7 @@ function EventLoopActionForm({
   label,
   icon,
   className,
-}: {
+}: Readonly<{
   action: (formData: FormData) => Promise<void>;
   eventId: string;
   source?: string;
@@ -1064,7 +1067,7 @@ function EventLoopActionForm({
   label: string;
   icon?: ReactNode;
   className: string;
-}) {
+}>) {
   return (
     <form action={action} className="w-full">
       <input type="hidden" name="eventId" value={eventId} />
@@ -1122,12 +1125,12 @@ function Pill({
   label: string;
   variant: "green" | "blue" | "gray";
 }) {
-  const classes =
-    variant === "green"
-      ? "bg-emerald-50 text-emerald-700"
-      : variant === "blue"
-        ? "bg-blue-50 text-blue-700"
-        : "bg-slate-100 text-slate-700";
+  const classesByVariant = {
+    green: "bg-emerald-50 text-emerald-700",
+    blue: "bg-blue-50 text-blue-700",
+    gray: "bg-slate-100 text-slate-700",
+  } satisfies Record<"green" | "blue" | "gray", string>;
+  const classes = classesByVariant[variant];
 
   return (
     <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold ${classes}`}>
