@@ -20,8 +20,13 @@ vi.mock("@/app/login/actions", () => ({
   signOut: async () => undefined,
 }));
 
+const hubspotWorkspaceMock = vi.hoisted(() => vi.fn());
+
 vi.mock("@/services/admin-hubspot-sync-workspace", () => ({
-  getAdminHubSpotSyncWorkspace: async () => ({
+  getAdminHubSpotSyncWorkspace: hubspotWorkspaceMock,
+}));
+
+hubspotWorkspaceMock.mockResolvedValue({
     canRead: true,
     config: { enabled: true, environment: "production", reason: "Enabled for test." },
     lastRun: {
@@ -56,8 +61,7 @@ vi.mock("@/services/admin-hubspot-sync-workspace", () => ({
       createdAt: "2026-07-19T20:04:00.000Z",
     }],
     message: "HubSpot reads and app-owned reconciliation writes are enabled. HubSpot writes and invitations remain off.",
-  }),
-}));
+});
 
 vi.mock("@/services/local-actor-context", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@/services/local-actor-context")>();
@@ -574,5 +578,72 @@ describe("admin management pages", () => {
     expect(html).toContain("HubSpot writes and invitations remain off");
     expect(html).toContain("TEST reconciliation failure");
     expect(html).not.toContain("server-only-token");
+  });
+
+  it("renders honest empty HubSpot run and failure states with action readback", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("ds.admin@mymedlife.test"),
+    );
+    hubspotWorkspaceMock.mockResolvedValueOnce({
+      canRead: true,
+      config: { enabled: false, environment: "production", reason: "Disabled for test." },
+      lastRun: null,
+      counts: {
+        companies: 0,
+        contacts: 0,
+        memberships: 0,
+        pendingCompanies: 0,
+        pendingContacts: 0,
+        pendingMemberships: 0,
+        openFailures: 0,
+      },
+      failures: [],
+      message: "Disabled for test.",
+    });
+
+    const { default: AdminHubSpotIntegrationPage } = await import(
+      "@/app/admin/integrations/hubspot/page"
+    );
+    const html = renderToStaticMarkup(await AdminHubSpotIntegrationPage({
+      searchParams: Promise.resolve({ hubspotSyncResult: ["confirmation_required"] }),
+    }));
+
+    expect(html).toContain("Last action result:");
+    expect(html).toContain("confirmation required");
+    expect(html).toContain("No sync run has completed yet");
+    expect(html).toContain("No unresolved failures");
+  });
+
+  it("renders an explicit restricted state when HubSpot readback is unavailable", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("ds.admin@mymedlife.test"),
+    );
+    hubspotWorkspaceMock.mockResolvedValueOnce({
+      canRead: false,
+      config: { enabled: false, environment: "production", reason: "Unavailable." },
+      lastRun: null,
+      counts: {
+        companies: 0,
+        contacts: 0,
+        memberships: 0,
+        pendingCompanies: 0,
+        pendingContacts: 0,
+        pendingMemberships: 0,
+        openFailures: 0,
+      },
+      failures: [],
+      message: "Readback unavailable for test.",
+    });
+
+    const { default: AdminHubSpotIntegrationPage } = await import(
+      "@/app/admin/integrations/hubspot/page"
+    );
+    const html = renderToStaticMarkup(await AdminHubSpotIntegrationPage({}));
+
+    expect(html).toContain("HubSpot sync readback unavailable");
+    expect(html).toContain("Readback unavailable for test");
+    expect(html).not.toContain("Reconciliation queue");
   });
 });

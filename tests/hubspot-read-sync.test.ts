@@ -509,6 +509,39 @@ describe("HubSpot read sync foundation", () => {
       createServerClient: async () => ({ client: null, config: { enabled: false, mode: "disabled", environment: "local", isLocalOnly: true, isHostedStaging: false, reason: "Auth unavailable." } }),
     });
     expect(unavailable).toMatchObject({ canRead: false, message: "Auth unavailable." });
+
+    const queryFailureClient = createFakeAppClient((query) => (
+      query.table === "hubspot_contact_imports"
+        ? failed("readback query failed")
+        : ok([])
+    ));
+    const queryFailure = await getAdminHubSpotSyncWorkspace({
+      getSyncConfig: () => ({ enabled: true, environment: "production", reason: "Enabled." }),
+      createServerClient: async () => ({
+        client: queryFailureClient as never,
+        config: { enabled: true, mode: "production_supabase", environment: "production", url: "https://example.supabase.co", anonKey: "browser", isLocalOnly: false, isHostedStaging: false, reason: "Enabled." },
+      }),
+    });
+    expect(queryFailure).toMatchObject({
+      canRead: false,
+      message: "HubSpot sync readback is unavailable: readback query failed",
+    });
+
+    const emptyClient = createFakeAppClient(() => ({ data: null, count: null, error: null }));
+    const empty = await getAdminHubSpotSyncWorkspace({
+      getSyncConfig: () => ({ enabled: false, environment: "production", reason: "Sync disabled." }),
+      createServerClient: async () => ({
+        client: emptyClient as never,
+        config: { enabled: true, mode: "production_supabase", environment: "production", url: "https://example.supabase.co", anonKey: "browser", isLocalOnly: false, isHostedStaging: false, reason: "Enabled." },
+      }),
+    });
+    expect(empty).toMatchObject({
+      canRead: true,
+      lastRun: null,
+      counts: { companies: 0, contacts: 0, memberships: 0, openFailures: 0 },
+      failures: [],
+      message: "Sync disabled.",
+    });
   });
 
   it("keeps source data, sync status, failures, and admin-only RLS in the migration", () => {
