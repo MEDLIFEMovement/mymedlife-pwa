@@ -137,9 +137,9 @@ describe("home page", () => {
     const { default: HomePage } = await import("@/app/app/page");
     const html = renderToStaticMarkup(await HomePage({}));
 
-    expect(html).toContain("TEST Test Boston University Luma RSVP Night");
-    expect(html).toContain(`/app/events/${bostonEventId}?source=home`);
-    expect(html).toContain("Location not set");
+    expect(html).toContain("No upcoming events are published for this chapter.");
+    expect(html).not.toContain("TEST Test Boston University Luma RSVP Night");
+    expect(html).not.toContain(`/app/events/${bostonEventId}?source=home`);
     expect(html).not.toContain("Ackerman 2100");
     expect(html).not.toContain("Bruin Walk Table 7");
     expect(html).not.toContain("chapter-event-lakeside-welcome");

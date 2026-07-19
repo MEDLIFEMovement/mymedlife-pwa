@@ -253,9 +253,9 @@ describe("member mobile shell routes", () => {
     expect(html).toContain(">Events<");
     expect(html).toContain("Show up. Check in. Earn points.");
     expect(html).toContain("TEST Intro GBM");
-    expect(html).toContain('href="/app/events/chapter-event-ucla-kickoff?source=events&amp;step=rsvp"');
-    expect(html).toContain('href="/app/events/chapter-event-ucla-kickoff?source=events"');
-    expect(html).toContain('href="/app/events/chapter-event-lakeside-welcome?source=events"');
+    expect(html).not.toContain('href="/app/events/chapter-event-ucla-kickoff?source=events&amp;step=rsvp"');
+    expect(html).toContain('href="/app/events/chapter-event-ucla-kickoff"');
+    expect(html).toContain('href="/app/events/chapter-event-lakeside-welcome"');
     expect(html).toContain('href="/app/events?campaign=Rush+Month"');
     expect(html).toContain('href="/app/events?campaign=Spring+Showcase"');
     expect(html).toContain('href="/app/events?campaign=Safe+Homes+Fundraiser"');
@@ -285,7 +285,7 @@ describe("member mobile shell routes", () => {
     expect(html).toContain('href="/app/events"');
     expect(html).toContain('href="/app/events?campaign=Spring+Showcase"');
     expect(html).toContain(
-      'href="/app/events/chapter-event-mcgill-coffee-chat?source=events&amp;campaign=Spring+Showcase"',
+      'href="/app/events/chapter-event-mcgill-coffee-chat?campaign=Spring+Showcase"',
     );
     expect(html).not.toContain(
       'href="/app/events/test-showcase-planning-meeting?source=events&amp;campaign=Spring+Showcase"',

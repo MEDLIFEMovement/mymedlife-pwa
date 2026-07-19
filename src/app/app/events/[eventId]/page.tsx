@@ -34,6 +34,7 @@ import {
 } from "@/services/member-launch-lane-events";
 import {
   mapMemberEventLoopWriteResultMessage,
+  memberEventLoopPointAward,
   memberEventLoopWriteResultParam,
 } from "@/services/member-event-loop-write";
 import { getLocalActorContext } from "@/services/local-actor-context";
@@ -572,12 +573,16 @@ function EventDetailView({
             <Link href={detailHref} className="rounded-full border border-[#bfdbfe] bg-white px-3 py-1.5 text-xs font-semibold text-slate-700">
               Detail
             </Link>
-            <Link href={rsvpHref} className="rounded-full border border-[#bfdbfe] bg-white px-3 py-1.5 text-xs font-semibold text-slate-700">
-              RSVP
-            </Link>
-            <Link href={checkInHref} className="rounded-full border border-[#bfdbfe] bg-white px-3 py-1.5 text-xs font-semibold text-slate-700">
-              Check-In
-            </Link>
+            {!event.memberActionsClosed ? (
+              <>
+                <Link href={rsvpHref} className="rounded-full border border-[#bfdbfe] bg-white px-3 py-1.5 text-xs font-semibold text-slate-700">
+                  RSVP
+                </Link>
+                <Link href={checkInHref} className="rounded-full border border-[#bfdbfe] bg-white px-3 py-1.5 text-xs font-semibold text-slate-700">
+                  Check-In
+                </Link>
+              </>
+            ) : null}
             <Link href={pointsHref} className="rounded-full border border-[#bfdbfe] bg-white px-3 py-1.5 text-xs font-semibold text-slate-700">
               Points
             </Link>
@@ -863,6 +868,13 @@ function EventPointsImpactView({
   const visibleChapterName = memberContext.chapterName;
   const returnHref = getEventReturnHref(event.id, source, profileSource, campaign, storyFilter, storyId);
   const returnLabel = getEventReturnLabel(source);
+  const checkInConfirmed =
+    event.memberPointsAwarded > 0 ||
+    resultState?.code === "checked_in" ||
+    resultState?.code === "already_checked_in";
+  const pointsDelta = checkInConfirmed
+    ? Math.max(event.memberPointsAwarded, memberEventLoopPointAward)
+    : 0;
   const chapterRows = getVisibleMemberLeaderboardRows(memberContext, 3).map((row) => ({
     rank: formatLeaderboardRank(row.rank),
     name: row.me ? `You (${row.name})` : row.name,
@@ -873,13 +885,21 @@ function EventPointsImpactView({
   return (
     <StepShell backHref={backHref} title="">
       <div className="flex flex-1 flex-col items-center justify-center px-4 py-6 text-center">
-        <div className="mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-emerald-100">
-          <CheckCircle2 size={48} className="text-emerald-600" />
+        <div className={`mb-6 flex h-24 w-24 items-center justify-center rounded-full ${checkInConfirmed ? "bg-emerald-100" : "bg-amber-100"}`}>
+          {checkInConfirmed ? (
+            <CheckCircle2 size={48} className="text-emerald-600" />
+          ) : (
+            <Clock size={48} className="text-amber-700" />
+          )}
         </div>
-        <h1 className="mb-1 text-2xl font-extrabold text-slate-950">Checked in!</h1>
-        <p className="mt-2 mb-1 text-4xl font-extrabold text-amber-500">+{event.pointsAwarded} points</p>
+        <h1 className="mb-1 text-2xl font-extrabold text-slate-950">
+          {checkInConfirmed ? "Checked in!" : "Check-in not recorded"}
+        </h1>
+        <p className="mt-2 mb-1 text-4xl font-extrabold text-amber-500">+{pointsDelta} points</p>
         <p className="mb-8 text-sm text-slate-600">
-          Internal myMEDLIFE readback for {visibleChapterName} after {snapshot.memberDateTimeLabel}.
+          {checkInConfirmed
+            ? `Internal myMEDLIFE readback for ${visibleChapterName} after ${snapshot.memberDateTimeLabel}.`
+            : `No member attendance or points completion is shown for ${visibleChapterName} until the write succeeds and durable readback confirms it.`}
         </p>
 
         <Card className="mb-6 w-full border-[#dbeafe] bg-[#eff6ff] text-left">
@@ -910,9 +930,9 @@ function EventPointsImpactView({
             Write honesty
           </p>
           <p className="mt-2 text-sm leading-6 text-slate-700">
-            This route reflects the approved internal TEST event-loop write path. Duplicate
-            check-ins are blocked from awarding duplicate points, and Luma/external provider
-            writes remain off.
+            {checkInConfirmed
+              ? "This route reflects confirmed internal TEST event-loop readback. Duplicate check-ins are blocked from awarding duplicate points, and Luma/external provider writes remain off."
+              : "This route does not claim completion when the internal write is blocked or fails. No attendance, points, Luma, or external provider success is implied."}
           </p>
         </div>
 

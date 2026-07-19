@@ -226,8 +226,8 @@ describe("member event detail route", () => {
     expect(html).toContain('href="/app/points?source=events"');
     expect(html).toContain('href="/profile"');
     expect(html).toContain('aria-current="page"');
-    expect(html).toContain('href="/app/events/chapter-event-ucla-kickoff?source=events&amp;step=rsvp"');
-    expect(html).toContain('href="/app/events/chapter-event-ucla-kickoff?source=events&amp;step=checkin"');
+    expect(html).not.toContain('href="/app/events/chapter-event-ucla-kickoff?source=events&amp;step=rsvp"');
+    expect(html).not.toContain('href="/app/events/chapter-event-ucla-kickoff?source=events&amp;step=checkin"');
     expect(html).toContain('href="/app/events/chapter-event-ucla-kickoff?source=events&amp;step=points"');
   });
 
@@ -512,7 +512,7 @@ describe("member event detail route", () => {
     expect(html).toContain("Opened from Points &amp; Recognition");
     expect(html).toContain("Move from TEST points readback into the next event.");
     expect(html).toContain("The member loop should not stop at the leaderboard.");
-    expect(html).toContain('href="/app/events/chapter-event-ucla-kickoff?source=points&amp;step=rsvp"');
+    expect(html).not.toContain('href="/app/events/chapter-event-ucla-kickoff?source=points&amp;step=rsvp"');
     expect(html).toContain('href="/profile?source=points&amp;event=chapter-event-ucla-kickoff"');
   });
 
@@ -565,7 +565,7 @@ describe("member event detail route", () => {
 
     expect(html).toContain('href="/profile?source=points&amp;event=chapter-event-ucla-kickoff"');
     expect(html).toContain('aria-label="Back to Profile"');
-    expect(html).toContain(
+    expect(html).not.toContain(
       'href="/app/events/chapter-event-ucla-kickoff?source=profile&amp;step=rsvp&amp;profileSource=points"',
     );
     expect(html).toContain('href="/app/points?source=profile&amp;event=chapter-event-ucla-kickoff"');
@@ -615,7 +615,7 @@ describe("member event detail route", () => {
     expect(html).toContain('href="/app/points?source=events&amp;event=chapter-event-ucla-kickoff&amp;campaign=Rush+Month"');
     expect(html).toContain('href="/app/events?source=points&amp;campaign=Rush+Month"');
     expect(html).toContain('href="/profile?source=points&amp;event=chapter-event-ucla-kickoff&amp;campaign=Rush+Month"');
-    expect(html).toContain('href="/app/events/chapter-event-ucla-kickoff?source=points&amp;step=rsvp&amp;campaign=Rush+Month"');
+    expect(html).not.toContain('href="/app/events/chapter-event-ucla-kickoff?source=points&amp;step=rsvp&amp;campaign=Rush+Month"');
   });
 
   it("drops the generic All campaign marker when points opens event detail without a real filter", async () => {
@@ -669,7 +669,7 @@ describe("member event detail route", () => {
     expect(html).toContain('href="/profile?source=points&amp;event=chapter-event-ucla-kickoff&amp;campaign=Rush+Month"');
     expect(html).toContain('href="/app/events?source=profile&amp;profileSource=points&amp;campaign=Rush+Month"');
     expect(html).toContain('href="/app/points?source=profile&amp;event=chapter-event-ucla-kickoff&amp;campaign=Rush+Month"');
-    expect(html).toContain('href="/app/events/chapter-event-ucla-kickoff?source=profile&amp;step=rsvp&amp;profileSource=points&amp;campaign=Rush+Month"');
+    expect(html).not.toContain('href="/app/events/chapter-event-ucla-kickoff?source=profile&amp;step=rsvp&amp;profileSource=points&amp;campaign=Rush+Month"');
   });
 
   it("keeps bottom-nav profile continuity when event detail was opened from a filtered profile loop", async () => {
@@ -750,7 +750,7 @@ describe("member event detail route", () => {
     expect(html).toContain('href="/app/events?source=stories&amp;storyFilter=Events&amp;campaign=Rush+Month"');
     expect(html).toContain('href="/app/points?source=stories&amp;event=chapter-event-ucla-kickoff&amp;storyFilter=Events&amp;story=2&amp;campaign=Rush+Month"');
     expect(html).toContain('href="/profile?source=stories&amp;event=chapter-event-ucla-kickoff&amp;campaign=Rush+Month&amp;storyFilter=Events&amp;story=2"');
-    expect(html).toContain('href="/app/events/chapter-event-ucla-kickoff?source=stories&amp;step=rsvp&amp;storyFilter=Events&amp;story=2&amp;campaign=Rush+Month"');
+    expect(html).not.toContain('href="/app/events/chapter-event-ucla-kickoff?source=stories&amp;step=rsvp&amp;storyFilter=Events&amp;story=2&amp;campaign=Rush+Month"');
   });
 
   it("keeps the event-detail profile hop inside the exact member event loop", async () => {
