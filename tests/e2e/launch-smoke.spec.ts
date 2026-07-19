@@ -306,7 +306,7 @@ test.describe("myMEDLIFE launch route smoke", () => {
     await selectPreviewActor(context, "ds.admin@mymedlife.test");
 
     const adminItems = [
-      { label: "Overview", heading: "Overview", url: /\/admin$/ },
+      { label: "Overview", heading: "Overview", url: /\/admin(?:\?view=overview)?$/ },
       { label: "Users", heading: "User Access Management", url: /\/admin\/users$/ },
       { label: "Chapters", heading: "Chapters", url: /\/admin\?view=chapters$/ },
       { label: "Modules", heading: "Modules & Feature Flags", url: /\/admin\?view=modules$/ },

@@ -17,10 +17,10 @@ import {
   Home, BarChart2, CalendarDays, Trophy, User, Users,
   ChevronRight, ChevronLeft, CheckCircle2, Clock, Circle,
   AlertTriangle, Upload, Link2, FileText, Camera,
-  Star, Shield, Bell, Award, ThumbsUp,
+  Star, Shield, Bell, ThumbsUp,
   MessageSquare, TrendingUp, Check, X,
   ArrowRight, Plus, Flag, Activity, MapPin,
-  Target, Zap, Eye, Settings,
+  Target, Zap, Eye,
   Share2, QrCode, Download, UserCheck, Copy,
   Heart, ExternalLink, Play, Bookmark, Sparkles, ArrowLeft, Backpack
 } from "lucide-react";
@@ -280,7 +280,7 @@ function PrimaryBtn({
   yellow?: boolean;
 }) {
   return (
-    <button onClick={onClick} disabled={!onClick}
+    <button type="button" onClick={onClick} disabled={!onClick}
       className={cn(
         "flex items-center justify-center gap-2 px-5 py-3.5 rounded-2xl font-bold text-sm active:scale-[0.98] transition-all shadow-sm",
         yellow ? "bg-accent text-accent-foreground" : "bg-primary text-primary-foreground hover:opacity-90",
@@ -303,7 +303,7 @@ function SecondaryBtn({
   full?: boolean;
 }) {
   return (
-    <button onClick={onClick} disabled={!onClick}
+    <button type="button" onClick={onClick} disabled={!onClick}
       className={cn(
         "flex items-center justify-center gap-2 border border-primary text-primary px-5 py-3.5 rounded-2xl font-semibold text-sm active:scale-[0.98] transition-all hover:bg-primary/5",
         full && "w-full", !onClick && "opacity-70 cursor-not-allowed"
@@ -367,7 +367,7 @@ function TopBar({
     <div className="flex items-center justify-between px-4 py-3 bg-card border-b border-border sticky top-0 z-40">
       <div className="flex items-center gap-2 min-w-0">
         {onBack && (
-          <button onClick={onBack} className="p-1 -ml-1 rounded-lg hover:bg-muted text-foreground">
+          <button type="button" onClick={onBack} className="p-1 -ml-1 rounded-lg hover:bg-muted text-foreground">
             <ChevronLeft size={22} />
           </button>
         )}
@@ -413,7 +413,7 @@ function StudentHome({
             <h1 className="text-white text-2xl font-extrabold mt-1">Hi, {memberContext.firstName} 👋</h1>
             <p className="text-blue-200 text-sm mt-1">You are making a difference.</p>
           </div>
-          <button disabled title="Notifications are blocked in this preview" className="relative p-2.5 rounded-xl bg-white/10 mt-1">
+          <button type="button" disabled title="Notifications are blocked in this preview" className="relative p-2.5 rounded-xl bg-white/10 mt-1">
             <Bell size={20} className="text-white" />
             <span className="absolute top-2 right-2 w-2 h-2 bg-accent rounded-full" />
           </button>
@@ -585,7 +585,7 @@ function StudentHome({
         <div>
           <div className="flex items-center justify-between mb-3">
             <SLabel>Take Action: My Tasks</SLabel>
-            <button onClick={() => navigate("campaign")} className="text-primary text-xs font-semibold">See all</button>
+            <button type="button" onClick={() => navigate("campaign")} className="text-primary text-xs font-semibold">See all</button>
           </div>
           <div className="space-y-2">
             {[
@@ -742,7 +742,7 @@ function CampaignPage({ navigate }: { navigate: (s: Screen) => void }) {
 
         {/* Why it matters */}
         <Card className="overflow-hidden" padding={false}>
-          <button
+          <button type="button"
             onClick={() => setWhyOpen(!whyOpen)}
             className="flex items-center justify-between w-full p-4"
           >
@@ -997,7 +997,7 @@ function EvidenceSubmission({ navigate }: { navigate: (s: Screen) => void }) {
           <SLabel>Evidence Type</SLabel>
           <div className="flex gap-2 mb-4">
             {(["screenshot", "link", "text"] as const).map((t) => (
-              <button
+              <button type="button"
                 key={t}
                 onClick={() => setTab(t)}
                 className={cn(
@@ -1013,7 +1013,7 @@ function EvidenceSubmission({ navigate }: { navigate: (s: Screen) => void }) {
           </div>
 
           {tab === "screenshot" && (
-            <button disabled title="File uploads are blocked in this preview until storage approval is complete" className="w-full border-2 border-dashed border-border rounded-2xl flex flex-col items-center justify-center gap-3 py-10 hover:border-primary/40 hover:bg-muted/50 transition-colors">
+            <button type="button" disabled title="File uploads are blocked in this preview until storage approval is complete" className="w-full border-2 border-dashed border-border rounded-2xl flex flex-col items-center justify-center gap-3 py-10 hover:border-primary/40 hover:bg-muted/50 transition-colors">
               <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center">
                 <Camera size={22} className="text-primary" />
               </div>
@@ -1176,7 +1176,7 @@ function LeadershipDashboard({ navigate }: { navigate: (s: Screen) => void }) {
     <div className="pb-10">
       {/* Header */}
       <div className="bg-primary px-6 pt-12 pb-8">
-        <button onClick={() => navigate("home")} className="flex items-center gap-1 text-blue-200 text-sm mb-4">
+        <button type="button" onClick={() => navigate("home")} className="flex items-center gap-1 text-blue-200 text-sm mb-4">
           <ChevronLeft size={16} />
           Student view
         </button>
@@ -1185,7 +1185,7 @@ function LeadershipDashboard({ navigate }: { navigate: (s: Screen) => void }) {
             <p className="text-blue-200 text-xs font-bold uppercase tracking-wide">UCLA MEDLIFE</p>
             <h1 className="text-white text-2xl font-extrabold mt-1">Leader Hub</h1>
           </div>
-          <button disabled title="Notifications are blocked in this preview" className="relative p-2.5 bg-white/10 rounded-xl">
+          <button type="button" disabled title="Notifications are blocked in this preview" className="relative p-2.5 bg-white/10 rounded-xl">
             <Bell size={20} className="text-white" />
             <span className="absolute top-2 right-2 w-2 h-2 bg-accent rounded-full" />
           </button>
@@ -1242,7 +1242,7 @@ function LeadershipDashboard({ navigate }: { navigate: (s: Screen) => void }) {
         <div>
           <div className="flex items-center justify-between mb-3">
             <SLabel>Member Status</SLabel>
-            <button disabled title="Full member list is available in the leader workspace" className="text-primary text-xs font-semibold">All members</button>
+            <button type="button" disabled title="Full member list is available in the leader workspace" className="text-primary text-xs font-semibold">All members</button>
           </div>
           <Card padding={false}>
             {members.map((m, i) => (
@@ -1278,7 +1278,7 @@ function LeadershipDashboard({ navigate }: { navigate: (s: Screen) => void }) {
         <div>
           <div className="flex items-center justify-between mb-3">
             <SLabel>Evidence Queue</SLabel>
-            <button onClick={() => navigate("review")} className="text-primary text-xs font-semibold">
+            <button type="button" onClick={() => navigate("review")} className="text-primary text-xs font-semibold">
               Review all 7 →
             </button>
           </div>
@@ -1369,7 +1369,7 @@ function AssignAction({ navigate }: { navigate: (s: Screen) => void }) {
               <label className="block text-xs font-bold text-muted-foreground mb-2 uppercase tracking-wide">Campaign</label>
               <div className="space-y-2">
                 {["Rush Month", "Spring Showcase", "Community Health Fair"].map((c) => (
-                  <button
+                  <button type="button"
                     key={c}
                     onClick={() => setCampaign(c)}
                     className={cn(
@@ -1387,7 +1387,7 @@ function AssignAction({ navigate }: { navigate: (s: Screen) => void }) {
               <label className="block text-xs font-bold text-muted-foreground mb-2 uppercase tracking-wide">Action Template</label>
               <div className="space-y-2">
                 {templates.map((t) => (
-                  <button
+                  <button type="button"
                     key={t}
                     onClick={() => setTemplate(t)}
                     className={cn(
@@ -1416,7 +1416,7 @@ function AssignAction({ navigate }: { navigate: (s: Screen) => void }) {
               <label className="block text-xs font-bold text-muted-foreground mb-2 uppercase tracking-wide">Assign To</label>
               <div className="space-y-2">
                 {["General Members", "Action Committee Chairs", "E-Board", "Individual member"].map((r) => (
-                  <button
+                  <button type="button"
                     key={r}
                     onClick={() => setAssignTo(r)}
                     className={cn(
@@ -1454,7 +1454,7 @@ function AssignAction({ navigate }: { navigate: (s: Screen) => void }) {
               <label className="block text-xs font-bold text-muted-foreground mb-2 uppercase tracking-wide">Evidence Required</label>
               <div className="space-y-2">
                 {["Screenshot", "Link", "Short text update", "Screenshot + text"].map((e) => (
-                  <button
+                  <button type="button"
                     key={e}
                     disabled
                     title="Evidence requirement editing is blocked in this preview"
@@ -1580,7 +1580,7 @@ function ReviewEvidence({ navigate }: { navigate: (s: Screen) => void }) {
                   <div className="text-center">
                     <Camera size={20} className="text-muted-foreground mx-auto" />
                     <p className="text-xs text-muted-foreground mt-1">Screenshot attached</p>
-                    <button disabled title="Full evidence preview is blocked in this review shell" className="text-xs text-primary font-semibold mt-1">View full</button>
+                    <button type="button" disabled title="Full evidence preview is blocked in this review shell" className="text-xs text-primary font-semibold mt-1">View full</button>
                   </div>
                 </div>
               ) : item.type === "Link" ? (
@@ -1608,14 +1608,14 @@ function ReviewEvidence({ navigate }: { navigate: (s: Screen) => void }) {
               {/* Actions */}
               {!reviewed[item.id] && (
                 <div className="flex gap-2">
-                  <button
+                  <button type="button"
                     onClick={() => setReviewed((r) => ({ ...r, [item.id]: "approved" }))}
                     className="flex-1 flex items-center justify-center gap-1.5 bg-emerald-500 text-white py-2.5 rounded-xl text-sm font-bold active:scale-[0.98] transition-all"
                   >
                     <ThumbsUp size={14} />
                     Approve +{item.pts}
                   </button>
-                  <button
+                  <button type="button"
                     onClick={() => setReviewed((r) => ({ ...r, [item.id]: "changes" }))}
                     className="flex-1 flex items-center justify-center gap-1.5 border border-amber-400 text-amber-700 py-2.5 rounded-xl text-sm font-bold active:scale-[0.98] transition-all bg-amber-50"
                   >
@@ -1658,7 +1658,7 @@ function CoachDashboard({ navigate }: { navigate: (s: Screen) => void }) {
     <div className="pb-10">
       {/* Header */}
       <div className="bg-primary px-6 pt-12 pb-8">
-        <button onClick={() => navigate("home")} className="flex items-center gap-1 text-blue-200 text-sm mb-4">
+        <button type="button" onClick={() => navigate("home")} className="flex items-center gap-1 text-blue-200 text-sm mb-4">
           <ChevronLeft size={16} />
           Student view
         </button>
@@ -1747,7 +1747,7 @@ function CoachDashboard({ navigate }: { navigate: (s: Screen) => void }) {
                       {ch.decision === "Advance" ? <TrendingUp size={13} /> : ch.decision === "Hold" ? <AlertTriangle size={13} /> : <Flag size={13} />}
                       {ch.decision}
                     </div>
-                    <button
+                    <button type="button"
                       onClick={() => navigate("leader")}
                       className="text-primary text-xs font-semibold flex items-center gap-1"
                     >
@@ -1795,7 +1795,7 @@ function AdminDashboard({ navigate }: { navigate: (s: Screen) => void }) {
   return (
     <div className="pb-10">
       <div className="bg-primary px-6 pt-12 pb-8">
-        <button onClick={() => navigate("home")} className="flex items-center gap-1 text-blue-200 text-sm mb-4">
+        <button type="button" onClick={() => navigate("home")} className="flex items-center gap-1 text-blue-200 text-sm mb-4">
           <ChevronLeft size={16} />
           Student view
         </button>
@@ -2751,10 +2751,10 @@ function EventsScreen({
 function EventDetailScreen({
   navigate,
   memberContext,
-}: {
+}: Readonly<{
   navigate: (s: Screen) => void;
   memberContext: MemberMobileIdentityContext;
-}) {
+}>) {
   const [rsvpd, setRsvpd] = useState(false);
 
   return (
@@ -2764,14 +2764,14 @@ function EventDetailScreen({
       <div className="bg-gradient-to-br from-primary to-blue-700 px-5 pt-12 pb-8">
         {/* Nav row */}
         <div className="flex items-center justify-between mb-6">
-          <button
+          <button type="button"
             onClick={() => navigate("events")}
             className="bg-white/15 backdrop-blur-sm text-white rounded-full p-2.5 hover:bg-white/25 transition-colors"
           >
             <ChevronLeft size={18} />
           </button>
           <p className="text-white text-sm font-bold uppercase tracking-widest">Event RSVP</p>
-          <button disabled title="Event sharing is blocked in this preview until Luma sharing is approved" className="bg-white/15 backdrop-blur-sm text-white rounded-full p-2.5 hover:bg-white/25 transition-colors">
+          <button type="button" disabled title="Event sharing is blocked in this preview until Luma sharing is approved" className="bg-white/15 backdrop-blur-sm text-white rounded-full p-2.5 hover:bg-white/25 transition-colors">
             <Share2 size={16} />
           </button>
         </div>
@@ -2803,7 +2803,7 @@ function EventDetailScreen({
             </div>
           </div>
         ) : (
-          <button
+          <button type="button"
             onClick={() => { setRsvpd(true); navigate("rsvp-confirm"); }}
             className="w-full bg-accent text-accent-foreground py-4 rounded-2xl text-lg font-extrabold shadow-lg hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
           >
@@ -2851,10 +2851,10 @@ function EventDetailScreen({
             </div>
           </div>
           <div className="flex gap-2 pt-3 border-t border-border">
-            <button disabled title="Calendar export is blocked in this preview" className="flex-1 bg-muted text-foreground text-sm font-semibold py-2.5 rounded-xl flex items-center justify-center gap-1.5 hover:bg-secondary transition-colors">
+            <button type="button" disabled title="Calendar export is blocked in this preview" className="flex-1 bg-muted text-foreground text-sm font-semibold py-2.5 rounded-xl flex items-center justify-center gap-1.5 hover:bg-secondary transition-colors">
               <CalendarDays size={15} className="text-primary" /> Add to Calendar
             </button>
-            <button disabled title="Event sharing is blocked in this preview until Luma sharing is approved" className="flex-1 bg-muted text-foreground text-sm font-semibold py-2.5 rounded-xl flex items-center justify-center gap-1.5 hover:bg-secondary transition-colors">
+            <button type="button" disabled title="Event sharing is blocked in this preview until Luma sharing is approved" className="flex-1 bg-muted text-foreground text-sm font-semibold py-2.5 rounded-xl flex items-center justify-center gap-1.5 hover:bg-secondary transition-colors">
               <Share2 size={15} className="text-primary" /> Share
             </button>
           </div>
@@ -2919,10 +2919,10 @@ function EventDetailScreen({
 function RsvpConfirmScreen({
   navigate,
   memberContext,
-}: {
+}: Readonly<{
   navigate: (s: Screen) => void;
   memberContext: MemberMobileIdentityContext;
-}) {
+}>) {
   return (
     <div className="pb-10 min-h-screen flex flex-col">
       <TopBar title="" onBack={() => navigate("event-detail")} />
@@ -2986,10 +2986,10 @@ function RsvpConfirmScreen({
 function CheckInScreen({
   navigate,
   memberContext,
-}: {
+}: Readonly<{
   navigate: (s: Screen) => void;
   memberContext: MemberMobileIdentityContext;
-}) {
+}>) {
   const [checked, setChecked] = useState(false);
   const selfLeaderboardRows = getVisibleMemberLeaderboardRows(memberContext, 3);
 
@@ -3028,7 +3028,7 @@ function CheckInScreen({
               </div>
             </div>
 
-            <button
+            <button type="button"
               onClick={() => { setChecked(true); }}
               className="w-full bg-primary text-white py-4 rounded-2xl text-base font-bold hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
             >
@@ -3420,7 +3420,7 @@ function VideoPlayer({ story }: { story: Story }) {
       <div className="relative w-full bg-black" style={{ aspectRatio: "16/9" }}>
         <img src={story.image} alt={story.title} className="w-full h-full object-cover opacity-80" />
         <div className="absolute inset-0 bg-black/30" />
-        <button
+        <button type="button"
           onClick={() => setPlaying(true)}
           className="absolute inset-0 flex flex-col items-center justify-center gap-3 group"
         >
