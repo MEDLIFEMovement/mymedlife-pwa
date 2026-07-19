@@ -24,6 +24,8 @@ export type MemberLaunchLaneEventRow = {
   memberPointsLabel: string;
   memberRsvpLabel: string;
   memberRsvpState: "registered" | "open";
+  memberCanCancelRsvp: boolean;
+  memberRsvpLockLabel: string | null;
   memberLumaLabel: string | null;
   loopStage: MemberLaunchLaneLoopStage;
   rsvpStatusLabel: string;
@@ -83,6 +85,7 @@ function toMemberLaunchLaneEventRow(
   const memberPointsAwarded = profileId
     ? sumLaunchLanePointsForEvent(data.allPointsEventRows, event.id, profileId)
     : 0;
+  const memberCanCancelRsvp = alreadyRecorded && memberPointsAwarded <= 0;
   const loopState = getMemberLaunchLaneLoopState({
     alreadyRecorded,
     attendanceCount: event.attendanceCount,
@@ -101,6 +104,11 @@ function toMemberLaunchLaneEventRow(
     memberPointsLabel: getLaunchLaneAttendancePointsLabel(),
     memberRsvpLabel: alreadyRecorded ? "RSVP'd" : "RSVP",
     memberRsvpState: rsvpState,
+    memberCanCancelRsvp,
+    memberRsvpLockLabel:
+      alreadyRecorded && !memberCanCancelRsvp
+        ? "RSVP locked after check-in"
+        : null,
     memberLumaLabel: hasLumaLink ? "Luma" : null,
     loopStage: loopState.stage,
     rsvpStatusLabel: loopState.statusLabel,

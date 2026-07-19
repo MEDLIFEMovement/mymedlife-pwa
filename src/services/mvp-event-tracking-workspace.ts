@@ -15,6 +15,7 @@ import {
   buildMemberLaunchLaneEventDetailHref,
   getMemberLaunchLaneEventRows,
 } from "@/services/member-launch-lane-events";
+import { getVisibleMemberGreetingName } from "@/services/member-mobile-identity-context";
 import { getMemberRecognitionSummary } from "@/services/member-recognition";
 import type { ReadOnlyAppData } from "@/services/read-only-app-data";
 import { hasTravelerAccess } from "@/services/role-visibility";
@@ -96,7 +97,7 @@ export function getMvpMemberHome(
     (primaryEvent ? "Attendance still pending" : "No attendance yet");
 
   return {
-    greeting: `Hi, ${getFirstName(actor.user.displayName)}`,
+    greeting: `Hi, ${getVisibleMemberGreetingName(actor.user.displayName)}`,
     chapterName: data.chapter.name,
     chapterMeta: `${getActorPrimaryRoleLabel(actor)} • ${data.chapter.campus} • Events and points`,
     primaryEvent: primaryEvent
@@ -233,8 +234,4 @@ export function normalizeStaffView(view?: string): MvpStaffView {
     default:
       return "chapters";
   }
-}
-
-function getFirstName(displayName: string) {
-  return displayName.split(" ")[0] ?? displayName;
 }

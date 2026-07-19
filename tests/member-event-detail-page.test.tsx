@@ -67,6 +67,48 @@ function getReviewChapterData() {
   };
 }
 
+function getCancelableRsvpData() {
+  const data = getMockReadOnlyAppData("Testing member RSVP cancellation control.");
+  const activePointsRows = data.allPointsEventRows.filter(
+    (row) =>
+      row.chapter_event_id !== "chapter-event-ucla-kickoff" ||
+      row.awarded_to_user_id !== "member-a",
+  );
+
+  return {
+    ...data,
+    allPointsEventRows: activePointsRows,
+    pointsEventRows: activePointsRows.filter((row) => row.chapter_id === data.chapter.id),
+  };
+}
+
+function getCancelledRsvpData() {
+  const data = getCancelableRsvpData();
+  const cancellationRow = {
+    id: "event-row-rsvp-cancel-ucla-1",
+    event_type: "event_rsvp_cancelled",
+    actor_user_id: "member-a",
+    chapter_id: "chapter-northview",
+    campaign_id: "rush-month-2026",
+    assignment_id: null,
+    chapter_event_id: "chapter-event-ucla-kickoff",
+    payload: {
+      userId: "member-a",
+      userEmail: "member.a@mymedlife.test",
+      liveExternalWrite: false,
+    },
+    correlation_id: "mock-rsvp-cancel-ucla-1",
+    occurred_at: "2026-11-14T12:30:00Z",
+    created_at: "2026-11-14T12:30:00Z",
+  };
+
+  return {
+    ...data,
+    eventRows: [...data.eventRows, cancellationRow],
+    allEventRows: [...data.allEventRows, cancellationRow],
+  };
+}
+
 describe("member event detail route", () => {
   it("parks unknown event ids back to the member events route", async () => {
     const actorModule = await import("@/services/local-actor-context");
@@ -216,11 +258,55 @@ describe("member event detail route", () => {
 
     expect(html).toContain("You&#x27;re RSVP&#x27;d!");
     expect(html).toContain("Go to Check-In");
-    expect(html).toContain("Record RSVP in myMEDLIFE");
+    expect(html).toContain("RSVP locked after check-in");
     expect(html).toContain("Luma and external provider writes stay off");
     expect(html).toContain('href="/app/events/chapter-event-ucla-kickoff?source=home&amp;step=checkin"');
     expect(html).toContain('href="/app"');
     expect(html).toContain("Back to Home");
+  });
+
+  it("lets a registered member cancel RSVP before check-in or points are recorded", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const dataModule = await import("@/services/read-only-app-data");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("member.a@mymedlife.test"),
+    );
+    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(getCancelableRsvpData());
+
+    const { default: EventDetailPage } = await import("@/app/app/events/[eventId]/page");
+    const html = renderToStaticMarkup(
+      await EventDetailPage({
+        params: Promise.resolve({ eventId: "chapter-event-ucla-kickoff" }),
+        searchParams: Promise.resolve({ source: "events" }),
+      }),
+    );
+
+    expect(html).toContain("You&#x27;re RSVP&#x27;d!");
+    expect(html).toContain("Cancel RSVP");
+    expect(html).not.toContain("RSVP locked after check-in");
+  });
+
+  it("returns a canceled RSVP to the open RSVP action state", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const dataModule = await import("@/services/read-only-app-data");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("member.a@mymedlife.test"),
+    );
+    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(getCancelledRsvpData());
+
+    const { default: EventDetailPage } = await import("@/app/app/events/[eventId]/page");
+    const html = renderToStaticMarkup(
+      await EventDetailPage({
+        params: Promise.resolve({ eventId: "chapter-event-ucla-kickoff" }),
+        searchParams: Promise.resolve({ source: "events" }),
+      }),
+    );
+
+    expect(html).toContain("RSVP Open");
+    expect(html).toContain("RSVP to Event");
+    expect(html).not.toContain("Cancel RSVP");
   });
 
   it("renders the check-in step with TEST-labeled preview event content", async () => {

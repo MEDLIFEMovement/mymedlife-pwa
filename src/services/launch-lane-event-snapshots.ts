@@ -140,43 +140,29 @@ export function hasLaunchLaneRecordedRsvp(input: {
 }) {
   const normalizedEmail = normalizeEmail(input.userEmail);
 
-  return input.eventRows.some((row) => {
-    if (row.chapter_event_id !== input.chapterEventId) {
-      return false;
-    }
+  const latest = input.eventRows
+    .filter(
+      (row) =>
+        row.chapter_event_id === input.chapterEventId &&
+        isLaunchLaneRsvpIntentRow(row) &&
+        doesRsvpIntentBelongToMember(row, input.profileId, normalizedEmail),
+    )
+    .sort(compareEventsDescending)[0];
 
-    if (row.event_type !== "event_rsvp_recorded") {
-      return false;
-    }
-
-    const payload = asRecord(row.payload);
-    const userEmail =
-      typeof payload.userEmail === "string"
-        ? payload.userEmail
-        : typeof payload.userEmailHint === "string"
-          ? payload.userEmailHint
-          : null;
-    const userId = typeof payload.userId === "string" ? payload.userId : null;
-
-    return normalizeEmail(userEmail) === normalizedEmail || userId === input.profileId;
-  });
+  return latest?.event_type === "event_rsvp_recorded";
 }
 
 export function countLaunchLaneRsvpsForEvent(
   rows: readonly EventRow[],
   chapterEventId: string,
 ) {
-  return rows.filter(
-    (row) =>
-      row.chapter_event_id === chapterEventId &&
-      row.event_type === "event_rsvp_recorded",
-  ).length;
+  return getActiveLaunchLaneRsvpRowsForEvent(rows, chapterEventId).length;
 }
 
 export function countLaunchLaneRsvpsByChapter(rows: readonly EventRow[]) {
   const totals = new Map<string, number>();
 
-  for (const row of rows) {
+  for (const row of getLatestLaunchLaneRsvpIntentRows(rows)) {
     if (row.event_type !== "event_rsvp_recorded" || !row.chapter_id) {
       continue;
     }
@@ -185,6 +171,15 @@ export function countLaunchLaneRsvpsByChapter(rows: readonly EventRow[]) {
   }
 
   return totals;
+}
+
+export function getActiveLaunchLaneRsvpRowsForEvent(
+  rows: readonly EventRow[],
+  chapterEventId: string,
+) {
+  return getLatestLaunchLaneRsvpIntentRows(rows, chapterEventId).filter(
+    (row) => row.event_type === "event_rsvp_recorded",
+  );
 }
 
 export function getLaunchLaneAttendanceCountForEvent(
@@ -391,4 +386,103 @@ function asRecord(value: unknown) {
   return value && typeof value === "object" && !Array.isArray(value)
     ? (value as Record<string, unknown>)
     : {};
+}
+
+function getLatestLaunchLaneRsvpIntentRows(
+  rows: readonly EventRow[],
+  chapterEventId?: string,
+) {
+  const latestRows = new Map<string, EventRow>();
+
+  for (const row of rows) {
+    if (!isLaunchLaneRsvpIntentRow(row)) {
+      continue;
+    }
+
+    if (chapterEventId && row.chapter_event_id !== chapterEventId) {
+      continue;
+    }
+
+    const key = getRsvpIntentKey(row);
+
+    if (!key) {
+      continue;
+    }
+
+    const previous = latestRows.get(key);
+
+    if (!previous || compareEventsDescending(row, previous) < 0) {
+      latestRows.set(key, row);
+    }
+  }
+
+  return [...latestRows.values()];
+}
+
+function isLaunchLaneRsvpIntentRow(row: EventRow) {
+  return row.event_type === "event_rsvp_recorded" || row.event_type === "event_rsvp_cancelled";
+}
+
+function doesRsvpIntentBelongToMember(
+  row: EventRow,
+  profileId: string | null,
+  normalizedEmail: string,
+) {
+  const userId = getRsvpIntentUserId(row);
+  const userEmail = getRsvpIntentUserEmail(row);
+
+  return (
+    (profileId ? userId === profileId : false) ||
+    (normalizedEmail ? normalizeEmail(userEmail) === normalizedEmail : false)
+  );
+}
+
+function getRsvpIntentKey(row: EventRow) {
+  if (!row.chapter_event_id) {
+    return null;
+  }
+
+  const userId = getRsvpIntentUserId(row);
+  const userEmail = normalizeEmail(getRsvpIntentUserEmail(row));
+
+  if (userId) {
+    return `${row.chapter_event_id}:user:${userId}`;
+  }
+
+  if (userEmail) {
+    return `${row.chapter_event_id}:email:${userEmail}`;
+  }
+
+  return null;
+}
+
+function getRsvpIntentUserId(row: EventRow) {
+  const payload = asRecord(row.payload);
+  const payloadUserId = typeof payload.userId === "string" ? payload.userId : null;
+
+  return payloadUserId ?? row.actor_user_id;
+}
+
+function getRsvpIntentUserEmail(row: EventRow) {
+  const payload = asRecord(row.payload);
+
+  if (typeof payload.userEmail === "string") {
+    return payload.userEmail;
+  }
+
+  if (typeof payload.userEmailHint === "string") {
+    return payload.userEmailHint;
+  }
+
+  return null;
+}
+
+function compareEventsDescending(left: EventRow, right: EventRow) {
+  return getEventTime(right) - getEventTime(left);
+}
+
+function getEventTime(row: EventRow) {
+  const time = new Date(row.occurred_at ?? row.created_at).getTime();
+
+  return Number.isFinite(time) ? time : 0;
 }

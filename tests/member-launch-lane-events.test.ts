@@ -25,11 +25,82 @@ describe("member launch lane events", () => {
       memberPointsLabel: "20 pts for attending",
       memberRsvpLabel: "RSVP'd",
       memberRsvpState: "registered",
+      memberCanCancelRsvp: false,
+      memberRsvpLockLabel: "RSVP locked after check-in",
       memberLumaLabel: "Luma",
       rsvpStatusLabel: "Points awarded",
       rsvpCount: 2,
       attendanceCount: 24,
       pointsAwarded: 40,
+    });
+  });
+
+  it("allows RSVP cancellation before member-specific points exist", () => {
+    const actor = getMockLocalActorContext("member.a@mymedlife.test");
+    const data = getMockReadOnlyAppData("Testing member RSVP cancellation availability.");
+    const pointsWithoutMemberAttendance = data.allPointsEventRows.filter(
+      (row) =>
+        row.chapter_event_id !== "chapter-event-ucla-kickoff" ||
+        row.awarded_to_user_id !== "member-a",
+    );
+
+    const row = getMemberLaunchLaneEventRowById(
+      actor,
+      {
+        ...data,
+        allPointsEventRows: pointsWithoutMemberAttendance,
+      },
+      "chapter-event-ucla-kickoff",
+    );
+
+    expect(row).toMatchObject({
+      memberRsvpState: "registered",
+      memberCanCancelRsvp: true,
+      memberRsvpLockLabel: null,
+    });
+  });
+
+  it("reopens RSVP after the latest member intent is cancellation", () => {
+    const actor = getMockLocalActorContext("member.a@mymedlife.test");
+    const data = getMockReadOnlyAppData("Testing member RSVP cancellation readback.");
+    const cancellationRow = {
+      id: "event-row-rsvp-cancel-ucla-1",
+      event_type: "event_rsvp_cancelled",
+      actor_user_id: "member-a",
+      chapter_id: "chapter-northview",
+      campaign_id: "rush-month-2026",
+      assignment_id: null,
+      chapter_event_id: "chapter-event-ucla-kickoff",
+      payload: {
+        userId: "member-a",
+        userEmail: actor.user.email,
+        liveExternalWrite: false,
+      },
+      correlation_id: "mock-rsvp-cancel-ucla-1",
+      occurred_at: "2026-11-14T12:30:00Z",
+      created_at: "2026-11-14T12:30:00Z",
+    };
+    const pointsWithoutMemberAttendance = data.allPointsEventRows.filter(
+      (row) =>
+        row.chapter_event_id !== "chapter-event-ucla-kickoff" ||
+        row.awarded_to_user_id !== "member-a",
+    );
+
+    const row = getMemberLaunchLaneEventRowById(
+      actor,
+      {
+        ...data,
+        allEventRows: [...data.allEventRows, cancellationRow],
+        allPointsEventRows: pointsWithoutMemberAttendance,
+      },
+      "chapter-event-ucla-kickoff",
+    );
+
+    expect(row).toMatchObject({
+      memberRsvpLabel: "RSVP",
+      memberRsvpState: "open",
+      memberCanCancelRsvp: false,
+      rsvpCount: 1,
     });
   });
 

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { getMockLocalActorContext } from "@/services/local-actor-context";
 import {
+  countLaunchLaneRsvpsForEvent,
   getLaunchLaneActorProfileId,
   getLaunchLaneEventSnapshots,
   hasLaunchLaneRecordedRsvp,
@@ -64,5 +65,94 @@ describe("launch lane event snapshots", () => {
         profileId,
       }),
     ).toBe(true);
+  });
+
+  it("treats the latest RSVP cancellation as an open member RSVP state", () => {
+    const actor = getMockLocalActorContext("member.a@mymedlife.test");
+    const data = getMockReadOnlyAppData("Testing shared RSVP cancellation matching.");
+    const profileId = getLaunchLaneActorProfileId(actor, data);
+    const eventRows = [
+      ...data.allEventRows,
+      {
+        id: "event-row-rsvp-cancel-ucla-1",
+        event_type: "event_rsvp_cancelled",
+        actor_user_id: "member-a",
+        chapter_id: "chapter-northview",
+        campaign_id: "rush-month-2026",
+        assignment_id: null,
+        chapter_event_id: "chapter-event-ucla-kickoff",
+        payload: {
+          userId: "member-a",
+          userEmail: actor.user.email,
+          liveExternalWrite: false,
+        },
+        correlation_id: "mock-rsvp-cancel-ucla-1",
+        occurred_at: "2026-11-14T12:30:00Z",
+        created_at: "2026-11-14T12:30:00Z",
+      },
+    ];
+
+    expect(
+      hasLaunchLaneRecordedRsvp({
+        eventRows,
+        chapterEventId: "chapter-event-ucla-kickoff",
+        userEmail: actor.user.email,
+        profileId,
+      }),
+    ).toBe(false);
+    expect(countLaunchLaneRsvpsForEvent(eventRows, "chapter-event-ucla-kickoff")).toBe(1);
+  });
+
+  it("counts a member again after they re-RSVP following a cancellation", () => {
+    const actor = getMockLocalActorContext("member.a@mymedlife.test");
+    const data = getMockReadOnlyAppData("Testing RSVP re-record after cancellation.");
+    const profileId = getLaunchLaneActorProfileId(actor, data);
+    const eventRows = [
+      ...data.allEventRows,
+      {
+        id: "event-row-rsvp-cancel-ucla-1",
+        event_type: "event_rsvp_cancelled",
+        actor_user_id: "member-a",
+        chapter_id: "chapter-northview",
+        campaign_id: "rush-month-2026",
+        assignment_id: null,
+        chapter_event_id: "chapter-event-ucla-kickoff",
+        payload: {
+          userId: "member-a",
+          userEmail: actor.user.email,
+          liveExternalWrite: false,
+        },
+        correlation_id: "mock-rsvp-cancel-ucla-1",
+        occurred_at: "2026-11-14T12:30:00Z",
+        created_at: "2026-11-14T12:30:00Z",
+      },
+      {
+        id: "event-row-rsvp-ucla-3",
+        event_type: "event_rsvp_recorded",
+        actor_user_id: "member-a",
+        chapter_id: "chapter-northview",
+        campaign_id: "rush-month-2026",
+        assignment_id: null,
+        chapter_event_id: "chapter-event-ucla-kickoff",
+        payload: {
+          userId: "member-a",
+          userEmail: actor.user.email,
+          liveExternalWrite: false,
+        },
+        correlation_id: "mock-rsvp-ucla-3",
+        occurred_at: "2026-11-14T12:45:00Z",
+        created_at: "2026-11-14T12:45:00Z",
+      },
+    ];
+
+    expect(
+      hasLaunchLaneRecordedRsvp({
+        eventRows,
+        chapterEventId: "chapter-event-ucla-kickoff",
+        userEmail: actor.user.email,
+        profileId,
+      }),
+    ).toBe(true);
+    expect(countLaunchLaneRsvpsForEvent(eventRows, "chapter-event-ucla-kickoff")).toBe(2);
   });
 });

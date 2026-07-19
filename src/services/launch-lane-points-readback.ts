@@ -11,6 +11,7 @@ import {
   findLaunchLaneProfileIdByEmail,
   getLaunchLaneEventSnapshotById,
   getLaunchLaneEventSnapshots,
+  getActiveLaunchLaneRsvpRowsForEvent,
   getMostRecentLaunchLaneEventSnapshot,
   hasLaunchLaneRecordedRsvp,
   sumLaunchLanePointsByEvent,
@@ -387,12 +388,7 @@ export function getLaunchLaneLeaderAttendanceReadback(
     }));
   const checkedInKeys = new Set(attendeeRows.map((row) => row.key));
   const rsvpRows = dedupeAttendanceRows(
-    data.allEventRows
-      .filter(
-        (row) =>
-          row.chapter_event_id === latestEvent.id &&
-          row.event_type === "event_rsvp_recorded",
-      )
+    getActiveLaunchLaneRsvpRowsForEvent(data.allEventRows, latestEvent.id)
       .map((row) => {
         const payload = asRecord(row.payload);
         const userId = typeof payload.userId === "string" ? payload.userId : null;

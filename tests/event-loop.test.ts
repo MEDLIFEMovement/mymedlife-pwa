@@ -12,6 +12,7 @@ import {
   getPilotCrossRoleEventProof,
   getPilotEventLoopReadModel,
   createEmptyStagingLumaEventLoop,
+  cancelMemberEventRsvp,
   prepStagingLumaEvent,
   recordEventAttendanceAndAwardPoints,
   recordLumaSyncFailure,
@@ -114,6 +115,75 @@ describe("event loop facade", () => {
           status: "disabled",
         }),
       ]),
+    );
+  });
+
+  it("lets a member cancel an RSVP before check-in without external writes", () => {
+    const leader = getMockLocalActorContext("leader.a@mymedlife.test");
+    const member = getMockLocalActorContext("member.a@mymedlife.test");
+    const initialState = createEmptyStagingLumaEventLoop({ mode: "disabled" });
+
+    const eventPrepped = prepStagingLumaEvent(initialState, leader);
+    const eventShared = shareStagingEventToFeed(eventPrepped, leader);
+    const rsvpRecorded = recordMemberEventRsvp(eventShared, member);
+    const rsvpCancelled = cancelMemberEventRsvp(rsvpRecorded, member);
+    const summary = summarizeStagingLumaEventLoop(rsvpCancelled);
+
+    expect(summary).toMatchObject({
+      rsvpCount: 0,
+      attendanceCount: 0,
+      pointsAwarded: 0,
+      externalWritesEnabled: false,
+    });
+    expect(rsvpCancelled.rsvps).toContainEqual(
+      expect.objectContaining({
+        userId: member.user.id,
+        status: "cancelled",
+      }),
+    );
+    expect(rsvpCancelled.auditRecords.map((row) => row.action)).toEqual(
+      expect.arrayContaining(["event_rsvp_recorded", "event_rsvp_cancelled"]),
+    );
+    expect(rsvpCancelled.integrationEvents).toContainEqual(
+      expect.objectContaining({
+        eventType: "event_rsvp_cancelled",
+        destination: "internal",
+      }),
+    );
+  });
+
+  it("locks RSVP cancellation after attendance or points are recorded", () => {
+    const leader = getMockLocalActorContext("leader.a@mymedlife.test");
+    const member = getMockLocalActorContext("member.a@mymedlife.test");
+    const initialState = createEmptyStagingLumaEventLoop({ mode: "disabled" });
+
+    const eventPrepped = prepStagingLumaEvent(initialState, leader);
+    const eventShared = shareStagingEventToFeed(eventPrepped, leader);
+    const rsvpRecorded = recordMemberEventRsvp(eventShared, member);
+    const attendanceRecorded = recordEventAttendanceAndAwardPoints(
+      rsvpRecorded,
+      leader,
+      {
+        userEmail: member.user.email,
+        userId: member.user.id,
+      },
+    );
+    const blockedCancellation = cancelMemberEventRsvp(attendanceRecorded, member);
+    const summary = summarizeStagingLumaEventLoop(blockedCancellation);
+
+    expect(summary).toMatchObject({
+      rsvpCount: 1,
+      attendanceCount: 1,
+      pointsAwarded: 20,
+    });
+    expect(blockedCancellation.rsvps).toContainEqual(
+      expect.objectContaining({
+        userId: member.user.id,
+        status: "going",
+      }),
+    );
+    expect(blockedCancellation.auditRecords.map((row) => row.action)).toContain(
+      "event_rsvp_cancel_blocked",
     );
   });
 
