@@ -1,0 +1,94 @@
+# Production Capability Gap Register
+
+Date: 2026-07-19
+
+Status: Phase 0 source-of-truth audit
+
+This register separates rendered surfaces from real product capability. A route,
+TEST record, preview control, green unit test, or READY deployment is not proof
+that the corresponding workflow is production-capable.
+
+## Evidence Baseline
+
+- GitHub `main` and production Vercel both point to
+  `edee86c34fc33195f41fb8df52d23b6c543c0dc3` (PR #703).
+- The production Supabase project `fnlhontvvprwgooevzdl` is `ACTIVE_HEALTHY`
+  on Postgres 17.6.
+- Production contains 122 Auth users and 122 active app profiles. At least 115
+  profiles are visibly TEST-like by email or display name.
+- Production contains 8 chapters, 110 memberships (109 approved and 1
+  requested), 17 chapter events, 14 Luma links, 37 app event rows, 36 points
+  rows, 14 integration events, 14 disabled outbox rows, and 16 audit rows.
+- No profile has a `hubspot_contact_id`; no chapter has a
+  `hubspot_company_id`.
+- All 14 Luma links have status `mocked`; 7 have a non-null
+  `last_imported_at` value. That timestamp does not make the mocked links a
+  real provider sync.
+- The event activity stream includes 5 RSVP records, 3 RSVP cancellations, and
+  1 attendance record. This proves that the internal TEST event-loop write path
+  has been exercised, not that a full live member cohort or Luma loop is ready.
+- Supabase Storage has one bucket and zero stored objects. There are no app
+  tables for stories, story media, story reactions, or story moderation.
+- The production Supabase security advisor reports leaked-password protection
+  disabled. The performance advisor also reports multiple unindexed foreign
+  keys and overlapping permissive SELECT policies.
+
+## Capability Register
+
+| Domain | Current state | Classification | Launch-critical gaps | Evidence |
+| --- | --- | --- | --- | --- |
+| Auth | Password login, logout, callback code/OTP exchange, set-password, signed-session reads, and page-level role redirects exist. Production Auth has real accounts. | Partially functional | There is no member-facing `resetPasswordForEmail` request flow. There is no middleware/proxy session refresh boundary. Route guards are repeated page by page, so full protected-route coverage is unproved. Recovery, expiry, cross-tab/session persistence, logout invalidation, and every role/unauthorized matrix still need real browser proof. Production leaked-password protection is disabled. | `src/app/login/actions.ts`, `src/app/auth/callback/route.ts`, `src/app/auth/set-password/actions.ts`, `src/services/auth-session.ts`, `src/services/local-actor-context.ts`, [Supabase password security](https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection) |
+| Users and chapters | App-owned profiles, chapters, memberships, roles, staff roles, and coach assignments exist with RLS. Production has real rows. | Real tables, incomplete lifecycle | Most current profiles are TEST accounts. Launch-critical reads still allow mock fallback, and `getReadOnlyAppData` selects the first active chapter/campaign rather than deriving the scope from the signed-in actor. The identity/chapter path must be actor-scoped everywhere. | `supabase/migrations/20260615110000_initial_supabase_foundation.sql`, `src/services/read-only-app-data.ts`, `src/services/local-actor-context.ts` |
+| HubSpot sync | Mapping columns exist on profiles and chapters. | Unbuilt | Zero production mappings. No backfill, incremental sync, retry/conflict ledger, sync run table, admin sync evidence, or practical import filters exist. Page loads must continue to use app tables, not live HubSpot fetches. | `app.profiles.hubspot_contact_id`, `app.chapters.hubspot_company_id`, repository search for HubSpot adapters |
+| Events and Luma | App-owned chapter events and stable Luma link rows exist. Member event detail is route-backed. | Internal model partial; provider path mocked | Every production Luma link is `mocked`. There is no real ingestion client, scheduled/manual sync, cursor/checkpoint, failure/retry contract, or provider reconciliation. Event reads also inherit the global first-chapter fallback risk. | `app.chapter_events`, `app.luma_event_links`, `src/services/luma-dry-run-adapter.ts`, `src/services/read-only-app-data.ts` |
+| RSVP, check-in, attendance, points | The production-gated server path persists RSVP, cancellation, attendance, and points rows. Cancellation is append-only and re-RSVP uses latest intent. TEST production proof exists for RSVP and cancellation. | Functional TEST path, incomplete production design | Writes use a server service-role client and application checks instead of one transactional, permission-checking database RPC. Attendance count update, attendance event insert, and points insert are not proven atomic under concurrency. Complete role readback, duplicate/race handling, real-event proof, audit readback, staging evidence, and production cohort proof remain. | `src/services/member-event-loop-write.ts`, `src/services/launch-lane-event-snapshots.ts`, `src/services/launch-lane-points-readback.ts`, `src/app/app/events/[eventId]/actions.ts` |
+| Stories, media, likes | Member and leader story shells render proof items or TEST fallback stories. Like/save controls are disabled previews. | Shell only | No story create/ingest model, media records, storage objects, thumbnails, reactions, moderation state, or persistent member interactions exist. | `src/components/figma-member-stories-page.tsx`, `src/components/figma-leader-stories-screen.tsx`, `storage.objects` |
+| Admin and permissions | RLS is enabled on app tables. Audited RPCs exist for selected user, chapter, membership, assignment, proof, and event operations. Many controls are visibly gated. | Mixed real and review-only | Enabled admin operations need an explicit inventory and browser proof by role. Risky writes need rollback procedures and readback verification. External integrations remain disabled. Review-only controls must stay disabled until their own permission, audit, rollback, and proof requirements pass. The live advisor's overlapping permissive SELECT policies must be reviewed for both intended scope and query cost. | `supabase/migrations`, `src/app/admin`, `src/services/admin-*`, `app.audit_logs`, `app.automation_outbox` |
+| QA, CI, staging, production | The repo has broad Vitest, Playwright, RLS, route, and rollout tooling. The current production deployment is READY. One production RSVP/cancel path was recently re-proved. | Broad automated coverage, narrow real-site proof | Green checks and route smoke are not functional completion. There is no current all-controls, all-roles production click-through after the latest deployment. Staging proof is not current. Browser, CI, staging, production, and audit evidence need one requirement-linked matrix. | `tests`, `supabase/tests`, `tests/e2e/launch-smoke.spec.ts`, Vercel deployment `dpl_7YR8ypS34txdE199KqkerDyr5Jkr` |
+
+## Source-Of-Truth Map
+
+| Domain | Canonical app truth | Upstream or external system | Boundary |
+| --- | --- | --- | --- |
+| Authentication | Supabase Auth `auth.users` and sessions | Email provider through Supabase Auth | Auth owns credentials and sessions. App authorization must not trust editable user metadata. |
+| User identity | `app.profiles` | HubSpot contacts where approved | Import/materialize into app rows. Store stable external IDs and sync state. Never fetch HubSpot on every page load. |
+| Chapters | `app.chapters` | HubSpot companies where approved | Import/materialize into app rows with stable company mapping and conflict handling. |
+| Membership and roles | `app.memberships`, `app.roles`, `app.staff_role_assignments`, `app.coach_chapter_assignments` | HubSpot only as an upstream signal where agreed | App tables and RLS are authoritative for access. Changes require audit history. |
+| Events | `app.chapter_events` | Luma events where Luma is the approved upstream | `app.luma_event_links` stores stable mappings. Sync runs need checkpoints, failures, retries, and reconciliation. |
+| RSVP intent | Append-only `app.events` rows (`event_rsvp_recorded`, `event_rsvp_cancelled`) | Optional future Luma writeback | Latest valid intent is current state. Never delete cancellation history. |
+| Attendance | Append-only `app.events` attendance rows plus derived event readback | Luma attendance import where approved | Imports must be idempotent and tied to a stable event/user mapping. Cached counts must be transactionally consistent. |
+| Points | Append-only `app.points_events` | Optional downstream analytics only | App ledger is authoritative. Unique/idempotency constraints must prevent duplicate awards. |
+| Stories | New app-owned `stories` and moderation records are required | Optional approved source feeds | App owns lifecycle and moderation state. External publishing is downstream only. |
+| Media and thumbnails | Supabase Storage plus new app-owned media metadata | Optional image/video processors | Private-by-default storage policies, durable object paths, derived thumbnail metadata, and deletion/audit rules are required. |
+| Likes/reactions | New app-owned reaction rows | None required | Per-user uniqueness and RLS must enforce one current reaction while retaining appropriate audit history. |
+| Integration work | `app.integration_events`, `app.automation_outbox` | HubSpot, Luma, n8n, warehouse, email/SMS | Outbox remains disabled until a specific integration is approved, credentialed, idempotent, monitored, and rollback-ready. |
+| Audit | `app.audit_logs` plus append-only domain events | External log/warehouse may consume later | App audit rows remain the operational source; exports do not replace them. |
+
+## Prioritized Implementation Order
+
+1. Finish Auth lifecycle: add self-service password recovery, centralize session
+   refresh/route protection, enable leaked-password protection, and prove the
+   complete role matrix with real accounts.
+2. Make all launch-critical reads actor-scoped and remove production mock
+   fallback. Then implement HubSpot-backed user/chapter/membership
+   materialization with sync-run evidence.
+3. Build real Luma ingestion into `app.chapter_events` and
+   `app.luma_event_links`, including reconciliation, retry, and admin-visible
+   sync status.
+4. Move the member event-loop write into an idempotent transactional database
+   boundary and prove RSVP, cancellation, re-RSVP, check-in, attendance, points,
+   role readback, and audit history end to end.
+5. Add the real stories/media/reactions schema, private storage, thumbnail
+   processing, moderation, and browser-verifiable interactions.
+6. Inventory and activate only safe admin operations with explicit permission,
+   audit, rollback, and deployed browser proof. Review overlapping RLS policies
+   and add indexes for launch-critical foreign-key access paths before scale.
+7. Run one requirement-linked launch gate that keeps local, CI, browser,
+   staging, production, and audit/readback evidence separate.
+
+## Phase 0 Verdict
+
+PASS. The current state, intended source-of-truth boundaries, and prioritized
+gaps are now explicit and tied to repository and live production evidence.
+This verdict does not advance any later phase and is not a rollout-readiness
+claim.
