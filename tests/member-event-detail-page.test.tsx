@@ -334,6 +334,28 @@ describe("member event detail route", () => {
     expect(html).toContain("Confirm Check-In");
   });
 
+  it("keeps a canceled RSVP visibly canceled on the check-in step", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const dataModule = await import("@/services/read-only-app-data");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("member.a@mymedlife.test"),
+    );
+    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(getCancelledRsvpData());
+
+    const { default: EventDetailPage } = await import("@/app/app/events/[eventId]/page");
+    const html = renderToStaticMarkup(
+      await EventDetailPage({
+        params: Promise.resolve({ eventId: "chapter-event-ucla-kickoff" }),
+        searchParams: Promise.resolve({ source: "events", step: "checkin" }),
+      }),
+    );
+
+    expect(html).toContain("RSVP not active");
+    expect(html).toContain("Walk-in check-in can still record attendance and points");
+    expect(html).not.toContain("RSVP&#x27;d");
+  });
+
   it("renders the points-impact step with chapter leaderboard context", async () => {
     const actorModule = await import("@/services/local-actor-context");
     const dataModule = await import("@/services/read-only-app-data");

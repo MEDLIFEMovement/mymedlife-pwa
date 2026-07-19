@@ -712,12 +712,16 @@ function EventCheckInView({
   resultState: EventLoopResultState;
 }) {
   const visibleEventTitle = ensureVisibleTestLabel(event.title);
+  const hasActiveRsvp = event.memberRsvpState === "registered";
   return (
     <StepShell backHref={backHref} title="Check In">
       <div className="flex flex-1 flex-col px-4 py-6">
         <Card className="mb-6 border-[#dbeafe] bg-[#eff6ff]">
           <div className="mb-2 flex items-center gap-2">
-            <Pill label="RSVP'd" variant="green" />
+            <Pill
+              label={hasActiveRsvp ? "RSVP'd" : "RSVP not active"}
+              variant={hasActiveRsvp ? "green" : "gray"}
+            />
             <Pill label={memberContext.chapterName} variant="blue" />
           </div>
           <h2 className="text-lg font-extrabold text-slate-950">{visibleEventTitle}</h2>
@@ -739,7 +743,9 @@ function EventCheckInView({
             </div>
           </div>
           <p className="mb-1.5 text-sm text-slate-600">
-            Confirm the TEST check-in to record attendance and award points once in myMEDLIFE.
+            {hasActiveRsvp
+              ? "Confirm the TEST check-in to record attendance and award points once in myMEDLIFE."
+              : "Your RSVP is not active. Walk-in check-in can still record attendance and points in myMEDLIFE."}
           </p>
           <div className="mb-6 flex items-center gap-1.5 text-sm font-bold text-amber-600">
             <Star size={14} className="fill-amber-400 text-amber-400" />
@@ -1114,12 +1120,14 @@ function Pill({
   variant,
 }: {
   label: string;
-  variant: "green" | "blue";
+  variant: "green" | "blue" | "gray";
 }) {
   const classes =
     variant === "green"
       ? "bg-emerald-50 text-emerald-700"
-      : "bg-blue-50 text-blue-700";
+      : variant === "blue"
+        ? "bg-blue-50 text-blue-700"
+        : "bg-slate-100 text-slate-700";
 
   return (
     <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold ${classes}`}>
