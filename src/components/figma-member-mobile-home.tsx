@@ -395,13 +395,16 @@ function StudentHome({
 }) {
   const allDesignations: UserDesignation[] = ["General Member", "E-Board", "Staff", "DS", "Sales", "Super Admin"];
   const selfLeaderboardRows = getVisibleMemberLeaderboardRows(memberContext, 4);
-  const campaignActionsCompleted = Math.min(Math.max(memberContext.completedActions, 0), 3), campaignProgressPct = Math.round((campaignActionsCompleted / 3) * 100);
   const homeEvents = memberEvents ?? [
     { id: "1", routeId: "chapter-event-ucla-kickoff", title: "TEST Intro GBM", date: "Thu Nov 15 · 6:00 PM", loc: "Ackerman 2100", pts: 20, status: "RSVP Open" as const, campaign: "Rush Month", eventType: "GBM" as const, featured: true, luma: true, rsvps: 23 },
     { id: "2", routeId: "chapter-event-lakeside-welcome", title: "TEST Tabling at Bruin Walk", date: "Tue Nov 13 · 11:00 AM", loc: "Bruin Walk Table 7", pts: 15, status: "RSVP Open" as const, campaign: "Rush Month", eventType: "Local Volunteering" as const, featured: false, luma: false, rsvps: null },
   ];
   const upcomingHomeEvents = homeEvents.filter((event) => event.status !== "Completed");
   const priorityEvent = upcomingHomeEvents[0] ?? null;
+  const campaignEvents = memberCampaign
+    ? homeEvents.filter((event) => event.campaign === memberCampaign.name)
+    : [];
+  const openCampaignEvents = campaignEvents.filter((event) => event.status !== "Completed");
 
   return (
     <div className="pb-24 font-[Plus_Jakarta_Sans,sans-serif]">
@@ -445,7 +448,9 @@ function StudentHome({
           className="mt-3 flex items-center justify-between rounded-2xl border border-white/15 bg-white/10 px-4 py-3.5 transition-transform hover:bg-white/15 active:scale-[0.98]"
         >
           <div>
-            <p className="text-blue-200 text-xs font-semibold">My Points · Rush Month</p>
+            <p className="text-blue-200 text-xs font-semibold">
+              {memberCampaign ? `My Points · ${memberCampaign.name}` : "My Points"}
+            </p>
             <div className="flex items-baseline gap-1.5 mt-0.5">
               <span className="text-white text-3xl font-extrabold">{memberContext.pointsTotal}</span>
               <span className="text-blue-200 text-sm font-medium">pts earned</span>
@@ -551,72 +556,49 @@ function StudentHome({
         {/* Active campaign */}
         <div>
           <SLabel>Active Campaign</SLabel>
-          <Link href="/app/events" className="block">
+          <button type="button" onClick={() => navigate("campaign")} className="block w-full text-left">
             <Card padding={false}>
             <div className="p-4">
               <div className="flex items-start justify-between">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-2">
-                    <Pill label="Active" variant="green" />
-                    <Pill label="Week 1 of 4" variant="blue" />
+                    <Pill label={memberCampaign ? "Production readback" : "TEST preview"} variant="green" />
                   </div>
-                  <h3 className="font-bold text-base text-foreground">{memberCampaign?.name ?? "Rush Month"}</h3>
-                  <p className="text-sm text-muted-foreground mt-0.5">{memberCampaign?.objective ?? "Recruit new members, build your chapter."}</p>
-                  <div className="mt-3 space-y-1.5">
-                    <div className="flex justify-between text-xs text-muted-foreground">
-                      <span>Your progress</span>
-                      <span className="font-semibold">{campaignActionsCompleted} / 3 actions done</span>
-                    </div>
-                    <Bar pct={campaignProgressPct} />
-                  </div>
+                  <h3 className="font-bold text-base text-foreground">{memberCampaign?.name ?? "TEST Rush Month preview"}</h3>
+                  <p className="text-sm text-muted-foreground mt-0.5">
+                    {memberCampaign?.objective ?? "Recruit new members, build your chapter."}
+                  </p>
                 </div>
                 <ChevronRight size={18} className="text-muted-foreground ml-3 mt-1 flex-shrink-0" />
               </div>
             </div>
             <div className="border-t border-border px-4 py-3 flex items-center justify-between bg-secondary/30 rounded-b-2xl">
-              <span className="text-xs text-muted-foreground">Chapter: 67% complete</span>
-              <span className="text-xs font-semibold text-primary">22 / 34 members active</span>
+              <span className="text-xs text-muted-foreground">{campaignEvents.length} chapter events</span>
+              <span className="text-xs font-semibold text-primary">{openCampaignEvents.length} open</span>
             </div>
             </Card>
-          </Link>
+          </button>
         </div>
 
         {/* Take Action: My Tasks */}
         <div>
           <div className="flex items-center justify-between mb-3">
             <SLabel>Take Action: My Tasks</SLabel>
-            <button type="button" onClick={() => navigate("campaign")} className="text-primary text-xs font-semibold">See all</button>
+            <button type="button" onClick={() => navigate("campaign")} className="text-primary text-xs font-semibold">Campaign details</button>
           </div>
-          <div className="space-y-2">
-            {[
-              { title: "Invite 3 TEST friends to the TEST Intro GBM", due: "Nov 15", pts: 30, status: "Not started", variant: "gray" as const },
-              { title: "Share TEST Rush Week flyer on Instagram", due: "Nov 14", pts: 20, status: "In progress", variant: "blue" as const },
-              { title: "Add 5 TEST leads to the TEST spreadsheet", due: "Nov 16", pts: 25, status: "Submitted", variant: "yellow" as const },
-            ].map((a, i) => (
-              <Card key={i} onClick={() => navigate("action")} padding={false}>
-                <div className="flex items-center gap-3 p-4">
-                  <div className="flex-shrink-0">
-                    {a.status === "Submitted" ? (
-                      <Clock size={22} className="text-amber-500" />
-                    ) : a.status === "In progress" ? (
-                      <div className="w-[22px] h-[22px] rounded-full border-2 border-primary flex items-center justify-center">
-                        <div className="w-2.5 h-2.5 bg-primary rounded-full" />
-                      </div>
-                    ) : (
-                      <Circle size={22} className="text-muted" />
-                    )}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-foreground leading-snug">{a.title}</p>
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      Due {a.due} · <span className="font-semibold text-primary">{a.pts} pts</span>
-                    </p>
-                  </div>
-                  <Pill label={a.status} variant={a.variant} />
-                </div>
-              </Card>
-            ))}
-          </div>
+          <Card>
+            <p className="text-sm font-bold text-foreground">Production assignment readback is not connected.</p>
+            <p className="mt-2 text-xs leading-5 text-muted-foreground">
+              No fixture task, due date, status, or point value is substituted on the signed-in member home.
+            </p>
+            <button
+              type="button"
+              onClick={() => navigate("action")}
+              className="mt-3 text-xs font-semibold text-primary"
+            >
+              Open TEST action preview
+            </button>
+          </Card>
         </div>
 
         {/* Leaderboard preview */}
@@ -638,20 +620,17 @@ function StudentHome({
           </Card>
         </div>
 
-        {/* Coach message */}
+        {/* Coach updates */}
         <Card className="bg-secondary/60 border-secondary">
           <div className="flex items-start gap-3">
-            <div className="w-9 h-9 bg-primary rounded-full flex items-center justify-center flex-shrink-0 text-white text-xs font-extrabold">DK</div>
+            <div className="w-9 h-9 bg-primary rounded-full flex items-center justify-center flex-shrink-0 text-white text-xs font-extrabold">HQ</div>
             <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-1">
-                <p className="text-xs font-bold text-foreground">TEST Coach David Kim</p>
-                <span className="text-xs text-muted-foreground">· Nov 12</span>
-              </div>
-              <p className="text-sm text-foreground leading-relaxed">
-                "TEST great energy this week, {memberContext.campusName}! Focus on TEST Intro GBM follow-ups — this is where we convert interest into TEST members. Keep it up."
+              <p className="text-xs font-bold text-foreground">Coach updates</p>
+              <p className="mt-1 text-sm text-foreground leading-relaxed">
+                Production coach-message readback is not connected. No fixture coach, date, or message is substituted.
               </p>
               <Link href="/profile?source=home" className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-primary">
-                Open TEST profile & chapter scope <ChevronRight size={12} />
+                Open profile and chapter scope <ChevronRight size={12} />
               </Link>
             </div>
           </div>

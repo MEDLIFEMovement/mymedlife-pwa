@@ -98,8 +98,9 @@ describe("member mobile shell routes", () => {
     );
 
     expect(homeHtml).toContain("Hi, TEST Nick");
-    expect(homeHtml).toContain("0 / 3 actions done");
-    expect(homeHtml).not.toContain("1 / 3 actions done");
+    expect(homeHtml).toContain("Production assignment readback is not connected.");
+    expect(homeHtml).toContain("No fixture task, due date, status, or point value is substituted");
+    expect(homeHtml).not.toContain("actions done");
     expect(pointsHtml).toContain("TEST myMEDLIFE Review Chapter");
     expect(pointsHtml).toContain("0 / 150 pts");
     expect(pointsHtml).toContain("0 / 100 pts");
