@@ -7,13 +7,28 @@ export function getAuthRecoveryRedirectUrl(
   env: EnvSource = process.env,
 ) {
   const redirectTo = normalizeLoginRedirect(redirectToValue ?? null);
-  const url = new URL("/auth/callback", getTrustedAuthSiteUrl(env));
-
-  url.searchParams.set("type", "recovery");
-  url.searchParams.set("next", "update-password");
-  url.searchParams.set("redirectTo", redirectTo);
+  const continuation = encodeAuthRecoveryContinuation(redirectTo);
+  const url = new URL(
+    `/auth/callback/recovery/${continuation}`,
+    getTrustedAuthSiteUrl(env),
+  );
 
   return url.toString();
+}
+
+export function encodeAuthRecoveryContinuation(redirectToValue: string) {
+  const redirectTo = normalizeLoginRedirect(redirectToValue);
+  return Buffer.from(redirectTo, "utf8").toString("base64url");
+}
+
+export function decodeAuthRecoveryContinuation(value: string | null | undefined) {
+  if (!value) return "/";
+
+  try {
+    return normalizeLoginRedirect(Buffer.from(value, "base64url").toString("utf8"));
+  } catch {
+    return "/";
+  }
 }
 
 function getTrustedAuthSiteUrl(env: EnvSource) {

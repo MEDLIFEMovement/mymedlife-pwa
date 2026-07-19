@@ -51,7 +51,7 @@ describe("forgot password action", () => {
 
     expect(resetPasswordForEmail).toHaveBeenCalledWith("member@example.com", {
       redirectTo:
-        "https://www.mymedlife.org/auth/callback?type=recovery&next=update-password&redirectTo=%2Fapp",
+        "https://www.mymedlife.org/auth/callback/recovery/L2FwcA",
     });
     expect(result.status).toBe("sent");
   });

@@ -290,7 +290,7 @@ describe("admin management pages", () => {
           enabled: true,
           environment: "local",
           reason: "Local password reset rehearsal.",
-          redirectTo: "http://127.0.0.1:3100/auth/callback?type=recovery&redirectTo=%2Fadmin%2Fusers",
+          redirectTo: "http://127.0.0.1:3100/auth/callback/recovery/L2FkbWluL3VzZXJz",
         }}
         searchParams={{
           adminUserPasswordResetResult: "password_reset_sent",
