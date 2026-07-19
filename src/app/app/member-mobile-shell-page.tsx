@@ -15,6 +15,7 @@ import {
   buildMemberIdentityContext,
   ensureVisibleTestLabel,
 } from "@/services/member-mobile-identity-context";
+import { buildMemberMobileEventContext } from "@/services/member-mobile-event-context";
 import {
   getLaunchLaneMemberPointsReadback,
   type LaunchLaneMemberPointsReadback,
@@ -78,6 +79,9 @@ export async function renderMemberMobileShellPage({
     buildMemberIdentityContext(actor, studentHome, recognition, data.chapter.campus),
     pointsReadback,
   );
+  const memberEventContext = data.source.mode === "supabase"
+    ? buildMemberMobileEventContext(data)
+    : null;
   const sltPrepEntry =
     sltPrepWorkspace?.canReadWorkspace && sltPrepWorkspace.traveler
       ? {
@@ -112,6 +116,8 @@ export async function renderMemberMobileShellPage({
         eventsProfileSource={eventsProfileSource}
         eventsStoryFilter={eventsStoryFilter}
         memberContext={memberContext}
+        memberEvents={memberEventContext?.events}
+        memberCampaign={memberEventContext?.campaign}
         repaintKey={repaintKey}
       />
     </>
