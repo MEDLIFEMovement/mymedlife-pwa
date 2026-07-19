@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   createSupabaseReadonlyAccess: vi.fn(),
+  createSupabaseReadonlyClient: vi.fn(),
   createLocalSupabaseServerClient: vi.fn(),
   getAuthSessionState: vi.fn(),
   getHostedSessionReadonlyClient: vi.fn(),
@@ -24,6 +25,7 @@ vi.mock("@/services/auth-session", async (importOriginal) => ({
 vi.mock("@/lib/supabase-readonly", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@/lib/supabase-readonly")>()),
   createSupabaseReadonlyAccess: mocks.createSupabaseReadonlyAccess,
+  createSupabaseReadonlyClient: mocks.createSupabaseReadonlyClient,
   getHostedSessionReadonlyClient: mocks.getHostedSessionReadonlyClient,
   getSupabaseReadConfig: mocks.getSupabaseReadConfig,
 }));
@@ -97,6 +99,40 @@ describe("production operational data fail-closed integration", () => {
     expect(actor.source.status).toBe("auth_profile_missing");
     expect(actor.user.email).toBe("real.member@example.org");
     expect(actor.source.message).toContain("Hosted operational reads are unavailable");
+  });
+
+  it("fails closed when hosted actor data rejects with a malformed error value", async () => {
+    mocks.getHostedSessionReadonlyClient.mockResolvedValue({
+      enabled: true,
+      reason: "Reading hosted production data.",
+      client: {
+        selectRows: async () => Promise.reject("malformed hosted failure"),
+      },
+    });
+
+    const actor = await getLocalActorContext();
+
+    expect(actor.source.status).toBe("auth_profile_missing");
+    expect(actor.user.email).toBe("real.member@example.org");
+    expect(actor.source.message).toContain("Hosted actor read failed.");
+  });
+
+  it("fails closed when an enabled operational client rejects with a malformed error value", async () => {
+    mocks.getSupabaseReadConfig.mockReturnValue({
+      enabled: true,
+      url: "http://127.0.0.1:54321",
+      key: "local-key",
+      reason: "Reading local operational data.",
+    });
+    mocks.createSupabaseReadonlyClient.mockReturnValue({
+      selectRows: async () => Promise.reject("malformed operational failure"),
+    });
+
+    const actor = await getLocalActorContext();
+
+    expect(actor.source.status).toBe("auth_profile_missing");
+    expect(actor.user.email).toBe("real.member@example.org");
+    expect(actor.source.message).toContain("Operational actor read failed.");
   });
 
   it("returns an empty operational model instead of TEST data when hosted access is disabled", async () => {
