@@ -20,6 +20,45 @@ vi.mock("@/app/login/actions", () => ({
   signOut: async () => undefined,
 }));
 
+vi.mock("@/services/admin-hubspot-sync-workspace", () => ({
+  getAdminHubSpotSyncWorkspace: async () => ({
+    canRead: true,
+    config: { enabled: true, environment: "production", reason: "Enabled for test." },
+    lastRun: {
+      id: "run-1",
+      mode: "backfill",
+      status: "partial",
+      startedAt: "2026-07-19T20:00:00.000Z",
+      completedAt: "2026-07-19T20:05:00.000Z",
+      sourceCompanies: 345,
+      sourceContacts: 672,
+      materializedChapters: 337,
+      matchedProfiles: 110,
+      conflicts: 2,
+      failures: 1,
+    },
+    counts: {
+      companies: 345,
+      contacts: 672,
+      memberships: 700,
+      pendingCompanies: 6,
+      pendingContacts: 562,
+      pendingMemberships: 590,
+      openFailures: 1,
+    },
+    failures: [{
+      id: "failure-1",
+      objectType: "contact",
+      externalId: "contact-1",
+      code: "profile_link_failed",
+      message: "TEST reconciliation failure",
+      retryCount: 0,
+      createdAt: "2026-07-19T20:04:00.000Z",
+    }],
+    message: "HubSpot reads and app-owned reconciliation writes are enabled. HubSpot writes and invitations remain off.",
+  }),
+}));
+
 vi.mock("@/services/local-actor-context", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@/services/local-actor-context")>();
 
@@ -513,5 +552,27 @@ describe("admin management pages", () => {
 
     expect(html).toContain("Luma integration hidden for this role");
     expect(html).toContain("Only DS Admin and Super Admin");
+  });
+
+  it("renders the HubSpot source-sync status and confirmed read-only controls", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("ds.admin@mymedlife.test"),
+    );
+
+    const { default: AdminHubSpotIntegrationPage } = await import(
+      "@/app/admin/integrations/hubspot/page"
+    );
+    const html = renderToStaticMarkup(await AdminHubSpotIntegrationPage({}));
+
+    expect(html).toContain("HubSpot chapter and member sync");
+    expect(html).toContain("Imported companies");
+    expect(html).toContain("345");
+    expect(html).toContain("Reconciliation queue");
+    expect(html).toContain("BACKFILL HUBSPOT");
+    expect(html).toContain("SYNC HUBSPOT");
+    expect(html).toContain("HubSpot writes and invitations remain off");
+    expect(html).toContain("TEST reconciliation failure");
+    expect(html).not.toContain("server-only-token");
   });
 });

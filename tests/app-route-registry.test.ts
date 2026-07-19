@@ -57,6 +57,7 @@ describe("app route registry", () => {
     expect(isKnownAppRouteHref("/admin/launch-gate")).toBe(true);
     expect(isKnownAppRouteHref("/admin/audit-log")).toBe(true);
     expect(isKnownAppRouteHref("/admin/integrations/luma")).toBe(true);
+    expect(isKnownAppRouteHref("/admin/integrations/hubspot")).toBe(true);
     expect(isKnownAppRouteHref("/admin/integration-outbox")).toBe(true);
     expect(isKnownAppRouteHref("/admin/pilot-scope")).toBe(true);
     expect(isKnownAppRouteHref("/rush-month/leaderboard")).toBe(true);
