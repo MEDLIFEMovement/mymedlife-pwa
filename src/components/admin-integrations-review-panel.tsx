@@ -303,12 +303,16 @@ function buildProviderReviews({
       primaryHref: "/admin/integrations/luma",
       primaryLabel: "Open Luma status",
     },
-    contractProviderReview({
+    {
+      ...contractProviderReview({
       key: "hubspot",
       title: "HubSpot",
       item: contractByKey.get("hubspot"),
       outboxWorkspace,
-    }),
+      }),
+      primaryHref: "/admin/integrations/hubspot",
+      primaryLabel: "Open HubSpot sync",
+    },
     contractProviderReview({
       key: "warehouse",
       title: "Data warehouse",

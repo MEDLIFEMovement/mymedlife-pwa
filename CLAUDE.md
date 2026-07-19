@@ -12,9 +12,10 @@ myMEDLIFE PWA is the dedicated chapter operating system for MEDLIFE.
 
 - **Stack:** Next.js + TypeScript + Tailwind (front end), Supabase Postgres
   (data + Auth + RLS). Discourse is **reference only**, not a data source.
-- **Current phase:** mock-safe, local-first, **read-only**. Behaviour is
-  present in the UI, but real production writes and external sends are
-  intentionally **disabled** behind gates.
+- **Current phase:** launch-critical workflow stabilization. Real production
+  writes remain disabled unless a narrowly scoped path is explicitly approved,
+  server-only, environment-gated, role-gated, and audited. External provider
+  writes and sends remain disabled.
 - **Roles:** member, leader, coach, admin, DS admin, super admin —
   role-aware access, read-only by default in this phase.
 - **Target:** local-readiness milestone, ship date 2026-07-31.
@@ -58,6 +59,17 @@ add the `needs-human` label so a person decides:
    pending / approval messaging).
 8. **Targets or bypasses CI / branch protection / this review workflow**, or
    introduces manual production patching outside the PR flow.
+
+### Approved Phase 2 exception
+
+The server-only HubSpot source sync may read HubSpot and materialize app-owned
+chapter, profile-link, and membership records in Supabase when all dedicated
+HubSpot sync flags are enabled. This exception was explicitly authorized by the
+product owner on 2026-07-19. It does not permit HubSpot mutations, invitations,
+client-side service credentials, or ungated writes. HubSpot contact-company
+associations for active chapters are authoritative for approved general-member
+memberships; every materialization must retain source IDs and write an audit-log
+entry tied to the initiating DS Admin or Super Admin.
 
 When in doubt about whether something is a gate change, treat it as MUST BLOCK
 and escalate. Escalating is cheap; an unsafe merge is not.
