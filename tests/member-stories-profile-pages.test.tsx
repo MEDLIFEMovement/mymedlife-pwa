@@ -304,6 +304,44 @@ describe("member stories and profile pages", () => {
     expect(html).not.toContain("UCLA MEDLIFE");
   });
 
+  it("uses the same honest account-data failure on member home and event detail", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const dataModule = await import("@/services/read-only-app-data");
+    const actor = {
+      ...getSignedInActor("member.a@mymedlife.test"),
+      user: {
+        id: "real-member-id",
+        displayName: "Real Member",
+        email: "real.member@example.org",
+      },
+    };
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(actor);
+    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
+      getUnavailableReadOnlyAppData("Approved chapter membership could not be read."),
+    );
+
+    const { renderMemberMobileShellPage } = await import(
+      "@/app/app/member-mobile-shell-page"
+    );
+    const homeHtml = renderToStaticMarkup(
+      await renderMemberMobileShellPage({ redirectPath: "/app" }),
+    );
+
+    const { default: AppEventDetailPage } = await import(
+      "@/app/app/events/[eventId]/page"
+    );
+    const eventHtml = renderToStaticMarkup(
+      await AppEventDetailPage({
+        params: Promise.resolve({ eventId: "event-1" }),
+      }),
+    );
+
+    expect(homeHtml).toContain("We could not load your approved chapter");
+    expect(eventHtml).toContain("We could not load your approved chapter");
+    expect(homeHtml).not.toContain("UCLA MEDLIFE");
+    expect(eventHtml).not.toContain("UCLA MEDLIFE");
+  });
+
   it("keeps profile inside the exact event-detail loop when opened from events", async () => {
     const actorModule = await import("@/services/local-actor-context");
     const dataModule = await import("@/services/read-only-app-data");
