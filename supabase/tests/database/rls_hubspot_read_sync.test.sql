@@ -39,7 +39,7 @@ select is(
 select throws_ok(
   $$ insert into app.hubspot_sync_runs (mode, requested_by) values ('incremental', '00000000-0000-4000-8000-000000000005') $$,
   '42501',
-  'new row violates row-level security policy for table "hubspot_sync_runs"',
+  'permission denied for table hubspot_sync_runs',
   'Authenticated admins cannot bypass the server-only sync action with direct inserts'
 );
 
