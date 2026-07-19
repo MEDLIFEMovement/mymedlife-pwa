@@ -53,6 +53,20 @@ describe("HubSpot read sync foundation", () => {
       enabled: true,
       environment: "production",
     });
+
+    expect(getHubSpotReadSyncConfig({
+      ...enabledEnv,
+      MYMEDLIFE_AUTH_MODE: "staging_supabase",
+      MYMEDLIFE_ALLOW_PRODUCTION_HUBSPOT_READ_SYNC: undefined,
+      MYMEDLIFE_ALLOW_STAGING_HUBSPOT_READ_SYNC: "true",
+    })).toMatchObject({ enabled: true, environment: "staging" });
+
+    expect(getHubSpotReadSyncConfig({
+      ...enabledEnv,
+      MYMEDLIFE_AUTH_MODE: "local_supabase",
+      MYMEDLIFE_ALLOW_PRODUCTION_HUBSPOT_READ_SYNC: undefined,
+      MYMEDLIFE_ALLOW_LOCAL_HUBSPOT_READ_SYNC: "true",
+    })).toMatchObject({ enabled: true, environment: "local" });
   });
 
   it("paginates active chapter companies and maps stable source fields", async () => {
@@ -152,6 +166,28 @@ describe("HubSpot read sync foundation", () => {
       "HubSpot request failed (400); retry after 5s.",
     );
     expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("retries transient HubSpot failures and ignores malformed provider objects", async () => {
+    vi.useFakeTimers();
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce(new Response(null, { status: 429 }))
+      .mockResolvedValueOnce(jsonResponse({
+        results: [
+          {},
+          { id: "missing-name", properties: {} },
+          { id: "company-valid", properties: { name: " Valid University " }, updatedAt: "2026-07-19T20:00:00.000Z" },
+        ],
+      }));
+    const client = createHubSpotReadClient(enabledEnv, fetchMock);
+    const read = client?.readActiveChapterCompanies();
+
+    await vi.runAllTimersAsync();
+    await expect(read).resolves.toEqual([
+      expect.objectContaining({ id: "company-valid", name: "Valid University" }),
+    ]);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    vi.useRealTimers();
   });
 
   it("maps HubSpot school types into the app-owned chapter taxonomy", () => {
@@ -301,6 +337,42 @@ describe("HubSpot read sync foundation", () => {
     expect(hubspotClient.readActiveChapterCompanies).not.toHaveBeenCalled();
   });
 
+  it("fails closed for missing auth, lock-read failure, and run-creation failure", async () => {
+    const hubspotClient = {
+      readActiveChapterCompanies: vi.fn(),
+      readContactsWithCompanies: vi.fn(),
+    };
+    const baseHandler = (query: FakeQuery) => {
+      if (query.table === "staff_role_assignments") return ok([{ role_key: "ds_admin" }]);
+      return ok([]);
+    };
+
+    await expect(runHubSpotReadSync(null, "backfill", {
+      env: enabledEnv,
+      appClient: createFakeAppClient(baseHandler) as never,
+      hubspotClient,
+    })).resolves.toMatchObject({ success: false, code: "missing_auth" });
+
+    await expect(runHubSpotReadSync("actor-1", "backfill", {
+      env: enabledEnv,
+      appClient: createFakeAppClient((query) => (
+        query.table === "hubspot_sync_runs" ? failed("lock unavailable") : baseHandler(query)
+      )) as never,
+      hubspotClient,
+    })).resolves.toMatchObject({ success: false, code: "server_error", plainEnglishMessage: expect.stringContaining("lock") });
+
+    await expect(runHubSpotReadSync("actor-1", "backfill", {
+      env: enabledEnv,
+      appClient: createFakeAppClient((query) => (
+        query.table === "hubspot_sync_runs" && query.operation === "insert"
+          ? failed("insert unavailable")
+          : baseHandler(query)
+      )) as never,
+      hubspotClient,
+    })).resolves.toMatchObject({ success: false, code: "server_error", plainEnglishMessage: expect.stringContaining("create") });
+    expect(hubspotClient.readActiveChapterCompanies).not.toHaveBeenCalled();
+  });
+
   it("links existing records and leaves unmatched membership associations visibly waiting", async () => {
     const queries: FakeQuery[] = [];
     const appClient = createFakeAppClient((query) => {
@@ -417,6 +489,74 @@ describe("HubSpot read sync foundation", () => {
       code: "hubspot_sync_partial",
       counts: { conflicts: 1 },
     });
+  });
+
+  it("fails a chapter materialization when a unique name match cannot be linked", async () => {
+    const appClient = createFakeAppClient((query) => {
+      if (query.table === "staff_role_assignments") return ok([{ role_key: "ds_admin" }]);
+      if (query.table === "hubspot_sync_runs" && query.operation === "select") return ok([]);
+      if (query.table === "hubspot_sync_runs" && query.operation === "insert") return ok({ id: "run-link-failure" });
+      if (query.table === "chapters" && query.operation === "select") {
+        return query.filters.some((filter) => filter.column === "name")
+          ? ok([{ id: "chapter-existing", hubspot_company_id: null }])
+          : ok([]);
+      }
+      if (query.table === "chapters" && query.operation === "update") return failed("link unavailable");
+      return ok([]);
+    });
+
+    await expect(runHubSpotReadSync("actor-1", "backfill", {
+      env: enabledEnv,
+      appClient: appClient as never,
+      hubspotClient: oneCompanyClient(),
+      now: () => new Date("2026-07-19T22:00:00.000Z"),
+    })).resolves.toMatchObject({
+      success: true,
+      code: "hubspot_sync_partial",
+      counts: { failures: 1 },
+    });
+  });
+
+  it("preserves conflicts for externally linked profiles and memberships", async () => {
+    const appClient = createFakeAppClient((query) => {
+      if (query.table === "staff_role_assignments") return ok([{ role_key: "ds_admin" }]);
+      if (query.table === "hubspot_sync_runs" && query.operation === "select") return ok([]);
+      if (query.table === "hubspot_sync_runs" && query.operation === "insert") return ok({ id: "run-object-conflicts" });
+      if (query.table === "chapters" && query.operation === "select") return ok([{ id: "chapter-1", hubspot_company_id: "company-1" }]);
+      if (query.table === "profiles" && query.operation === "select") {
+        return ok([{ id: "profile-1", hubspot_contact_id: "different-contact" }]);
+      }
+      return ok([]);
+    });
+    const hubspotClient = {
+      ...oneCompanyClient(),
+      readContactsWithCompanies: async () => [oneContact()],
+    };
+
+    await expect(runHubSpotReadSync("actor-1", "backfill", {
+      env: enabledEnv,
+      appClient: appClient as never,
+      hubspotClient,
+      now: () => new Date("2026-07-19T22:00:00.000Z"),
+    })).resolves.toMatchObject({ success: true, code: "hubspot_sync_partial", counts: { conflicts: 1 } });
+
+    const membershipConflictClient = createFakeAppClient((query) => {
+      if (query.table === "staff_role_assignments") return ok([{ role_key: "ds_admin" }]);
+      if (query.table === "hubspot_sync_runs" && query.operation === "select") return ok([]);
+      if (query.table === "hubspot_sync_runs" && query.operation === "insert") return ok({ id: "run-membership-conflict" });
+      if (query.table === "chapters" && query.operation === "select") return ok([{ id: "chapter-1", hubspot_company_id: "company-1" }]);
+      if (query.table === "profiles" && query.operation === "select") return ok([{ id: "profile-1", hubspot_contact_id: "contact-1" }]);
+      if (query.table === "memberships" && query.operation === "select") {
+        return ok([{ id: "membership-1", hubspot_association_key: "different:key" }]);
+      }
+      return ok([]);
+    });
+    await expect(runHubSpotReadSync("actor-1", "backfill", {
+      env: enabledEnv,
+      appClient: membershipConflictClient as never,
+      hubspotClient,
+      now: () => new Date("2026-07-19T22:00:00.000Z"),
+    })).resolves.toMatchObject({ success: true, code: "hubspot_sync_partial", counts: { conflicts: 1 } });
   });
 
   it("marks a run partial when the shared audit ledger cannot record a materialization", async () => {
@@ -613,4 +753,35 @@ function ok(data: unknown): FakeResult {
 
 function failed(message: string): FakeResult {
   return { data: null, error: { message } };
+}
+
+function oneCompanyClient() {
+  return {
+    readActiveChapterCompanies: async () => [{
+      id: "company-1",
+      name: "University One",
+      domain: "one.edu",
+      lifecycleStage: "23925577",
+      chapterStatus: "As expected",
+      region: "Northeast",
+      country: "United States",
+      schoolType: "University",
+      updatedAt: "2026-07-19T20:00:00.000Z",
+      source: { id: "company-1" },
+    }],
+    readContactsWithCompanies: async () => [],
+  };
+}
+
+function oneContact() {
+  return {
+    id: "contact-1",
+    email: "member@example.org",
+    firstName: "Member",
+    lastName: "One",
+    graduationYear: 2028,
+    updatedAt: "2026-07-19T21:00:00.000Z",
+    companyIds: ["company-1"],
+    source: { id: "contact-1" },
+  };
 }
