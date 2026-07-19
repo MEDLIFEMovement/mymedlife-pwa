@@ -345,6 +345,55 @@ function EventDetailView({
   const visibleEventTitle = ensureVisibleTestLabel(event.title);
   const visibleChapterName = memberContext.chapterName;
   const visibleLocationLabel = ensureVisibleTestLabel(snapshot.memberLocationLabel);
+  let eventStatusLabel = event.memberRsvpState === "registered" ? "RSVP'd" : "RSVP Open";
+  let eventStatusVariant: "green" | "gray" = "green";
+  let primaryAction: ReactNode;
+
+  if (event.memberActionsClosed) {
+    eventStatusLabel = event.memberLifecycleLabel ?? "Event closed";
+    eventStatusVariant = "gray";
+    primaryAction = <ClosedEventActionNotice label={event.memberLifecycleLabel} />;
+  } else if (event.memberRsvpState === "registered") {
+    primaryAction = (
+      <div className="space-y-3 rounded-2xl border border-emerald-300/40 bg-emerald-400/20 p-4">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-400">
+            <CheckCircle2 size={20} className="text-white" />
+          </div>
+          <div>
+            <p className="text-base font-extrabold text-white">You&apos;re RSVP&apos;d!</p>
+            <p className="mt-0.5 text-sm text-emerald-200">
+              Check in at the chapter table to preview your points impact.
+            </p>
+          </div>
+        </div>
+        <RsvpCancelControl
+          event={event}
+          source={source ?? "events"}
+          profileSource={profileSource}
+          campaign={campaign}
+          storyFilter={storyFilter}
+          storyId={storyId}
+          variant="hero"
+        />
+      </div>
+    );
+  } else {
+    primaryAction = (
+      <EventLoopActionForm
+        action={submitMemberEventRsvpAction}
+        eventId={event.id}
+        source={source ?? "events"}
+        profileSource={profileSource}
+        campaign={campaign}
+        storyFilter={storyFilter}
+        storyId={storyId}
+        label="RSVP to Event"
+        icon={<CheckCircle2 size={20} />}
+        className="bg-[#f5a623] text-lg text-[#10223f] shadow-lg hover:opacity-90"
+      />
+    );
+  }
 
   return (
     <div className="pb-10">
@@ -376,7 +425,10 @@ function EventDetailView({
           </div>
           <div className="min-w-0 flex-1">
             <div className="mb-1 flex items-center gap-2">
-              <Pill label={event.memberRsvpState === "registered" ? "RSVP'd" : "RSVP Open"} variant="green" />
+              <Pill
+                label={eventStatusLabel}
+                variant={eventStatusVariant}
+              />
               <Pill label={visibleChapterName} variant="blue" />
             </div>
             <h1 className="text-2xl font-extrabold leading-snug text-white">{visibleEventTitle}</h1>
@@ -386,43 +438,7 @@ function EventDetailView({
           </div>
         </div>
 
-        {event.memberRsvpState === "registered" ? (
-          <div className="space-y-3 rounded-2xl border border-emerald-300/40 bg-emerald-400/20 p-4">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-400">
-                <CheckCircle2 size={20} className="text-white" />
-              </div>
-              <div>
-                <p className="text-base font-extrabold text-white">You&apos;re RSVP&apos;d!</p>
-                <p className="mt-0.5 text-sm text-emerald-200">
-                  Check in at the chapter table to preview your points impact.
-                </p>
-              </div>
-            </div>
-            <RsvpCancelControl
-              event={event}
-              source={source ?? "events"}
-              profileSource={profileSource}
-              campaign={campaign}
-              storyFilter={storyFilter}
-              storyId={storyId}
-              variant="hero"
-            />
-          </div>
-        ) : (
-          <EventLoopActionForm
-            action={submitMemberEventRsvpAction}
-            eventId={event.id}
-            source={source ?? "events"}
-            profileSource={profileSource}
-            campaign={campaign}
-            storyFilter={storyFilter}
-            storyId={storyId}
-            label="RSVP to Event"
-            icon={<CheckCircle2 size={20} />}
-            className="bg-[#f5a623] text-lg text-[#10223f] shadow-lg hover:opacity-90"
-          />
-        )}
+        {primaryAction}
 
         <div className="mt-4 grid grid-cols-3 gap-2">
           <QuickStat label="RSVPs" value={String(event.rsvpCount)} />
@@ -544,9 +560,9 @@ function EventDetailView({
             Production-safe event loop
           </p>
           <p className="mt-2 text-sm leading-6 text-slate-700">
-            RSVP, check-in, attendance, and points can be recorded as internal myMEDLIFE TEST
-            rows when the approved event-loop write gate is enabled. Luma and external provider
-            writes stay off.
+            {event.memberActionsClosed
+              ? "This event is closed. The route remains available for readback, but member RSVP, check-in, attendance, and points writes cannot run."
+              : "RSVP, check-in, attendance, and points can be recorded as internal myMEDLIFE TEST rows when the approved event-loop write gate is enabled. Luma and external provider writes stay off."}
           </p>
           <p className="mt-2 text-xs leading-5 text-slate-600">
             If the write gate is off, the app will show a blocked state and keep the page read-only
@@ -602,6 +618,51 @@ function EventRsvpConfirmView({
     event.memberRsvpState === "registered" ||
     resultState?.code === "rsvp_recorded" ||
     resultState?.code === "already_rsvpd";
+  let rsvpHeading = rsvpConfirmed ? "You're RSVP'd!" : "Record your RSVP";
+  let rsvpDescription = rsvpConfirmed
+    ? "We'll see you there. Don't forget to check in when you arrive to record your points impact."
+    : "Save your TEST RSVP in myMEDLIFE, then check in when you arrive to record attendance and points.";
+  let rsvpPointsDetail =
+    "RSVP can be recorded in myMEDLIFE when the approved internal write gate is enabled. Luma and external provider writes stay off.";
+  let rsvpSafetyDetail =
+    "This production-safe TEST flow records only internal myMEDLIFE rows after the write gate is approved. It does not write to Luma or any external provider.";
+  let rsvpAction: ReactNode;
+
+  if (event.memberActionsClosed) {
+    rsvpHeading = event.memberLifecycleLabel ?? "Event closed";
+    rsvpDescription = "Member RSVP and check-in are closed for this event.";
+    rsvpPointsDetail = "This event is closed. No member RSVP, attendance, or points write can run.";
+    rsvpSafetyDetail =
+      "This route is read-only. No myMEDLIFE, Luma, notification, or external provider write can run from the closed event.";
+    rsvpAction = <ClosedEventActionNotice label={event.memberLifecycleLabel} />;
+  } else if (rsvpConfirmed) {
+    rsvpAction = (
+      <RsvpCancelControl
+        event={event}
+        source={source ?? "events"}
+        profileSource={profileSource}
+        campaign={campaign}
+        storyFilter={storyFilter}
+        storyId={storyId}
+        variant="step"
+      />
+    );
+  } else {
+    rsvpAction = (
+      <EventLoopActionForm
+        action={submitMemberEventRsvpAction}
+        eventId={event.id}
+        source={source ?? "events"}
+        profileSource={profileSource}
+        campaign={campaign}
+        storyFilter={storyFilter}
+        storyId={storyId}
+        label="Record RSVP in myMEDLIFE"
+        icon={<CheckCircle2 size={16} />}
+        className="bg-[#1b4b8e] text-base text-white hover:opacity-90"
+      />
+    );
+  }
   return (
     <StepShell backHref={backHref} title="">
       <div className="flex flex-1 flex-col items-center justify-center px-6 py-8 text-center">
@@ -609,12 +670,10 @@ function EventRsvpConfirmView({
           <CheckCircle2 size={40} className="text-emerald-600" />
         </div>
         <h1 className="mb-2 text-2xl font-extrabold text-slate-950">
-          {rsvpConfirmed ? "You're RSVP'd!" : "Record your RSVP"}
+          {rsvpHeading}
         </h1>
         <p className="mb-8 max-w-xs text-sm leading-relaxed text-slate-600">
-          {rsvpConfirmed
-            ? "We'll see you there. Don't forget to check in when you arrive to record your points impact."
-            : "Save your TEST RSVP in myMEDLIFE, then check in when you arrive to record attendance and points."}
+          {rsvpDescription}
         </p>
 
         <Card className="mb-4 w-full text-left">
@@ -639,8 +698,7 @@ function EventRsvpConfirmView({
           </div>
           <p className="ml-7 text-3xl font-extrabold text-amber-600">{event.pointsAwarded} points</p>
           <p className="ml-7 mt-1 text-xs text-amber-700">
-            RSVP can be recorded in myMEDLIFE when the approved internal write gate is enabled.
-            Luma and external provider writes stay off.
+            {rsvpPointsDetail}
           </p>
         </div>
 
@@ -649,41 +707,19 @@ function EventRsvpConfirmView({
         <div className="mb-8 flex w-full items-start gap-2 rounded-2xl bg-[#eef2ff] p-3">
           <QrCode size={18} className="mt-0.5 flex-shrink-0 text-[#1b4b8e]" />
           <p className="text-left text-sm font-medium text-[#1b4b8e]">
-            This production-safe TEST flow records only internal myMEDLIFE rows after the write
-            gate is approved. It does not write to Luma or any external provider.
+            {rsvpSafetyDetail}
           </p>
         </div>
 
         <div className="w-full space-y-2.5">
-          {rsvpConfirmed ? (
-            <RsvpCancelControl
-              event={event}
-              source={source ?? "events"}
-              profileSource={profileSource}
-              campaign={campaign}
-              storyFilter={storyFilter}
-              storyId={storyId}
-              variant="step"
+          {rsvpAction}
+          {!event.memberActionsClosed ? (
+            <PrimaryLink
+              href={buildEventStepHref(event.id, "checkin", source, profileSource, campaign, storyFilter, storyId)}
+              label="Go to Check-In"
+              icon={<QrCode size={16} />}
             />
-          ) : (
-            <EventLoopActionForm
-              action={submitMemberEventRsvpAction}
-              eventId={event.id}
-              source={source ?? "events"}
-              profileSource={profileSource}
-              campaign={campaign}
-              storyFilter={storyFilter}
-              storyId={storyId}
-              label="Record RSVP in myMEDLIFE"
-              icon={<CheckCircle2 size={16} />}
-              className="bg-[#1b4b8e] text-base text-white hover:opacity-90"
-            />
-          )}
-          <PrimaryLink
-            href={buildEventStepHref(event.id, "checkin", source, profileSource, campaign, storyFilter, storyId)}
-            label="Go to Check-In"
-            icon={<QrCode size={16} />}
-          />
+          ) : null}
           <SecondaryLink href={returnHref} label={returnLabel} />
         </div>
       </div>
@@ -716,14 +752,44 @@ function EventCheckInView({
 }>) {
   const visibleEventTitle = ensureVisibleTestLabel(event.title);
   const hasActiveRsvp = event.memberRsvpState === "registered";
+  let checkInStatusLabel = hasActiveRsvp ? "RSVP'd" : "RSVP not active";
+  let checkInStatusVariant: "green" | "gray" = hasActiveRsvp ? "green" : "gray";
+  let checkInMessage = "Your RSVP is not active. Walk-in check-in can still record attendance and points in myMEDLIFE.";
+  let checkInPointsLabel = `${event.pointsAwarded} points after check-in`;
+  let checkInAction: ReactNode = <ClosedEventActionNotice label={event.memberLifecycleLabel} />;
+
+  if (event.memberActionsClosed) {
+    checkInStatusLabel = event.memberLifecycleLabel ?? "Event closed";
+    checkInStatusVariant = "gray";
+    checkInMessage = "Member check-in is closed for this completed or canceled event.";
+    checkInPointsLabel = `${event.pointsAwarded} points currently recorded for this event`;
+  } else {
+    if (hasActiveRsvp) {
+      checkInMessage = "Confirm the TEST check-in to record attendance and award points once in myMEDLIFE.";
+    }
+    checkInAction = (
+      <EventLoopActionForm
+        action={submitMemberEventCheckInAction}
+        eventId={event.id}
+        source={source ?? "events"}
+        profileSource={profileSource}
+        campaign={campaign}
+        storyFilter={storyFilter}
+        storyId={storyId}
+        label="Confirm Check-In"
+        icon={<UserCheck size={20} />}
+        className="bg-[#1b4b8e] text-base text-white hover:opacity-90"
+      />
+    );
+  }
   return (
     <StepShell backHref={backHref} title="Check In">
       <div className="flex flex-1 flex-col px-4 py-6">
         <Card className="mb-6 border-[#dbeafe] bg-[#eff6ff]">
           <div className="mb-2 flex items-center gap-2">
             <Pill
-              label={hasActiveRsvp ? "RSVP'd" : "RSVP not active"}
-              variant={hasActiveRsvp ? "green" : "gray"}
+              label={checkInStatusLabel}
+              variant={checkInStatusVariant}
             />
             <Pill label={memberContext.chapterName} variant="blue" />
           </div>
@@ -735,41 +801,37 @@ function EventCheckInView({
         </Card>
 
         <div className="flex flex-1 flex-col items-center justify-center text-center">
-          <div className="mb-5 flex items-center gap-1.5 rounded-full bg-[#1b4b8e] px-3 py-1.5 text-xs font-bold text-white">
-            <QrCode size={13} /> Preview event QR code
-          </div>
-          <div className="mb-5 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-            <div className="grid h-[188px] w-[188px] place-items-center rounded-xl bg-[linear-gradient(135deg,#10223f_25%,transparent_25%),linear-gradient(225deg,#10223f_25%,transparent_25%),linear-gradient(45deg,#10223f_25%,transparent_25%),linear-gradient(315deg,#10223f_25%,#fff_25%)] bg-[length:24px_24px] bg-[position:0_0,0_12px,12px_-12px,-12px_0px]">
-              <div className="rounded-full bg-white/90 px-3 py-1 text-xs font-bold text-slate-700">
-                Preview only
-              </div>
+          {event.memberActionsClosed ? (
+            <div className="mb-5 flex h-[188px] w-[188px] flex-col items-center justify-center rounded-2xl border border-slate-300 bg-slate-100 p-6 text-slate-700">
+              <Clock size={36} />
+              <p className="mt-3 text-base font-bold">Check-in closed</p>
             </div>
-          </div>
+          ) : (
+            <>
+              <div className="mb-5 flex items-center gap-1.5 rounded-full bg-[#1b4b8e] px-3 py-1.5 text-xs font-bold text-white">
+                <QrCode size={13} /> Preview event QR code
+              </div>
+              <div className="mb-5 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+                <div className="grid h-[188px] w-[188px] place-items-center rounded-xl bg-[linear-gradient(135deg,#10223f_25%,transparent_25%),linear-gradient(225deg,#10223f_25%,transparent_25%),linear-gradient(45deg,#10223f_25%,transparent_25%),linear-gradient(315deg,#10223f_25%,#fff_25%)] bg-[length:24px_24px] bg-[position:0_0,0_12px,12px_-12px,-12px_0px]">
+                  <div className="rounded-full bg-white/90 px-3 py-1 text-xs font-bold text-slate-700">
+                    Preview only
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
           <p className="mb-1.5 text-sm text-slate-600">
-            {hasActiveRsvp
-              ? "Confirm the TEST check-in to record attendance and award points once in myMEDLIFE."
-              : "Your RSVP is not active. Walk-in check-in can still record attendance and points in myMEDLIFE."}
+            {checkInMessage}
           </p>
           <div className="mb-6 flex items-center gap-1.5 text-sm font-bold text-amber-600">
             <Star size={14} className="fill-amber-400 text-amber-400" />
-            {event.pointsAwarded} points after check-in
+            {checkInPointsLabel}
           </div>
         </div>
 
         <EventLoopResultBanner resultState={resultState} className="mb-4" />
 
-        <EventLoopActionForm
-          action={submitMemberEventCheckInAction}
-          eventId={event.id}
-          source={source ?? "events"}
-          profileSource={profileSource}
-          campaign={campaign}
-          storyFilter={storyFilter}
-          storyId={storyId}
-          label="Confirm Check-In"
-          icon={<UserCheck size={20} />}
-          className="bg-[#1b4b8e] text-base text-white hover:opacity-90"
-        />
+        {checkInAction}
       </div>
     </StepShell>
   );
@@ -1016,6 +1078,20 @@ function PointsCard({
       <p className="mb-0.5 text-xs font-semibold text-amber-700">{label}</p>
       <p className="text-2xl font-extrabold text-slate-950">{value}</p>
       <p className="text-xs text-slate-500">{detail}</p>
+    </div>
+  );
+}
+
+function ClosedEventActionNotice({ label }: Readonly<{ label: string | null }>) {
+  return (
+    <div className="w-full rounded-2xl border border-slate-300 bg-slate-100 p-4 text-left text-slate-800">
+      <div className="flex items-center gap-2">
+        <Clock size={17} className="text-slate-600" />
+        <p className="text-sm font-bold">{label ?? "Event closed"}</p>
+      </div>
+      <p className="mt-2 text-sm leading-6">
+        Member RSVP, cancellation, and check-in are closed. No attendance or points write can run from this event.
+      </p>
     </div>
   );
 }

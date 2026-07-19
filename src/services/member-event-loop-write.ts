@@ -1,6 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 
 import { isUuid } from "@/services/action-start-write";
+import { isMemberEventClosedStatus } from "@/services/member-event-lifecycle";
 
 type EnvSource = Record<string, string | undefined>;
 type MemberEventLoopEnvironment = "local" | "staging" | "production";
@@ -72,6 +73,7 @@ export type MemberEventLoopWriteResult =
         | "membership_required"
         | "event_not_found"
         | "permission_denied"
+        | "event_closed"
         | "rsvp_cancel_blocked_checked_in"
         | "server_error";
       eventId: string;
@@ -242,6 +244,14 @@ export async function recordMemberEventLoopStep(
       );
     }
 
+    if (isMemberEventClosedStatus(event.status)) {
+      return failure(
+        "event_closed",
+        input.routeEventId,
+        "This event is completed or canceled, so member RSVP, cancellation, check-in, attendance, and points writes are closed.",
+      );
+    }
+
     if (input.operation === "cancel_rsvp") {
       return cancelRsvp(client, {
         event,
@@ -357,6 +367,13 @@ export function mapMemberEventLoopWriteResultMessage(
         tone: "warning",
         message:
           "The app could not safely record this event-loop step. No RSVP, attendance, points, Luma, or external provider write ran.",
+      };
+    case "event_closed":
+      return {
+        code,
+        tone: "warning",
+        message:
+          "This event is completed or canceled. Member RSVP and check-in are closed, so no attendance or points write ran.",
       };
     case "rsvp_cancel_blocked_checked_in":
       return {
