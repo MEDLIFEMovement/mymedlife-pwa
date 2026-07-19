@@ -32,14 +32,14 @@ test.describe("myMEDLIFE launch route smoke", () => {
     await page.getByRole("link", { name: "Start next action" }).click();
     await expect(page).toHaveURL(/\/app\/events\/chapter-event-ucla-kickoff\?source=home$/);
     await expect(page.getByText("Event RSVP")).toBeVisible();
+    await expect(page.getByText("Event completed", { exact: true }).first()).toBeVisible();
 
     await page.goto("/app");
     await expect(page).toHaveURL(/\/app$/);
     await expect(page.getByText("Upcoming Events")).toBeVisible();
     await expect(page.getByText("Chapter Leaderboard")).toBeVisible();
-    await page.getByRole("link", { name: "RSVP" }).first().click();
-    await expect(page).toHaveURL(/\/app\/events\/chapter-event-ucla-kickoff\?source=home&step=rsvp/);
-    await expect(page.getByRole("heading", { name: "You're RSVP'd!" })).toBeVisible();
+    await expect(page.getByRole("link", { name: /TEST Intro GBM/ })).toBeVisible();
+    await expect(page.getByRole("link", { name: "RSVP", exact: true }).first()).toBeVisible();
 
     await page.goto("/app");
     await page
@@ -78,9 +78,10 @@ test.describe("myMEDLIFE launch route smoke", () => {
       "href",
       "/app/points",
     );
-    await page.getByRole("link", { name: "RSVP" }).first().click();
-    await expect(page).toHaveURL(/\/app\/events\/chapter-event-ucla-kickoff\?source=events&step=rsvp/);
-    await expect(page.getByRole("heading", { name: "You're RSVP'd!" })).toBeVisible();
+    await page.getByRole("link", { name: "View Details" }).first().click();
+    await expect(page).toHaveURL(/\/app\/events\/chapter-event-ucla-kickoff$/);
+    await expect(page.getByText("Event completed", { exact: true }).first()).toBeVisible();
+    await expect(page.getByRole("link", { name: "RSVP", exact: true })).toHaveCount(0);
 
     await page.goto("/app/points");
     await expect(page.getByText("Points & Recognition")).toBeVisible();
@@ -95,58 +96,25 @@ test.describe("myMEDLIFE launch route smoke", () => {
     await expect(page.getByRole("heading", { name: "TEST Sofia Alvarez" })).toBeVisible();
   });
 
-  test("clicks the member event RSVP, check-in, and points path inside the mobile shell", async ({
-    context,
-    page,
-  }) => {
-    await selectPreviewActor(context, "member.a@mymedlife.test");
-
-    await page.goto("/app/events");
-    await page.getByRole("link", { name: "RSVP" }).first().click();
-    await expect(page).toHaveURL(/\/app\/events\/chapter-event-ucla-kickoff\?source=events&step=rsvp/);
-    await expect(page.getByRole("heading", { name: "You're RSVP'd!" })).toBeVisible();
-
-    await expect(page.getByText("Attend and check in to earn")).toBeVisible();
-
-    await page.getByRole("link", { name: "Go to Check-In" }).click();
-    await expect(page).toHaveURL(/step=checkin/);
-    await expect(page.getByText("Preview event QR code")).toBeVisible();
-    await page.getByRole("button", { name: "Confirm Check-In" }).click();
-    await expect(page.getByRole("heading", { name: "Checked in!" })).toBeVisible();
-    await expect(page.getByText("Write honesty")).toBeVisible();
-    await expect(page.getByText(/\+\d+ points/)).toBeVisible();
-
-    await page.getByRole("link", { name: "View leaderboard impact" }).click();
-    await expect(page.getByText("Chapter Leaderboard")).toBeVisible();
-  });
-
-  test("walks the direct member event-detail route through its production-safe steps", async ({
+  test("keeps the completed member event read-only across detail, RSVP, and check-in routes", async ({
     context,
     page,
   }) => {
     await selectPreviewActor(context, "member.a@mymedlife.test");
 
     await page.goto("/app/events/chapter-event-ucla-kickoff");
-    await expect(page.getByText("Event RSVP")).toBeVisible();
-    await expect(page.getByText("RSVP'd", { exact: true })).toBeVisible();
-    await expect(page.getByText("Production-safe event loop")).toBeVisible();
+    await expect(page.getByText("Event completed", { exact: true }).first()).toBeVisible();
+    await expect(page.getByRole("link", { name: "RSVP", exact: true })).toHaveCount(0);
 
-    await page.getByRole("link", { name: "RSVP", exact: true }).click();
-    await expect(page).toHaveURL(/step=rsvp/);
-    await expect(page.getByRole("heading", { name: "You're RSVP'd!" })).toBeVisible();
+    await page.goto("/app/events/chapter-event-ucla-kickoff?step=rsvp");
+    await expect(page.getByRole("heading", { name: "Event completed" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Record RSVP in myMEDLIFE" })).toHaveCount(0);
+    await expect(page.getByRole("link", { name: "Go to Check-In" })).toHaveCount(0);
 
-    await page.getByRole("link", { name: "Go to Check-In" }).click();
-    await expect(page).toHaveURL(/step=checkin/);
-    await expect(page.getByText("Preview event QR code")).toBeVisible();
-
-    await page.getByRole("button", { name: "Confirm Check-In" }).click();
-    await expect(page).toHaveURL(/step=points/);
-    await expect(page.getByRole("heading", { name: "Checked in!" })).toBeVisible();
-    await expect(page.getByText("Write honesty")).toBeVisible();
-    await expect(page.getByRole("link", { name: "View leaderboard impact" })).toHaveAttribute(
-      "href",
-      "/app/points?source=events&event=chapter-event-ucla-kickoff",
-    );
+    await page.goto("/app/events/chapter-event-ucla-kickoff?step=checkin");
+    await expect(page.getByText("Check-in closed")).toBeVisible();
+    await expect(page.getByText("Preview event QR code")).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Confirm Check-In" })).toHaveCount(0);
   });
 
   test("loads the leader command center with the preview actor", async ({

@@ -68,7 +68,7 @@ function getReviewChapterData() {
 }
 
 function getCancelableRsvpData() {
-  const data = getMockReadOnlyAppData("Testing member RSVP cancellation control.");
+  const data = getOpenEventData("Testing member RSVP cancellation control.");
   const activePointsRows = data.allPointsEventRows.filter(
     (row) =>
       row.chapter_event_id !== "chapter-event-ucla-kickoff" ||
@@ -79,6 +79,18 @@ function getCancelableRsvpData() {
     ...data,
     allPointsEventRows: activePointsRows,
     pointsEventRows: activePointsRows.filter((row) => row.chapter_id === data.chapter.id),
+  };
+}
+
+function getOpenEventData(reason: string) {
+  const data = getMockReadOnlyAppData(reason);
+
+  return {
+    ...data,
+    chapterEventRows: data.chapterEventRows.map((row) => ({
+      ...row,
+      status: "published" as const,
+    })),
   };
 }
 
@@ -106,6 +118,18 @@ function getCancelledRsvpData() {
     ...data,
     eventRows: [...data.eventRows, cancellationRow],
     allEventRows: [...data.allEventRows, cancellationRow],
+  };
+}
+
+function getClosedEventData() {
+  const data = getCancelableRsvpData();
+
+  return {
+    ...data,
+    chapterEventRows: data.chapterEventRows.map((row) => ({
+      ...row,
+      status: "feedback_collected" as const,
+    })),
   };
 }
 
@@ -161,9 +185,10 @@ describe("member event detail route", () => {
       }),
     );
 
-    expect(html).toContain("You&#x27;re RSVP&#x27;d!");
-    expect(html).toContain("RSVP can be recorded in myMEDLIFE");
-    expect(html).toContain('href="/app/events/chapter-event-ucla-kickoff?source=home&amp;step=checkin"');
+    expect(html).toContain("Event completed");
+    expect(html).toContain("Member RSVP, cancellation, and check-in are closed");
+    expect(html).not.toContain("Record RSVP in myMEDLIFE");
+    expect(html).not.toContain("Go to Check-In");
   });
 
   it("renders the source-backed event detail shell on the standalone route", async () => {
@@ -190,7 +215,8 @@ describe("member event detail route", () => {
     expect(html).toContain("Points Available");
     expect(html).toContain("preview link only");
     expect(html).toContain("Production-safe event loop");
-    expect(html).toContain("Luma and external provider");
+    expect(html).toContain("Event completed");
+    expect(html).toContain("route remains available for readback");
     expect(html).toContain("Add to Calendar");
     expect(html).toContain("Share");
     expect(html).toContain('aria-label="Member bottom navigation"');
@@ -200,8 +226,8 @@ describe("member event detail route", () => {
     expect(html).toContain('href="/app/points?source=events"');
     expect(html).toContain('href="/profile"');
     expect(html).toContain('aria-current="page"');
-    expect(html).toContain('href="/app/events/chapter-event-ucla-kickoff?source=events&amp;step=rsvp"');
-    expect(html).toContain('href="/app/events/chapter-event-ucla-kickoff?source=events&amp;step=checkin"');
+    expect(html).not.toContain('href="/app/events/chapter-event-ucla-kickoff?source=events&amp;step=rsvp"');
+    expect(html).not.toContain('href="/app/events/chapter-event-ucla-kickoff?source=events&amp;step=checkin"');
     expect(html).toContain('href="/app/events/chapter-event-ucla-kickoff?source=events&amp;step=points"');
   });
 
@@ -245,7 +271,7 @@ describe("member event detail route", () => {
       getSignedInActor("member.a@mymedlife.test"),
     );
     vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
-      getMockReadOnlyAppData("Testing member RSVP preview state."),
+      getOpenEventData("Testing member RSVP preview state."),
     );
 
     const { default: EventDetailPage } = await import("@/app/app/events/[eventId]/page");
@@ -309,6 +335,38 @@ describe("member event detail route", () => {
     expect(html).not.toContain("Cancel RSVP");
   });
 
+  it("keeps completed events read-only across detail, RSVP, and check-in routes", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const dataModule = await import("@/services/read-only-app-data");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("member.a@mymedlife.test"),
+    );
+    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(getClosedEventData());
+
+    const { default: EventDetailPage } = await import("@/app/app/events/[eventId]/page");
+    const renderStep = async (step?: string) => renderToStaticMarkup(
+      await EventDetailPage({
+        params: Promise.resolve({ eventId: "chapter-event-ucla-kickoff" }),
+        searchParams: Promise.resolve({ source: "events", step }),
+      }),
+    );
+    const [detailHtml, rsvpHtml, checkInHtml] = await Promise.all([
+      renderStep(),
+      renderStep("rsvp"),
+      renderStep("checkin"),
+    ]);
+
+    for (const html of [detailHtml, rsvpHtml, checkInHtml]) {
+      expect(html).toContain("Event completed");
+      expect(html).toContain("Member RSVP, cancellation, and check-in are closed");
+      expect(html).not.toContain("RSVP to Event");
+      expect(html).not.toContain("Record RSVP in myMEDLIFE");
+      expect(html).not.toContain("Confirm Check-In");
+    }
+    expect(rsvpHtml).not.toContain("Go to Check-In");
+  });
+
   it("renders the check-in step with TEST-labeled preview event content", async () => {
     const actorModule = await import("@/services/local-actor-context");
     const dataModule = await import("@/services/read-only-app-data");
@@ -317,7 +375,7 @@ describe("member event detail route", () => {
       getSignedInActor("member.a@mymedlife.test"),
     );
     vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
-      getMockReadOnlyAppData("Testing member check-in preview state."),
+      getOpenEventData("Testing member check-in preview state."),
     );
 
     const { default: EventDetailPage } = await import("@/app/app/events/[eventId]/page");
@@ -454,7 +512,7 @@ describe("member event detail route", () => {
     expect(html).toContain("Opened from Points &amp; Recognition");
     expect(html).toContain("Move from TEST points readback into the next event.");
     expect(html).toContain("The member loop should not stop at the leaderboard.");
-    expect(html).toContain('href="/app/events/chapter-event-ucla-kickoff?source=points&amp;step=rsvp"');
+    expect(html).not.toContain('href="/app/events/chapter-event-ucla-kickoff?source=points&amp;step=rsvp"');
     expect(html).toContain('href="/profile?source=points&amp;event=chapter-event-ucla-kickoff"');
   });
 
@@ -507,7 +565,7 @@ describe("member event detail route", () => {
 
     expect(html).toContain('href="/profile?source=points&amp;event=chapter-event-ucla-kickoff"');
     expect(html).toContain('aria-label="Back to Profile"');
-    expect(html).toContain(
+    expect(html).not.toContain(
       'href="/app/events/chapter-event-ucla-kickoff?source=profile&amp;step=rsvp&amp;profileSource=points"',
     );
     expect(html).toContain('href="/app/points?source=profile&amp;event=chapter-event-ucla-kickoff"');
@@ -557,7 +615,7 @@ describe("member event detail route", () => {
     expect(html).toContain('href="/app/points?source=events&amp;event=chapter-event-ucla-kickoff&amp;campaign=Rush+Month"');
     expect(html).toContain('href="/app/events?source=points&amp;campaign=Rush+Month"');
     expect(html).toContain('href="/profile?source=points&amp;event=chapter-event-ucla-kickoff&amp;campaign=Rush+Month"');
-    expect(html).toContain('href="/app/events/chapter-event-ucla-kickoff?source=points&amp;step=rsvp&amp;campaign=Rush+Month"');
+    expect(html).not.toContain('href="/app/events/chapter-event-ucla-kickoff?source=points&amp;step=rsvp&amp;campaign=Rush+Month"');
   });
 
   it("drops the generic All campaign marker when points opens event detail without a real filter", async () => {
@@ -611,7 +669,7 @@ describe("member event detail route", () => {
     expect(html).toContain('href="/profile?source=points&amp;event=chapter-event-ucla-kickoff&amp;campaign=Rush+Month"');
     expect(html).toContain('href="/app/events?source=profile&amp;profileSource=points&amp;campaign=Rush+Month"');
     expect(html).toContain('href="/app/points?source=profile&amp;event=chapter-event-ucla-kickoff&amp;campaign=Rush+Month"');
-    expect(html).toContain('href="/app/events/chapter-event-ucla-kickoff?source=profile&amp;step=rsvp&amp;profileSource=points&amp;campaign=Rush+Month"');
+    expect(html).not.toContain('href="/app/events/chapter-event-ucla-kickoff?source=profile&amp;step=rsvp&amp;profileSource=points&amp;campaign=Rush+Month"');
   });
 
   it("keeps bottom-nav profile continuity when event detail was opened from a filtered profile loop", async () => {
@@ -692,7 +750,7 @@ describe("member event detail route", () => {
     expect(html).toContain('href="/app/events?source=stories&amp;storyFilter=Events&amp;campaign=Rush+Month"');
     expect(html).toContain('href="/app/points?source=stories&amp;event=chapter-event-ucla-kickoff&amp;storyFilter=Events&amp;story=2&amp;campaign=Rush+Month"');
     expect(html).toContain('href="/profile?source=stories&amp;event=chapter-event-ucla-kickoff&amp;campaign=Rush+Month&amp;storyFilter=Events&amp;story=2"');
-    expect(html).toContain('href="/app/events/chapter-event-ucla-kickoff?source=stories&amp;step=rsvp&amp;storyFilter=Events&amp;story=2&amp;campaign=Rush+Month"');
+    expect(html).not.toContain('href="/app/events/chapter-event-ucla-kickoff?source=stories&amp;step=rsvp&amp;storyFilter=Events&amp;story=2&amp;campaign=Rush+Month"');
   });
 
   it("keeps the event-detail profile hop inside the exact member event loop", async () => {

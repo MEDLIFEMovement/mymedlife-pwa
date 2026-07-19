@@ -400,7 +400,8 @@ function StudentHome({
     { id: "1", routeId: "chapter-event-ucla-kickoff", title: "TEST Intro GBM", date: "Thu Nov 15 · 6:00 PM", loc: "Ackerman 2100", pts: 20, status: "RSVP Open" as const, campaign: "Rush Month", eventType: "GBM" as const, featured: true, luma: true, rsvps: 23 },
     { id: "2", routeId: "chapter-event-lakeside-welcome", title: "TEST Tabling at Bruin Walk", date: "Tue Nov 13 · 11:00 AM", loc: "Bruin Walk Table 7", pts: 15, status: "RSVP Open" as const, campaign: "Rush Month", eventType: "Local Volunteering" as const, featured: false, luma: false, rsvps: null },
   ];
-  const priorityEvent = homeEvents[0] ?? null;
+  const upcomingHomeEvents = homeEvents.filter((event) => event.status !== "Completed");
+  const priorityEvent = upcomingHomeEvents[0] ?? null;
 
   return (
     <div className="pb-24 font-[Plus_Jakarta_Sans,sans-serif]">
@@ -512,7 +513,7 @@ function StudentHome({
         <div>
           <SLabel>Upcoming Events</SLabel>
           <div className="space-y-2">
-            {homeEvents.slice(0, 2).map((e) => (
+            {upcomingHomeEvents.slice(0, 2).map((e) => (
               <Card key={e.id} padding={false}>
                 <div className="flex items-center gap-3 p-4">
                   <Link href={getMemberEventHomeDetailHref(e.routeId)} className="flex min-w-0 flex-1 items-center gap-3">
@@ -541,7 +542,7 @@ function StudentHome({
                 </div>
               </Card>
             ))}
-            {homeEvents.length === 0 ? (
+            {upcomingHomeEvents.length === 0 ? (
               <Card><p className="text-sm text-muted-foreground">No upcoming events are published for this chapter.</p></Card>
             ) : null}
           </div>
@@ -2597,7 +2598,10 @@ function EventsScreen({
             <div className="p-4">
               <div className="flex items-start justify-between gap-2 mb-3">
                 <h2 className="font-extrabold text-foreground text-base leading-tight flex-1 min-w-0">{featuredEvent.title}</h2>
-                <Pill label="RSVP Open" variant="green" />
+                <Pill
+                  label={featuredEvent.status}
+                  variant={featuredEvent.status === "RSVP Open" ? "green" : "gray"}
+                />
               </div>
               <div className="space-y-1.5 text-sm text-muted-foreground mb-3">
                 <div className="flex items-center gap-2"><CalendarDays size={14} className="text-primary flex-shrink-0" /><span>{featuredEvent.date}</span></div>
@@ -2614,14 +2618,16 @@ function EventsScreen({
                 {featuredEvent.rsvps && <span className="text-xs text-muted-foreground ml-auto">{featuredEvent.rsvps} RSVPs</span>}
               </div>
               <div className="flex gap-2">
+                {featuredEvent.status === "RSVP Open" ? (
+                  <Link
+                    href={getMemberEventRsvpHref(featuredEvent.routeId ?? featuredEvent.id, detailLoopSource, activeCampaign, profileSource, storyFilter)}
+                    className="flex flex-1 items-center justify-center rounded-xl bg-primary py-2.5 text-sm font-bold text-white transition-opacity hover:opacity-90"
+                  >
+                    RSVP
+                  </Link>
+                ) : null}
                 <Link
-                  href={getMemberEventRsvpHref(featuredEvent.id, detailLoopSource, activeCampaign, profileSource, storyFilter)}
-                  className="flex flex-1 items-center justify-center rounded-xl bg-primary py-2.5 text-sm font-bold text-white transition-opacity hover:opacity-90"
-                >
-                  RSVP
-                </Link>
-                <Link
-                  href={getMemberEventDetailHref(featuredEvent.id, detailLoopSource, activeCampaign, profileSource, storyFilter)}
+                  href={getMemberEventDetailHref(featuredEvent.routeId ?? featuredEvent.id, detailLoopSource, activeCampaign, profileSource, storyFilter)}
                   className="flex flex-1 items-center justify-center rounded-xl bg-secondary py-2.5 text-sm font-bold text-primary transition-colors hover:bg-muted"
                 >
                   View Details
@@ -2639,15 +2645,16 @@ function EventsScreen({
               {listEvents.map((ev) => {
                 const isRsvpd = rsvpdIds.includes(ev.id);
                 const typeCfg = EVENT_TYPE_CONFIG[ev.eventType];
+                const eventRouteId = ev.routeId ?? ev.id;
                 const detailHref = getMemberEventDetailHref(
-                  ev.id,
+                  eventRouteId,
                   detailLoopSource,
                   activeCampaign,
                   profileSource,
                   storyFilter,
                 );
                 const rsvpHref = getMemberEventRsvpHref(
-                  ev.id,
+                  eventRouteId,
                   detailLoopSource,
                   activeCampaign,
                   profileSource,
@@ -2724,7 +2731,7 @@ function EventsScreen({
                         ) : ev.status === "RSVP Open" ? (
                           <Pill label="List preview" variant="gray" />
                         ) : (
-                          <Pill label="Upcoming" variant="gray" />
+                          <Pill label={ev.status} variant="gray" />
                         )}
                       </div>
                     </div>

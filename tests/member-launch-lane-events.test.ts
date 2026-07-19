@@ -48,6 +48,10 @@ describe("member launch lane events", () => {
       actor,
       {
         ...data,
+        chapterEventRows: data.chapterEventRows.map((event) => ({
+          ...event,
+          status: "published" as const,
+        })),
         allPointsEventRows: pointsWithoutMemberAttendance,
       },
       "chapter-event-ucla-kickoff",
@@ -116,6 +120,28 @@ describe("member launch lane events", () => {
 
     expect(row?.title).toBe("Rush Month kickoff social");
     expect(row?.rsvpDetail).toContain("Attendance is confirmed");
+  });
+
+  it("closes member actions when the source event is completed", () => {
+    const actor = getMockLocalActorContext("member.a@mymedlife.test");
+    const data = getMockReadOnlyAppData("Testing completed event action closure.");
+    const chapterEventRows = data.chapterEventRows.map((row) => ({
+      ...row,
+      status: "feedback_collected" as const,
+    }));
+
+    const row = getMemberLaunchLaneEventRowById(
+      actor,
+      { ...data, chapterEventRows },
+      "chapter-event-ucla-kickoff",
+    );
+
+    expect(row).toMatchObject({
+      memberLifecycleState: "completed",
+      memberLifecycleLabel: "Event completed",
+      memberActionsClosed: true,
+      memberCanCancelRsvp: false,
+    });
   });
 
   it("shows the completed loop state once attendance-backed points exist", () => {
