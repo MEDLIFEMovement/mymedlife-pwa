@@ -219,6 +219,32 @@ describe("read-only app data service", () => {
     expect(data.chapter.name).toBe("TEST Boston University");
     expect(data.campaign.id).toBe("campaign-2");
   });
+
+  it("keeps a real chapter without a campaign in an honest empty state", async () => {
+    const rows = structuredClone(fakeRows);
+    rows.campaigns = [];
+    rows.phases = [];
+    rows.assignments = [];
+
+    const data = await getSupabaseReadOnlyAppData(
+      createFakeClient(rows),
+      "Testing a chapter without a campaign.",
+    );
+
+    expect(data.source).toMatchObject({
+      mode: "supabase",
+      status: "supabase_ready",
+    });
+    expect(data.source.message).toContain("honest empty campaign state");
+    expect(data.campaign).toMatchObject({
+      id: "00000000-0000-0000-0000-000000000000",
+      name: "No active campaign",
+      status: "draft",
+    });
+    expect(data.chapterEventRows).toEqual([]);
+    expect(data.eventRows.every((row) => row.chapter_id === data.chapter.id)).toBe(true);
+    expect(data.pointsEventRows.every((row) => row.chapter_id === data.chapter.id)).toBe(true);
+  });
 });
 
 function createFakeClient(

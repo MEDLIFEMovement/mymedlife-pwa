@@ -147,14 +147,11 @@ export async function getSupabaseReadOnlyAppData(
     return getMockReadOnlyAppData("Supabase returned no chapters, so mock fallback is active.");
   }
 
-  const campaign =
+  const persistedCampaign =
     snapshot.campaigns.find(
       (item) => item.chapter_id === chapter.id && item.status === "active",
     ) ?? snapshot.campaigns.find((item) => item.chapter_id === chapter.id);
-
-  if (!campaign) {
-    return getMockReadOnlyAppData("Supabase returned no active campaign, so mock fallback is active.");
-  }
+  const campaign = persistedCampaign ?? buildEmptyCampaignRow(chapter);
 
   const scoped = buildCampaignScopedData(snapshot, {
     chapterId: chapter.id,
@@ -166,7 +163,9 @@ export async function getSupabaseReadOnlyAppData(
     source: {
       mode: "supabase",
       status: "supabase_ready",
-      message,
+      message: persistedCampaign
+        ? message
+        : `${message} This chapter has no active campaign, so an honest empty campaign state is active.`,
     },
     chapter: toDomainChapter(chapter),
     campaign: toDomainCampaign(campaign, scoped.phases[0]),
@@ -203,6 +202,24 @@ export async function getSupabaseReadOnlyAppData(
     integrationEventRows: scoped.integrationEventRows,
     automationOutboxRows: scoped.automationOutboxRows,
     auditLogs: scoped.auditLogs,
+  };
+}
+
+function buildEmptyCampaignRow(chapter: ChapterRow): CampaignRow {
+  return {
+    id: "00000000-0000-0000-0000-000000000000",
+    chapter_id: chapter.id,
+    campaign_template_id: null,
+    name: "No active campaign",
+    slug: "no-active-campaign",
+    objective: "This chapter does not have an active campaign yet.",
+    status: "draft",
+    semester: null,
+    academic_year: null,
+    opened_by: null,
+    opened_at: null,
+    created_at: chapter.created_at,
+    updated_at: chapter.updated_at,
   };
 }
 
