@@ -517,6 +517,51 @@ describe("HubSpot read sync foundation", () => {
     });
   });
 
+  it.each([
+    ["company", "hubspot_company_imports", "company_stage_failed"],
+    ["contact", "hubspot_contact_imports", "contact_stage_failed"],
+    ["membership", "hubspot_membership_imports", "membership_stage_failed"],
+  ] as const)("records a partial run when %s staging fails", async (_objectType, failedTable, failureCode) => {
+    const queries: FakeQuery[] = [];
+    const appClient = createFakeAppClient((query) => {
+      queries.push(query);
+      if (query.table === "staff_role_assignments") return ok([{ role_key: "ds_admin" }]);
+      if (query.table === "hubspot_sync_runs" && query.operation === "select") return ok([]);
+      if (query.table === "hubspot_sync_runs" && query.operation === "insert") return ok({ id: `run-${failedTable}` });
+      if (query.table === failedTable && query.operation === "upsert") return failed("staging unavailable");
+      if (query.table === "chapters" && query.operation === "select") {
+        return ok([{ id: "chapter-1", hubspot_company_id: "company-1" }]);
+      }
+      if (query.table === "profiles" && query.operation === "select") {
+        return ok([{ id: "profile-1", hubspot_contact_id: "contact-1" }]);
+      }
+      if (query.table === "memberships" && query.operation === "select") return ok([]);
+      if (query.table === "memberships" && query.operation === "insert") return ok({ id: "membership-1" });
+      return ok([]);
+    });
+
+    const result = await runHubSpotReadSync("actor-1", "backfill", {
+      env: enabledEnv,
+      appClient: appClient as never,
+      hubspotClient: {
+        ...oneCompanyClient(),
+        readContactsWithCompanies: async () => [oneContact()],
+      },
+      now: () => new Date("2026-07-19T22:00:00.000Z"),
+    });
+
+    expect(result).toMatchObject({
+      success: true,
+      code: "hubspot_sync_partial",
+      counts: { failures: 1 },
+    });
+    expect(queries).toContainEqual(expect.objectContaining({
+      table: "hubspot_sync_failures",
+      operation: "insert",
+      payload: expect.objectContaining({ error_code: failureCode }),
+    }));
+  });
+
   it("preserves conflicts for externally linked profiles and memberships", async () => {
     const appClient = createFakeAppClient((query) => {
       if (query.table === "staff_role_assignments") return ok([{ role_key: "ds_admin" }]);
