@@ -1,4 +1,4 @@
-import { renderSltPrepPage } from "@/app/slt-prep/page";
+import { renderSltPrepPage } from "@/app/slt-prep/render-page";
 import { getStaticRouteMetadata } from "@/services/static-route-metadata";
 
 export const metadata = getStaticRouteMetadata("sltPrep");

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
 import { signInWithPassword, type LoginActionState } from "@/app/login/actions";
@@ -75,14 +76,13 @@ export function LoginForm({
           >
             Password
           </label>
-          <button
-            type="button"
+          <Link
+            href={`/auth/forgot-password?redirectTo=${encodeURIComponent(redirectTo)}`}
             className="text-xs font-medium transition-opacity hover:opacity-70"
             style={{ color: "#b8253a" }}
-            title="Use the secure link from your invite or password reset email."
           >
             Forgot password?
-          </button>
+          </Link>
         </div>
         <input
           id="login-password"
