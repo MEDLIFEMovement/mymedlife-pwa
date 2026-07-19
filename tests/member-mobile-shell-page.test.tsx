@@ -845,9 +845,10 @@ describe("member mobile shell routes", () => {
       ]),
     );
 
-    expect(htmlByScreen.get("campaign")).toContain("TEST Intro GBM RSVPs");
-    expect(htmlByScreen.get("campaign")).toContain("TEST Intro GBM event is live on Luma");
-    expect(htmlByScreen.get("campaign")).toContain("TEST Intro GBM");
+    expect(htmlByScreen.get("campaign")).toContain("TEST Rush Month preview");
+    expect(htmlByScreen.get("campaign")).toContain("No fixture event or RSVP count is substituted.");
+    expect(htmlByScreen.get("campaign")).toContain("Open TEST action preview");
+    expect(htmlByScreen.get("campaign")).not.toContain("Ackerman 2100");
     expect(htmlByScreen.get("action")).toContain("Invite 3 TEST friends to the TEST Intro GBM");
     expect(htmlByScreen.get("action")).toContain("Assigned by TEST Marcus T.");
     expect(htmlByScreen.get("evidence")).toContain("Invite 3 TEST friends to the TEST Intro GBM");
@@ -863,6 +864,67 @@ describe("member mobile shell routes", () => {
     expect(htmlByScreen.get("checkin")).toContain("TEST Intro GBM — TEST Rush Month");
     expect(htmlByScreen.get("stories")).toContain("TEST Students in Lima joined a Mobile Clinic");
     expect(htmlByScreen.get("stories")).toContain("TEST UConn MEDLIFE chapter packed the room");
+  });
+
+  it("renders actor-scoped campaign readback without UCLA fixture metrics", () => {
+    const html = renderToStaticMarkup(
+      <FigmaMemberMobileHome
+        initialScreen={"campaign" as never}
+        memberContext={{
+          displayName: "TEST Phase 1 Recovery",
+          firstName: "TEST Phase 1",
+          chapterName: "TEST Test Boston University",
+          campusName: "TEST Boston University",
+          pointsTotal: 0,
+          pointsWeeklyLabel: "+0",
+          pointsRankLabel: "#6",
+          completedActions: 0,
+          leaderboardRows: [
+            {
+              rank: 6,
+              name: "TEST Phase 1 Recovery",
+              role: "General Member",
+              pts: 0,
+              me: true,
+            },
+          ],
+        }}
+        memberCampaign={{
+          name: "Test Rush Month",
+          objective: "Test actor-scoped campaign objective.",
+        }}
+        memberEvents={[
+          {
+            id: "97901445-604f-40bd-828e-517775af97b1",
+            routeId: "97901445-604f-40bd-828e-517775af97b1",
+            title: "TEST Attendance and Points Review",
+            date: "Fri Jul 24 · 12:00 PM",
+            loc: "Location not set",
+            pts: 0,
+            status: "RSVP Open",
+            campaign: "Test Rush Month",
+            eventType: "GBM",
+            featured: true,
+            luma: false,
+            rsvps: 0,
+          },
+        ]}
+      />,
+    );
+
+    expect(html).toContain("Production readback");
+    expect(html).toContain("Test Rush Month");
+    expect(html).toContain("Test actor-scoped campaign objective.");
+    expect(html).toContain("TEST Test Boston University");
+    expect(html).toContain("TEST Attendance and Points Review");
+    expect(html).toContain("Chapter events");
+    expect(html).toContain("Open events");
+    expect(html).toContain("Production assignment readback is not connected.");
+    expect(html).not.toContain("UCLA");
+    expect(html).not.toContain("Ackerman");
+    expect(html).not.toContain("Leads Captured");
+    expect(html).not.toContain("23 RSVPs");
+    expect(html).not.toContain("67%");
   });
 
   it("renders live TEST event-loop points readback on the points screen", () => {

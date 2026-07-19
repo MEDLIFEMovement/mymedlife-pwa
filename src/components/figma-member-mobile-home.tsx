@@ -688,59 +688,55 @@ function StudentHome({
 
 // ─── SCREEN 2 · Campaign — Rush Month ────────────────────────────────────────
 
-function CampaignPage({ navigate }: { navigate: (s: Screen) => void }) {
+function CampaignPage({
+  navigate,
+  memberContext,
+  memberEvents = [],
+  memberCampaign,
+}: Readonly<{
+  navigate: (s: Screen) => void;
+  memberContext: MemberMobileIdentityContext;
+  memberEvents?: MemberMobileEventContext[];
+  memberCampaign?: MemberMobileCampaignContext | null;
+}>) {
   const [whyOpen, setWhyOpen] = useState(false);
-  const kpis = [
-    { label: "Leads Captured", value: 47, total: 80, pct: 59 },
-    { label: "TEST Intro GBM RSVPs", value: 23, total: 50, pct: 46 },
-    { label: "Follow-ups Done", value: 18, total: 47, pct: 38 },
-    { label: "New Members", value: 9, total: 25, pct: 36 },
-  ];
-  const goodLooks = [
-    "Every member has at least 1 assigned action",
-    "TEST Intro GBM event is live on Luma with RSVP link",
-    "Chapter tabled at least 2x this week",
-    "Follow-up messages sent within 24h of first touch",
-    "KPIs reviewed in weekly E-Board meeting",
-  ];
+  const hasDurableCampaign = Boolean(memberCampaign);
+  const campaignName = memberCampaign?.name ?? "TEST Rush Month preview";
+  const campaignObjective = memberCampaign?.objective ?? "Recruit new members and help them feel welcomed into MEDLIFE.";
+  const campaignEvents = memberEvents.filter((event) => event.campaign === memberCampaign?.name);
+  const openEventCount = campaignEvents.filter((event) => event.status !== "Completed").length;
+
   return (
     <div className="pb-24">
       <TopBar title="" onBack={() => navigate("home")} />
 
-      {/* Campaign header */}
       <div className="bg-primary px-5 pt-5 pb-7">
-        <Pill label="Active · Week 1 of 4" variant="blue" />
-        <h1 className="text-white text-2xl font-extrabold mt-2">Rush Month</h1>
+        <Pill label={hasDurableCampaign ? "Production readback" : "TEST preview"} variant="blue" />
+        <h1 className="text-white text-2xl font-extrabold mt-2">{campaignName}</h1>
         <p className="text-blue-200 text-sm mt-1.5 leading-relaxed">
-          Recruit new members and help them feel welcomed into MEDLIFE.
+          {campaignObjective}
         </p>
-        <div className="mt-4 space-y-1.5">
-          <div className="flex justify-between text-xs text-blue-200">
-            <span>Chapter progress</span>
-            <span className="font-bold text-white">67%</span>
-          </div>
-          <div className="h-2.5 bg-white/20 rounded-full overflow-hidden">
-            <div className="h-full bg-accent rounded-full" style={{ width: "67%" }} />
-          </div>
-        </div>
+        <p className="mt-4 text-xs font-bold uppercase tracking-wide text-blue-100">
+          {memberContext.chapterName}
+        </p>
       </div>
 
       <div className="px-4 pt-5 space-y-5">
-        {/* Phase indicator */}
         <Card className="border-primary/30 bg-secondary/60">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center flex-shrink-0">
               <Flag size={18} className="text-white" />
             </div>
             <div>
-              <p className="text-xs font-bold text-primary uppercase tracking-wide">Current Phase</p>
-              <p className="text-sm font-bold text-foreground mt-0.5">Week 1: Visibility + Lead Capture</p>
-              <p className="text-xs text-muted-foreground mt-0.5">Nov 11 – Nov 17</p>
+              <p className="text-xs font-bold text-primary uppercase tracking-wide">Campaign scope</p>
+              <p className="text-sm font-bold text-foreground mt-0.5">{memberContext.chapterName}</p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Campaign phase, dates, and progress totals are not available in the durable member readback yet.
+              </p>
             </div>
           </div>
         </Card>
 
-        {/* Why it matters */}
         <Card className="overflow-hidden" padding={false}>
           <button type="button"
             onClick={() => setWhyOpen(!whyOpen)}
@@ -757,95 +753,75 @@ function CampaignPage({ navigate }: { navigate: (s: Screen) => void }) {
           </button>
           {whyOpen && (
             <div className="px-4 pb-4 text-sm text-muted-foreground leading-relaxed border-t border-border pt-3">
-              Rush Month is how chapters grow. Every member recruited becomes a potential leader,
-              volunteer, and advocate for global health equity. Strong chapters start with strong rush execution.
+              {campaignObjective}
             </div>
           )}
         </Card>
 
-        {/* KPIs */}
         <div>
-          <SLabel>Campaign KPIs</SLabel>
-          <div className="grid grid-cols-2 gap-2">
-            {kpis.map((k) => (
-              <Card key={k.label}>
-                <p className="text-xs text-muted-foreground leading-tight">{k.label}</p>
-                <div className="flex items-baseline gap-1 mt-1">
-                  <span className="text-xl font-extrabold text-foreground">{k.value}</span>
-                  <span className="text-xs text-muted-foreground">/ {k.total}</span>
-                </div>
-                <div className="mt-2 space-y-1">
-                  <Bar pct={k.pct} color={k.pct >= 60 ? "bg-emerald-500" : k.pct >= 40 ? "bg-primary" : "bg-amber-400"} />
-                  <p className="text-[10px] text-muted-foreground font-semibold">{k.pct}% of goal</p>
-                </div>
-              </Card>
-            ))}
-          </div>
-        </div>
-
-        {/* Actions by role */}
-        <div>
-          <SLabel>Assigned Actions by Role</SLabel>
-          <div className="space-y-2">
-            {[
-              { role: "General Members", count: 3, done: 1, example: "Invite friends · Share flyer · Add leads" },
-              { role: "Action Committee Chairs", count: 5, done: 3, example: "Coordinate tabling · Track leads · Brief members" },
-              { role: "E-Board", count: 6, done: 4, example: "Review KPIs · Manage Luma · Assign tasks" },
-              { role: "President / VP", count: 4, done: 4, example: "Coach check-in · Approve evidence · Drive decisions" },
-            ].map((r) => (
-              <Card key={r.role} onClick={() => navigate("action")} padding={false}>
-                <div className="p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <p className="text-sm font-bold text-foreground">{r.role}</p>
-                    <span className="text-xs text-muted-foreground font-semibold font-[DM_Mono,monospace]">
-                      {r.done}/{r.count} done
-                    </span>
-                  </div>
-                  <p className="text-xs text-muted-foreground mb-2">{r.example}</p>
-                  <Bar pct={Math.round((r.done / r.count) * 100)} />
-                </div>
-              </Card>
-            ))}
-          </div>
-        </div>
-
-        {/* What good looks like */}
-        <div>
-          <SLabel>What Good Looks Like</SLabel>
+          <SLabel>Campaign Readback</SLabel>
           <Card>
-            <div className="space-y-3">
-              {goodLooks.map((item, i) => (
-                <div key={i} className="flex items-start gap-2.5">
-                  <CheckCircle2 size={16} className="text-emerald-500 flex-shrink-0 mt-0.5" />
-                  <p className="text-sm text-foreground leading-snug">{item}</p>
-                </div>
-              ))}
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <p className="text-xs text-muted-foreground">Chapter events</p>
+                <p className="mt-1 text-xl font-extrabold text-foreground">{campaignEvents.length}</p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">Open events</p>
+                <p className="mt-1 text-xl font-extrabold text-foreground">{openEventCount}</p>
+              </div>
             </div>
+            <p className="mt-3 border-t border-border pt-3 text-xs leading-5 text-muted-foreground">
+              Lead, follow-up, membership, and assignment KPIs are hidden until actor-scoped durable readback is connected.
+            </p>
           </Card>
         </div>
 
-        {/* Luma event */}
-        <Card className="border-primary/20 bg-secondary/50">
-          <div className="flex items-start gap-3">
-            <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center flex-shrink-0">
-              <CalendarDays size={18} className="text-white" />
-            </div>
-            <div className="flex-1">
-              <div className="flex items-center gap-2">
-              <p className="text-sm font-bold text-foreground">TEST Intro GBM</p>
-                <Pill label="Luma" variant="purple" />
-              </div>
-              <p className="text-xs text-muted-foreground mt-0.5">Thu Nov 15 · 6:00 PM · Ackerman 2100</p>
-              <p className="text-xs text-primary font-semibold mt-1">23 RSVPs so far</p>
-            </div>
-            <ChevronRight size={16} className="text-muted-foreground mt-0.5" />
+        <div>
+          <SLabel>Chapter Events</SLabel>
+          <div className="space-y-2">
+            {campaignEvents.map((event) => (
+              <Link key={event.routeId} href={getMemberEventDetailHref(event.routeId, "events", campaignName)}>
+                <Card>
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="text-sm font-bold text-foreground">{event.title}</p>
+                      <p className="mt-1 text-xs text-muted-foreground">{event.date}</p>
+                      <p className="mt-1 text-xs text-muted-foreground">{event.loc}</p>
+                    </div>
+                    <Pill label={event.status} variant={event.status === "RSVP Open" ? "green" : "gray"} />
+                  </div>
+                </Card>
+              </Link>
+            ))}
+            {campaignEvents.length === 0 ? (
+              <Card>
+                <p className="text-sm font-bold text-foreground">No actor-scoped events are linked to this campaign.</p>
+                <p className="mt-1 text-xs leading-5 text-muted-foreground">No fixture event or RSVP count is substituted.</p>
+              </Card>
+            ) : null}
           </div>
-        </Card>
+        </div>
 
-        {/* CTAs */}
+        <div>
+          <SLabel>Member Actions</SLabel>
+          <Card>
+            <p className="text-sm font-bold text-foreground">Production assignment readback is not connected.</p>
+            <p className="mt-2 text-xs leading-5 text-muted-foreground">
+              The TEST action and evidence screens remain available for design review, but they do not represent assigned work or saved evidence.
+            </p>
+          </Card>
+        </div>
+
         <div className="space-y-2.5 pt-2">
-          <PrimaryBtn label="View my actions" onClick={() => navigate("action")} full icon={<ArrowRight size={16} />} />
-          <SecondaryBtn label="Submit evidence" onClick={() => navigate("evidence")} full />
+          <Link
+            href={`/app/events?campaign=${encodeURIComponent(campaignName)}`}
+            className="flex w-full items-center justify-center gap-2 rounded-2xl bg-primary px-4 py-4 font-extrabold text-white"
+          >
+            View campaign events <ArrowRight size={16} />
+          </Link>
+          <SecondaryBtn label="Open TEST action preview" onClick={() => navigate("action")} full />
+          <SecondaryBtn label="Open TEST evidence preview" onClick={() => navigate("evidence")} full />
         </div>
       </div>
     </div>
@@ -4075,7 +4051,15 @@ export function FigmaMemberMobileHome({
             memberCampaign={memberCampaign}
           />
         );
-      case "campaign": return <CampaignPage navigate={navigate} />;
+      case "campaign":
+        return (
+          <CampaignPage
+            navigate={navigate}
+            memberContext={memberContext}
+            memberEvents={memberEvents}
+            memberCampaign={memberCampaign}
+          />
+        );
       case "action": return <ActionDetail navigate={navigate} />;
       case "evidence": return <EvidenceSubmission navigate={navigate} />;
       case "confirm": return <Confirmation navigate={navigate} />;
