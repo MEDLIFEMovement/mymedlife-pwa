@@ -70,6 +70,7 @@ describe("member event-loop write gate", () => {
     const client = new FakeSupabaseClient();
     enqueueValidActorPath(client);
     client.enqueue("events", "maybeSingle", { data: null });
+    client.enqueue("events", "maybeSingle", { data: null });
     client.enqueue("events", "then", { data: null });
 
     const result = await recordMemberEventLoopStep(asServiceClient(client), {
@@ -100,7 +101,14 @@ describe("member event-loop write gate", () => {
   it("does not duplicate an RSVP that already exists", async () => {
     const client = new FakeSupabaseClient();
     enqueueValidActorPath(client);
-    client.enqueue("events", "maybeSingle", { data: { id: "event-rsvp-1" } });
+    client.enqueue("events", "maybeSingle", {
+      data: {
+        id: "event-rsvp-1",
+        event_type: "event_rsvp_recorded",
+        occurred_at: "2026-11-14T12:00:00Z",
+      },
+    });
+    client.enqueue("events", "maybeSingle", { data: null });
 
     const result = await recordMemberEventLoopStep(asServiceClient(client), {
       operation: "rsvp",
@@ -118,10 +126,145 @@ describe("member event-loop write gate", () => {
     expect(client.inserts.events ?? []).toHaveLength(0);
   });
 
+  it("records an RSVP cancellation event before check-in", async () => {
+    const client = new FakeSupabaseClient();
+    enqueueValidActorPath(client);
+    client.enqueue("points_events", "maybeSingle", { data: null });
+    client.enqueue("events", "maybeSingle", {
+      data: {
+        id: "event-rsvp-1",
+        event_type: "event_rsvp_recorded",
+        occurred_at: "2026-11-14T12:00:00Z",
+      },
+    });
+    client.enqueue("events", "maybeSingle", { data: null });
+    client.enqueue("events", "then", { data: null });
+
+    const result = await recordMemberEventLoopStep(asServiceClient(client), {
+      operation: "cancel_rsvp",
+      routeEventId: "chapter-event-ucla-kickoff",
+      actorUserId: profileRow.id,
+      actorEmail: profileRow.email,
+    });
+
+    expect(result).toMatchObject({
+      success: true,
+      code: "rsvp_cancelled",
+      eventId: chapterEventRow.id,
+      externalWritesEnabled: false,
+    });
+    expect(client.inserts.events).toContainEqual(
+      expect.objectContaining({
+        event_type: "event_rsvp_cancelled",
+        actor_user_id: profileRow.id,
+        chapter_event_id: chapterEventRow.id,
+        payload: expect.objectContaining({
+          operation: "cancel_rsvp",
+          previousRsvpEventId: "event-rsvp-1",
+          liveExternalWrite: false,
+        }),
+      }),
+    );
+  });
+
+  it("keeps RSVP cancellation idempotent when no active RSVP exists", async () => {
+    const client = new FakeSupabaseClient();
+    enqueueValidActorPath(client);
+    client.enqueue("points_events", "maybeSingle", { data: null });
+    client.enqueue("events", "maybeSingle", { data: null });
+    client.enqueue("events", "maybeSingle", { data: null });
+
+    const result = await recordMemberEventLoopStep(asServiceClient(client), {
+      operation: "cancel_rsvp",
+      routeEventId: "chapter-event-ucla-kickoff",
+      actorUserId: profileRow.id,
+      actorEmail: profileRow.email,
+    });
+
+    expect(result).toMatchObject({
+      success: true,
+      code: "rsvp_cancel_not_found",
+      eventId: chapterEventRow.id,
+      externalWritesEnabled: false,
+    });
+    expect(client.inserts.events ?? []).toHaveLength(0);
+  });
+
+  it("blocks RSVP cancellation after points have been awarded", async () => {
+    const client = new FakeSupabaseClient();
+    enqueueValidActorPath(client);
+    client.enqueue("points_events", "maybeSingle", {
+      data: { id: "points-1", awarded_to_user_id: profileRow.id, points_delta: 20 },
+    });
+
+    const result = await recordMemberEventLoopStep(asServiceClient(client), {
+      operation: "cancel_rsvp",
+      routeEventId: "chapter-event-ucla-kickoff",
+      actorUserId: profileRow.id,
+      actorEmail: profileRow.email,
+    });
+
+    expect(result).toMatchObject({
+      success: false,
+      code: "rsvp_cancel_blocked_checked_in",
+      eventId: chapterEventRow.id,
+      externalWritesEnabled: false,
+    });
+    expect(client.inserts.events ?? []).toHaveLength(0);
+  });
+
+  it("allows a member to RSVP again after a newer cancellation event", async () => {
+    const client = new FakeSupabaseClient();
+    enqueueValidActorPath(client);
+    client.enqueue("events", "maybeSingle", {
+      data: {
+        id: "event-rsvp-1",
+        event_type: "event_rsvp_recorded",
+        occurred_at: "2026-11-14T12:00:00Z",
+      },
+    });
+    client.enqueue("events", "maybeSingle", {
+      data: {
+        id: "event-rsvp-cancel-1",
+        event_type: "event_rsvp_cancelled",
+        occurred_at: "2026-11-14T12:30:00Z",
+      },
+    });
+    client.enqueue("events", "then", { data: null });
+
+    const result = await recordMemberEventLoopStep(asServiceClient(client), {
+      operation: "rsvp",
+      routeEventId: "chapter-event-ucla-kickoff",
+      actorUserId: profileRow.id,
+      actorEmail: profileRow.email,
+    });
+
+    expect(result).toMatchObject({
+      success: true,
+      code: "rsvp_recorded",
+      eventId: chapterEventRow.id,
+      externalWritesEnabled: false,
+    });
+    expect(client.inserts.events).toContainEqual(
+      expect.objectContaining({
+        event_type: "event_rsvp_recorded",
+        actor_user_id: profileRow.id,
+        chapter_event_id: chapterEventRow.id,
+      }),
+    );
+  });
+
   it("records check-in, attendance, and points exactly once", async () => {
     const client = new FakeSupabaseClient();
     enqueueValidActorPath(client);
-    client.enqueue("events", "maybeSingle", { data: { id: "event-rsvp-1" } });
+    client.enqueue("events", "maybeSingle", {
+      data: {
+        id: "event-rsvp-1",
+        event_type: "event_rsvp_recorded",
+        occurred_at: "2026-11-14T12:00:00Z",
+      },
+    });
+    client.enqueue("events", "maybeSingle", { data: null });
     client.enqueue("points_events", "maybeSingle", { data: null });
     client.enqueue("points_events", "single", { data: { id: "points-1" } });
     client.enqueue("points_events", "then", {
@@ -178,7 +321,14 @@ describe("member event-loop write gate", () => {
   it("blocks duplicate check-in points when points already exist", async () => {
     const client = new FakeSupabaseClient();
     enqueueValidActorPath(client);
-    client.enqueue("events", "maybeSingle", { data: { id: "event-rsvp-1" } });
+    client.enqueue("events", "maybeSingle", {
+      data: {
+        id: "event-rsvp-1",
+        event_type: "event_rsvp_recorded",
+        occurred_at: "2026-11-14T12:00:00Z",
+      },
+    });
+    client.enqueue("events", "maybeSingle", { data: null });
     client.enqueue("points_events", "maybeSingle", {
       data: { id: "points-1", awarded_to_user_id: profileRow.id, points_delta: 20 },
     });
@@ -213,6 +363,7 @@ describe("member event-loop write gate", () => {
     client.enqueue("chapter_events", "single", {
       data: { ...chapterEventRow, id: "materialized-event", attendance_count: 0 },
     });
+    client.enqueue("events", "maybeSingle", { data: null });
     client.enqueue("events", "maybeSingle", { data: null });
     client.enqueue("events", "then", { data: null });
 
@@ -299,6 +450,7 @@ describe("member event-loop write gate", () => {
     const rsvpInsertErrorClient = new FakeSupabaseClient();
     enqueueValidActorPath(rsvpInsertErrorClient);
     rsvpInsertErrorClient.enqueue("events", "maybeSingle", { data: null });
+    rsvpInsertErrorClient.enqueue("events", "maybeSingle", { data: null });
     rsvpInsertErrorClient.enqueue("events", "then", {
       data: null,
       error: { message: "insert rejected" },
@@ -315,7 +467,14 @@ describe("member event-loop write gate", () => {
 
     const pointsInsertErrorClient = new FakeSupabaseClient();
     enqueueValidActorPath(pointsInsertErrorClient);
-    pointsInsertErrorClient.enqueue("events", "maybeSingle", { data: { id: "event-rsvp-1" } });
+    pointsInsertErrorClient.enqueue("events", "maybeSingle", {
+      data: {
+        id: "event-rsvp-1",
+        event_type: "event_rsvp_recorded",
+        occurred_at: "2026-11-14T12:00:00Z",
+      },
+    });
+    pointsInsertErrorClient.enqueue("events", "maybeSingle", { data: null });
     pointsInsertErrorClient.enqueue("points_events", "maybeSingle", { data: null });
     pointsInsertErrorClient.enqueue("points_events", "single", {
       data: null,
@@ -336,6 +495,8 @@ describe("member event-loop write gate", () => {
     const expectedTones = new Map([
       ["rsvp_recorded", "success"],
       ["already_rsvpd", "info"],
+      ["rsvp_cancelled", "success"],
+      ["rsvp_cancel_not_found", "info"],
       ["checked_in", "success"],
       ["already_checked_in", "info"],
       ["write_disabled", "warning"],
@@ -344,6 +505,7 @@ describe("member event-loop write gate", () => {
       ["membership_required", "warning"],
       ["event_not_found", "warning"],
       ["permission_denied", "warning"],
+      ["rsvp_cancel_blocked_checked_in", "warning"],
       ["server_error", "warning"],
     ]);
 

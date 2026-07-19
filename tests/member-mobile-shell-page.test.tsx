@@ -5,6 +5,7 @@ import { join } from "node:path";
 
 import { FigmaMemberMobileHome } from "@/components/figma-member-mobile-home";
 import { getMockLocalActorContext } from "@/services/local-actor-context";
+import { getVisibleMemberGreetingName } from "@/services/member-mobile-identity-context";
 
 vi.mock("next/navigation", () => ({
   redirect: vi.fn(),
@@ -53,6 +54,25 @@ describe("member mobile shell routes", () => {
     expect(html).toContain('href="/profile?source=home"');
   });
 
+  it("renders the Home route with the full visible production TEST member identity", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const actor = getSignedInActor("member.a@mymedlife.test");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue({
+      ...actor,
+      user: {
+        ...actor.user,
+        displayName: "Test UCLA General Member Sam",
+      },
+    });
+
+    const { default: HomePage } = await import("@/app/app/member-home-page");
+    const html = renderToStaticMarkup(await HomePage({}));
+
+    expect(html).toContain("Hi, TEST Test UCLA General Member Sam");
+    expect(html).not.toContain("Hi, TEST Test 👋");
+  });
+
   it("keeps zero-count signed-in members from inheriting demo progress", () => {
     const zeroContext = {
       displayName: "TEST Nick Ellis",
@@ -88,6 +108,38 @@ describe("member mobile shell routes", () => {
     expect(pointsHtml).toContain("You (TEST Nick Ellis)");
     expect(pointsHtml).not.toContain("75 / 150 pts");
     expect(pointsHtml).not.toContain("Approved 2h ago in preview");
+  });
+
+  it("keeps production TEST account identity visible on the member home greeting", () => {
+    const productionMemberName = "Test UCLA General Member Sam";
+    const homeHtml = renderToStaticMarkup(
+      <FigmaMemberMobileHome
+        memberContext={{
+          displayName: "TEST Test UCLA General Member Sam",
+          firstName: getVisibleMemberGreetingName(productionMemberName),
+          chapterName: "TEST Test UCLA",
+          campusName: "TEST UCLA",
+          pointsTotal: 0,
+          pointsWeeklyLabel: "+0",
+          pointsRankLabel: "#6",
+          completedActions: 0,
+          leaderboardRows: [
+            {
+              rank: 6,
+              name: "TEST Test UCLA General Member Sam",
+              role: "General Member",
+              pts: 0,
+              me: true,
+            },
+          ],
+        }}
+      />,
+    );
+
+    expect(getVisibleMemberGreetingName("Nick Ellis")).toBe("TEST Nick");
+    expect(getVisibleMemberGreetingName("TEST Nick Ellis")).toBe("TEST Nick");
+    expect(homeHtml).toContain("Hi, TEST Test UCLA General Member Sam");
+    expect(homeHtml).not.toContain("Hi, TEST Test 👋");
   });
 
   it("renders the Stories route through the shared Figma member shell", async () => {

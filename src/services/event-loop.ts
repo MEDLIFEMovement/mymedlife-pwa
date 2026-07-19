@@ -10,6 +10,7 @@ import {
 } from "@/services/rush-month-event-rsvp";
 import {
   createEmptyStagingLumaEventLoop,
+  cancelMemberEventRsvp,
   getStagingLumaCrossRoleProof,
   getStagingLumaEventLoopReadModel,
   prepStagingLumaEvent,
@@ -63,6 +64,7 @@ export type EventLoopRsvp = EventRsvp;
 export type EventLoopAttendance = EventAttendance;
 
 export {
+  cancelMemberEventRsvp,
   createEmptyStagingLumaEventLoop,
   prepStagingLumaEvent,
   shareStagingEventToFeed,

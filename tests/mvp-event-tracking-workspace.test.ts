@@ -11,7 +11,7 @@ describe("mvp event tracking workspace", () => {
     const actor = getMockLocalActorContext("member.a@mymedlife.test");
     const workspace = getMvpMemberHome(actor, data);
 
-    expect(workspace.greeting).toBe("Hi, Sofia");
+    expect(workspace.greeting).toBe("Hi, TEST Sofia");
     expect(workspace.chapterName).toBe("UCLA MEDLIFE");
     expect(workspace.chapterMeta).toBe(
       "General Member • UCLA • Events and points",
@@ -48,7 +48,7 @@ describe("mvp event tracking workspace", () => {
     const actor = getMockLocalActorContext("traveler.a@mymedlife.test");
     const workspace = getMvpMemberHome(actor, data);
 
-    expect(workspace.greeting).toBe("Hi, Taylor");
+    expect(workspace.greeting).toBe("Hi, TEST Taylor");
     expect(workspace.primaryEvent?.title).toBe("Rush Month kickoff social");
     expect(workspace.travelerHref).toBeNull();
   });
