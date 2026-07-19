@@ -4,7 +4,7 @@ import { isUuid } from "@/services/action-start-write";
 
 type EnvSource = Record<string, string | undefined>;
 type MemberEventLoopEnvironment = "local" | "staging" | "production";
-type MemberEventLoopOperation = "rsvp" | "checkin";
+type MemberEventLoopOperation = "rsvp" | "cancel_rsvp" | "checkin";
 
 type SupabaseQueryError = { message?: string } | null;
 type SupabaseQueryResult<TData> = {
@@ -50,7 +50,13 @@ export type MemberEventLoopWriteConfig = {
 export type MemberEventLoopWriteResult =
   | {
       success: true;
-      code: "rsvp_recorded" | "already_rsvpd" | "checked_in" | "already_checked_in";
+      code:
+        | "rsvp_recorded"
+        | "already_rsvpd"
+        | "rsvp_cancelled"
+        | "rsvp_cancel_not_found"
+        | "checked_in"
+        | "already_checked_in";
       eventId: string;
       pointsAwarded: number;
       attendanceCount: number;
@@ -66,6 +72,7 @@ export type MemberEventLoopWriteResult =
         | "membership_required"
         | "event_not_found"
         | "permission_denied"
+        | "rsvp_cancel_blocked_checked_in"
         | "server_error";
       eventId: string;
       externalWritesEnabled: false;
@@ -101,8 +108,10 @@ type ChapterEventRow = {
   attendance_count: number | null;
 };
 
-type EventRow = {
+type RsvpIntentRow = {
   id: string;
+  event_type: string;
+  occurred_at: string;
 };
 
 type PointsEventRow = {
@@ -191,7 +200,7 @@ export async function recordMemberEventLoopStep(
   try {
     const profile = await resolveActorProfile(client, input.actorUserId, input.actorEmail);
 
-    if (!profile || profile.status !== "active") {
+    if (profile?.status !== "active") {
       return failure(
         "profile_not_found",
         input.routeEventId,
@@ -233,6 +242,14 @@ export async function recordMemberEventLoopStep(
       );
     }
 
+    if (input.operation === "cancel_rsvp") {
+      return cancelRsvp(client, {
+        event,
+        profile,
+        campaignId: event.campaign_id ?? campaign?.id ?? null,
+      });
+    }
+
     const rsvpResult = await recordRsvp(client, {
       event,
       profile,
@@ -272,40 +289,60 @@ export async function recordMemberEventLoopStep(
 
 export function mapMemberEventLoopWriteResultMessage(
   code: string | undefined,
-): { tone: "success" | "info" | "warning"; message: string } | null {
+): { code: string; tone: "success" | "info" | "warning"; message: string } | null {
   switch (code) {
     case "rsvp_recorded":
       return {
+        code,
         tone: "success",
         message:
           "RSVP recorded in myMEDLIFE. No Luma or external provider write ran.",
       };
     case "already_rsvpd":
       return {
+        code,
         tone: "info",
         message:
           "RSVP was already recorded for this event, so no duplicate RSVP row was created.",
       };
+    case "rsvp_cancelled":
+      return {
+        code,
+        tone: "success",
+        message:
+          "RSVP canceled in myMEDLIFE. No Luma or external provider write ran.",
+      };
+    case "rsvp_cancel_not_found":
+      return {
+        code,
+        tone: "info",
+        message:
+          "No active RSVP was found for this event. Nothing was canceled.",
+      };
     case "checked_in":
       return {
+        code,
         tone: "success",
         message:
           "Check-in recorded, attendance updated, and points awarded once in the myMEDLIFE ledger. External writes stayed off.",
       };
     case "already_checked_in":
       return {
+        code,
         tone: "info",
         message:
           "This check-in was already recorded. Duplicate points were blocked.",
       };
     case "write_disabled":
       return {
+        code,
         tone: "warning",
         message:
           "Event-loop writes are disabled for this environment, so this screen remains read-only.",
       };
     case "missing_auth":
       return {
+        code,
         tone: "warning",
         message:
           "Sign in before recording RSVP, check-in, attendance, or points.",
@@ -316,9 +353,17 @@ export function mapMemberEventLoopWriteResultMessage(
     case "permission_denied":
     case "server_error":
       return {
+        code,
         tone: "warning",
         message:
           "The app could not safely record this event-loop step. No RSVP, attendance, points, Luma, or external provider write ran.",
+      };
+    case "rsvp_cancel_blocked_checked_in":
+      return {
+        code,
+        tone: "warning",
+        message:
+          "RSVP cancellation is locked after check-in because attendance and points are already recorded.",
       };
     default:
       return null;
@@ -476,17 +521,9 @@ async function recordRsvp(
     operation: MemberEventLoopOperation;
   },
 ) {
-  const existing = await client
-    .schema("app")
-    .from("events")
-    .select("id")
-    .eq("event_type", "event_rsvp_recorded")
-    .eq("chapter_event_id", input.event.id)
-    .eq("actor_user_id", input.profile.id)
-    .limit(1)
-    .maybeSingle<EventRow>();
+  const latestIntent = await resolveLatestRsvpIntent(client, input.event.id, input.profile.id);
 
-  if (existing.data && !existing.error) {
+  if (latestIntent?.event_type === "event_rsvp_recorded") {
     return { created: false };
   }
 
@@ -514,6 +551,125 @@ async function recordRsvp(
   }
 
   return { created: true };
+}
+
+async function cancelRsvp(
+  client: SupabaseServiceClient,
+  input: {
+    event: ChapterEventRow;
+    profile: ProfileRow;
+    campaignId: string | null;
+  },
+): Promise<MemberEventLoopWriteResult> {
+  const existingPoints = await client
+    .schema("app")
+    .from("points_events")
+    .select("id,awarded_to_user_id,points_delta")
+    .eq("chapter_event_id", input.event.id)
+    .eq("awarded_to_user_id", input.profile.id)
+    .limit(1)
+    .maybeSingle<PointsEventRow>();
+
+  if (existingPoints.data && !existingPoints.error) {
+    return failure(
+      "rsvp_cancel_blocked_checked_in",
+      input.event.id,
+      "RSVP cancellation is locked after check-in because attendance and points are already recorded.",
+    );
+  }
+
+  const latestIntent = await resolveLatestRsvpIntent(client, input.event.id, input.profile.id);
+
+  if (latestIntent?.event_type !== "event_rsvp_recorded") {
+    return {
+      success: true,
+      code: "rsvp_cancel_not_found",
+      eventId: input.event.id,
+      pointsAwarded: 0,
+      attendanceCount: input.event.attendance_count ?? 0,
+      externalWritesEnabled: false,
+      plainEnglishMessage:
+        "No active RSVP was found for this event. Nothing was canceled.",
+    };
+  }
+
+  const inserted = await client
+    .schema("app")
+    .from("events")
+    .insert({
+      event_type: "event_rsvp_cancelled",
+      actor_user_id: input.profile.id,
+      chapter_id: input.event.chapter_id,
+      campaign_id: input.campaignId,
+      chapter_event_id: input.event.id,
+      payload: {
+        source: "member_event_loop",
+        operation: "cancel_rsvp",
+        userId: input.profile.id,
+        userEmail: input.profile.email,
+        previousRsvpEventId: latestIntent.id,
+        liveExternalWrite: false,
+      },
+      correlation_id: `member_event_loop:cancel_rsvp:${input.event.id}:${input.profile.id}`,
+    });
+
+  if (inserted.error) {
+    throw new Error(`RSVP cancellation insert failed: ${inserted.error.message}`);
+  }
+
+  return {
+    success: true,
+    code: "rsvp_cancelled",
+    eventId: input.event.id,
+    pointsAwarded: 0,
+    attendanceCount: input.event.attendance_count ?? 0,
+    externalWritesEnabled: false,
+    plainEnglishMessage:
+      "RSVP canceled in myMEDLIFE. No Luma or external provider write ran.",
+  };
+}
+
+async function resolveLatestRsvpIntent(
+  client: SupabaseServiceClient,
+  chapterEventId: string,
+  profileId: string,
+) {
+  const [recorded, cancelled] = await Promise.all([
+    resolveLatestRsvpIntentByType(client, chapterEventId, profileId, "event_rsvp_recorded"),
+    resolveLatestRsvpIntentByType(client, chapterEventId, profileId, "event_rsvp_cancelled"),
+  ]);
+
+  if (!recorded) {
+    return cancelled;
+  }
+
+  if (!cancelled) {
+    return recorded;
+  }
+
+  return new Date(recorded.occurred_at).getTime() >= new Date(cancelled.occurred_at).getTime()
+    ? recorded
+    : cancelled;
+}
+
+async function resolveLatestRsvpIntentByType(
+  client: SupabaseServiceClient,
+  chapterEventId: string,
+  profileId: string,
+  eventType: "event_rsvp_recorded" | "event_rsvp_cancelled",
+) {
+  const result = await client
+    .schema("app")
+    .from("events")
+    .select("id,event_type,occurred_at")
+    .eq("event_type", eventType)
+    .eq("chapter_event_id", chapterEventId)
+    .eq("actor_user_id", profileId)
+    .order("occurred_at", { ascending: false })
+    .limit(1)
+    .maybeSingle<RsvpIntentRow>();
+
+  return result.data && !result.error ? result.data : null;
 }
 
 async function recordCheckInAndPoints(

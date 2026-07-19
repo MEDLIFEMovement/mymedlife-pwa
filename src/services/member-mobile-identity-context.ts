@@ -7,6 +7,21 @@ export function ensureVisibleTestLabel(value: string) {
   return /\bTEST\b/.test(value) ? value : `TEST ${value}`;
 }
 
+export function getVisibleMemberGreetingName(displayName: string) {
+  const trimmedDisplayName = displayName.trim();
+
+  if (!trimmedDisplayName) {
+    return "TEST Member";
+  }
+
+  const labelStrippedName = trimmedDisplayName.replace(/^TEST\b\s*/u, "").trim();
+  const nameForGreeting = /^Test\b/u.test(labelStrippedName)
+    ? labelStrippedName
+    : getFirstName(labelStrippedName);
+
+  return ensureVisibleTestLabel(nameForGreeting);
+}
+
 export function buildMemberIdentityContext(
   actor: LocalActorContext,
   studentHome: MvpMemberHome,
@@ -36,7 +51,7 @@ export function buildMemberIdentityContext(
 
   return {
     displayName: ensureVisibleTestLabel(actor.user.displayName),
-    firstName: ensureVisibleTestLabel(getFirstName(actor.user.displayName)),
+    firstName: getVisibleMemberGreetingName(actor.user.displayName),
     chapterName: ensureVisibleTestLabel(studentHome.chapterName),
     campusName: ensureVisibleTestLabel(campusName),
     pointsTotal: studentHome.pointsTotal,

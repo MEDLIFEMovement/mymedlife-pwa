@@ -21,6 +21,13 @@ export async function submitMemberEventRsvpAction(formData: FormData) {
   redirect(buildRedirectHref(result.eventId || routeEventId, "rsvp", formData, result.code));
 }
 
+export async function submitMemberEventCancelRsvpAction(formData: FormData) {
+  const routeEventId = getFormString(formData, "eventId");
+  const result = await submitMemberEventLoopStepForSupabase("cancel_rsvp", formData);
+
+  redirect(buildRedirectHref(result.eventId || routeEventId, "rsvp", formData, result.code));
+}
+
 export async function submitMemberEventCheckInAction(formData: FormData) {
   const routeEventId = getFormString(formData, "eventId");
   const result = await submitMemberEventLoopStepForSupabase("checkin", formData);
@@ -29,7 +36,7 @@ export async function submitMemberEventCheckInAction(formData: FormData) {
 }
 
 export async function submitMemberEventLoopStepForSupabase(
-  operation: "rsvp" | "checkin",
+  operation: "rsvp" | "cancel_rsvp" | "checkin",
   formData: FormData,
 ): Promise<MemberEventLoopWriteResult> {
   const routeEventId = getFormString(formData, "eventId");

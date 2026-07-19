@@ -29,6 +29,7 @@ import {
   type StagingLumaEventLoopSummary,
   type StagingLumaMode,
 } from "@/services/staging-luma-event-loop";
+export { cancelMemberEventRsvp } from "@/services/staging-luma-event-loop";
 export {
   getEventLoopPilotFoundation,
   getEventLoopPilotSafety,

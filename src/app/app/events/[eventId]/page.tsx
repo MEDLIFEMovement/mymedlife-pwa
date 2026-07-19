@@ -12,6 +12,7 @@ import {
   Star,
   Users,
   UserCheck,
+  X,
 } from "lucide-react";
 
 import {
@@ -51,6 +52,7 @@ import { canAccessMemberWorkspace } from "@/services/role-visibility";
 import { getStaticRouteMetadata } from "@/services/static-route-metadata";
 import {
   submitMemberEventCheckInAction,
+  submitMemberEventCancelRsvpAction,
   submitMemberEventRsvpAction,
 } from "./actions";
 
@@ -359,6 +361,7 @@ function EventDetailView({
             Event RSVP
           </p>
           <button
+            type="button"
             disabled
             title="Event sharing is blocked in this preview until Luma sharing is approved"
             className="rounded-full bg-white/15 p-2.5 text-white backdrop-blur-sm"
@@ -384,16 +387,27 @@ function EventDetailView({
         </div>
 
         {event.memberRsvpState === "registered" ? (
-          <div className="flex items-center gap-3 rounded-2xl border border-emerald-300/40 bg-emerald-400/20 p-4">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-400">
-              <CheckCircle2 size={20} className="text-white" />
+          <div className="space-y-3 rounded-2xl border border-emerald-300/40 bg-emerald-400/20 p-4">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-400">
+                <CheckCircle2 size={20} className="text-white" />
+              </div>
+              <div>
+                <p className="text-base font-extrabold text-white">You&apos;re RSVP&apos;d!</p>
+                <p className="mt-0.5 text-sm text-emerald-200">
+                  Check in at the chapter table to preview your points impact.
+                </p>
+              </div>
             </div>
-            <div>
-              <p className="text-base font-extrabold text-white">You&apos;re RSVP&apos;d!</p>
-              <p className="mt-0.5 text-sm text-emerald-200">
-                Check in at the chapter table to preview your points impact.
-              </p>
-            </div>
+            <RsvpCancelControl
+              event={event}
+              source={source ?? "events"}
+              profileSource={profileSource}
+              campaign={campaign}
+              storyFilter={storyFilter}
+              storyId={storyId}
+              variant="hero"
+            />
           </div>
         ) : (
           <EventLoopActionForm
@@ -457,6 +471,7 @@ function EventDetailView({
           </div>
           <div className="flex gap-2 border-t border-slate-200 pt-3">
             <button
+              type="button"
               disabled
               title="Calendar export is blocked in this preview"
               className="flex-1 rounded-xl bg-slate-100 px-3 py-2.5 text-sm font-semibold text-slate-800"
@@ -466,6 +481,7 @@ function EventDetailView({
               </span>
             </button>
             <button
+              type="button"
               disabled
               title="Event sharing is blocked in this preview until Luma sharing is approved"
               className="flex-1 rounded-xl bg-slate-100 px-3 py-2.5 text-sm font-semibold text-slate-800"
@@ -582,7 +598,10 @@ function EventRsvpConfirmView({
   const visibleLocationLabel = ensureVisibleTestLabel(snapshot.memberLocationLabel);
   const returnHref = getEventReturnHref(event.id, source, profileSource, campaign, storyFilter, storyId);
   const returnLabel = getEventReturnLabel(source);
-  const rsvpConfirmed = event.memberRsvpState === "registered" || resultState?.tone === "success";
+  const rsvpConfirmed =
+    event.memberRsvpState === "registered" ||
+    resultState?.code === "rsvp_recorded" ||
+    resultState?.code === "already_rsvpd";
   return (
     <StepShell backHref={backHref} title="">
       <div className="flex flex-1 flex-col items-center justify-center px-6 py-8 text-center">
@@ -636,18 +655,30 @@ function EventRsvpConfirmView({
         </div>
 
         <div className="w-full space-y-2.5">
-          <EventLoopActionForm
-            action={submitMemberEventRsvpAction}
-            eventId={event.id}
-            source={source ?? "events"}
-            profileSource={profileSource}
-            campaign={campaign}
-            storyFilter={storyFilter}
-            storyId={storyId}
-            label="Record RSVP in myMEDLIFE"
-            icon={<CheckCircle2 size={16} />}
-            className="bg-[#1b4b8e] text-base text-white hover:opacity-90"
-          />
+          {rsvpConfirmed ? (
+            <RsvpCancelControl
+              event={event}
+              source={source ?? "events"}
+              profileSource={profileSource}
+              campaign={campaign}
+              storyFilter={storyFilter}
+              storyId={storyId}
+              variant="step"
+            />
+          ) : (
+            <EventLoopActionForm
+              action={submitMemberEventRsvpAction}
+              eventId={event.id}
+              source={source ?? "events"}
+              profileSource={profileSource}
+              campaign={campaign}
+              storyFilter={storyFilter}
+              storyId={storyId}
+              label="Record RSVP in myMEDLIFE"
+              icon={<CheckCircle2 size={16} />}
+              className="bg-[#1b4b8e] text-base text-white hover:opacity-90"
+            />
+          )}
           <PrimaryLink
             href={buildEventStepHref(event.id, "checkin", source, profileSource, campaign, storyFilter, storyId)}
             label="Go to Check-In"
@@ -830,6 +861,60 @@ function EventPointsImpactView({
   );
 }
 
+type RsvpCancelControlProps = Readonly<{
+  event: NonNullable<ReturnType<typeof getMemberLaunchLaneEventRowById>>;
+  source?: string;
+  profileSource?: string;
+  campaign?: string;
+  storyFilter?: string;
+  storyId?: string;
+  variant: "hero" | "step";
+}>;
+
+function RsvpCancelControl({
+  event,
+  source,
+  profileSource,
+  campaign,
+  storyFilter,
+  storyId,
+  variant,
+}: RsvpCancelControlProps) {
+  if (!event.memberCanCancelRsvp) {
+    return (
+      <div
+        className={[
+          "rounded-2xl border px-4 py-3 text-sm font-semibold leading-6",
+          variant === "hero"
+            ? "border-white/20 bg-white/10 text-emerald-50"
+            : "border-amber-200 bg-amber-50 text-amber-900",
+        ].join(" ")}
+      >
+        {event.memberRsvpLockLabel ?? "RSVP cancellation is locked after check-in."}
+      </div>
+    );
+  }
+
+  return (
+    <EventLoopActionForm
+      action={submitMemberEventCancelRsvpAction}
+      eventId={event.id}
+      source={source ?? "events"}
+      profileSource={profileSource}
+      campaign={campaign}
+      storyFilter={storyFilter}
+      storyId={storyId}
+      label="Cancel RSVP"
+      icon={<X size={16} />}
+      className={
+        variant === "hero"
+          ? "border border-white/30 bg-white/15 text-sm text-white hover:bg-white/25"
+          : "border border-slate-300 bg-white text-base text-slate-800 hover:bg-slate-50"
+      }
+    />
+  );
+}
+
 function formatLeaderboardRank(rank: number) {
   switch (rank) {
     case 1:
@@ -931,30 +1016,52 @@ function PointsCard({
   );
 }
 
+type EventLoopResultBannerProps = Readonly<{
+  resultState: EventLoopResultState;
+  className?: string;
+}>;
+
 function EventLoopResultBanner({
   resultState,
   className = "",
-}: {
-  resultState: EventLoopResultState;
-  className?: string;
-}) {
+}: EventLoopResultBannerProps) {
   if (!resultState) {
     return null;
   }
 
-  const classes =
-    resultState.tone === "success"
-      ? "border-emerald-200 bg-emerald-50 text-emerald-900"
-      : resultState.tone === "warning"
-        ? "border-amber-200 bg-amber-50 text-amber-900"
-        : "border-[#bfdbfe] bg-[#eff6ff] text-[#1b4b8e]";
+  const classes = getEventLoopResultBannerClasses(resultState.tone);
 
   return (
-    <div className={`rounded-2xl border p-4 text-sm font-semibold leading-6 ${classes} ${className}`} role="status">
+    <output className={`block rounded-2xl border p-4 text-sm font-semibold leading-6 ${classes} ${className}`}>
       {resultState.message}
-    </div>
+    </output>
   );
 }
+
+function getEventLoopResultBannerClasses(tone: NonNullable<EventLoopResultState>["tone"]) {
+  if (tone === "success") {
+    return "border-emerald-200 bg-emerald-50 text-emerald-900";
+  }
+
+  if (tone === "warning") {
+    return "border-amber-200 bg-amber-50 text-amber-900";
+  }
+
+  return "border-[#bfdbfe] bg-[#eff6ff] text-[#1b4b8e]";
+}
+
+type EventLoopActionFormProps = Readonly<{
+  action: (formData: FormData) => Promise<void>;
+  eventId: string;
+  source?: string;
+  profileSource?: string;
+  campaign?: string;
+  storyFilter?: string;
+  storyId?: string;
+  label: string;
+  icon?: ReactNode;
+  className: string;
+}>;
 
 function EventLoopActionForm({
   action,
@@ -967,18 +1074,7 @@ function EventLoopActionForm({
   label,
   icon,
   className,
-}: {
-  action: (formData: FormData) => Promise<void>;
-  eventId: string;
-  source?: string;
-  profileSource?: string;
-  campaign?: string;
-  storyFilter?: string;
-  storyId?: string;
-  label: string;
-  icon?: ReactNode;
-  className: string;
-}) {
+}: EventLoopActionFormProps) {
   return (
     <form action={action} className="w-full">
       <input type="hidden" name="eventId" value={eventId} />

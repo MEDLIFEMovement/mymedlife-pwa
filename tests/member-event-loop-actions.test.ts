@@ -31,6 +31,7 @@ vi.mock("@/services/member-event-loop-write", () => ({
 }));
 
 import {
+  submitMemberEventCancelRsvpAction,
   submitMemberEventCheckInAction,
   submitMemberEventLoopStepForSupabase,
   submitMemberEventRsvpAction,
@@ -174,6 +175,25 @@ describe("member event-loop server actions", () => {
 
     expect(mocks.redirect).toHaveBeenCalledWith(
       "/app/events/chapter-event-ucla-kickoff?source=stories&step=rsvp&campaign=fall-2026&storyFilter=featured&story=story-1&memberEventLoopWriteResult=rsvp_recorded",
+    );
+  });
+
+  it("redirects cancel RSVP submissions back to RSVP with member return context preserved", async () => {
+    enableSuccessfulActionResult("rsvp_cancelled", "event-from-service");
+
+    await expect(
+      submitMemberEventCancelRsvpAction(
+        formData({
+          eventId: "chapter-event-ucla-kickoff",
+          source: "profile",
+          profileSource: "points",
+          campaign: "fall-2026",
+        }),
+      ),
+    ).rejects.toThrow("NEXT_REDIRECT:");
+
+    expect(mocks.redirect).toHaveBeenCalledWith(
+      "/app/events/event-from-service?source=profile&step=rsvp&profileSource=points&campaign=fall-2026&memberEventLoopWriteResult=rsvp_cancelled",
     );
   });
 

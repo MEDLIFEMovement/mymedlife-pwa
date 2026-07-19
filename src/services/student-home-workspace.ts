@@ -3,6 +3,7 @@ import {
   getVisibleCampaignShellsForActor,
 } from "@/services/campaign-ops-service";
 import type { LocalActorContext } from "@/services/local-actor-context";
+import { getVisibleMemberGreetingName } from "@/services/member-mobile-identity-context";
 import { getMemberRecognitionSummary } from "@/services/member-recognition";
 import type { ReadOnlyAppData } from "@/services/read-only-app-data";
 import { getRoleNextActionBrief } from "@/services/role-next-actions";
@@ -89,7 +90,7 @@ export function getStudentHomeWorkspace(
   const firstEvent = eventPlans[0];
 
   return {
-    greeting: `Hi, ${getFirstName(actor.user.displayName)}`,
+    greeting: `Hi, ${getVisibleMemberGreetingName(actor.user.displayName)}`,
     chapterName: data.chapter.name,
     chapterMeta: `${actor.audienceLabel} • ${data.chapter.campus} • ${data.campaign.weekLabel}`,
     heroSummary:
@@ -160,10 +161,6 @@ export function getStudentHomeWorkspace(
     safetyNote:
       "This student home is mock-safe. Assignment writes, proof saves, points updates, event syncs, reminders, and external sends remain blocked until approval.",
   };
-}
-
-function getFirstName(displayName: string) {
-  return displayName.split(" ")[0] ?? displayName;
 }
 
 function getStudentCampaignProgress(assignments: Assignment[]) {

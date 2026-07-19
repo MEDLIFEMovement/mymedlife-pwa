@@ -52,9 +52,10 @@ export type EventRsvp = {
   eventId: string;
   userId: string;
   userEmail: string;
-  status: "going";
+  status: "going" | "cancelled";
   source: "mymedlife";
   recordedAt: string;
+  cancelledAt?: string;
 };
 
 export type EventAttendance = {
@@ -286,12 +287,16 @@ export function recordMemberEventRsvp(
   const event = requireEvent(state);
   assertCanRsvpAsSelf(actor);
 
-  if (state.rsvps.some((rsvp) => rsvp.eventId === event.id && rsvp.userId === actor.user.id)) {
+  const existing = state.rsvps.find(
+    (rsvp) => rsvp.eventId === event.id && rsvp.userId === actor.user.id,
+  );
+
+  if (existing?.status === "going") {
     return state;
   }
 
   const rsvp: EventRsvp = {
-    id: `rsvp-${event.id}-${actor.user.id}`,
+    id: existing?.id ?? `rsvp-${event.id}-${actor.user.id}`,
     eventId: event.id,
     userId: actor.user.id,
     userEmail: actor.user.email,
@@ -302,7 +307,9 @@ export function recordMemberEventRsvp(
 
   return {
     ...state,
-    rsvps: [...state.rsvps, rsvp],
+    rsvps: existing
+      ? state.rsvps.map((row) => (row.id === existing.id ? rsvp : row))
+      : [...state.rsvps, rsvp],
     integrationEvents: [
       ...state.integrationEvents,
       createIntegrationEvent("event_rsvp_recorded", {
@@ -316,6 +323,80 @@ export function recordMemberEventRsvp(
     auditRecords: [
       ...state.auditRecords,
       createAuditRecord(actor, "event_rsvp_recorded", "chapter_event", event.id),
+    ],
+  };
+}
+
+export function cancelMemberEventRsvp(
+  state: StagingLumaEventLoopState,
+  actor: LocalActorContext,
+): StagingLumaEventLoopState {
+  const event = requireEvent(state);
+  assertCanRsvpAsSelf(actor);
+
+  const attendanceAlreadyRecorded = state.attendance.some(
+    (row) => row.eventId === event.id && row.userId === actor.user.id,
+  );
+  const hasPointsEvent = state.pointsEvents.some(
+    (pointsEvent) =>
+      pointsEvent.assignmentId === event.id && pointsEvent.userId === actor.user.id,
+  );
+
+  if (attendanceAlreadyRecorded || hasPointsEvent) {
+    return {
+      ...state,
+      integrationEvents: [
+        ...state.integrationEvents,
+        createIntegrationEvent("event_rsvp_cancel_blocked", {
+          title: "RSVP cancellation blocked after check-in",
+          destination: "internal",
+          status: "recorded",
+          detail:
+            "The member already has attendance or points for this event, so myMEDLIFE preserved the RSVP ledger instead of silently reversing launch proof.",
+        }),
+      ],
+      auditRecords: [
+        ...state.auditRecords,
+        createAuditRecord(actor, "event_rsvp_cancel_blocked", "chapter_event", event.id),
+      ],
+    };
+  }
+
+  const existing = state.rsvps.find(
+    (rsvp) =>
+      rsvp.eventId === event.id &&
+      rsvp.userId === actor.user.id &&
+      rsvp.status === "going",
+  );
+
+  if (!existing) {
+    return state;
+  }
+
+  return {
+    ...state,
+    rsvps: state.rsvps.map((row) =>
+      row.id === existing.id
+        ? {
+            ...row,
+            status: "cancelled",
+            cancelledAt: defaultOccurredAt,
+          }
+        : row,
+    ),
+    integrationEvents: [
+      ...state.integrationEvents,
+      createIntegrationEvent("event_rsvp_cancelled", {
+        title: "Member RSVP cancelled",
+        destination: "internal",
+        status: "recorded",
+        detail:
+          "A member cancelled their app-owned RSVP before check-in. No Luma attendee delete or external provider write occurred.",
+      }),
+    ],
+    auditRecords: [
+      ...state.auditRecords,
+      createAuditRecord(actor, "event_rsvp_cancelled", "chapter_event", event.id),
     ],
   };
 }
@@ -436,7 +517,7 @@ export function summarizeStagingLumaEventLoop(
     lumaLinkReady: Boolean(state.providerLink?.publicUrl),
     qrReady: Boolean(state.providerLink?.qrCodeValue),
     sharedToFeed: state.feedShared,
-    rsvpCount: state.rsvps.length,
+    rsvpCount: state.rsvps.filter((row) => row.status === "going").length,
     attendanceCount: state.attendance.length,
     pointsAwarded: state.pointsEvents.reduce(
       (total, pointsEvent) => total + pointsEvent.points,
