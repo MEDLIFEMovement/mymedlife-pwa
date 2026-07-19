@@ -39,10 +39,7 @@ function getProfileSource(source?: string): "events" | "home" | "points" | "stor
 }
 
 export default async function ProfilePage(props: ProfilePageProps) {
-  const [actor, data] = await Promise.all([
-    getLocalActorContext(),
-    getReadOnlyAppData(),
-  ]);
+  const actor = await getLocalActorContext();
   const resolvedSearchParams: { source?: string; event?: string; campaign?: string; storyFilter?: string; story?: string } = await (
     props.searchParams ?? Promise.resolve({})
   );
@@ -52,14 +49,7 @@ export default async function ProfilePage(props: ProfilePageProps) {
   const profileStoryFilter = resolvedSearchParams.storyFilter ?? null;
   const profileStoryId = resolvedSearchParams.story ?? null;
   const repaintKey = buildMemberRouteKey("/profile", resolvedSearchParams);
-  const workspace = getProfileWorkspace(actor, data);
   const isMemberProfile = canAccessMemberWorkspace(actor);
-  const studentHome = isMemberProfile
-    ? getMvpMemberHome(actor, data)
-    : null;
-  const recognition = isMemberProfile
-    ? getMemberRecognitionSummary(actor, data)
-    : null;
 
   if (shouldRedirectActorToLogin(actor)) {
     redirect(buildLoginRedirectHrefForPath("/profile", resolvedSearchParams));
@@ -68,6 +58,11 @@ export default async function ProfilePage(props: ProfilePageProps) {
   if (!isMemberProfile) {
     redirect(getLandingRouteForActor(actor));
   }
+
+  const data = await getReadOnlyAppData({ actorUserId: actor.user.id });
+  const workspace = getProfileWorkspace(actor, data);
+  const studentHome = getMvpMemberHome(actor, data);
+  const recognition = getMemberRecognitionSummary(actor, data);
 
   return (
     <main className="min-h-screen bg-[#d6e0f0] px-0 py-0 text-[#10223f] md:px-4 md:py-8">

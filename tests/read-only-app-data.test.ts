@@ -150,6 +150,75 @@ describe("read-only app data service", () => {
       }),
     ]);
   });
+
+  it("selects the signed-in actor's approved chapter instead of the first active chapter", async () => {
+    const rows = structuredClone(fakeRows);
+    const firstChapter = rows.chapters?.[0] as Record<string, unknown>;
+    const firstCampaign = rows.campaigns?.[0] as Record<string, unknown>;
+    const firstPhase = rows.phases?.[0] as Record<string, unknown>;
+
+    rows.profiles = [
+      {
+        id: "member-2",
+        display_name: "TEST Boston Member",
+        email: "member.2@mymedlife.test",
+        status: "active",
+        created_at: "2026-06-15T00:00:00Z",
+        updated_at: "2026-06-15T00:00:00Z",
+      },
+    ];
+    rows.memberships = [
+      {
+        id: "membership-2",
+        user_id: "member-2",
+        chapter_id: "chapter-2",
+        role_key: "general_member",
+        status: "approved",
+        requested_at: "2026-06-15T00:00:00Z",
+        approved_at: "2026-06-15T00:00:00Z",
+        approved_by: "admin-1",
+        created_at: "2026-06-15T00:00:00Z",
+        updated_at: "2026-06-15T00:00:00Z",
+      },
+    ];
+    rows.chapters = [
+      firstChapter,
+      {
+        ...firstChapter,
+        id: "chapter-2",
+        name: "TEST Boston University",
+        campus: "Boston University",
+      },
+    ];
+    rows.campaigns = [
+      firstCampaign,
+      {
+        ...firstCampaign,
+        id: "campaign-2",
+        chapter_id: "chapter-2",
+        slug: "rush-month-2026-boston",
+      },
+    ];
+    rows.phases = [
+      firstPhase,
+      {
+        ...firstPhase,
+        id: "phase-2",
+        chapter_id: "chapter-2",
+        campaign_id: "campaign-2",
+      },
+    ];
+
+    const data = await getSupabaseReadOnlyAppData(
+      createFakeClient(rows),
+      "Testing actor-scoped reads.",
+      { actorUserId: "member-2" },
+    );
+
+    expect(data.chapter.id).toBe("chapter-2");
+    expect(data.chapter.name).toBe("TEST Boston University");
+    expect(data.campaign.id).toBe("campaign-2");
+  });
 });
 
 function createFakeClient(

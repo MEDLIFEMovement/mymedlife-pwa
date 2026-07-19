@@ -8,14 +8,13 @@ import {
 import { getReadOnlyAppData } from "@/services/read-only-app-data";
 
 export async function getSltPrepPageContext(redirectPath: string) {
-  const [actor, data] = await Promise.all([
-    getLocalActorContext(),
-    getReadOnlyAppData(),
-  ]);
+  const actor = await getLocalActorContext();
 
   if (shouldRedirectActorToLogin(actor)) {
     redirect(buildLoginRedirectHref(redirectPath));
   }
+
+  const data = await getReadOnlyAppData({ actorUserId: actor.user.id });
 
   return { actor, data };
 }

@@ -206,6 +206,32 @@ describe("local actor context service", () => {
     expect(actor.staffRoles).toEqual([]);
   });
 
+  it("keeps a signed-in profile without approved access in onboarding", async () => {
+    const actor = await getSupabaseLocalActorContext(
+      createFakeClient({
+        ...fakeActorRows,
+        profiles: [
+          ...(fakeActorRows.profiles ?? []),
+          profile("user-12", "TEST Pending Member", "pending@mymedlife.test"),
+        ],
+      }),
+      "pending@mymedlife.test",
+      "Using signed-in local user.",
+      "local_auth_session",
+      "signed_in",
+    );
+
+    expect(actor.source.status).toBe("auth_profile_missing");
+    expect(actor.user).toEqual({
+      id: "user-12",
+      displayName: "TEST Pending Member",
+      email: "pending@mymedlife.test",
+    });
+    expect(actor.chapterRoles).toEqual([]);
+    expect(actor.staffRoles).toEqual([]);
+    expect(actor.accessSummary).toContain("approved chapter membership or staff role");
+  });
+
   it("keeps missing-profile auth context setup-only", () => {
     const actor = getMissingProfileActorContext(
       "new.user@medlifemovement.org",

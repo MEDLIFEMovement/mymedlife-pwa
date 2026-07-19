@@ -110,7 +110,13 @@ export type ReadOnlyAppData = {
   auditLogs: AuditLogRow[];
 };
 
-export async function getReadOnlyAppData(): Promise<ReadOnlyAppData> {
+export type ReadOnlyAppDataScope = {
+  actorUserId?: string | null;
+};
+
+export async function getReadOnlyAppData(
+  scope: ReadOnlyAppDataScope = {},
+): Promise<ReadOnlyAppData> {
   const access = await createSupabaseReadonlyAccess();
 
   if (!access.enabled) {
@@ -118,7 +124,7 @@ export async function getReadOnlyAppData(): Promise<ReadOnlyAppData> {
   }
 
   try {
-    return await getSupabaseReadOnlyAppData(access.client, access.reason);
+    return await getSupabaseReadOnlyAppData(access.client, access.reason, scope);
   } catch (error) {
     return getMockReadOnlyAppData(
       error instanceof Error
@@ -132,11 +138,10 @@ export async function getReadOnlyAppData(): Promise<ReadOnlyAppData> {
 export async function getSupabaseReadOnlyAppData(
   client: SupabaseReadonlyClient,
   message = "Reading local Supabase data in read-only mode.",
+  scope: ReadOnlyAppDataScope = {},
 ): Promise<ReadOnlyAppData> {
   const snapshot = await readLocalDataSnapshot(client);
-  const chapter =
-    snapshot.chapters.find((item) => item.status === "active") ??
-    snapshot.chapters[0];
+  const chapter = selectChapterForActor(snapshot, scope.actorUserId);
 
   if (!chapter) {
     return getMockReadOnlyAppData("Supabase returned no chapters, so mock fallback is active.");
@@ -199,6 +204,34 @@ export async function getSupabaseReadOnlyAppData(
     automationOutboxRows: scoped.automationOutboxRows,
     auditLogs: scoped.auditLogs,
   };
+}
+
+function selectChapterForActor(
+  snapshot: Awaited<ReturnType<typeof readLocalDataSnapshot>>,
+  actorUserId: string | null | undefined,
+) {
+  if (actorUserId) {
+    const actorMembership = snapshot.memberships.find(
+      (membership) =>
+        membership.user_id === actorUserId &&
+        membership.status === "approved",
+    );
+    const actorChapter = actorMembership
+      ? snapshot.chapters.find(
+          (chapter) =>
+            chapter.id === actorMembership.chapter_id && chapter.status === "active",
+        )
+      : null;
+
+    if (actorChapter) {
+      return actorChapter;
+    }
+  }
+
+  return (
+    snapshot.chapters.find((chapter) => chapter.status === "active") ??
+    snapshot.chapters[0]
+  );
 }
 
 export async function readLocalDataSnapshot(client: SupabaseReadonlyClient) {

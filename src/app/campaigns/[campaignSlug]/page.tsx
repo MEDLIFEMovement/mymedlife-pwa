@@ -67,7 +67,7 @@ export default async function CampaignPage({ params }: CampaignPageProps) {
   }
 
   if (campaignSlug === "rush-month") {
-    const data = await getReadOnlyAppData();
+    const data = await getReadOnlyAppData({ actorUserId: actor.user.id });
     const closeout = getCampaignCloseoutReadiness(actor, data, campaignSlug);
 
     return (

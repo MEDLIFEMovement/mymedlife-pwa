@@ -378,6 +378,23 @@ export async function getSupabaseLocalActorContext(
   const actorCoachAssignments = snapshot.coachAssignments.filter(
     (item) => item.coach_user_id === profile.id && item.status === "active",
   );
+
+  if (
+    identitySource === "local_auth_session" &&
+    authSessionStatus === "signed_in" &&
+    actorMemberships.length === 0 &&
+    actorStaffRoles.length === 0
+  ) {
+    return getMissingProfileActorContext(
+      profile.email,
+      "This signed-in user has a myMEDLIFE profile but still needs an approved chapter membership or staff role.",
+      identitySource,
+      authSessionStatus,
+      isLocalOnly,
+      { id: profile.id, displayName: profile.display_name },
+    );
+  }
+
   const chapterNames = actorMemberships
     .map((membership) => findChapterName(snapshot.chapters, membership.chapter_id))
     .filter(Boolean);
@@ -443,6 +460,7 @@ export function getMissingProfileActorContext(
   identitySource: ActorIdentitySource = "local_auth_session",
   authSessionStatus: AuthSessionStatus = "signed_in",
   isLocalOnly = false,
+  identity?: { id: string; displayName: string },
 ): LocalActorContext {
   const displayName =
     selectedEmail
@@ -468,8 +486,8 @@ export function getMissingProfileActorContext(
       message,
     },
     user: {
-      id: "auth-profile-missing",
-      displayName,
+      id: identity?.id ?? "auth-profile-missing",
+      displayName: identity?.displayName ?? displayName,
       email: selectedEmail,
     },
     selectedEmail,
@@ -477,8 +495,9 @@ export function getMissingProfileActorContext(
     authSessionStatus,
     audience: "chapter_member",
     audienceLabel: "Profile setup required",
-    accessSummary:
-      "This signed-in user needs a myMEDLIFE profile, chapter, and role before workspace access is enabled.",
+    accessSummary: identity
+      ? "This signed-in user needs an approved chapter membership or staff role before workspace access is enabled."
+      : "This signed-in user needs a myMEDLIFE profile, chapter, and role before workspace access is enabled.",
     chapterRoles: [],
     staffRoles: [],
     canonicalRoleAssignments,
