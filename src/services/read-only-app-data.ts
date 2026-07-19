@@ -110,7 +110,13 @@ export type ReadOnlyAppData = {
   auditLogs: AuditLogRow[];
 };
 
-export async function getReadOnlyAppData(): Promise<ReadOnlyAppData> {
+export type ReadOnlyAppDataScope = {
+  actorUserId?: string | null;
+};
+
+export async function getReadOnlyAppData(
+  scope: ReadOnlyAppDataScope = {},
+): Promise<ReadOnlyAppData> {
   const access = await createSupabaseReadonlyAccess();
 
   if (!access.enabled) {
@@ -118,7 +124,7 @@ export async function getReadOnlyAppData(): Promise<ReadOnlyAppData> {
   }
 
   try {
-    return await getSupabaseReadOnlyAppData(access.client, access.reason);
+    return await getSupabaseReadOnlyAppData(access.client, access.reason, scope);
   } catch (error) {
     return getMockReadOnlyAppData(
       error instanceof Error
@@ -132,24 +138,20 @@ export async function getReadOnlyAppData(): Promise<ReadOnlyAppData> {
 export async function getSupabaseReadOnlyAppData(
   client: SupabaseReadonlyClient,
   message = "Reading local Supabase data in read-only mode.",
+  scope: ReadOnlyAppDataScope = {},
 ): Promise<ReadOnlyAppData> {
   const snapshot = await readLocalDataSnapshot(client);
-  const chapter =
-    snapshot.chapters.find((item) => item.status === "active") ??
-    snapshot.chapters[0];
+  const chapter = selectChapterForActor(snapshot, scope.actorUserId);
 
   if (!chapter) {
     return getMockReadOnlyAppData("Supabase returned no chapters, so mock fallback is active.");
   }
 
-  const campaign =
+  const persistedCampaign =
     snapshot.campaigns.find(
       (item) => item.chapter_id === chapter.id && item.status === "active",
     ) ?? snapshot.campaigns.find((item) => item.chapter_id === chapter.id);
-
-  if (!campaign) {
-    return getMockReadOnlyAppData("Supabase returned no active campaign, so mock fallback is active.");
-  }
+  const campaign = persistedCampaign ?? buildEmptyCampaignRow(chapter);
 
   const scoped = buildCampaignScopedData(snapshot, {
     chapterId: chapter.id,
@@ -161,7 +163,9 @@ export async function getSupabaseReadOnlyAppData(
     source: {
       mode: "supabase",
       status: "supabase_ready",
-      message,
+      message: persistedCampaign
+        ? message
+        : `${message} This chapter has no active campaign, so an honest empty campaign state is active.`,
     },
     chapter: toDomainChapter(chapter),
     campaign: toDomainCampaign(campaign, scoped.phases[0]),
@@ -199,6 +203,52 @@ export async function getSupabaseReadOnlyAppData(
     automationOutboxRows: scoped.automationOutboxRows,
     auditLogs: scoped.auditLogs,
   };
+}
+
+function buildEmptyCampaignRow(chapter: ChapterRow): CampaignRow {
+  return {
+    id: "00000000-0000-0000-0000-000000000000",
+    chapter_id: chapter.id,
+    campaign_template_id: null,
+    name: "No active campaign",
+    slug: "no-active-campaign",
+    objective: "This chapter does not have an active campaign yet.",
+    status: "draft",
+    semester: null,
+    academic_year: null,
+    opened_by: null,
+    opened_at: null,
+    created_at: chapter.created_at,
+    updated_at: chapter.updated_at,
+  };
+}
+
+function selectChapterForActor(
+  snapshot: Awaited<ReturnType<typeof readLocalDataSnapshot>>,
+  actorUserId: string | null | undefined,
+) {
+  if (actorUserId) {
+    const actorMembership = snapshot.memberships.find(
+      (membership) =>
+        membership.user_id === actorUserId &&
+        membership.status === "approved",
+    );
+    const actorChapter = actorMembership
+      ? snapshot.chapters.find(
+          (chapter) =>
+            chapter.id === actorMembership.chapter_id && chapter.status === "active",
+        )
+      : null;
+
+    if (actorChapter) {
+      return actorChapter;
+    }
+  }
+
+  return (
+    snapshot.chapters.find((chapter) => chapter.status === "active") ??
+    snapshot.chapters[0]
+  );
 }
 
 export async function readLocalDataSnapshot(client: SupabaseReadonlyClient) {

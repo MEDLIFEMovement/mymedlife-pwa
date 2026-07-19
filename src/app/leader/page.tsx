@@ -174,7 +174,7 @@ export default async function LeaderPage({ searchParams }: LeaderPageProps) {
     SERVICE_BACKED_LEADER_VIEWS.has(requestedView) && !shouldRenderFigmaLeaderPreview;
 
   if (shouldUseServiceShell) {
-    const data = await getReadOnlyAppData();
+    const data = await getReadOnlyAppData({ actorUserId: actor.user.id });
     const commandCenter = getChapterLeaderCommandCenter(actor, data, {
       source: resolvedSearchParams?.source,
       view: requestedView,

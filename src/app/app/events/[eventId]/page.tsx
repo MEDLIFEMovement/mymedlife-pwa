@@ -90,13 +90,11 @@ export default async function AppEventDetailPage({
     story?: string;
     memberEventLoopWriteResult?: string;
   } = {};
-  const [{ eventId }, resolvedSearchParams, actor, data] = await Promise.all([
+  const [{ eventId }, resolvedSearchParams, actor] = await Promise.all([
     params,
     searchParams ?? Promise.resolve(emptySearchParams),
     getLocalActorContext(),
-    getReadOnlyAppData(),
   ]);
-
   if (shouldRedirectActorToLogin(actor)) {
     redirect(
       buildLoginRedirectHrefForPath(`/app/events/${eventId}`, resolvedSearchParams),
@@ -106,6 +104,8 @@ export default async function AppEventDetailPage({
   if (!canAccessMemberWorkspace(actor)) {
     redirect(getLandingRouteForActor(actor));
   }
+
+  const data = await getReadOnlyAppData({ actorUserId: actor.user.id });
 
   const resolvedEventData = getResolvedEventDetailData(actor, data, eventId);
   const { event, snapshot } = resolvedEventData;

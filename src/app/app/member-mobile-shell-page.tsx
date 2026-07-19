@@ -56,11 +56,18 @@ export async function renderMemberMobileShellPage({
   eventsStoryFilter?: string | null;
   repaintKey?: string;
 }) {
-  const [actor, data] = await Promise.all([
-    getLocalActorContext(),
-    getReadOnlyAppData(),
-  ]);
+  const actor = await getLocalActorContext();
   const landingRoute = getLandingRouteForActor(actor);
+
+  if (shouldRedirectActorToLogin(actor)) {
+    redirect(buildLoginRedirectHref(redirectPath));
+  }
+
+  if (!canAccessMemberWorkspace(actor)) {
+    redirect(landingRoute);
+  }
+
+  const data = await getReadOnlyAppData({ actorUserId: actor.user.id });
   const sltPrepWorkspace = hasTravelerAccess(actor) ? getSltTripPrepWorkspace(actor) : null;
   const studentHome = getMvpMemberHome(actor, data);
   const recognition = getMemberRecognitionSummary(actor, data);
@@ -82,14 +89,6 @@ export async function renderMemberMobileShellPage({
           nextStepLabel: ensureVisibleTestLabel(sltPrepWorkspace.nextStep.label),
         }
       : null;
-
-  if (shouldRedirectActorToLogin(actor)) {
-    redirect(buildLoginRedirectHref(redirectPath));
-  }
-
-  if (!canAccessMemberWorkspace(actor)) {
-    redirect(landingRoute);
-  }
 
   return (
     <>
