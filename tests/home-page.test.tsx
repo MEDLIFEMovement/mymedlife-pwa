@@ -235,6 +235,8 @@ describe("home page", () => {
     expect(navSource).toContain('"/profile"');
     expect(navSource).toContain('aria-label="Member bottom navigation"');
     expect(source).toContain("disabled={!onClick}");
+    expect(source.match(/calc\(61px \+ env\(safe-area-inset-bottom\)\)/g)).toHaveLength(2);
+    expect(source).not.toContain('className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px]');
     expect(source).toContain("Secure admin route required");
     expect(source).toContain("External source links are blocked in this preview");
     expect(source).not.toContain("onClick={() => {}}");
