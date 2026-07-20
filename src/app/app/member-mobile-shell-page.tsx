@@ -14,6 +14,11 @@ import { getLocalActorContext } from "@/services/local-actor-context";
 import { getMemberRecognitionSummary } from "@/services/member-recognition";
 import { buildMemberStoriesReadModel } from "@/services/member-stories-read-model";
 import {
+  createMemberStoryReactionClient,
+  getMemberStoryReactionConfig,
+  getMemberStoryReactionReadbacks,
+} from "@/services/member-story-reactions";
+import {
   buildMemberIdentityContext,
   ensureVisibleTestLabel,
 } from "@/services/member-mobile-identity-context";
@@ -33,6 +38,7 @@ export async function renderMemberMobileShellPage({
   redirectPath,
   initialStoriesFilter,
   initialStoryId,
+  initialStoryReactionResult,
   initialEventsCampaign,
   pointsSource,
   pointsReturnEventId,
@@ -48,6 +54,7 @@ export async function renderMemberMobileShellPage({
   redirectPath: string;
   initialStoriesFilter?: string | null;
   initialStoryId?: string | null;
+  initialStoryReactionResult?: string | null;
   initialEventsCampaign?: string | null;
   pointsSource?: "events" | "home" | "profile" | "points" | "stories";
   pointsReturnEventId?: string | null;
@@ -88,6 +95,13 @@ export async function renderMemberMobileShellPage({
   const memberEventContext = data.source.mode === "supabase"
     ? buildMemberMobileEventContext(data)
     : null;
+  const storyReactionConfig = getMemberStoryReactionConfig();
+  const storyReactionClient = data.source.mode === "supabase"
+    ? createMemberStoryReactionClient()
+    : null;
+  const storyReactionReadbacks = storyReactionClient
+    ? await getMemberStoryReactionReadbacks(storyReactionClient, actor.user.id)
+    : [];
   const memberStories = data.source.mode === "supabase"
     ? buildMemberStoriesReadModel({
         evidenceRows: data.storyEvidenceRows,
@@ -95,6 +109,7 @@ export async function renderMemberMobileShellPage({
         chapterEvents: data.allChapterEventRows,
         profiles: data.profiles,
         accessibleEventIds: data.chapterEventRows.map((row) => row.id),
+        reactionReadbacks: storyReactionReadbacks,
       })
     : undefined;
   const sltPrepEntry =
@@ -120,6 +135,8 @@ export async function renderMemberMobileShellPage({
         sltPrepEntry={sltPrepEntry}
         initialStoriesFilter={initialStoriesFilter}
         initialStoryId={initialStoryId}
+        initialStoryReactionResult={initialStoryReactionResult}
+        memberStoryReactionsEnabled={storyReactionConfig.enabled}
         initialEventsCampaign={initialEventsCampaign}
         pointsSource={pointsSource}
         pointsReturnEventId={pointsReturnEventId}

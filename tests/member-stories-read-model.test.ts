@@ -76,6 +76,22 @@ describe("member stories read model", () => {
     expect(story?.eventRouteId).toBe(eventRow.id);
   });
 
+  it("uses persisted reaction counts and actor state instead of placeholder zeros", () => {
+    const [story] = buildMemberStoriesReadModel({
+      evidenceRows: [evidenceRow({})],
+      chapters: [chapterRow],
+      chapterEvents: [eventRow],
+      profiles: [profileRow],
+      reactionReadbacks: [{
+        evidenceItemId: "evidence-1",
+        reactionCount: 2,
+        likedByActor: true,
+      }],
+    });
+
+    expect(story).toMatchObject({ likes: 2, liked: true });
+  });
+
   it("uses only HTTPS image URLs with an image extension as publishable media", () => {
     const stories = buildMemberStoriesReadModel({
       evidenceRows: [
@@ -193,6 +209,37 @@ describe("member stories read model", () => {
     expect(html).toContain("TEST approved member story.");
     expect(html).toContain("Media not published");
     expect(html).not.toContain("Students in Lima joined a Mobile Clinic");
+  });
+
+  it("renders a real reaction control when the server write gate is enabled", () => {
+    const memberStories = buildMemberStoriesReadModel({
+      evidenceRows: [evidenceRow({ id: "persisted-story" })],
+      chapters: [chapterRow],
+      chapterEvents: [eventRow],
+      profiles: [profileRow],
+      reactionReadbacks: [{
+        evidenceItemId: "persisted-story",
+        reactionCount: 1,
+        likedByActor: true,
+      }],
+    });
+
+    const html = renderToStaticMarkup(
+      React.createElement(FigmaMemberMobileHome, {
+        initialScreen: "stories",
+        initialStoriesFilter: "For You",
+        memberStories,
+        memberStoryReactionsEnabled: true,
+        initialStoryReactionResult: "story_liked",
+      }),
+    );
+
+    expect(html).toContain("Live reactions");
+    expect(html).toContain("Reaction saved in myMEDLIFE.");
+    expect(html).toContain('aria-label="Remove reaction"');
+    expect(html).toContain('aria-pressed="true"');
+    expect(html).toContain("1 reaction");
+    expect(html).toContain("shares and saves remain disabled");
   });
 });
 

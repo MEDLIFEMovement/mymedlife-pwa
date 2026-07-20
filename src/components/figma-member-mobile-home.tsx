@@ -6,6 +6,11 @@ import Link from "next/link";
 import React, { useState } from "react";
 import { ChromeDesktopPaintShell } from "@/components/chrome-desktop-paint-shell";
 import { MemberBottomNav, type MemberBottomNavTab } from "@/components/member-bottom-nav";
+import {
+  getMemberStoryReactionSurfaceCopy,
+  MemberStoryReactionForm,
+  MemberStoryReactionResultBanner,
+} from "@/components/member-story-reaction-controls";
 import { getVisibleMemberLeaderboardRows } from "@/services/member-mobile-identity-context";
 import type {
   MemberMobileCampaignContext,
@@ -3033,6 +3038,7 @@ type StoryFilter = "For You" | "Events" | "SLT" | "Fundraising" | "Leadership";
 interface Story {
   id: string; title: string; caption: string; source: StorySource; type: StoryType;
   chapter: string; country: string; tag?: string; image: string | null; likes: number;
+  liked?: boolean;
   views: number; date: string; featured: boolean; trending?: boolean;
   isVideo?: boolean; embedUrl?: string; duration?: string; quote?: string; body?: string; filters: StoryFilter[];
   eventRouteId?: string;
@@ -3584,18 +3590,17 @@ function StoryCard({ story, liked, onToggleLike, onClick, featured }: {
 
 function StoryModal({
   story,
-  liked,
-  onToggleLike,
+  reactionsEnabled,
   closeHref,
   activeFilter,
 }: {
   story: Story;
-  liked: boolean;
-  onToggleLike: (id: string) => void;
+  reactionsEnabled: boolean;
   closeHref: string;
   activeFilter: StoryFilter;
 }) {
   const cfg = sourceConfig[story.source];
+  const reactionCopy = getMemberStoryReactionSurfaceCopy(reactionsEnabled);
   const loopEventsHref = buildEventsHref({
     source: "stories",
     storyFilter: activeFilter,
@@ -3721,21 +3726,25 @@ function StoryModal({
         </div>
         <div className="flex-shrink-0 px-5 py-4 border-t border-border flex items-center justify-between gap-3 bg-card">
           <div className="flex items-center gap-3">
-            <button
-              type="button"
-              disabled
-              title={story.persisted
-                ? "Reactions are not enabled for approved stories yet."
-                : "Preview-only reaction. Likes are not saved, synced, or counted as production proof."}
-              className="inline-flex cursor-not-allowed items-center gap-2 opacity-75"
-            >
-              <Heart size={20} className="text-black" />
-              <span className="text-sm font-semibold text-foreground">
-                {story.persisted
-                  ? `${story.likes.toLocaleString()} reactions`
-                  : `${story.likes.toLocaleString()} preview likes`}
-              </span>
-            </button>
+            {story.persisted && reactionsEnabled ? (
+              <MemberStoryReactionForm storyId={story.id} liked={story.liked ?? false} reactionCount={story.likes} filter={activeFilter} openStory showCount />
+            ) : (
+              <button
+                type="button"
+                disabled
+                title={story.persisted
+                  ? "Reactions are disabled by the current write gate."
+                  : "Preview-only reaction. Likes are not saved, synced, or counted as production proof."}
+                className="inline-flex cursor-not-allowed items-center gap-2 opacity-75"
+              >
+                <Heart size={20} className="text-black" />
+                <span className="text-sm font-semibold text-foreground">
+                  {story.persisted
+                    ? `${story.likes.toLocaleString()} reactions`
+                    : `${story.likes.toLocaleString()} preview likes`}
+                </span>
+              </button>
+            )}
             <span className="text-xs text-muted-foreground" style={{ fontFamily: "'DM Mono', monospace" }}>
               {story.persisted
                 ? "View tracking not enabled"
@@ -3754,9 +3763,7 @@ function StoryModal({
         </div>
         <div className="border-t border-border bg-card px-5 pb-4">
           <p className="pt-3 text-center text-[11px] text-muted-foreground" style={{ fontFamily: "'DM Mono', monospace" }}>
-            {story.persisted
-              ? "Approved myMEDLIFE story metadata. Reactions, saves, and external source opening are not enabled."
-              : "Preview only - reactions, save preview, and source previews stay blocked in this reader."}
+            {story.persisted ? reactionCopy.readerNote : "Preview only - reactions, save preview, and source previews stay blocked in this reader."}
           </p>
         </div>
       </div>
@@ -3779,24 +3786,23 @@ function buildPersistedStoryEventHref(
 }
 
 function StoriesScreen({
-  navigate,
   initialFilter,
   initialStoryId,
+  initialReactionResult,
   memberStories,
+  reactionsEnabled,
 }: {
-  navigate: (s: Screen) => void;
   initialFilter?: string | null;
   initialStoryId?: string | null;
+  initialReactionResult?: string | null;
   memberStories?: MemberStory[];
+  reactionsEnabled: boolean;
 }) {
   const availableStories: Story[] = memberStories ?? stories;
   const isPersistedFeed = memberStories !== undefined;
   const activeFilter = resolveStoryFilter(initialFilter);
   const selectedStory = getStoryByIdForFilter(initialStoryId, activeFilter, availableStories);
-
-  const toggleLike = (id: string) => {
-    void id;
-  };
+  const reactionCopy = getMemberStoryReactionSurfaceCopy(reactionsEnabled);
 
   const filtered = availableStories.filter((s) => s.filters.includes(activeFilter));
   const closeHref = buildStoriesHref({ filter: activeFilter });
@@ -3815,16 +3821,14 @@ function StoriesScreen({
                   Stories
                 </h1>
                 <p className="mt-1 text-[11px] font-medium text-gray-400">
-                  {isPersistedFeed
-                    ? "Approved myMEDLIFE story metadata"
-                    : "MEDLIFE Stories · preview-only student feed"}
+                  {isPersistedFeed ? reactionCopy.subtitle : "MEDLIFE Stories · preview-only student feed"}
                 </p>
               </div>
             </div>
             <div className="flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-slate-400" />
               <span className="text-gray-400 text-xs">
-                {isPersistedFeed ? "Live read-only" : "Preview"}
+                {isPersistedFeed ? reactionCopy.status : "Preview"}
               </span>
             </div>
           </div>
@@ -3849,6 +3853,8 @@ function StoriesScreen({
             })}
           </div>
         </div>
+
+        <MemberStoryReactionResultBanner result={initialReactionResult} />
 
         {filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-24 gap-3">
@@ -3904,16 +3910,20 @@ function StoriesScreen({
                   <div className="px-3 pt-2">
                     <div className="flex items-center">
                       <div className="flex items-center gap-4 flex-1">
-                        <button
-                          type="button"
-                          disabled
-                          title={story.persisted
-                            ? "Reactions are not enabled for approved stories yet."
-                            : "Preview-only reaction. Likes are not saved, synced, or counted as production proof."}
-                          className="cursor-not-allowed opacity-70"
-                        >
-                          <Heart size={26} className="text-black" />
-                        </button>
+                        {story.persisted && reactionsEnabled ? (
+                          <MemberStoryReactionForm storyId={story.id} liked={story.liked ?? false} reactionCount={story.likes} filter={activeFilter} />
+                        ) : (
+                          <button
+                            type="button"
+                            disabled
+                            title={story.persisted
+                              ? "Reactions are disabled by the current write gate."
+                              : "Preview-only reaction. Likes are not saved, synced, or counted as production proof."}
+                            className="cursor-not-allowed opacity-70"
+                          >
+                            <Heart size={26} className="text-black" />
+                          </button>
+                        )}
                         <Link
                           href={storyHref}
                           title="Open this story in the route-backed preview reader."
@@ -3965,9 +3975,7 @@ function StoriesScreen({
                       className="mt-1 text-[11px] text-gray-400"
                       style={{ fontFamily: "'DM Mono', monospace" }}
                     >
-                      {story.persisted
-                        ? "Approved myMEDLIFE metadata - reactions, shares, and saves are not enabled."
-                        : "Preview only - comments open the reader; shares and saves stay blocked."}
+                      {story.persisted ? reactionCopy.feedNote : "Preview only - comments open the reader; shares and saves stay blocked."}
                     </p>
 
                     <p className="text-[10px] text-gray-400 uppercase tracking-wide mt-1 pb-3">
@@ -3985,8 +3993,7 @@ function StoriesScreen({
       {selectedStory && (
         <StoryModal
           story={selectedStory}
-          liked={false}
-          onToggleLike={toggleLike}
+          reactionsEnabled={reactionsEnabled}
           closeHref={closeHref}
           activeFilter={activeFilter}
         />
@@ -4004,6 +4011,8 @@ export function FigmaMemberMobileHome({
   sltPrepEntry = null,
   initialStoriesFilter = null,
   initialStoryId = null,
+  initialStoryReactionResult = null,
+  memberStoryReactionsEnabled = false,
   initialEventsCampaign = null,
   pointsSource = "points",
   pointsReturnEventId = null,
@@ -4024,6 +4033,8 @@ export function FigmaMemberMobileHome({
   sltPrepEntry?: MemberSltPrepEntry | null;
   initialStoriesFilter?: string | null;
   initialStoryId?: string | null;
+  initialStoryReactionResult?: string | null;
+  memberStoryReactionsEnabled?: boolean;
   initialEventsCampaign?: string | null;
   pointsSource?: MemberLoopSource;
   pointsReturnEventId?: string | null;
@@ -4135,10 +4146,11 @@ export function FigmaMemberMobileHome({
       case "stories":
         return (
           <StoriesScreen
-            navigate={navigate}
             initialFilter={initialStoriesFilter}
             initialStoryId={initialStoryId}
+            initialReactionResult={initialStoryReactionResult}
             memberStories={memberStories}
+            reactionsEnabled={memberStoryReactionsEnabled}
           />
         );
       case "leader": return <LeadershipDashboard navigate={navigate} />;

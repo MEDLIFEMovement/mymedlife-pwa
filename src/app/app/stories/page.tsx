@@ -8,6 +8,7 @@ type AppStoriesPageProps = {
   searchParams?: Promise<{
     filter?: string;
     story?: string;
+    storyReactionResult?: string;
   }>;
 };
 
@@ -20,11 +21,15 @@ export default async function AppStoriesPage(props: AppStoriesPageProps) {
     redirectPath: "/app/stories",
     initialStoriesFilter: query.filter ?? null,
     initialStoryId: query.story ?? null,
+    initialStoryReactionResult: query.storyReactionResult ?? null,
     repaintKey,
   });
 }
 
-function buildRouteKey(pathname: string, params: { filter?: string; story?: string }) {
+function buildRouteKey(
+  pathname: string,
+  params: { filter?: string; story?: string; storyReactionResult?: string },
+) {
   const searchParams = new URLSearchParams();
 
   if (params.filter) {
@@ -33,6 +38,10 @@ function buildRouteKey(pathname: string, params: { filter?: string; story?: stri
 
   if (params.story) {
     searchParams.set("story", params.story);
+  }
+
+  if (params.storyReactionResult) {
+    searchParams.set("storyReactionResult", params.storyReactionResult);
   }
 
   const query = searchParams.toString();
