@@ -107,7 +107,6 @@ export default async function SltPrepStaffPage({ searchParams }: StaffPageProps)
                       risk: value,
                       focus: workspace.focusFilter,
                       bulk: workspace.bulkAction,
-                      traveler: workspace.selectedTraveler?.id,
                     })}
                     aria-current={workspace.riskFilter === value ? "page" : undefined}
                     className={[
