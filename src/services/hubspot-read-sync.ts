@@ -69,6 +69,7 @@ export type HubSpotSyncCounts = {
   companyUpserts: number;
   contactUpserts: number;
   membershipUpserts: number;
+  membershipDeactivations: number;
   materializedChapters: number;
   matchedProfiles: number;
   conflicts: number;
@@ -425,6 +426,21 @@ export async function runHubSpotReadSync(
       if ((index + 1) % 25 === 0) await heartbeatRun(appClient, runId, now().toISOString());
     }
 
+    if (mode === "backfill") {
+      const activeAssociationKeys = new Set(
+        contacts.flatMap((contact) => (
+          contact.companyIds.map((companyId) => `${contact.id}:${companyId}`)
+        )),
+      );
+      await deactivateMissingHubSpotMemberships(
+        appClient,
+        runId,
+        actorUserId,
+        activeAssociationKeys,
+        counts,
+      );
+    }
+
     const completedAt = now().toISOString();
     const status = counts.failures > 0 || counts.conflicts > 0 ? "partial" : "succeeded";
     await finishRun(
@@ -672,10 +688,9 @@ async function syncMembership(
   if (!profileId || !chapterId) return;
 
   const memberships = await client.schema("app").from("memberships")
-    .select("id,hubspot_association_key")
+    .select("id,status,hubspot_association_key")
     .eq("user_id", profileId)
     .eq("chapter_id", chapterId)
-    .eq("status", "approved")
     .limit(2);
   if (memberships.error) {
     counts.failures += 1;
@@ -693,6 +708,9 @@ async function syncMembership(
     }
     const linked = await client.schema("app").from("memberships").update({
       hubspot_association_key: associationKey,
+      status: "approved",
+      approved_at: new Date().toISOString(),
+      approved_by: actorUserId,
     }).eq("id", membershipId);
     if (linked.error) membershipId = null;
   } else {
@@ -718,6 +736,80 @@ async function syncMembership(
     hubspot_association_key: associationKey,
     status: "approved",
   }, counts);
+}
+
+async function deactivateMissingHubSpotMemberships(
+  client: AppClient,
+  runId: string,
+  actorUserId: string | null,
+  activeAssociationKeys: Set<string>,
+  counts: HubSpotSyncCounts,
+) {
+  const linked = await client.schema("app").from("memberships")
+    .select("id,chapter_id,status,hubspot_association_key")
+    .not("hubspot_association_key", "is", null);
+  if (linked.error) {
+    counts.failures += 1;
+    await recordFailure(
+      client,
+      runId,
+      "run",
+      null,
+      "membership_reconciliation_lookup_failed",
+      linked.error.message,
+      {},
+    );
+    return;
+  }
+
+  for (const row of linked.data ?? []) {
+    const associationKey = String(row.hubspot_association_key ?? "");
+    if (!associationKey || activeAssociationKeys.has(associationKey) || row.status === "inactive") {
+      continue;
+    }
+
+    const membershipId = String(row.id);
+    const deactivated = await client.schema("app").from("memberships").update({
+      status: "inactive",
+    }).eq("id", membershipId).eq("hubspot_association_key", associationKey);
+    if (deactivated.error) {
+      counts.failures += 1;
+      await recordFailure(
+        client,
+        runId,
+        "membership",
+        associationKey,
+        "membership_deactivation_failed",
+        deactivated.error.message,
+        { associationKey, membershipId },
+      );
+      continue;
+    }
+
+    const [contactId, companyId] = associationKey.split(":", 2);
+    if (contactId && companyId) {
+      await markMembershipReconciliation(
+        client,
+        contactId,
+        companyId,
+        "ignored",
+        "The HubSpot association was absent from the latest complete backfill, so app access was deactivated.",
+        membershipId,
+      );
+    }
+    counts.membershipDeactivations += 1;
+    await recordAudit(
+      client,
+      runId,
+      actorUserId,
+      row.chapter_id ? String(row.chapter_id) : null,
+      "hubspot_membership_deactivated",
+      "memberships",
+      membershipId,
+      { hubspot_association_key: associationKey, status: "inactive" },
+      counts,
+    );
+  }
 }
 
 async function recordAudit(
@@ -810,6 +902,7 @@ async function finishRun(
     company_upsert_count: counts.companyUpserts,
     contact_upsert_count: counts.contactUpserts,
     membership_upsert_count: counts.membershipUpserts,
+    membership_deactivation_count: counts.membershipDeactivations,
     materialized_chapter_count: counts.materializedChapters,
     matched_profile_count: counts.matchedProfiles,
     conflict_count: counts.conflicts,
@@ -935,6 +1028,7 @@ function emptyCounts(): HubSpotSyncCounts {
     companyUpserts: 0,
     contactUpserts: 0,
     membershipUpserts: 0,
+    membershipDeactivations: 0,
     materializedChapters: 0,
     matchedProfiles: 0,
     conflicts: 0,

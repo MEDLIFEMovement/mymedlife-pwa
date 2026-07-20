@@ -17,6 +17,7 @@ export type AdminHubSpotSyncWorkspace = {
     heartbeatAt: string;
     sourceCompanies: number;
     sourceContacts: number;
+    membershipDeactivations: number;
     materializedChapters: number;
     matchedProfiles: number;
     conflicts: number;
@@ -57,7 +58,7 @@ export async function getAdminHubSpotSyncWorkspace(
 
   const app = client.schema("app");
   const [runs, companies, contacts, memberships, pendingCompanies, pendingContacts, pendingMemberships, failures] = await Promise.all([
-    app.from("hubspot_sync_runs").select("id,mode,status,trigger_source,retry_of_run_id,started_at,completed_at,heartbeat_at,source_company_count,source_contact_count,materialized_chapter_count,matched_profile_count,conflict_count,failure_count").order("started_at", { ascending: false }).limit(1),
+    app.from("hubspot_sync_runs").select("id,mode,status,trigger_source,retry_of_run_id,started_at,completed_at,heartbeat_at,source_company_count,source_contact_count,membership_deactivation_count,materialized_chapter_count,matched_profile_count,conflict_count,failure_count").order("started_at", { ascending: false }).limit(1),
     app.from("hubspot_company_imports").select("hubspot_company_id", { count: "exact", head: true }),
     app.from("hubspot_contact_imports").select("hubspot_contact_id", { count: "exact", head: true }),
     app.from("hubspot_membership_imports").select("hubspot_contact_id", { count: "exact", head: true }),
@@ -88,6 +89,7 @@ export async function getAdminHubSpotSyncWorkspace(
       heartbeatAt: String(run.heartbeat_at ?? run.started_at),
       sourceCompanies: Number(run.source_company_count ?? 0),
       sourceContacts: Number(run.source_contact_count ?? 0),
+      membershipDeactivations: Number(run.membership_deactivation_count ?? 0),
       materializedChapters: Number(run.materialized_chapter_count ?? 0),
       matchedProfiles: Number(run.matched_profile_count ?? 0),
       conflicts: Number(run.conflict_count ?? 0),
