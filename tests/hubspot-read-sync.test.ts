@@ -110,18 +110,106 @@ describe("HubSpot read sync foundation", () => {
     expect(String(fetchMock.mock.calls[1]?.[1]?.body)).toContain("next-page");
   });
 
-  it("filters incremental member reads against the last successful checkpoint", async () => {
-    const fetchMock = vi.fn().mockResolvedValue(jsonResponse({
-      results: [
-        { id: "old", properties: { email: "old@example.org", hs_lastmodifieddate: "2026-07-18T20:00:00.000Z" }, associations: { companies: { results: [{ id: "company-1" }] } } },
-        { id: "new", properties: { email: "new@example.org", hs_lastmodifieddate: "2026-07-19T20:00:00.000Z" }, associations: { companies: { results: [{ id: "company-1" }] } } },
-        { id: "unknown", properties: { email: "unknown@example.org" }, associations: { companies: { results: [{ id: "company-1" }] } } },
-      ],
-    }));
+  it("filters incremental member reads at HubSpot and batches company associations", async () => {
+    const checkpoint = "2026-07-19T00:00:00.000Z";
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce(jsonResponse({
+        results: [
+          {
+            id: "new",
+            properties: {
+              email: "new@example.org",
+              lastmodifieddate: "2026-07-19T20:00:00.000Z",
+            },
+          },
+          {
+            id: "stale",
+            properties: {
+              email: "stale@example.org",
+              lastmodifieddate: "2026-07-18T20:00:00.000Z",
+            },
+          },
+        ],
+      }))
+      .mockResolvedValueOnce(jsonResponse({
+        results: [
+          { from: { id: "new" }, to: [{ id: "company-1" }, {}] },
+          { from: { id: "stale" }, to: [] },
+          { to: [{ id: "ignored-company" }] },
+        ],
+      }));
+    const client = createHubSpotReadClient(enabledEnv, fetchMock);
+
+    await expect(client?.readContactsWithCompanies(checkpoint)).resolves.toEqual([
+      expect.objectContaining({ id: "new", companyIds: ["company-1"] }),
+    ]);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(fetchMock.mock.calls[0]?.[0]).toContain("/crm/v3/objects/contacts/search");
+    expect(fetchMock.mock.calls[0]?.[1]?.method).toBe("POST");
+    expect(String(fetchMock.mock.calls[0]?.[1]?.body)).toContain("lastmodifieddate");
+    expect(String(fetchMock.mock.calls[0]?.[1]?.body)).toContain(String(Date.parse(checkpoint)));
+    expect(fetchMock.mock.calls[1]?.[0]).toContain(
+      "/crm/v3/associations/contacts/companies/batch/read",
+    );
+    expect(String(fetchMock.mock.calls[1]?.[1]?.body)).toContain('"id":"new"');
+    expect(String(fetchMock.mock.calls[1]?.[1]?.body)).toContain('"id":"stale"');
+  });
+
+  it("paginates incremental contact searches and association batches", async () => {
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce(jsonResponse({
+        results: [{
+          id: "contact-1",
+          properties: {
+            email: "one@example.org",
+            lastmodifieddate: "2026-07-19T20:00:00.000Z",
+          },
+        }],
+        paging: { next: { after: "next-page" } },
+      }))
+      .mockResolvedValueOnce(jsonResponse({
+        results: [{ from: { id: "contact-1" }, to: [{ id: "company-1" }] }],
+      }))
+      .mockResolvedValueOnce(jsonResponse({
+        results: [{
+          id: "contact-2",
+          properties: {
+            email: "two@example.org",
+            lastmodifieddate: "2026-07-19T21:00:00.000Z",
+          },
+        }],
+      }))
+      .mockResolvedValueOnce(jsonResponse({
+        results: [{ from: { id: "contact-2" }, to: [{ id: "company-2" }] }],
+      }));
     const client = createHubSpotReadClient(enabledEnv, fetchMock);
 
     await expect(client?.readContactsWithCompanies("2026-07-19T00:00:00.000Z"))
-      .resolves.toEqual([expect.objectContaining({ id: "new" })]);
+      .resolves.toEqual([
+        expect.objectContaining({ id: "contact-1", companyIds: ["company-1"] }),
+        expect.objectContaining({ id: "contact-2", companyIds: ["company-2"] }),
+      ]);
+    expect(fetchMock).toHaveBeenCalledTimes(4);
+    expect(String(fetchMock.mock.calls[2]?.[1]?.body)).toContain('"after":"next-page"');
+  });
+
+  it("does not request association batches for empty incremental pages", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(jsonResponse({ results: [] }));
+    const client = createHubSpotReadClient(enabledEnv, fetchMock);
+
+    await expect(client?.readContactsWithCompanies("2026-07-19T00:00:00.000Z"))
+      .resolves.toEqual([]);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("rejects malformed incremental checkpoints without widening into a backfill", async () => {
+    const fetchMock = vi.fn();
+    const client = createHubSpotReadClient(enabledEnv, fetchMock);
+
+    await expect(client?.readContactsWithCompanies("not-a-timestamp")).rejects.toThrow(
+      "HubSpot incremental sync checkpoint is invalid.",
+    );
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 
   it("reads contact-company associations without sending provider writes", async () => {
@@ -133,7 +221,7 @@ describe("HubSpot read sync foundation", () => {
           firstname: "Test",
           lastname: "Student",
           graduation_year__c: "2028",
-          hs_lastmodifieddate: "2026-07-19T21:00:00.000Z",
+          lastmodifieddate: "2026-07-19T21:00:00.000Z",
         },
         associations: { companies: { results: [{ id: "company-1" }] } },
       }],

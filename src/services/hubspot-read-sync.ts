@@ -100,6 +100,13 @@ type HubSpotObjectPage = {
   paging?: { next?: { after?: string | number } };
 };
 
+type HubSpotAssociationBatchPage = {
+  results?: Array<{
+    from?: { id?: string };
+    to?: Array<{ id?: string }>;
+  }>;
+};
+
 export function getHubSpotReadSyncConfig(
   env: Record<string, string | undefined> = process.env,
 ): HubSpotReadSyncConfig {
@@ -204,6 +211,52 @@ export function createHubSpotReadClient(
     },
 
     async readContactsWithCompanies(modifiedAfter) {
+      if (modifiedAfter) {
+        const checkpoint = Date.parse(modifiedAfter);
+        if (!Number.isFinite(checkpoint)) {
+          throw new Error("HubSpot incremental sync checkpoint is invalid.");
+        }
+
+        const records: HubSpotContactRecord[] = [];
+        let after: string | number | undefined;
+        do {
+          const page = await request<HubSpotObjectPage>("/crm/v3/objects/contacts/search", {
+            method: "POST",
+            body: JSON.stringify({
+              filterGroups: [{
+                filters: [{
+                  propertyName: "lastmodifieddate",
+                  operator: "GT",
+                  value: String(checkpoint),
+                }],
+              }],
+              properties: [
+                "email",
+                "firstname",
+                "lastname",
+                "graduation_year__c",
+                "lastmodifieddate",
+              ],
+              limit: 200,
+              after,
+              sorts: ["lastmodifieddate"],
+            }),
+          });
+          const rows = page.results ?? [];
+          const companyIdsByContact = await readContactCompanyAssociations(rows);
+          records.push(...rows.map((row) => mapContact({
+            ...row,
+            associations: {
+              companies: {
+                results: (companyIdsByContact.get(row.id ?? "") ?? []).map((id) => ({ id })),
+              },
+            },
+          })).filter(isPresent));
+          after = page.paging?.next?.after;
+        } while (after !== undefined);
+        return records.filter((record) => changedAfter(record.updatedAt, modifiedAfter));
+      }
+
       const records: HubSpotContactRecord[] = [];
       let after: string | number | undefined;
       do {
@@ -215,7 +268,7 @@ export function createHubSpotReadClient(
             "firstname",
             "lastname",
             "graduation_year__c",
-            "hs_lastmodifieddate",
+            "lastmodifieddate",
           ].join(","),
           associations: "companies",
         });
@@ -224,9 +277,34 @@ export function createHubSpotReadClient(
         records.push(...(page.results ?? []).map(mapContact).filter(isPresent));
         after = page.paging?.next?.after;
       } while (after !== undefined);
-      return records.filter((record) => changedAfter(record.updatedAt, modifiedAfter));
+      return records;
     },
   };
+
+  async function readContactCompanyAssociations(
+    rows: HubSpotObjectRow[],
+  ): Promise<Map<string, string[]>> {
+    const ids = rows.map((row) => row.id).filter((id): id is string => Boolean(id));
+    if (ids.length === 0) return new Map();
+
+    const associations = await request<HubSpotAssociationBatchPage>(
+      "/crm/v3/associations/contacts/companies/batch/read",
+      {
+        method: "POST",
+        body: JSON.stringify({ inputs: ids.map((id) => ({ id })) }),
+      },
+    );
+    const companyIdsByContact = new Map<string, string[]>();
+    for (const result of associations.results ?? []) {
+      const contactId = result.from?.id;
+      if (!contactId) continue;
+      companyIdsByContact.set(
+        contactId,
+        (result.to ?? []).map((company) => company.id).filter((id): id is string => Boolean(id)),
+      );
+    }
+    return companyIdsByContact;
+  }
 }
 
 export async function runHubSpotReadSync(
@@ -778,7 +856,10 @@ function mapContact(row: HubSpotObjectRow): HubSpotContactRecord | null {
     firstName: optional(properties.firstname),
     lastName: optional(properties.lastname),
     graduationYear: parseGraduationYear(properties.graduation_year__c),
-    updatedAt: optional(properties.hs_lastmodifieddate) ?? row.updatedAt ?? null,
+    updatedAt: optional(properties.lastmodifieddate)
+      ?? optional(properties.hs_lastmodifieddate)
+      ?? row.updatedAt
+      ?? null,
     companyIds: (row.associations?.companies?.results ?? [])
       .map((association) => association.id)
       .filter((id): id is string => Boolean(id)),
