@@ -60,6 +60,33 @@ describe("launch lane points readback", () => {
     ).toBeNull();
   });
 
+  it("collapses repeated TEST prefixes in member event readback", () => {
+    const actor = getMockLocalActorContext("member.a@mymedlife.test");
+    const data = getMockReadOnlyAppData("Testing visible TEST event labels.");
+    const repeatedTitle = "Test Test Rush Month kickoff social";
+    const labeledData: ReadOnlyAppData = {
+      ...data,
+      chapterEventRows: data.chapterEventRows.map((event) =>
+        event.id === "chapter-event-ucla-kickoff"
+          ? { ...event, title: repeatedTitle }
+          : event,
+      ),
+      allChapterEventRows: data.allChapterEventRows.map((event) =>
+        event.id === "chapter-event-ucla-kickoff"
+          ? { ...event, title: repeatedTitle }
+          : event,
+      ),
+    };
+
+    expect(
+      getLaunchLaneMemberPointsReadback(
+        actor,
+        labeledData,
+        "chapter-event-ucla-kickoff",
+      ),
+    ).toMatchObject({ eventTitle: "TEST Rush Month kickoff social" });
+  });
+
   it("builds an org readback for staff from chapter-level event and points data", () => {
     const data = getMockReadOnlyAppData("Testing org launch-lane readback.");
 
