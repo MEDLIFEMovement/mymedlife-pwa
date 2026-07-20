@@ -345,6 +345,26 @@ describe("SLT Prep routes", () => {
     },
   );
 
+  it("keeps seeded staff traveler identities and summaries visibly TEST-labeled", async () => {
+    mockPathname = "/slt-prep/staff";
+    await primeSignedInActor("coach@mymedlife.test");
+
+    const { default: StaffPage } = await import("@/app/slt-prep/staff/page");
+    const html = renderToStaticMarkup(
+      await StaffPage({
+        searchParams: Promise.resolve({
+          traveler: "sofia-alvarez",
+          focus: "flights",
+        }),
+      }),
+    );
+
+    expect(html).toContain("TEST Sofia Alvarez");
+    expect(html).toContain("TEST UCLA MEDLIFE");
+    expect(html).toContain("TEST Peru SLT | July 2026");
+    expect(html).toContain("TEST Staff needs the final return itinerary upload");
+  });
+
   it.each([
     ["medical-clearance", "Review form status"],
     ["orientation-rsvp", "Open meeting status"],
