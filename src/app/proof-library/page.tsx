@@ -10,6 +10,7 @@ import { getLandingRouteForActor } from "@/services/landing-route";
 import { buildLoginRedirectHref, shouldRedirectActorToLogin } from "@/services/login-route";
 import { getLocalActorContext } from "@/services/local-actor-context";
 import { getMemberProofStatusWorkspace } from "@/services/member-proof-status";
+import { getPrivateProofUploadWriteConfig } from "@/services/private-proof-upload-write";
 import { getProofSharingReviewBoard } from "@/services/proof-sharing-review";
 import { canReadAssignment, getActorSurfaceFamily } from "@/services/role-visibility";
 import { getStaticRouteMetadata } from "@/services/static-route-metadata";
@@ -35,7 +36,8 @@ export default async function ProofLibraryPage() {
     assignments[0];
   const handoff = getActionProofHandoffWorkspace(actor, representativeAssignment);
   const backHref = getLandingRouteForActor(actor);
-  const quickLinks = getQuickLinks(actor);
+  const privateUploadEnabled = getPrivateProofUploadWriteConfig().enabled;
+  const quickLinks = getQuickLinks(actor, privateUploadEnabled);
 
   return (
     <main
@@ -60,14 +62,14 @@ export default async function ProofLibraryPage() {
                 Review stories, proof posture, and blocked sharing lanes
               </h1>
               <p className="mt-3 max-w-3xl text-sm leading-6 text-white/64">
-                This route stays source-backed and preview-safe. Story review, proof context,
-                consent posture, and future sharing notes remain visible, while public proof,
-                provider sync, automation, and production evidence claims stay blocked.
+                {privateUploadEnabled
+                  ? "Private source-media upload and removal are live for authenticated eligible roles. The remaining review panels stay preview-safe, while public publishing, provider sync, automation, and rollout evidence claims remain blocked."
+                  : "This route stays source-backed and preview-safe. Story review, proof context, consent posture, and future sharing notes remain visible, while public proof, provider sync, automation, and production evidence claims stay blocked."}
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
               <span className="rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-1 text-xs font-semibold text-cyan-100">
-                Preview-only
+                {privateUploadEnabled ? "Mixed live / preview" : "Preview-only"}
               </span>
               <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-xs font-semibold text-white/62">
                 No publish
@@ -102,7 +104,10 @@ export default async function ProofLibraryPage() {
   );
 }
 
-function getQuickLinks(actor: Awaited<ReturnType<typeof getLocalActorContext>>) {
+function getQuickLinks(
+  actor: Awaited<ReturnType<typeof getLocalActorContext>>,
+  privateUploadEnabled: boolean,
+) {
   if (getActorSurfaceFamily(actor) === "member") {
     return [
       {
@@ -112,8 +117,12 @@ function getQuickLinks(actor: Awaited<ReturnType<typeof getLocalActorContext>>) 
       },
       {
         href: "/proof-library/upload",
-        label: "Preview proof upload requirements",
-        detail: "Inspect consent, storage, and blocked upload controls before any write lane exists.",
+        label: privateUploadEnabled
+          ? "Upload private proof"
+          : "Preview proof upload requirements",
+        detail: privateUploadEnabled
+          ? "Attach approved source media for private MEDLIFE review. Public publishing and external exports stay off."
+          : "Inspect consent, storage, and blocked upload controls before any write lane exists.",
       },
       {
         href: "/rush-month/events",
@@ -131,8 +140,12 @@ function getQuickLinks(actor: Awaited<ReturnType<typeof getLocalActorContext>>) 
     },
     {
       href: "/proof-library/upload",
-      label: "Preview proof upload requirements",
-      detail: "Inspect storage and consent posture without enabling raw proof upload or provider reads.",
+      label: privateUploadEnabled
+        ? "Manage private proof uploads"
+        : "Preview proof upload requirements",
+      detail: privateUploadEnabled
+        ? "Inspect or remove private source media within the authenticated role boundary. Public publishing and external exports stay off."
+        : "Inspect storage and consent posture without enabling raw proof upload or provider reads.",
     },
     {
       href: "/campaigns/rush-month",

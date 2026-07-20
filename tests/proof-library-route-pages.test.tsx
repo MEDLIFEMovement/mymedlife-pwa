@@ -63,6 +63,27 @@ describe("proof library routes", () => {
     expect(html).toContain("No public proof page, warehouse export, n8n workflow, HubSpot, or Luma write happens.");
   });
 
+  it("labels the production private upload lane as live without widening publishing claims", async () => {
+    vi.stubEnv("MYMEDLIFE_AUTH_MODE", "production_supabase");
+    vi.stubEnv("MYMEDLIFE_ENABLE_PRIVATE_PROOF_UPLOAD_WRITE", "true");
+    vi.stubEnv("MYMEDLIFE_ALLOW_PRODUCTION_PRIVATE_PROOF_UPLOAD_WRITE", "true");
+
+    const actorModule = await import("@/services/local-actor-context");
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("admin@mymedlife.test"),
+    );
+
+    const { default: ProofLibraryPage } = await import("@/app/proof-library/page");
+    const html = renderToStaticMarkup(await ProofLibraryPage());
+
+    expect(html).toContain("Mixed live / preview");
+    expect(html).toContain("Manage private proof uploads");
+    expect(html).toContain("Public publishing and external exports stay off.");
+    expect(html).toContain("No publish");
+
+    vi.unstubAllEnvs();
+  });
+
   it("keeps DS Admin out of student proof routes", async () => {
     const actorModule = await import("@/services/local-actor-context");
 
