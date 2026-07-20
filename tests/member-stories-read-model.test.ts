@@ -46,6 +46,36 @@ describe("member stories read model", () => {
     ]);
   });
 
+  it("does not expose a cross-chapter event detail link the member cannot open", () => {
+    const [story] = buildMemberStoriesReadModel({
+      evidenceRows: [evidenceRow({})],
+      chapters: [chapterRow],
+      chapterEvents: [eventRow],
+      profiles: [profileRow],
+      accessibleEventIds: [],
+    });
+
+    expect(story).toEqual(
+      expect.objectContaining({
+        id: "evidence-1",
+        filters: expect.arrayContaining(["For You", "Events"]),
+        eventRouteId: undefined,
+      }),
+    );
+  });
+
+  it("keeps the event detail link when the event is accessible to the member", () => {
+    const [story] = buildMemberStoriesReadModel({
+      evidenceRows: [evidenceRow({})],
+      chapters: [chapterRow],
+      chapterEvents: [eventRow],
+      profiles: [profileRow],
+      accessibleEventIds: [eventRow.id],
+    });
+
+    expect(story?.eventRouteId).toBe(eventRow.id);
+  });
+
   it("uses only HTTPS image URLs with an image extension as publishable media", () => {
     const stories = buildMemberStoriesReadModel({
       evidenceRows: [

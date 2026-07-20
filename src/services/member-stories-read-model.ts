@@ -45,10 +45,14 @@ export function buildMemberStoriesReadModel(input: {
   chapters: ChapterRow[];
   chapterEvents: ChapterEventRow[];
   profiles: ProfileRow[];
+  accessibleEventIds?: Iterable<string>;
 }): MemberStory[] {
   const chapters = new Map(input.chapters.map((row) => [row.id, row]));
   const events = new Map(input.chapterEvents.map((row) => [row.id, row]));
   const profiles = new Map(input.profiles.map((row) => [row.id, row]));
+  const accessibleEventIds = input.accessibleEventIds
+    ? new Set(input.accessibleEventIds)
+    : null;
 
   return input.evidenceRows
     .filter(
@@ -92,7 +96,10 @@ export function buildMemberStoriesReadModel(input: {
         isVideo: row.evidence_type === "bridge_video",
         body: buildStoryBody(row.hesitation_addressed, profile?.display_name),
         filters: getStoryFilters(row.evidence_type, Boolean(event)),
-        eventRouteId: event?.id,
+        eventRouteId:
+          event && (!accessibleEventIds || accessibleEventIds.has(event.id))
+            ? event.id
+            : undefined,
         persisted: true as const,
         mediaStatus,
       };
