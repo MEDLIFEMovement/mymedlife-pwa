@@ -1,5 +1,5 @@
 "use client";
-/* eslint-disable @next/next/no-img-element, @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any, react/no-unescaped-entities, react-hooks/set-state-in-effect, react-hooks/exhaustive-deps */
+/* eslint-disable @next/next/no-img-element, @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any, react/no-unescaped-entities, react-hooks/set-state-in-effect */
 import React, { useState, useMemo, useEffect } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
@@ -380,7 +380,7 @@ function Btn({ children, variant="primary", onClick, className="", blockedTitle 
     danger:    "bg-red-50 border border-red-200 text-red-700 hover:bg-red-100",
   }[variant];
   return (
-    <button
+    <button type="button"
       className={`${base} ${v} ${isBlocked ? "opacity-70 cursor-not-allowed" : ""} ${className}`}
       onClick={onClick}
       disabled={isBlocked}
@@ -419,7 +419,7 @@ function Kard({ label, value, sub, icon: Icon, accent="#1A56E8", trend }: {
 }
 
 /** Section heading */
-function SH({ children, sub }: { children: React.ReactNode; sub?: string }) {
+function SectionHeading({ children, sub }: { children: React.ReactNode; sub?: string }) {
   return (
     <div>
       <h2 className="text-sm font-bold text-slate-800">{children}</h2>
@@ -506,7 +506,7 @@ function HomeScreen({
 
       {/* Metrics grid */}
       <div>
-        <SH>Chapter Metrics — June 2025</SH>
+        <SectionHeading>Chapter Metrics — June 2025</SectionHeading>
         <div className="grid grid-cols-6 gap-3 mt-3">
           <Kard label="QR Contacts"                   value="84"     sub="+6 from last month" trend="up"   accent={BLUE}    icon={Users} />
           <Kard label="Events Created"              value="12"     sub="This month"                      accent="#7C3AED" icon={Calendar} />
@@ -523,7 +523,7 @@ function HomeScreen({
       <div className="grid grid-cols-3 gap-4">
         <div className="col-span-2 bg-white rounded-xl border border-slate-200 p-5">
           <div className="flex items-center justify-between mb-3">
-            <SH>Risk Alerts</SH>
+            <SectionHeading>Risk Alerts</SectionHeading>
             <Pill label="4 active" color="yellow" />
           </div>
           <div className="space-y-2">
@@ -541,9 +541,9 @@ function HomeScreen({
           </div>
         </div>
         <div className="bg-white rounded-xl border border-slate-200 p-5">
-          <SH>This Week's Priority</SH>
+          <SectionHeading>This Week's Priority</SectionHeading>
           <p className="text-xs text-slate-600 mt-2 mb-4 leading-relaxed">Stage the next TEST event preview, review RSVP posture, preview attendance follow-through, and keep the chapter leaderboard moving.</p>
-          <SH sub="">Quick Actions</SH>
+          <SectionHeading sub="">Quick Actions</SectionHeading>
           <div className="mt-2 space-y-1.5">
             <Btn variant="secondary"  className="w-full justify-start" onClick={onCreateEvent}><Calendar size={11}/>Create Event</Btn>
             <Btn variant="secondary"  className="w-full justify-start" onClick={onAssignAction}><Zap size={11}/>Assign Task</Btn>
@@ -562,7 +562,7 @@ function HomeScreen({
       {/* Points trend */}
       <div className="bg-white rounded-xl border border-slate-200 p-5">
         <div className="flex items-center justify-between mb-3">
-          <SH>Weekly Points Trend</SH>
+          <SectionHeading>Weekly Points Trend</SectionHeading>
           <span className="text-[11px] text-slate-400 font-mono">Apr – Jun 2025</span>
         </div>
         {/* Legend */}
@@ -680,7 +680,7 @@ function LeaderboardScreen({ onNavigate }: { onNavigate: (s: Screen) => void }) 
         {cats.map(c => {
           const Icon = c.icon;
           return (
-            <button key={c.key} onClick={() => setSortKey(c.key)}
+            <button type="button" key={c.key} onClick={() => setSortKey(c.key)}
               className={`flex items-center gap-2 px-5 py-3 rounded-xl border font-semibold text-sm cursor-pointer transition-all
                 ${sortKey===c.key ? "text-white shadow-sm" : "bg-white border-slate-200 text-slate-600 hover:border-slate-300"}`}
               style={sortKey===c.key ? { background: c.color, borderColor: c.color } : {}}>
@@ -756,7 +756,7 @@ function LeaderboardScreen({ onNavigate }: { onNavigate: (s: Screen) => void }) 
       {/* Ranked leaderboard table */}
       <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
         <div className="px-5 py-3 border-b border-slate-100 flex items-center justify-between">
-          <SH>Ranked Chapter Leaderboard</SH>
+          <SectionHeading>Ranked Chapter Leaderboard</SectionHeading>
           <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: active.color }}>
             Sorted by {active.label}
           </span>
@@ -936,7 +936,7 @@ function ProfileScreen({
 
   return (
     <div className="space-y-5">
-      <button onClick={onBack} className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-800 cursor-pointer transition-colors">
+      <button type="button" onClick={onBack} className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-800 cursor-pointer transition-colors">
         <ChevronRight size={13} className="rotate-180"/>Back to Member Pipeline
       </button>
 
@@ -1016,7 +1016,7 @@ function ProfileScreen({
           </div>
 
           <div className="bg-white rounded-xl border border-slate-200 p-4">
-            <SH>Points History — Weekly</SH>
+            <SectionHeading>Points History — Weekly</SectionHeading>
             <ResponsiveContainer width="100%" height={150}>
               <AreaChart data={wkData}>
                 <defs>
@@ -1035,7 +1035,7 @@ function ProfileScreen({
           </div>
 
           <div className="bg-white rounded-xl border border-slate-200 p-4">
-            <SH>Activity Timeline</SH>
+            <SectionHeading>Activity Timeline</SectionHeading>
             <div className="mt-3 relative">
               <div className="absolute left-[6px] top-0 bottom-0 w-px bg-slate-100"/>
               {timeline.map((t,i)=>(
@@ -1050,7 +1050,7 @@ function ProfileScreen({
 
           <div className="bg-white rounded-xl border border-slate-200 p-4">
             <div className="flex items-center justify-between mb-2">
-              <SH>Leader Review Notes</SH>
+              <SectionHeading>Leader Review Notes</SectionHeading>
               <Btn
                 variant="secondary"
                 blockedTitle="Leader note saving is blocked in this preview until the audited note workflow is approved."
@@ -1113,7 +1113,7 @@ function CommitteesScreen({
             ${c.health==="Inactive"?"border-red-200":c.health==="Needs Attention"?"border-amber-200":"border-slate-200"}`}>
 
             {/* ── Collapsed row ── */}
-            <button
+            <button type="button"
               className="w-full text-left cursor-pointer hover:bg-slate-50/50 transition-colors"
               onClick={() => setExpanded(expanded===c.id ? null : c.id)}>
               <div className="flex items-stretch">
@@ -1347,7 +1347,7 @@ function NpsSurveyModal({ eventName, onClose }: { eventName: string; onClose: ()
           <div className="text-lg font-black text-slate-900">Thank you!</div>
           <p className="text-sm text-slate-500 mt-1">Your feedback helps us make every MEDLIFE event better.</p>
         </div>
-        <button onClick={onClose} className="mt-1 px-6 py-2 bg-[#1A56E8] text-white text-sm font-bold rounded-xl cursor-pointer hover:bg-blue-700">Done</button>
+        <button type="button" onClick={onClose} className="mt-1 px-6 py-2 bg-[#1A56E8] text-white text-sm font-bold rounded-xl cursor-pointer hover:bg-blue-700">Done</button>
       </div>
     </ModalShell>
   );
@@ -1377,7 +1377,7 @@ function NpsSurveyModal({ eventName, onClose }: { eventName: string; onClose: ()
           {/* 0–10 buttons */}
           <div className="flex gap-1.5">
             {Array.from({length:11},(_,i)=>i).map(n => (
-              <button
+              <button type="button"
                 key={n}
                 onClick={() => setRating(n)}
                 className={`flex-1 py-2.5 rounded-lg text-xs font-black cursor-pointer transition-all border
@@ -1425,7 +1425,7 @@ function NpsSurveyModal({ eventName, onClose }: { eventName: string; onClose: ()
             <p className="text-sm font-semibold text-slate-800 mb-2">Are you interested in joining MEDLIFE?</p>
             <div className="flex gap-2">
               {["Yes, sign me up!", "Already a member", "Not right now"].map(opt => (
-                <button key={opt} onClick={() => setJoining(opt)}
+                <button type="button" key={opt} onClick={() => setJoining(opt)}
                   className={`flex-1 py-2 rounded-xl border text-xs font-semibold cursor-pointer transition-all
                     ${joining===opt ? "bg-[#1A56E8] text-white border-[#1A56E8]" : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50"}`}>
                   {opt}
@@ -1438,8 +1438,8 @@ function NpsSurveyModal({ eventName, onClose }: { eventName: string; onClose: ()
 
       {/* Footer */}
       <div className="px-6 pb-6 flex items-center justify-between">
-        <button onClick={onClose} className="text-xs text-slate-400 hover:text-slate-600 cursor-pointer">Skip</button>
-        <button
+        <button type="button" onClick={onClose} className="text-xs text-slate-400 hover:text-slate-600 cursor-pointer">Skip</button>
+        <button type="button"
           disabled={rating === null}
           onClick={() => setSubmitted(true)}
           className="px-6 py-2.5 bg-[#1A56E8] text-white text-sm font-bold rounded-xl cursor-pointer hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed">
@@ -1533,10 +1533,10 @@ function NpsResultsPanel({ nps, attendees, totalMembers, rsvp }: { nps: NpsResul
 function EventsScreen({
   liveReadback,
   onNavigate,
-}: {
+}: Readonly<{
   liveReadback?: LeaderLiveEventReadback | null;
   onNavigate: (screen: Screen) => void;
-}) {
+}>) {
   const [surveyEvent,  setSurveyEvent]  = useState<{id:number; name:string}|null>(null);
   const [npsEventId,   setNpsEventId]   = useState<number|null>(null);
 
@@ -1594,7 +1594,7 @@ function EventsScreen({
       {/* Events table */}
       <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
         <div className="px-5 py-3 border-b border-slate-100 flex items-center justify-between">
-          <SH>All Events — June 2025</SH>
+          <SectionHeading>All Events — June 2025</SectionHeading>
           <select className="text-xs border border-slate-200 rounded-lg px-2.5 py-1.5 bg-white text-slate-500">
             <option>All Committees</option>
           </select>
@@ -1628,13 +1628,13 @@ function EventsScreen({
                     {/* Event Score cell */}
                     <td className="px-3 py-3">
                       {nps && c ? (
-                        <button onClick={() => setNpsEventId(npsEventId===e.id ? null : e.id)}
+                        <button type="button" onClick={() => setNpsEventId(npsEventId===e.id ? null : e.id)}
                           className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-black border cursor-pointer hover:opacity-80 transition-opacity ${c.bg} ${c.border} ${c.text}`}>
                           {nps.score > 0 ? "+" : ""}{nps.score}
                           <ChevronDown size={9} className={npsEventId===e.id ? "rotate-180 transition-transform" : "transition-transform"}/>
                         </button>
                       ) : e.status === "Past" ? (
-                        <button
+                        <button type="button"
                           onClick={() => setSurveyEvent({ id:e.id, name:e.name })}
                           title="Survey sending is blocked in this preview"
                           className="text-[10px] font-semibold text-blue-500 hover:underline cursor-pointer whitespace-nowrap">
@@ -1687,7 +1687,7 @@ function EventsScreen({
       {/* Charts row */}
       <div className="grid grid-cols-2 gap-4">
         <div className="bg-white rounded-xl border border-slate-200 p-5">
-          <SH>RSVP vs. Actual Attendance</SH>
+          <SectionHeading>RSVP vs. Actual Attendance</SectionHeading>
           <ResponsiveContainer width="100%" height={200}>
             <BarChart data={chartData} margin={{top:8,right:8,left:-8,bottom:0}}>
               <CartesianGrid key="events-grid" strokeDasharray="3 3" stroke="rgba(0,0,0,0.04)"/>
@@ -1702,7 +1702,7 @@ function EventsScreen({
 
         <div className="bg-white rounded-xl border border-slate-200 p-5">
           <div className="flex items-center justify-between mb-3">
-            <SH>Social Recruiting Data</SH>
+            <SectionHeading>Social Recruiting Data</SectionHeading>
             <span className="text-[10px] bg-amber-100 text-amber-700 border border-amber-200 px-2 py-0.5 rounded-full font-bold uppercase tracking-wide">Integration Pending</span>
           </div>
           <p className="text-xs text-slate-400 mb-4">Hootsuite / API integration pending. Placeholder data shown.</p>
@@ -1731,10 +1731,10 @@ type LeaderLiveEventReadback = {
 function LeaderLiveEventsScreen({
   readback,
   onCreateEvent,
-}: {
+}: Readonly<{
   readback: LeaderLiveEventReadback;
   onCreateEvent: () => void;
-}) {
+}>) {
   const totals = readback.events.reduce(
     (summary, event) => ({
       rsvps: summary.rsvps + event.rsvpCount,
@@ -1754,6 +1754,35 @@ function LeaderLiveEventsScreen({
   }));
   const selectedEvent = readback.selectedEventId
     ? readback.events.find((event) => event.id === readback.selectedEventId) ?? null : null;
+  let selectedEventPanel: React.ReactNode = null;
+
+  if (readback.selectedEventId && selectedEvent) {
+    selectedEventPanel = (
+      <section className="rounded-xl border border-blue-200 bg-blue-50 px-5 py-4" aria-label="Selected event detail">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-wider text-blue-700">Selected event</p>
+            <h2 className="mt-1 text-base font-black text-slate-900">{selectedEvent.title}</h2>
+            <p className="mt-1 text-xs text-slate-600">{selectedEvent.timing} · {selectedEvent.location}</p>
+          </div>
+          <a href="/leader?view=events" className="text-xs font-bold text-blue-700 hover:underline">Back to all events</a>
+        </div>
+        <div className="mt-4 grid gap-3 text-xs sm:grid-cols-4">
+          <div><p className="font-bold uppercase text-slate-500">RSVPs</p><p className="mt-1 font-mono text-base font-black text-slate-900">{selectedEvent.rsvpCount}</p></div>
+          <div><p className="font-bold uppercase text-slate-500">Attendance</p><p className="mt-1 font-mono text-base font-black text-slate-900">{selectedEvent.attendanceCount}</p></div>
+          <div><p className="font-bold uppercase text-slate-500">Points</p><p className="mt-1 font-mono text-base font-black text-slate-900">{selectedEvent.pointsAwarded.toLocaleString()}</p></div>
+          <div><p className="font-bold uppercase text-slate-500">Status</p><p className="mt-1 font-black text-slate-900">{selectedEvent.statusLabel}</p></div>
+        </div>
+      </section>
+    );
+  } else if (readback.selectedEventId) {
+    selectedEventPanel = (
+      <section className="rounded-xl border border-amber-200 bg-amber-50 px-5 py-4" aria-label="Selected event unavailable">
+        <p className="text-sm font-bold text-amber-900">Selected event is not available in this chapter.</p>
+        <a href="/leader?view=events" className="mt-2 inline-block text-xs font-bold text-amber-800 hover:underline">Back to all events</a>
+      </section>
+    );
+  }
 
   return (
     <div className="space-y-5">
@@ -1774,35 +1803,11 @@ function LeaderLiveEventsScreen({
         <Kard label="Points Awarded" value={totals.points.toLocaleString()} sub="Deduped event awards" accent="#7C3AED" icon={Star}/>
       </div>
 
-      {readback.selectedEventId ? (
-        selectedEvent ? (
-          <section className="rounded-xl border border-blue-200 bg-blue-50 px-5 py-4" aria-label="Selected event detail">
-            <div className="flex flex-wrap items-start justify-between gap-4">
-              <div>
-                <p className="text-[10px] font-bold uppercase tracking-wider text-blue-700">Selected event</p>
-                <h2 className="mt-1 text-base font-black text-slate-900">{selectedEvent.title}</h2>
-                <p className="mt-1 text-xs text-slate-600">{selectedEvent.timing} · {selectedEvent.location}</p>
-              </div>
-              <a href="/leader?view=events" className="text-xs font-bold text-blue-700 hover:underline">Back to all events</a>
-            </div>
-            <div className="mt-4 grid gap-3 text-xs sm:grid-cols-4">
-              <div><p className="font-bold uppercase text-slate-500">RSVPs</p><p className="mt-1 font-mono text-base font-black text-slate-900">{selectedEvent.rsvpCount}</p></div>
-              <div><p className="font-bold uppercase text-slate-500">Attendance</p><p className="mt-1 font-mono text-base font-black text-slate-900">{selectedEvent.attendanceCount}</p></div>
-              <div><p className="font-bold uppercase text-slate-500">Points</p><p className="mt-1 font-mono text-base font-black text-slate-900">{selectedEvent.pointsAwarded.toLocaleString()}</p></div>
-              <div><p className="font-bold uppercase text-slate-500">Status</p><p className="mt-1 font-black text-slate-900">{selectedEvent.statusLabel}</p></div>
-            </div>
-          </section>
-        ) : (
-          <section className="rounded-xl border border-amber-200 bg-amber-50 px-5 py-4" aria-label="Selected event unavailable">
-            <p className="text-sm font-bold text-amber-900">Selected event is not available in this chapter.</p>
-            <a href="/leader?view=events" className="mt-2 inline-block text-xs font-bold text-amber-800 hover:underline">Back to all events</a>
-          </section>
-        )
-      ) : null}
+      {selectedEventPanel}
       <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
         <div className="flex items-center justify-between gap-4 border-b border-slate-100 px-5 py-3">
           <div>
-            <SH>Live chapter event loop</SH>
+            <SectionHeading>Live chapter event loop</SectionHeading>
             <p className="mt-1 text-[11px] text-slate-500">Supabase operational truth</p>
           </div>
           <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[10px] font-bold uppercase tracking-wide text-emerald-700">
@@ -1819,12 +1824,27 @@ function LeaderLiveEventsScreen({
               </tr>
             </thead>
             <tbody>
-              {readback.events.map((event, index) => (
-                <tr
-                  key={event.id}
-                  aria-current={event.id === readback.selectedEventId ? "true" : undefined}
-                  className={`border-b border-slate-100 last:border-0 ${event.id === readback.selectedEventId ? 'bg-blue-50' : index % 2 ? 'bg-slate-50/40' : ''}`}
-                >
+              {readback.events.map((event, index) => {
+                let rowTone = '';
+                if (event.id === readback.selectedEventId) {
+                  rowTone = 'bg-blue-50';
+                } else if (index % 2) {
+                  rowTone = 'bg-slate-50/40';
+                }
+
+                let statusTone = 'slate';
+                if (event.tone === 'gold') {
+                  statusTone = 'yellow';
+                } else if (event.tone === 'blue') {
+                  statusTone = 'blue';
+                }
+
+                return (
+                  <tr
+                    key={event.id}
+                    aria-current={event.id === readback.selectedEventId ? "true" : undefined}
+                    className={`border-b border-slate-100 last:border-0 ${rowTone}`}
+                  >
                   <td className="px-3 py-3 font-semibold text-slate-800">{event.title}</td>
                   <td className="px-3 py-3 text-slate-500">{event.timing}</td>
                   <td className="px-3 py-3 text-slate-500">{event.location}</td>
@@ -1835,13 +1855,14 @@ function LeaderLiveEventsScreen({
                       ? `${Math.round((event.attendanceCount / event.rsvpCount) * 100)}%`
                       : '-'}
                   </td>
-                  <td className="px-3 py-3"><Pill label={event.statusLabel} color={event.tone === 'gold' ? 'yellow' : event.tone === 'blue' ? 'blue' : 'slate'}/></td>
+                  <td className="px-3 py-3"><Pill label={event.statusLabel} color={statusTone}/></td>
                   <td className="px-3 py-3 text-center font-mono font-bold">{event.pointsAwarded.toLocaleString()}</td>
                   <td className="px-3 py-3">
                     <a href={event.detailHref} className="font-bold text-blue-600 hover:underline">Open</a>
                   </td>
-                </tr>
-              ))}
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
@@ -1849,7 +1870,7 @@ function LeaderLiveEventsScreen({
 
       <div className="grid gap-4 lg:grid-cols-3">
         <div className="rounded-xl border border-slate-200 bg-white p-5 lg:col-span-2">
-          <SH>RSVP vs. Actual Attendance</SH>
+          <SectionHeading>RSVP vs. Actual Attendance</SectionHeading>
           <ResponsiveContainer width="100%" height={220}>
             <BarChart data={chartData} margin={{top:8,right:8,left:-8,bottom:0}}>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.04)"/>
@@ -1864,7 +1885,7 @@ function LeaderLiveEventsScreen({
 
         <div className="space-y-4">
           <div className="rounded-xl border border-slate-200 bg-white p-5">
-            <SH>Latest Attendance</SH>
+            <SectionHeading>Latest Attendance</SectionHeading>
             {readback.attendance.length > 0 ? (
               <div className="mt-3 space-y-2">
                 {readback.attendance.map((row) => (
@@ -1883,7 +1904,7 @@ function LeaderLiveEventsScreen({
           </div>
 
           <div className="rounded-xl border border-slate-200 bg-white p-5">
-            <SH>Chapter Points</SH>
+            <SectionHeading>Chapter Points</SectionHeading>
             <div className="mt-3 space-y-2">
               {readback.leaderboard.map((row, index) => (
                 <div key={row.name} className="flex items-center justify-between gap-3 border-b border-slate-100 pb-2 last:border-0 last:pb-0">
@@ -2049,7 +2070,7 @@ function ImpactScreen() {
             <div className="text-4xl font-black mb-0.5">{s.n}</div>
             <div className="text-sm font-semibold opacity-80 mb-3">{s.label}</div>
             <p className="text-xs leading-relaxed opacity-75 mb-4">{s.story}</p>
-            <button disabled title="Impact sharing is blocked in this preview until feed-sharing approval is complete" className="text-[11px] font-semibold bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-lg transition-colors cursor-pointer">Preview Share →</button>
+            <button type="button" disabled title="Impact sharing is blocked in this preview until feed-sharing approval is complete" className="text-[11px] font-semibold bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-lg transition-colors cursor-pointer">Preview Share →</button>
           </div>
         ))}
       </div>
@@ -2057,7 +2078,7 @@ function ImpactScreen() {
       {/* Stats panels */}
       <div className="grid grid-cols-3 gap-4">
         <div className="bg-white rounded-xl border border-slate-200 p-5">
-          <div className="flex items-center gap-2 mb-4"><Heart size={15} className="text-red-500"/><SH>Local Community Impact</SH></div>
+          <div className="flex items-center gap-2 mb-4"><Heart size={15} className="text-red-500"/><SectionHeading>Local Community Impact</SectionHeading></div>
           {[["People Supported","420"],["Local Volunteering Hours","284"],["Local Partners","4"]].map(([l,v])=>(
             <div key={l} className="flex justify-between items-center border-b border-slate-100 py-2 last:border-0">
               <span className="text-xs text-slate-500">{l}</span>
@@ -2066,7 +2087,7 @@ function ImpactScreen() {
           ))}
         </div>
         <div className="bg-white rounded-xl border border-slate-200 p-5">
-          <div className="flex items-center gap-2 mb-4"><Globe size={15} className="text-blue-600"/><SH>MEDLIFE Global Impact</SH></div>
+          <div className="flex items-center gap-2 mb-4"><Globe size={15} className="text-blue-600"/><SectionHeading>MEDLIFE Global Impact</SectionHeading></div>
           {[["SLT Participants","18"],["SLT Patients & Community Members Served","420"],["Medical Visits","312"],["Dental Visits","98"],["Pediatric Visits","74"],["Women's Health","56"],["Projects — Families Benefitted","280"]].map(([l,v])=>(
             <div key={l} className="flex justify-between items-center border-b border-slate-100 py-1.5 last:border-0">
               <span className="text-xs text-slate-500">{l}</span>
@@ -2075,7 +2096,7 @@ function ImpactScreen() {
           ))}
         </div>
         <div className="bg-white rounded-xl border border-slate-200 p-5">
-          <div className="flex items-center gap-2 mb-4"><Target size={15} className="text-green-600"/><SH>Moving Mountains</SH></div>
+          <div className="flex items-center gap-2 mb-4"><Target size={15} className="text-green-600"/><SectionHeading>Moving Mountains</SectionHeading></div>
           <div className="mb-4">
             <div className="flex justify-between text-xs mb-1.5">
               <span className="text-slate-400">Raised</span>
@@ -2119,7 +2140,7 @@ function ImpactScreen() {
             {/* Story type filter */}
             <div className="flex gap-1.5">
               {(["all","patient","project"] as const).map(t => (
-                <button key={t} onClick={() => setActiveStoryType(t)}
+                <button type="button" key={t} onClick={() => setActiveStoryType(t)}
                   className={`px-3 py-1.5 text-[11px] font-semibold rounded-lg cursor-pointer transition-all border capitalize
                     ${activeStoryType===t ? "bg-[#07192E] text-white border-[#07192E]" : "bg-white border-slate-200 text-slate-500 hover:text-slate-800"}`}>
                   {t === "all" ? "All Stories" : t === "patient" ? "🧑 Patient Stories" : "🏗 Project Stories"}
@@ -2129,7 +2150,7 @@ function ImpactScreen() {
             {/* MC filter chips */}
             <div className="flex gap-1.5">
               {activeMC !== "all" && (
-                <button onClick={() => setActiveMC("all")}
+                <button type="button" onClick={() => setActiveMC("all")}
                   className="flex items-center gap-1 px-2.5 py-1.5 text-[11px] font-semibold rounded-lg bg-slate-100 text-slate-600 cursor-pointer hover:bg-slate-200 transition-colors">
                   <X size={10}/>Clear MC filter
                 </button>
@@ -2159,7 +2180,7 @@ function ImpactScreen() {
           {filteredStories.map(story => {
             const mc = MOBILE_CLINICS.find(c => c.id === story.mc)!;
             return (
-              <button key={story.id} onClick={() => setOpenStoryId(story.id)}
+              <button type="button" key={story.id} onClick={() => setOpenStoryId(story.id)}
                 className="text-left bg-white rounded-2xl border border-slate-200 overflow-hidden hover:shadow-md hover:-translate-y-0.5 transition-all cursor-pointer group">
                 {/* Photo */}
                 <div className="relative h-44 bg-slate-200 overflow-hidden">
@@ -2231,7 +2252,7 @@ function ImpactScreen() {
                     {openStory.type === "patient" ? "Patient Story" : "Project Story"}
                   </span>
                 </div>
-                <button onClick={() => setOpenStoryId(null)}
+                <button type="button" onClick={() => setOpenStoryId(null)}
                   className="w-8 h-8 bg-white/20 hover:bg-white/40 backdrop-blur-sm rounded-full flex items-center justify-center cursor-pointer transition-colors">
                   <X size={14} className="text-white"/>
                 </button>
@@ -2344,7 +2365,7 @@ function BridgeScreen() {
                   )}
                   <span className="px-2.5 py-1 bg-black/40 backdrop-blur-sm rounded-full text-[11px] font-semibold text-white">{openVideo.duration}</span>
                 </div>
-                <button onClick={()=>setOpenId(null)}
+                <button type="button" onClick={()=>setOpenId(null)}
                   className="w-8 h-8 bg-white/20 hover:bg-white/40 backdrop-blur-sm rounded-full flex items-center justify-center cursor-pointer transition-colors">
                   <X size={14} className="text-white"/>
                 </button>
@@ -2437,7 +2458,7 @@ function BridgeScreen() {
       {/* Category filter */}
       <div className="flex gap-2 flex-wrap">
         {cats.map(c=>(
-          <button key={c} onClick={()=>setcat(c)}
+          <button type="button" key={c} onClick={()=>setcat(c)}
             className={`px-3 py-1.5 text-[11px] font-semibold rounded-lg transition-all cursor-pointer
               ${cat===c ? "bg-[#1A56E8] text-white shadow-sm" : "bg-white border border-slate-200 text-slate-500 hover:text-slate-800"}`}>
             {c}
@@ -2448,7 +2469,7 @@ function BridgeScreen() {
       {/* Photo card grid — mirrors "Field Updates" layout */}
       <div className="grid grid-cols-3 gap-4">
         {shown.map(v=>(
-          <button key={v.id} onClick={()=>setOpenId(v.id)}
+          <button type="button" key={v.id} onClick={()=>setOpenId(v.id)}
             className="text-left bg-white rounded-2xl border border-slate-200 overflow-hidden hover:shadow-md hover:-translate-y-0.5 transition-all cursor-pointer group">
             {/* Photo with overlays */}
             <div className="relative h-44 bg-slate-200 overflow-hidden">
@@ -2632,9 +2653,9 @@ function TransitionPlanBuilder({ onBack, onViewProfile }: { onBack: () => void; 
         </div>
       </div>
       <div className="flex gap-3 mt-2">
-        <button onClick={onBack} className="px-5 py-2.5 border border-slate-200 text-slate-700 text-sm font-semibold rounded-xl cursor-pointer hover:bg-slate-50">Back to Succession</button>
+        <button type="button" onClick={onBack} className="px-5 py-2.5 border border-slate-200 text-slate-700 text-sm font-semibold rounded-xl cursor-pointer hover:bg-slate-50">Back to Succession</button>
         {primaryId && (
-          <button onClick={() => onViewProfile(primaryId)}
+          <button type="button" onClick={() => onViewProfile(primaryId)}
             className="px-5 py-2.5 text-sm font-bold rounded-xl cursor-pointer text-white hover:opacity-90" style={{ background: role.color }}>
             View {primaryMember ? toTestLabel(primaryMember.name).split(" ")[1] : "TEST"}'s Profile
           </button>
@@ -2650,14 +2671,14 @@ function TransitionPlanBuilder({ onBack, onViewProfile }: { onBack: () => void; 
       {/* Header */}
       <div className="flex items-center justify-between mb-5">
         <div className="flex items-center gap-3">
-          <button onClick={onBack} className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-800 cursor-pointer transition-colors">
+          <button type="button" onClick={onBack} className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-800 cursor-pointer transition-colors">
             <ChevronRight size={13} className="rotate-180"/>Back to Succession
           </button>
           <span className="text-slate-300">/</span>
           <h1 className="text-xl font-black text-slate-900">Leadership Transition Plan</h1>
           {role && <span className="px-2.5 py-0.5 rounded-full text-xs font-bold text-white" style={{ background: role.color }}>{role.label}</span>}
         </div>
-        <button
+        <button type="button"
           disabled={step !== 4 || nominees.length === 0}
           onClick={() => setPublished(true)}
           className="flex items-center gap-2 px-5 py-2.5 bg-[#1A56E8] text-white text-sm font-bold rounded-xl cursor-pointer hover:bg-blue-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed shadow-sm">
@@ -2674,7 +2695,7 @@ function TransitionPlanBuilder({ onBack, onViewProfile }: { onBack: () => void; 
             const active = step === s;
             return (
               <div key={s} className="flex items-center flex-1 last:flex-none">
-                <button
+                <button type="button"
                   onClick={() => s < step && setStep(s as 1|2|3|4)}
                   className={`flex flex-col items-center gap-1.5 cursor-pointer group ${s < step ? "cursor-pointer" : "cursor-default"}`}>
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-black transition-all
@@ -2708,7 +2729,7 @@ function TransitionPlanBuilder({ onBack, onViewProfile }: { onBack: () => void; 
                 {ROLES_TO_TRANSITION.map(r => {
                   const sel = selectedRole === r.id;
                   return (
-                    <button key={r.id} onClick={() => setSelectedRole(r.id)}
+                    <button type="button" key={r.id} onClick={() => setSelectedRole(r.id)}
                       className={`flex items-start gap-3 p-4 rounded-xl border cursor-pointer text-left transition-all
                         ${sel ? "ring-2" : "border-slate-200 bg-white hover:bg-slate-50"}`}
                       style={sel ? { borderColor: r.color, background: r.color + "0d", boxShadow: `0 0 0 2px ${r.color}` } : {}}>
@@ -2800,7 +2821,7 @@ function TransitionPlanBuilder({ onBack, onViewProfile }: { onBack: () => void; 
                 {TRANSITION_TASKS.map(t => {
                   const active = activeTasks.includes(t.id);
                   return (
-                    <button key={t.id} onClick={() => !t.required && toggleTask(t.id)}
+                    <button type="button" key={t.id} onClick={() => !t.required && toggleTask(t.id)}
                       className={`w-full flex items-start gap-3 p-4 rounded-xl border text-left transition-all
                         ${active ? "border-blue-300 bg-blue-50" : "border-slate-200 bg-white hover:bg-slate-50"}
                         ${t.required ? "cursor-default" : "cursor-pointer"}`}>
@@ -2944,7 +2965,7 @@ function TransitionPlanBuilder({ onBack, onViewProfile }: { onBack: () => void; 
                   ))}
                 </div>
                 {valuesPill(primaryMember.values)}
-                <button onClick={() => onViewProfile(primaryMember.id)}
+                <button type="button" onClick={() => onViewProfile(primaryMember.id)}
                   className="w-full text-center text-[11px] text-blue-500 font-semibold hover:underline cursor-pointer">
                   View full profile →
                 </button>
@@ -2977,17 +2998,17 @@ function TransitionPlanBuilder({ onBack, onViewProfile }: { onBack: () => void; 
 
       {/* Step nav footer */}
       <div className="flex items-center justify-between pt-6 border-t border-slate-200 mt-6">
-        <button onClick={() => step > 1 ? setStep((step-1) as 1|2|3|4) : onBack()}
+        <button type="button" onClick={() => step > 1 ? setStep((step-1) as 1|2|3|4) : onBack()}
           className="text-sm font-semibold text-slate-500 hover:text-slate-800 cursor-pointer transition-colors">
           {step === 1 ? "← Cancel" : "← Back"}
         </button>
         {step < 5 ? (
-          <button disabled={!canAdvance} onClick={() => setStep((step+1) as 2|3|4)}
+          <button type="button" disabled={!canAdvance} onClick={() => setStep((step+1) as 2|3|4)}
             className="px-6 py-2.5 bg-[#1A56E8] text-white text-sm font-bold rounded-xl cursor-pointer hover:bg-blue-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
             Continue →
           </button>
         ) : (
-          <button
+          <button type="button"
             disabled={!primaryId || nominees.length === 0}
             onClick={() => setPublished(true)}
             className="px-6 py-2.5 text-white text-sm font-bold rounded-xl cursor-pointer hover:opacity-90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
@@ -3054,7 +3075,7 @@ function SuccessionScreen({ onNavigate, onSelectMember }: { onNavigate:(s:Screen
       <div className="grid grid-cols-2 gap-4">
         {/* Gaps */}
         <div className="bg-white rounded-xl border border-slate-200 p-5">
-          <SH>Leadership Gaps</SH>
+          <SectionHeading>Leadership Gaps</SectionHeading>
           <div className="mt-3 space-y-2.5">
             {gaps.map((g,i)=>(
               <div key={i} className={`px-3 py-2.5 rounded-lg border ${g.urgency==="High"?"bg-red-50 border-red-200":g.urgency==="Medium"?"bg-amber-50 border-amber-200":"bg-slate-50 border-slate-200"}`}>
@@ -3072,8 +3093,8 @@ function SuccessionScreen({ onNavigate, onSelectMember }: { onNavigate:(s:Screen
         <div className="space-y-4">
           <div className="bg-white rounded-xl border border-slate-200 p-5">
             <div className="flex items-center justify-between mb-3">
-              <SH>Candidate Pipeline</SH>
-              <button onClick={()=>onNavigate("members")} className="text-[11px] text-blue-600 hover:underline cursor-pointer font-semibold flex items-center gap-1">
+              <SectionHeading>Candidate Pipeline</SectionHeading>
+              <button type="button" onClick={()=>onNavigate("members")} className="text-[11px] text-blue-600 hover:underline cursor-pointer font-semibold flex items-center gap-1">
                 Full table <ExternalLink size={10}/>
               </button>
             </div>
@@ -3095,7 +3116,7 @@ function SuccessionScreen({ onNavigate, onSelectMember }: { onNavigate:(s:Screen
           </div>
 
           <div className="bg-white rounded-xl border border-slate-200 p-5">
-            <SH>Succession Timeline</SH>
+            <SectionHeading>Succession Timeline</SectionHeading>
             <div className="mt-3 relative">
               <div className="absolute left-[6px] top-1 bottom-1 w-px bg-slate-200"/>
               {[
@@ -3255,7 +3276,7 @@ function FeedScreen() {
       </div>
 
       <div className="bg-white rounded-xl border border-slate-200 p-5">
-        <SH>Content Engagement — Actions Driven</SH>
+        <SectionHeading>Content Engagement — Actions Driven</SectionHeading>
         <div className="mt-1 mb-3 flex items-center gap-5 text-[11px] text-slate-400">
           {[["Likes","#BFDBFE"],["Comments",BLUE],["Actions After View",YELLOW]].map(([l,c])=>(
             <div key={l} className="flex items-center gap-1.5">
@@ -3279,7 +3300,7 @@ function FeedScreen() {
 
       {/* Posts table */}
       <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
-        <div className="px-5 py-3 border-b border-slate-100"><SH>Recent Posts</SH></div>
+        <div className="px-5 py-3 border-b border-slate-100"><SectionHeading>Recent Posts</SectionHeading></div>
         <div className="overflow-x-auto">
           <table className="w-full text-xs">
             <thead className="bg-slate-50 border-b border-slate-200">
@@ -3313,7 +3334,7 @@ function FeedScreen() {
 
       <div className="grid grid-cols-2 gap-4">
         <div className="bg-white rounded-xl border border-slate-200 p-5">
-          <div className="flex items-center gap-2 mb-3"><TrendingUp size={14} className="text-green-500"/><SH>Most Engaged Members</SH></div>
+          <div className="flex items-center gap-2 mb-3"><TrendingUp size={14} className="text-green-500"/><SectionHeading>Most Engaged Members</SectionHeading></div>
           {byEngage(MEMBERS).slice(0,4).map(m=>(
             <div key={m.id} className="flex items-center justify-between py-2 border-b border-slate-100 last:border-0">
               <div className="flex items-center gap-2">
@@ -3330,7 +3351,7 @@ function FeedScreen() {
           ))}
         </div>
         <div className="bg-white rounded-xl border border-slate-200 p-5">
-          <div className="flex items-center gap-2 mb-3"><TrendingDown size={14} className="text-red-400"/><SH>Least Engaged — Re-engage</SH></div>
+          <div className="flex items-center gap-2 mb-3"><TrendingDown size={14} className="text-red-400"/><SectionHeading>Least Engaged — Re-engage</SectionHeading></div>
           {least.map(m=>(
             <div key={m.id} className="flex items-center justify-between py-2 border-b border-slate-100 last:border-0">
               <div className="flex items-center gap-2">
@@ -3342,7 +3363,7 @@ function FeedScreen() {
                   <div className="h-full bg-red-400 rounded-full" style={{width:`${m.engage}%`}}/>
                 </div>
                 <span className="text-[11px] font-mono text-slate-500 w-8 text-right">{m.engage}%</span>
-                <button disabled title="Direct member messages are blocked in this preview" className="p-1 rounded-md hover:bg-slate-100 cursor-pointer text-slate-400 hover:text-slate-700 transition-colors"><MessageSquare size={11}/></button>
+                <button type="button" disabled title="Direct member messages are blocked in this preview" className="p-1 rounded-md hover:bg-slate-100 cursor-pointer text-slate-400 hover:text-slate-700 transition-colors"><MessageSquare size={11}/></button>
               </div>
             </div>
           ))}
@@ -3451,7 +3472,7 @@ function LeadersScreen({
               <div key={r.role} className={`bg-white rounded-xl border p-4 ${r.filled?"border-slate-200":"border-dashed border-slate-300"}`}>
                 <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">{r.role}</div>
                 {r.filled && m ? (
-                  <button onClick={() => onSelectMember(m.id)} className="flex items-center gap-2 w-full text-left group">
+                  <button type="button" onClick={() => onSelectMember(m.id)} className="flex items-center gap-2 w-full text-left group">
                     <Avatar name={m.name} color={m.color} size={32}/>
                     <div className="min-w-0">
                       <div className="text-sm font-bold text-blue-600 group-hover:underline cursor-pointer truncate">{m.name}</div>
@@ -3495,7 +3516,7 @@ function LeadersScreen({
                         {c.chairs.map(chairName => {
                           const m = memberByName(chairName);
                           return m ? (
-                            <button key={chairName} onClick={() => onSelectMember(m.id)}
+                            <button type="button" key={chairName} onClick={() => onSelectMember(m.id)}
                               className="flex items-center gap-2 group cursor-pointer">
                               <Avatar name={m.name} color={m.color} size={28}/>
                               <div>
@@ -3582,7 +3603,7 @@ function MembersScreen({ onSelectMember }: { onSelectMember: (id:number)=>void }
       {/* View tabs */}
       <div className="flex gap-3">
         {tabs.map(t => (
-          <button key={t.id} onClick={()=>setView(t.id)}
+          <button type="button" key={t.id} onClick={()=>setView(t.id)}
             className={`flex items-center gap-2 px-5 py-2.5 rounded-xl border font-semibold text-sm cursor-pointer transition-all
               ${view===t.id ? "bg-[#1A56E8] text-white border-[#1A56E8] shadow-sm" : "bg-white border-slate-200 text-slate-600 hover:border-slate-300"}`}>
             {t.label}
@@ -3650,7 +3671,7 @@ function MembersScreen({ onSelectMember }: { onSelectMember: (id:number)=>void }
                       <Avatar name={m.name} color={m.color} size={26}/>
                       <div>
                         {isBCMember
-                          ? <button onClick={()=>onSelectMember(m.id)} className="font-semibold text-blue-600 hover:underline cursor-pointer text-left">{m.name}</button>
+                          ? <button type="button" onClick={()=>onSelectMember(m.id)} className="font-semibold text-blue-600 hover:underline cursor-pointer text-left">{m.name}</button>
                           : <span className="font-semibold text-slate-700">{m.name}</span>
                         }
                         {isBCMember && view!=="chapter" && <div className="text-[9px] text-blue-500 font-semibold">Your Chapter</div>}
@@ -3732,7 +3753,7 @@ function Sidebar({
     <aside className="w-56 bg-[#07192E] flex flex-col shrink-0 h-screen sticky top-0 overflow-y-auto">
       {/* Wordmark */}
       <div className="px-4 py-4 border-b border-white/10 shrink-0">
-        <button
+        <button type="button"
           onClick={() => onNav("home")}
           className="flex items-center gap-2.5 cursor-pointer group w-full text-left"
         >
@@ -3780,7 +3801,7 @@ function Sidebar({
         <div>
           <div className="px-3 mb-1 text-[9px] font-bold text-blue-300/40 uppercase tracking-widest">Not Yet Available</div>
           {MISSING_LEADERSHIP_PAGES.map(({label, icon:Icon})=>(
-            <button key={label} disabled title={`Leadership page not yet available: ${label}`}
+            <button type="button" key={label} disabled title={`Leadership page not yet available: ${label}`}
               className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg mb-0.5 text-left transition-all cursor-not-allowed text-white/35">
               <Icon size={14}/><span className="text-[11px] font-semibold">{label}</span>
             </button>
@@ -3811,7 +3832,7 @@ function UserProfileSwitcher() {
 
   return (
     <div className="relative border-t border-white/10 shrink-0">
-      <button
+      <button type="button"
         onClick={() => setOpen(o => !o)}
         className="w-full px-4 py-3.5 flex items-center gap-2.5 cursor-pointer hover:bg-white/5 transition-colors text-left">
         <Avatar name="TEST Sofia Reyes" color={BLUE} size={28}/>
@@ -3831,7 +3852,7 @@ function UserProfileSwitcher() {
             const Icon = v.icon;
             const isActive = v.id === activeView;
             return (
-              <button
+              <button type="button"
                 key={v.id}
                 disabled
                 title={isActive ? "You are already in the Student Command Center." : WORKSPACE_SWITCHER_BLOCKED_COPY}
@@ -3919,7 +3940,7 @@ function AssignActionModal({
           <Shield size={13} className="mt-0.5 shrink-0 text-amber-600"/>
           <p className="text-left text-[11px] text-amber-700">{LEADER_PREVIEW_ONLY_COPY}</p>
         </div>
-        <button onClick={onClose} className="mt-2 px-6 py-2 bg-[#1A56E8] text-white text-sm font-semibold rounded-lg cursor-pointer hover:bg-blue-700 transition-colors">Close Preview</button>
+        <button type="button" onClick={onClose} className="mt-2 px-6 py-2 bg-[#1A56E8] text-white text-sm font-semibold rounded-lg cursor-pointer hover:bg-blue-700 transition-colors">Close Preview</button>
       </div>
     </ModalShell>
   );
@@ -3955,7 +3976,7 @@ function AssignActionModal({
             {filtered.map(m => {
               const sel = selectedMembers.includes(m.id);
               return (
-                <button key={m.id} onClick={() => toggleMember(m.id)}
+                <button type="button" key={m.id} onClick={() => toggleMember(m.id)}
                   className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg border cursor-pointer transition-all text-left
                     ${sel ? "border-blue-400 bg-blue-50 ring-1 ring-blue-200" : "border-slate-200 bg-white hover:bg-slate-50"}`}>
                   <Avatar name={m.name} color={m.color} size={28}/>
@@ -3984,7 +4005,7 @@ function AssignActionModal({
             const Icon = a.icon;
             const sel = selectedAction === a.id;
             return (
-              <button key={a.id} onClick={() => handleSelectAction(a.id)}
+              <button type="button" key={a.id} onClick={() => handleSelectAction(a.id)}
                 className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer text-left transition-all
                   ${sel ? "border-blue-400 bg-blue-50 ring-1 ring-blue-200" : "border-slate-200 bg-white hover:bg-slate-50"}`}>
                 <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${sel ? "bg-[#1A56E8]" : "bg-slate-100"}`}>
@@ -4052,11 +4073,11 @@ function AssignActionModal({
 
       {/* Footer */}
       <div className="px-6 py-4 border-t border-slate-100 flex items-center justify-between">
-        <button onClick={() => step > 1 ? setStep((step - 1) as 1|2|3) : onClose()}
+        <button type="button" onClick={() => step > 1 ? setStep((step - 1) as 1|2|3) : onClose()}
           className="text-xs font-semibold text-slate-500 hover:text-slate-800 cursor-pointer transition-colors">
           {step === 1 ? "Cancel" : "← Back"}
         </button>
-        <button
+        <button type="button"
           disabled={
             (step === 1 && selectedMembers.length === 0) ||
             (step === 2 && !selectedAction) ||
@@ -4137,11 +4158,11 @@ function PromoteLeaderModal({
           <p className="text-left text-[11px] text-amber-700">{LEADER_PREVIEW_ONLY_COPY}</p>
         </div>
         <div className="flex gap-3 mt-2">
-          <button onClick={() => { onViewProfile(member.id); onClose(); }}
+          <button type="button" onClick={() => { onViewProfile(member.id); onClose(); }}
             className="px-4 py-2 border border-slate-200 text-slate-700 text-xs font-semibold rounded-lg cursor-pointer hover:bg-slate-50 transition-colors">
             View Profile
           </button>
-          <button onClick={onClose}
+          <button type="button" onClick={onClose}
             className="px-6 py-2 bg-[#1A56E8] text-white text-xs font-bold rounded-lg cursor-pointer hover:bg-blue-700 transition-colors">
             Done
           </button>
@@ -4181,7 +4202,7 @@ function PromoteLeaderModal({
               const sel = selectedMemberId === m.id;
               const level = PIPELINE_LEVELS.find(l => l.id === m.pipeline);
               return (
-                <button key={m.id} onClick={() => setSelectedMemberId(m.id)}
+                <button type="button" key={m.id} onClick={() => setSelectedMemberId(m.id)}
                   className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg border cursor-pointer transition-all text-left
                     ${sel ? "border-blue-400 bg-blue-50 ring-1 ring-blue-200" : "border-slate-200 bg-white hover:bg-slate-50"}`}>
                   <Avatar name={m.name} color={m.color} size={30}/>
@@ -4231,7 +4252,7 @@ function PromoteLeaderModal({
             {availableLevels.map(level => {
               const sel = newLevel === level.id;
               return (
-                <button key={level.id} onClick={() => setNewLevel(level.id)}
+                <button type="button" key={level.id} onClick={() => setNewLevel(level.id)}
                   className={`w-full flex items-start gap-3 px-4 py-3 rounded-xl border cursor-pointer text-left transition-all
                     ${sel ? "ring-1" : "border-slate-200 bg-white hover:bg-slate-50"}`}
                   style={sel ? { borderColor: level.color, background: level.color + "0f", outline: `1px solid ${level.color}` } : {}}>
@@ -4271,7 +4292,7 @@ function PromoteLeaderModal({
               {VALUES_CHECKS.map(v => {
                 const checked = valuesChecked.includes(v.id);
                 return (
-                  <button key={v.id} onClick={() => toggleValue(v.id)}
+                  <button type="button" key={v.id} onClick={() => toggleValue(v.id)}
                     className={`w-full flex items-start gap-3 p-3 rounded-lg border cursor-pointer text-left transition-all
                       ${checked ? "border-green-400 bg-green-50" : "border-slate-200 bg-white hover:bg-slate-50"}`}>
                     <div className={`w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 mt-0.5 transition-colors
@@ -4289,7 +4310,7 @@ function PromoteLeaderModal({
           </div>
 
           {needsInterview && (
-            <button onClick={() => setInterviewDone(p => !p)}
+            <button type="button" onClick={() => setInterviewDone(p => !p)}
               className={`w-full flex items-start gap-3 p-3 rounded-lg border cursor-pointer text-left transition-all
                 ${interviewDone ? "border-blue-400 bg-blue-50" : "border-amber-300 bg-amber-50"}`}>
               <div className={`w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 mt-0.5 transition-colors
@@ -4314,11 +4335,11 @@ function PromoteLeaderModal({
 
       {/* Footer */}
       <div className="px-6 py-4 border-t border-slate-100 flex items-center justify-between">
-        <button onClick={() => step > 1 ? setStep((step - 1) as 1|2|3) : onClose()}
+        <button type="button" onClick={() => step > 1 ? setStep((step - 1) as 1|2|3) : onClose()}
           className="text-xs font-semibold text-slate-500 hover:text-slate-800 cursor-pointer transition-colors">
           {step === 1 ? "Cancel" : "← Back"}
         </button>
-        <button
+        <button type="button"
           disabled={
             (step === 1 && !selectedMemberId) ||
             (step === 2 && (!newLevel || availableLevels.length === 0)) ||
@@ -4341,7 +4362,7 @@ function ModalShell({ children, onClose }: { children: React.ReactNode; onClose:
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(7,25,46,0.55)", backdropFilter: "blur(4px)" }}>
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg relative overflow-hidden" onClick={e => e.stopPropagation()}>
-        <button onClick={onClose} className="absolute top-4 right-4 w-7 h-7 flex items-center justify-center rounded-full hover:bg-slate-100 cursor-pointer text-slate-400 hover:text-slate-700 transition-colors z-10">
+        <button type="button" onClick={onClose} className="absolute top-4 right-4 w-7 h-7 flex items-center justify-center rounded-full hover:bg-slate-100 cursor-pointer text-slate-400 hover:text-slate-700 transition-colors z-10">
           <X size={14}/>
         </button>
         {children}
@@ -4456,7 +4477,7 @@ export function FigmaLeaderCommandCenter({
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{LABELS[screen]}</span>
           </div>
           <div className="flex items-center gap-2">
-            <button disabled title="Notifications are blocked in this preview" className="relative w-8 h-8 rounded-full hover:bg-white flex items-center justify-center cursor-not-allowed transition-colors border border-transparent hover:border-slate-200">
+            <button type="button" disabled title="Notifications are blocked in this preview" className="relative w-8 h-8 rounded-full hover:bg-white flex items-center justify-center cursor-not-allowed transition-colors border border-transparent hover:border-slate-200">
               <Bell size={14} className="text-slate-500"/>
               <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-red-500 rounded-full"/>
             </button>
