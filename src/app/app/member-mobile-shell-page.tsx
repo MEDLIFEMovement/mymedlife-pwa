@@ -97,7 +97,9 @@ export async function renderMemberMobileShellPage({
     : null;
   const profileReadback = getLaunchLaneMemberProfileReadback(actor, data);
   const memberContext = applyEventLoopPointsReadback(
-    buildMemberIdentityContext(actor, studentHome, recognition, data.chapter.campus),
+    buildMemberIdentityContext(actor, studentHome, recognition, data.chapter.campus, {
+      testPreview: data.source.mode === "mock",
+    }),
     pointsReadback,
     profileReadback,
   );

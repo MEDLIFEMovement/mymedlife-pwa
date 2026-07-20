@@ -1,10 +1,12 @@
 import type { LocalActorContext } from "@/services/local-actor-context";
 import {
   getLaunchLaneActorProfileId,
+  getLaunchLaneEventSnapshotById,
   getLaunchLaneEventSnapshots,
   hasLaunchLaneRecordedRsvp,
   sumLaunchLanePointsForEvent,
 } from "@/services/launch-lane-event-snapshots";
+import { resolveMemberEventRouteId } from "@/services/member-event-route-aliases";
 import {
   getMemberLaunchLaneLoopState,
   type MemberLaunchLaneLoopStage,
@@ -74,6 +76,19 @@ export function getMemberLaunchLaneEventRowById(
   return (
     getMemberLaunchLaneEventRows(actor, data).find((row) => row.id === eventId) ?? null
   );
+}
+
+export function getMemberLaunchLaneEventDetailData(
+  actor: LocalActorContext,
+  data: ReadOnlyAppData,
+  eventId: string,
+) {
+  const resolvedEventId = resolveMemberEventRouteId(data.chapterEventRows, eventId);
+
+  return {
+    event: getMemberLaunchLaneEventRowById(actor, data, resolvedEventId),
+    snapshot: getLaunchLaneEventSnapshotById(data, resolvedEventId),
+  };
 }
 
 function toMemberLaunchLaneEventRow(

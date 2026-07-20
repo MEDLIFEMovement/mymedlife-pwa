@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { getMockLocalActorContext } from "@/services/local-actor-context";
 import {
+  getMemberLaunchLaneEventDetailData,
   getMemberLaunchLaneEventRowById,
   getMemberLaunchLaneEventRows,
 } from "@/services/member-launch-lane-events";
@@ -120,6 +121,18 @@ describe("member launch lane events", () => {
 
     expect(row?.title).toBe("Rush Month kickoff social");
     expect(row?.rsvpDetail).toContain("Attendance is confirmed");
+  });
+
+  it("does not substitute TEST fixture data for an unknown event id", () => {
+    const actor = getMockLocalActorContext("member.a@mymedlife.test");
+    const data = getMockReadOnlyAppData("Testing missing event fail-closed behavior.");
+
+    expect(
+      getMemberLaunchLaneEventDetailData(actor, data, "missing-production-event"),
+    ).toEqual({
+      event: null,
+      snapshot: null,
+    });
   });
 
   it("closes member actions when the source event is completed", () => {

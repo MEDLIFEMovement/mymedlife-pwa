@@ -90,7 +90,10 @@ export function getStudentHomeWorkspace(
   const firstEvent = eventPlans[0];
 
   return {
-    greeting: `Hi, ${getVisibleMemberGreetingName(actor.user.displayName)}`,
+    greeting: `Hi, ${getVisibleMemberGreetingName(
+      actor.user.displayName,
+      data.source.mode === "mock",
+    )}`,
     chapterName: data.chapter.name,
     chapterMeta: `${actor.audienceLabel} • ${data.chapter.campus} • ${data.campaign.weekLabel}`,
     heroSummary:

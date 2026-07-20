@@ -158,7 +158,7 @@ describe("member event detail route", () => {
     ).rejects.toThrow("redirect:/app/events");
   });
 
-  it("falls back to TEST preview event data when the signed-in readback lacks the requested event id", async () => {
+  it("does not substitute TEST preview data when signed-in readback lacks the event", async () => {
     const actorModule = await import("@/services/local-actor-context");
     const dataModule = await import("@/services/read-only-app-data");
     const liveOnlyData = getMockReadOnlyAppData("Testing signed-in preview fallback.");
@@ -176,19 +176,18 @@ describe("member event detail route", () => {
       allPointsEventRows: [],
       kpiEventRows: [],
     });
+    vi.mocked(redirect).mockImplementation((href: string) => {
+      throw new Error(`redirect:${href}`);
+    });
 
     const { default: EventDetailPage } = await import("@/app/app/events/[eventId]/page");
-    const html = renderToStaticMarkup(
-      await EventDetailPage({
+
+    await expect(
+      EventDetailPage({
         params: Promise.resolve({ eventId: "chapter-event-ucla-kickoff" }),
         searchParams: Promise.resolve({ source: "home", step: "rsvp" }),
       }),
-    );
-
-    expect(html).toContain("Event completed");
-    expect(html).toContain("Member RSVP, cancellation, and check-in are closed");
-    expect(html).not.toContain("Record RSVP in myMEDLIFE");
-    expect(html).not.toContain("Go to Check-In");
+    ).rejects.toThrow("redirect:/app/events");
   });
 
   it("resolves the canonical TEST route to the signed-in chapter's live event", async () => {

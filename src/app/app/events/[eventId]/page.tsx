@@ -31,9 +31,9 @@ import {
 import { getLaunchLaneEventSnapshotById } from "@/services/launch-lane-event-snapshots";
 import {
   buildMemberLaunchLaneEventDetailHref,
+  getMemberLaunchLaneEventDetailData,
   getMemberLaunchLaneEventRowById,
 } from "@/services/member-launch-lane-events";
-import { resolveMemberEventRouteId } from "@/services/member-event-route-aliases";
 import {
   mapMemberEventLoopWriteResultMessage,
   memberEventLoopPointAward,
@@ -47,11 +47,7 @@ import {
   getVisibleMemberLeaderboardRows,
 } from "@/services/member-mobile-identity-context";
 import { getMvpMemberHome } from "@/services/mvp-event-tracking-workspace";
-import {
-  getMockReadOnlyAppData,
-  getReadOnlyAppData,
-  type ReadOnlyAppData,
-} from "@/services/read-only-app-data";
+import { getReadOnlyAppData } from "@/services/read-only-app-data";
 import { canAccessMemberWorkspace } from "@/services/role-visibility";
 import { getStaticRouteMetadata } from "@/services/static-route-metadata";
 import {
@@ -114,7 +110,7 @@ export default async function AppEventDetailPage({
     return <MemberOperationalDataUnavailable actor={actor} message={data.source.message} />;
   }
 
-  const resolvedEventData = getResolvedEventDetailData(actor, data, eventId);
+  const resolvedEventData = getMemberLaunchLaneEventDetailData(actor, data, eventId);
   const { event, snapshot } = resolvedEventData;
 
   if (!event || !snapshot) {
@@ -128,6 +124,7 @@ export default async function AppEventDetailPage({
     studentHome,
     recognition,
     data.chapter.campus,
+    { testPreview: data.source.mode === "mock" },
   );
   const step = getEventDetailStep(resolvedSearchParams.step);
   const repaintKey = buildRouteKey(`/app/events/${eventId}`, resolvedSearchParams);
@@ -280,32 +277,6 @@ function buildRouteKey(
 
   const query = searchParams.toString();
   return query ? `${pathname}?${query}` : pathname;
-}
-
-function getResolvedEventDetailData(
-  actor: Awaited<ReturnType<typeof getLocalActorContext>>,
-  data: ReadOnlyAppData,
-  eventId: string,
-) {
-  const resolvedEventId = resolveMemberEventRouteId(data.chapterEventRows, eventId);
-  const liveEvent = getMemberLaunchLaneEventRowById(actor, data, resolvedEventId);
-  const liveSnapshot = getLaunchLaneEventSnapshotById(data, resolvedEventId);
-
-  if (liveEvent && liveSnapshot) {
-    return {
-      event: liveEvent,
-      snapshot: liveSnapshot,
-    };
-  }
-
-  const mockData = getMockReadOnlyAppData(
-    "Falling back to TEST event preview data because the signed-in readback does not contain this event id.",
-  );
-
-  return {
-    event: getMemberLaunchLaneEventRowById(actor, mockData, eventId),
-    snapshot: getLaunchLaneEventSnapshotById(mockData, eventId),
-  };
 }
 
 function EventDetailView({
