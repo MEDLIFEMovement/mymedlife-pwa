@@ -1,6 +1,10 @@
 import { AppShell } from "@/components/app-shell";
 import { DataSourceNotice } from "@/components/data-source-notice";
-import { SltPrepSectionCard, SltPrepTonePill } from "@/components/slt-prep-primitives";
+import {
+  ensureVisibleTestLabel,
+  SltPrepSectionCard,
+  SltPrepTonePill,
+} from "@/components/slt-prep-primitives";
 import { SltPrepSubnav } from "@/components/slt-prep-subnav";
 import { RestrictedState } from "@/components/restricted-state";
 import {
@@ -77,7 +81,9 @@ export default async function SltPrepProfilePage({
                     <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
                       {label}
                     </p>
-                    <p className="mt-2 text-sm leading-6 text-slate-600">{value}</p>
+                    <p className="mt-2 text-sm leading-6 text-slate-600">
+                      {ensureVisibleTestLabel(value)}
+                    </p>
                   </div>
                 ))}
               </div>
@@ -93,8 +99,12 @@ export default async function SltPrepProfilePage({
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div>
                         <p className="text-sm font-semibold text-slate-950">{flight.label}</p>
-                        <p className="mt-1 text-sm text-slate-500">{flight.route}</p>
-                        <p className="mt-2 text-sm leading-6 text-slate-600">{flight.summary}</p>
+                        <p className="mt-1 text-sm text-slate-500">
+                          {ensureVisibleTestLabel(flight.route)}
+                        </p>
+                        <p className="mt-2 text-sm leading-6 text-slate-600">
+                          {ensureVisibleTestLabel(flight.summary)}
+                        </p>
                       </div>
                       <SltPrepTonePill
                         tone={
@@ -108,7 +118,9 @@ export default async function SltPrepProfilePage({
                         variant="light"
                       />
                     </div>
-                    <p className="mt-3 text-sm text-slate-500">{flight.timingLabel}</p>
+                    <p className="mt-3 text-sm text-slate-500">
+                      {ensureVisibleTestLabel(flight.timingLabel)}
+                    </p>
                   </article>
                 ))}
 

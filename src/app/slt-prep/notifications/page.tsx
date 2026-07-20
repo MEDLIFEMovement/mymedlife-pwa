@@ -1,6 +1,7 @@
 import { AppShell } from "@/components/app-shell";
 import { DataSourceNotice } from "@/components/data-source-notice";
 import {
+  ensureVisibleTestLabel,
   SltPrepSectionCard,
   SltPrepTonePill,
 } from "@/components/slt-prep-primitives";
@@ -72,11 +73,15 @@ export default async function SltPrepNotificationsPage({
                 >
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div className="min-w-0 flex-1">
-                      <h2 className="text-lg font-semibold text-slate-950">{item.title}</h2>
+                      <h2 className="text-lg font-semibold text-slate-950">
+                        {ensureVisibleTestLabel(item.title)}
+                      </h2>
                       <p className="mt-1 text-sm text-slate-500">
-                        {item.sentLabel} • {item.channelLabel}
+                        {ensureVisibleTestLabel(`${item.sentLabel} • ${item.channelLabel}`)}
                       </p>
-                      <p className="mt-2 text-sm leading-6 text-slate-600">{item.summary}</p>
+                      <p className="mt-2 text-sm leading-6 text-slate-600">
+                        {ensureVisibleTestLabel(item.summary)}
+                      </p>
                     </div>
                     <SltPrepTonePill
                       tone={item.tone === "urgent" ? "red" : item.tone === "watch" ? "yellow" : "green"}
