@@ -12,6 +12,7 @@ import { signOut } from "@/app/login/actions";
 import type { MvpMemberHome } from "@/services/mvp-event-tracking-workspace";
 import type { ProfileWorkspace } from "@/services/profile-workspace";
 import type { MemberRecognitionSummary } from "@/services/member-recognition";
+import { ensureVisibleTestLabel } from "@/services/member-mobile-identity-context";
 import { StatusPill, SurfacePanel } from "@/components/visual-primitives";
 import type { ReactNode } from "react";
 
@@ -547,10 +548,6 @@ function ProfileSettingRow({
       </div>
     </div>
   );
-}
-
-function ensureVisibleTestLabel(value: string) {
-  return /\bTEST\b/.test(value) ? value : `TEST ${value}`;
 }
 
 function getPreviewMemberId(chapterName: string) {

@@ -4,7 +4,8 @@ import type { MemberRecognitionSummary } from "@/services/member-recognition";
 import type { MvpMemberHome } from "@/services/mvp-event-tracking-workspace";
 
 export function ensureVisibleTestLabel(value: string) {
-  return /\bTEST\b/.test(value) ? value : `TEST ${value}`;
+  const normalized = value.trim().replace(/^(?:test\b[\s:.-]*)+/iu, "").trim();
+  return normalized ? `TEST ${normalized}` : "TEST";
 }
 
 export function getVisibleMemberGreetingName(displayName: string) {
@@ -14,8 +15,10 @@ export function getVisibleMemberGreetingName(displayName: string) {
     return "TEST Member";
   }
 
-  const labelStrippedName = trimmedDisplayName.replace(/^TEST\b\s*/u, "").trim();
-  const nameForGreeting = /^Test\b/u.test(labelStrippedName)
+  const labelStrippedName = trimmedDisplayName
+    .replace(/^(?:test\b[\s:.-]*)+/iu, "")
+    .trim();
+  const nameForGreeting = /^Test\b/u.test(trimmedDisplayName)
     ? labelStrippedName
     : getFirstName(labelStrippedName);
 
