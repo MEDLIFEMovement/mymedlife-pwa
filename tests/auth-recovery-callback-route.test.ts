@@ -34,6 +34,24 @@ describe("recovery auth callback route", () => {
     });
   });
 
+  it("bridges fragment-based recovery sessions through the browser", async () => {
+    const { GET } = await import(
+      "@/app/auth/callback/recovery/[continuation]/route"
+    );
+    const request = new NextRequest(
+      "https://www.mymedlife.org/auth/callback/recovery/L2FwcA",
+    );
+
+    const response = await GET(request, {
+      params: Promise.resolve({ continuation: "L2FwcA" }),
+    });
+
+    expect(response.headers.get("location")).toBe(
+      "https://www.mymedlife.org/auth/recovery/complete/L2FwcA",
+    );
+    expect(mockHandleAuthCallback).not.toHaveBeenCalled();
+  });
+
   it("rejects an encoded external continuation", async () => {
     mockHandleAuthCallback.mockResolvedValueOnce(new Response());
     const { GET } = await import(
