@@ -178,6 +178,94 @@ describe("Luma event read sync", () => {
     expect(lumaClient.readEvents).not.toHaveBeenCalled();
   });
 
+  it("requires an actor for manual work and replay lineage for replays", async () => {
+    await expect(runLumaEventSync(null, "backfill", { env: enabledEnv })).resolves.toMatchObject({
+      success: false,
+      code: "missing_auth",
+    });
+    await expect(runLumaEventSync("admin-1", "reconcile", {
+      env: enabledEnv,
+      triggerSource: "replay",
+    })).resolves.toMatchObject({ success: false, code: "server_error" });
+  });
+
+  it("updates an existing linked event without creating a duplicate", async () => {
+    const queries: FakeQuery[] = [];
+    const appClient = createFakeAppClient((query) => {
+      queries.push(query);
+      if (query.table === "staff_role_assignments") return ok([{ role_key: "super_admin" }]);
+      if (query.table === "chapters" && query.operation === "select") return ok([{ id: enabledEnv.MYMEDLIFE_LUMA_CHAPTER_ID }]);
+      if (query.table === "luma_sync_runs" && query.operation === "select") return ok([]);
+      if (query.table === "luma_sync_runs" && query.operation === "insert") return ok({ id: "run-update" });
+      if (query.table === "luma_event_links" && query.operation === "select") {
+        return ok([{ id: "link-existing", chapter_id: enabledEnv.MYMEDLIFE_LUMA_CHAPTER_ID, chapter_event_id: "event-existing" }]);
+      }
+      return ok([]);
+    });
+
+    const result = await runLumaEventSync("admin-1", "reconcile", {
+      env: enabledEnv,
+      appClient: appClient as never,
+      lumaClient: { readEvents: async () => [mappedLumaEvent()] },
+      now: () => new Date("2026-07-20T03:00:00.000Z"),
+    });
+
+    expect(result).toMatchObject({
+      success: true,
+      code: "luma_sync_succeeded",
+      counts: { materializedEvents: 0, updatedEvents: 1 },
+    });
+    expect(queries.some((query) => query.table === "chapter_events" && query.operation === "insert")).toBe(false);
+    expect(queries).toEqual(expect.arrayContaining([
+      expect.objectContaining({ table: "chapter_events", operation: "update" }),
+      expect.objectContaining({ table: "luma_event_links", operation: "update" }),
+    ]));
+  });
+
+  it("records provider failures and cross-chapter link conflicts without provider writes", async () => {
+    const failureQueries: FakeQuery[] = [];
+    const failingClient = createFakeAppClient((query) => {
+      failureQueries.push(query);
+      if (query.table === "staff_role_assignments") return ok([{ role_key: "ds_admin" }]);
+      if (query.table === "chapters" && query.operation === "select") return ok([{ id: enabledEnv.MYMEDLIFE_LUMA_CHAPTER_ID }]);
+      if (query.table === "luma_sync_runs" && query.operation === "select") return ok([]);
+      if (query.table === "luma_sync_runs" && query.operation === "insert") return ok({ id: "run-failed" });
+      return ok([]);
+    });
+    const failedResult = await runLumaEventSync("admin-1", "backfill", {
+      env: enabledEnv,
+      appClient: failingClient as never,
+      lumaClient: { readEvents: async () => { throw new Error("provider unavailable"); } },
+      now: () => new Date("2026-07-20T04:00:00.000Z"),
+    });
+    expect(failedResult).toMatchObject({ success: false, code: "server_error", runId: "run-failed" });
+    expect(failureQueries).toEqual(expect.arrayContaining([
+      expect.objectContaining({ table: "luma_sync_failures", operation: "insert" }),
+    ]));
+
+    const conflictClient = createFakeAppClient((query) => {
+      if (query.table === "staff_role_assignments") return ok([{ role_key: "ds_admin" }]);
+      if (query.table === "chapters" && query.operation === "select") return ok([{ id: enabledEnv.MYMEDLIFE_LUMA_CHAPTER_ID }]);
+      if (query.table === "luma_sync_runs" && query.operation === "select") return ok([]);
+      if (query.table === "luma_sync_runs" && query.operation === "insert") return ok({ id: "run-conflict" });
+      if (query.table === "luma_event_links" && query.operation === "select") {
+        return ok([{ id: "link-other", chapter_id: "chapter-other", chapter_event_id: "event-other" }]);
+      }
+      return ok([]);
+    });
+    const conflictResult = await runLumaEventSync("admin-1", "backfill", {
+      env: enabledEnv,
+      appClient: conflictClient as never,
+      lumaClient: { readEvents: async () => [mappedLumaEvent()] },
+      now: () => new Date("2026-07-20T05:00:00.000Z"),
+    });
+    expect(conflictResult).toMatchObject({
+      success: true,
+      code: "luma_sync_partial",
+      counts: { conflicts: 1, materializedEvents: 0 },
+    });
+  });
+
   it("keeps mappings, snapshots, locks, failures, and admin-only RLS in the migration", () => {
     const sql = readFileSync(
       join(process.cwd(), "supabase/migrations/20260720014500_luma_event_ingestion_foundation.sql"),
