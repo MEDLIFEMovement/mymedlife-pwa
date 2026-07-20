@@ -71,6 +71,7 @@ export type LaunchLaneMemberHistoryItem = {
 export type LaunchLaneMemberProfileReadback = {
   usesLiveLedger: boolean;
   totalPoints: number;
+  weeklyPoints: number;
   attendedEventCount: number;
   completedActionCount: number;
   recentActivity: Array<{
@@ -240,6 +241,7 @@ export function getLaunchLaneMemberPointsReadback(
 export function getLaunchLaneMemberProfileReadback(
   actor: LocalActorContext,
   data: ReadOnlyAppData,
+  now = new Date(),
 ): LaunchLaneMemberProfileReadback {
   const profileId = findLaunchLaneProfileIdByEmail(data.profiles, actor.user.email);
 
@@ -247,6 +249,7 @@ export function getLaunchLaneMemberProfileReadback(
     return {
       usesLiveLedger: data.source.mode === "supabase",
       totalPoints: 0,
+      weeklyPoints: 0,
       attendedEventCount: 0,
       completedActionCount: 0,
       recentActivity: [],
@@ -264,10 +267,21 @@ export function getLaunchLaneMemberProfileReadback(
       .map((row) => row.chapter_event_id)
       .filter((eventId): eventId is string => Boolean(eventId)),
   );
+  const weekStart = getUtcWeekStart(now);
+  const weeklyPoints = memberRows.reduce((total, row) => {
+    const createdAt = new Date(row.created_at);
+
+    if (Number.isNaN(createdAt.getTime()) || createdAt < weekStart || createdAt > now) {
+      return total;
+    }
+
+    return total + row.points_delta;
+  }, 0);
 
   return {
     usesLiveLedger: data.source.mode === "supabase",
     totalPoints: memberRows.reduce((total, row) => total + row.points_delta, 0),
+    weeklyPoints,
     attendedEventCount: attendedEventIds.size,
     completedActionCount: memberRows.length,
     recentActivity: memberRows.slice(0, 5).map((row) => {
@@ -288,6 +302,16 @@ export function getLaunchLaneMemberProfileReadback(
       };
     }),
   };
+}
+
+function getUtcWeekStart(now: Date) {
+  const weekStart = new Date(now);
+  const daysSinceMonday = (weekStart.getUTCDay() + 6) % 7;
+
+  weekStart.setUTCDate(weekStart.getUTCDate() - daysSinceMonday);
+  weekStart.setUTCHours(0, 0, 0, 0);
+
+  return weekStart;
 }
 
 export function getLaunchLaneOrgPointsReadback(
