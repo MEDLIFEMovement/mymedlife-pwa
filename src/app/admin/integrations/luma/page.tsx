@@ -8,17 +8,23 @@ import {
   type AdminLumaStatusCheck,
   type AdminLumaTestStatus,
 } from "@/services/admin-luma-integration-status";
+import { getAdminLumaSyncWorkspace } from "@/services/admin-luma-sync-workspace";
 import { getLocalActorContext } from "@/services/local-actor-context";
 import { getReadOnlyAppData } from "@/services/read-only-app-data";
 import { getStaticRouteMetadata } from "@/services/static-route-metadata";
+import {
+  submitLumaEventSyncAction,
+  submitLumaReplayAction,
+} from "@/app/admin/integrations/luma/actions";
 
 export const metadata = getStaticRouteMetadata("adminIntegrationProvider");
 export const dynamic = "force-dynamic";
 
 export default async function AdminLumaIntegrationPage() {
-  const [actor, data] = await Promise.all([
+  const [actor, data, syncWorkspace] = await Promise.all([
     getLocalActorContext(),
     getReadOnlyAppData(),
+    getAdminLumaSyncWorkspace(),
   ]);
   const workspace = getAdminLumaIntegrationStatus(actor, data);
 
@@ -81,6 +87,109 @@ export default async function AdminLumaIntegrationPage() {
               label="Live sends"
               value={`${workspace.counts.liveSendRows}`}
             />
+          </section>
+
+          <section className="border-y border-white/10 py-6">
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-blue-100/80">
+                  Server-only event ingestion
+                </p>
+                <h2 className="mt-2 text-2xl font-semibold text-white">
+                  Luma event reconciliation
+                </h2>
+                <p className="mt-2 max-w-3xl text-sm leading-6 text-white/62">
+                  {syncWorkspace.message}
+                </p>
+              </div>
+              <span className="text-sm font-semibold text-white/70">
+                Provider writes: disabled
+              </span>
+            </div>
+
+            <dl className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+              <Detail label="Calendar maps" value={`${syncWorkspace.counts.calendars}`} />
+              <Detail label="Imported events" value={`${syncWorkspace.counts.importedEvents}`} />
+              <Detail label="Materialized" value={`${syncWorkspace.counts.materializedEvents}`} />
+              <Detail label="Conflicts" value={`${syncWorkspace.counts.conflicts}`} />
+              <Detail label="Open failures" value={`${syncWorkspace.counts.openFailures}`} />
+            </dl>
+
+            <div className="mt-5 grid gap-5 lg:grid-cols-[0.85fr_1.15fr]">
+              <div className="border-l-2 border-blue-300/30 pl-4">
+                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/42">
+                  Latest run
+                </p>
+                {syncWorkspace.lastRun ? (
+                  <div className="mt-2 space-y-1 text-sm text-white/70">
+                    <p className="font-semibold text-white">
+                      {syncWorkspace.lastRun.status} · {syncWorkspace.lastRun.mode} · {syncWorkspace.lastRun.triggerSource}
+                    </p>
+                    <p>Started {syncWorkspace.lastRun.startedAt}</p>
+                    <p>Heartbeat {syncWorkspace.lastRun.heartbeatAt}</p>
+                    <p>
+                      {syncWorkspace.lastRun.sourceEvents} source · {syncWorkspace.lastRun.materializedEvents} new · {syncWorkspace.lastRun.updatedEvents} updated
+                    </p>
+                  </div>
+                ) : (
+                  <p className="mt-2 text-sm text-white/58">No Luma sync run has completed yet.</p>
+                )}
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <LumaSyncForm
+                  mode="backfill"
+                  confirmation="BACKFILL LUMA"
+                  label="Initial event backfill"
+                  disabled={!syncWorkspace.config.enabled}
+                />
+                <LumaSyncForm
+                  mode="reconcile"
+                  confirmation="SYNC LUMA"
+                  label="Reconcile event window"
+                  disabled={!syncWorkspace.config.enabled}
+                />
+              </div>
+            </div>
+
+            <div className="mt-6">
+              <h3 className="text-sm font-semibold text-white">Open sync failures</h3>
+              {syncWorkspace.failures.length === 0 ? (
+                <p className="mt-2 text-sm text-white/58">No unresolved Luma sync failures.</p>
+              ) : (
+                <div className="mt-3 grid gap-3">
+                  {syncWorkspace.failures.map((failure) => (
+                    <div key={failure.id} className="border-l-2 border-rose-300/30 pl-4">
+                      <p className="text-sm font-semibold text-white">
+                        {failure.code} · {failure.objectType}
+                      </p>
+                      <p className="mt-1 text-sm text-white/62">{failure.message}</p>
+                      {syncWorkspace.lastRun ? (
+                        <form action={submitLumaReplayAction} className="mt-3 flex flex-wrap items-end gap-2">
+                          <input type="hidden" name="retryOfRunId" value={syncWorkspace.lastRun.id} />
+                          <input type="hidden" name="mode" value={syncWorkspace.lastRun.mode} />
+                          <label className="text-xs font-semibold text-white/56">
+                            Type REPLAY LUMA
+                            <input
+                              name="confirmation"
+                              className="mt-1 block rounded border border-white/15 bg-black/20 px-3 py-2 text-sm text-white"
+                              disabled={!syncWorkspace.config.enabled}
+                            />
+                          </label>
+                          <button
+                            type="submit"
+                            disabled={!syncWorkspace.config.enabled}
+                            className="rounded bg-blue-300 px-3 py-2 text-sm font-semibold text-[#061a33] disabled:cursor-not-allowed disabled:opacity-40"
+                          >
+                            Replay safely
+                          </button>
+                        </form>
+                      ) : null}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </section>
 
           <section className="grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
@@ -200,6 +309,43 @@ function Detail({ label, value }: { label: string; value: string }) {
       </dt>
       <dd className="mt-1 text-sm font-semibold text-white">{value}</dd>
     </div>
+  );
+}
+
+function LumaSyncForm({
+  mode,
+  confirmation,
+  label,
+  disabled,
+}: {
+  mode: "backfill" | "reconcile";
+  confirmation: string;
+  label: string;
+  disabled: boolean;
+}) {
+  return (
+    <form action={submitLumaEventSyncAction} className="border-l-2 border-white/15 pl-4">
+      <input type="hidden" name="mode" value={mode} />
+      <p className="text-sm font-semibold text-white">{label}</p>
+      <p className="mt-1 text-xs leading-5 text-white/52">
+        Reads Luma and writes app-owned event/link rows only. No provider mutation runs.
+      </p>
+      <label className="mt-3 block text-xs font-semibold text-white/56">
+        Type {confirmation}
+        <input
+          name="confirmation"
+          disabled={disabled}
+          className="mt-1 block w-full rounded border border-white/15 bg-black/20 px-3 py-2 text-sm text-white disabled:cursor-not-allowed disabled:opacity-40"
+        />
+      </label>
+      <button
+        type="submit"
+        disabled={disabled}
+        className="mt-3 rounded bg-blue-300 px-3 py-2 text-sm font-semibold text-[#061a33] disabled:cursor-not-allowed disabled:opacity-40"
+      >
+        Run {mode}
+      </button>
+    </form>
   );
 }
 

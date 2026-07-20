@@ -71,6 +71,18 @@ associations for active chapters are authoritative for approved general-member
 memberships; every materialization must retain source IDs and write an audit-log
 entry tied to the initiating DS Admin or Super Admin.
 
+The server-only Luma source sync may read events from one explicitly mapped,
+calendar-scoped pilot and materialize app-owned chapter-event and provider-link
+records in Supabase when all dedicated Luma sync flags are enabled. This
+exception, including an hourly fail-closed reconciliation trigger, was
+explicitly authorized by the product owner on 2026-07-19 as part of the
+launch-critical event-loop repair. It does not permit Luma event mutations,
+guest mutations, RSVP/check-in writes to Luma, reminders, client-side provider
+credentials, or ungated app writes. The mapped Luma calendar is the approved
+publication boundary for imported provider events; every materialization must
+retain the source event ID and snapshot and write an audit-log entry tied to the
+initiating admin or scheduled sync run.
+
 When in doubt about whether something is a gate change, treat it as MUST BLOCK
 and escalate. Escalating is cheap; an unsafe merge is not.
 
