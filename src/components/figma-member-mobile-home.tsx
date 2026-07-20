@@ -818,7 +818,7 @@ function CampaignPage({
 
 function ActionDetail({ navigate }: { navigate: (s: Screen) => void }) {
   return (
-    <div className="pb-32">
+    <div className="pb-48">
       <TopBar title="Action Detail" onBack={() => navigate("campaign")} />
 
       <div className="px-4 pt-5 space-y-5">
@@ -914,7 +914,7 @@ function ActionDetail({ navigate }: { navigate: (s: Screen) => void }) {
       </div>
 
       {/* Fixed bottom CTA */}
-      <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] bg-card border-t border-border px-4 py-4 z-40">
+      <div className="fixed left-1/2 z-40 w-full max-w-[430px] -translate-x-1/2 border-t border-border bg-card px-4 py-4" style={{ bottom: "calc(61px + env(safe-area-inset-bottom))" }}>
         <PrimaryBtn label="Submit evidence" onClick={() => navigate("evidence")} full icon={<Upload size={16} />} />
       </div>
     </div>
@@ -930,7 +930,7 @@ function EvidenceSubmission({ navigate }: { navigate: (s: Screen) => void }) {
   const [agreed, setAgreed] = useState(false);
 
   return (
-    <div className="pb-32">
+    <div className="pb-48">
       <TopBar title="Submit Evidence" onBack={() => navigate("action")} />
 
       <div className="px-4 pt-5 space-y-5">
@@ -1049,7 +1049,7 @@ function EvidenceSubmission({ navigate }: { navigate: (s: Screen) => void }) {
       </div>
 
       {/* Fixed CTA */}
-      <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] bg-card border-t border-border px-4 py-4 z-40">
+      <div className="fixed left-1/2 z-40 w-full max-w-[430px] -translate-x-1/2 border-t border-border bg-card px-4 py-4" style={{ bottom: "calc(61px + env(safe-area-inset-bottom))" }}>
         <PrimaryBtn
           label="Preview only - submission blocked"
           full
