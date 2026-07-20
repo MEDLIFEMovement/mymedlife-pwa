@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(9);
+select plan(10);
 
 set local role service_role;
 
@@ -89,7 +89,7 @@ select ok(
 
 select is(
   (select count(*)::integer from app.events
-   where evidence_item_id = '60000000-0000-4000-8000-000000000001'
+   where payload ->> 'evidenceItemId' = '60000000-0000-4000-8000-000000000001'
      and event_type in ('story_liked', 'story_unliked')),
   4,
   'Every reaction transition remains present in the append-only event ledger'

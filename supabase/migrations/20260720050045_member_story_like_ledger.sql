@@ -49,7 +49,7 @@ begin
   select *
   into latest_intent
   from app.events
-  where evidence_item_id = evidence_item_uuid
+  where payload ->> 'evidenceItemId' = evidence_item_uuid::text
     and actor_user_id = actor_uuid
     and event_type in (story_liked, story_unliked)
   order by occurred_at desc, created_at desc, id desc
@@ -66,22 +66,25 @@ begin
     actor_user_id,
     chapter_id,
     chapter_event_id,
-    evidence_item_id,
     payload,
-    correlation_id
+    correlation_id,
+    occurred_at,
+    created_at
   ) values (
     next_event_type,
     actor_uuid,
     target_evidence.chapter_id,
     target_evidence.chapter_event_id,
-    target_evidence.id,
     jsonb_build_object(
+      'evidenceItemId', target_evidence.id,
       'source', 'member_story_reaction',
       'operation', next_event_type,
       'previousIntentEventId', latest_intent.id,
       'liveExternalWrite', false
     ),
-    'member_story_reaction:' || target_evidence.id::text || ':' || actor_uuid::text
+    'member_story_reaction:' || target_evidence.id::text || ':' || actor_uuid::text,
+    clock_timestamp(),
+    clock_timestamp()
   );
 
   with latest_story_intents as (
@@ -89,7 +92,7 @@ begin
       event.actor_user_id,
       event.event_type
     from app.events event
-    where event.evidence_item_id = target_evidence.id
+    where event.payload ->> 'evidenceItemId' = target_evidence.id::text
       and event.actor_user_id is not null
       and event.event_type in (story_liked, story_unliked)
     order by
@@ -129,17 +132,17 @@ as $$
       and evidence.sharing_status = 'approved_for_sharing'
   ),
   latest_story_intents as (
-    select distinct on (event.evidence_item_id, event.actor_user_id)
-      event.evidence_item_id,
+    select distinct on ((event.payload ->> 'evidenceItemId'), event.actor_user_id)
+      (event.payload ->> 'evidenceItemId')::uuid as evidence_item_id,
       event.actor_user_id,
       event.event_type
     from app.events event
     inner join approved_stories story
-      on story.id = event.evidence_item_id
+      on story.id::text = event.payload ->> 'evidenceItemId'
     where event.actor_user_id is not null
       and event.event_type in ('story_liked', 'story_unliked')
     order by
-      event.evidence_item_id,
+      (event.payload ->> 'evidenceItemId'),
       event.actor_user_id,
       event.occurred_at desc,
       event.created_at desc,
