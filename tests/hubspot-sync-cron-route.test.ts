@@ -8,7 +8,7 @@ vi.mock("@/services/hubspot-read-sync", () => ({
   runHubSpotReadSync: mocks.runHubSpotReadSync,
 }));
 
-import { GET, HUBSPOT_BACKFILL_CRON_SCHEDULE } from "@/app/api/cron/hubspot-sync/route";
+import { GET } from "@/app/api/cron/hubspot-sync/route";
 
 describe("HubSpot scheduled sync route", () => {
   beforeEach(() => {
@@ -54,7 +54,7 @@ describe("HubSpot scheduled sync route", () => {
     const response = await GET(new Request("https://mymedlife.org/api/cron/hubspot-sync", {
       headers: {
         authorization: "Bearer cron-secret",
-        "x-vercel-cron-schedule": HUBSPOT_BACKFILL_CRON_SCHEDULE,
+        "x-vercel-cron-schedule": "43 3 * * *",
       },
     }));
 

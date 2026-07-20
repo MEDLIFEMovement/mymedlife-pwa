@@ -7,7 +7,7 @@ import { runHubSpotReadSync } from "@/services/hubspot-read-sync";
 export const dynamic = "force-dynamic";
 export const maxDuration = 300;
 
-export const HUBSPOT_BACKFILL_CRON_SCHEDULE = "43 3 * * *";
+const HUBSPOT_BACKFILL_CRON_SCHEDULE = "43 3 * * *";
 
 export async function GET(request: Request) {
   const secret = process.env.CRON_SECRET;
