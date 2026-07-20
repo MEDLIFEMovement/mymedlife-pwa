@@ -1,6 +1,7 @@
 import { AppShell } from "@/components/app-shell";
 import { DataSourceNotice } from "@/components/data-source-notice";
 import {
+  ensureVisibleTestLabel,
   SltPrepMiniStat,
   SltPrepSectionCard,
   SltPrepTonePill,
@@ -86,14 +87,18 @@ export default async function SltPrepFormsPage({
                 >
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div className="min-w-0 flex-1">
-                      <h2 className="text-lg font-semibold text-slate-950">{item.title}</h2>
-                      <p className="mt-2 text-sm leading-6 text-slate-600">{item.summary}</p>
+                      <h2 className="text-lg font-semibold text-slate-950">
+                        {ensureVisibleTestLabel(item.title)}
+                      </h2>
+                      <p className="mt-2 text-sm leading-6 text-slate-600">
+                        {ensureVisibleTestLabel(item.summary)}
+                      </p>
                       <div className="mt-3 flex flex-wrap gap-2 text-xs text-slate-500">
                         <span className="rounded-full border border-slate-200 bg-white px-3 py-1">
-                          {item.dueLabel}
+                          {ensureVisibleTestLabel(item.dueLabel)}
                         </span>
                         <span className="rounded-full border border-slate-200 bg-white px-3 py-1">
-                          {item.sourceLabel}
+                          {ensureVisibleTestLabel(item.sourceLabel)}
                         </span>
                       </div>
                     </div>

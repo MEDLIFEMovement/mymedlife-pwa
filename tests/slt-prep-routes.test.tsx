@@ -345,6 +345,69 @@ describe("SLT Prep routes", () => {
     },
   );
 
+  it.each([
+    [
+      "/slt-prep/forms",
+      () => import("@/app/slt-prep/forms/page"),
+      "TEST Medical clearance",
+      "Required Forms",
+    ],
+    [
+      "/slt-prep/payments",
+      () => import("@/app/slt-prep/payments/page"),
+      "TEST Trip deposit",
+      "Payment Status",
+    ],
+    [
+      "/slt-prep/meetings",
+      () => import("@/app/slt-prep/meetings/page"),
+      "TEST Final traveler orientation",
+      "Pre-Trip Meetings",
+    ],
+    [
+      "/slt-prep/extensions",
+      () => import("@/app/slt-prep/extensions/page"),
+      "TEST Cusco weekend tour",
+      "Extensions &amp; Tours",
+    ],
+    [
+      "/slt-prep/timeline",
+      () => import("@/app/slt-prep/timeline/page"),
+      "TEST Traveler packet nearly ready",
+      "Trip Timeline",
+    ],
+    [
+      "/slt-prep/notifications",
+      () => import("@/app/slt-prep/notifications/page"),
+      "TEST You are on track for departure",
+      "Notifications",
+    ],
+    [
+      "/slt-prep/profile",
+      () => import("@/app/slt-prep/profile/page"),
+      "TEST Anita Patel",
+      "Traveler Profile",
+    ],
+  ])(
+    "labels seeded child-page data without relabeling the %s module",
+    async (pathname, importer, expectedTestData, expectedModuleLabel) => {
+      mockPathname = pathname;
+      await primeSignedInActor("super.admin@mymedlife.test");
+
+      const routeModule = await importer();
+      const html = renderToStaticMarkup(
+        await routeModule.default({
+          searchParams: Promise.resolve({ traveler: "aria-patel" }),
+        }),
+      );
+
+      expect(html).toContain(expectedTestData);
+      expect(html).toContain(expectedModuleLabel);
+      expect(html).not.toContain(`TEST ${expectedModuleLabel}`);
+      expect(html).toContain("traveler=aria-patel");
+    },
+  );
+
   it("keeps seeded staff traveler identities and summaries visibly TEST-labeled", async () => {
     mockPathname = "/slt-prep/staff";
     await primeSignedInActor("coach@mymedlife.test");

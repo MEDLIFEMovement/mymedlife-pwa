@@ -1,6 +1,10 @@
 import { AppShell } from "@/components/app-shell";
 import { DataSourceNotice } from "@/components/data-source-notice";
-import { SltPrepSectionCard, SltPrepTonePill } from "@/components/slt-prep-primitives";
+import {
+  ensureVisibleTestLabel,
+  SltPrepSectionCard,
+  SltPrepTonePill,
+} from "@/components/slt-prep-primitives";
 import { SltPrepSubnav } from "@/components/slt-prep-subnav";
 import { RestrictedState } from "@/components/restricted-state";
 import {
@@ -73,9 +77,15 @@ export default async function SltPrepTimelinePage({
                   <div className="flex-1 rounded-[1.35rem] border border-slate-200 bg-slate-50 px-4 py-4">
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div>
-                        <p className="text-base font-semibold text-slate-950">{item.label}</p>
-                        <p className="mt-1 text-sm text-slate-500">{item.dateLabel}</p>
-                        <p className="mt-2 text-sm leading-6 text-slate-600">{item.summary}</p>
+                        <p className="text-base font-semibold text-slate-950">
+                          {ensureVisibleTestLabel(item.label)}
+                        </p>
+                        <p className="mt-1 text-sm text-slate-500">
+                          {ensureVisibleTestLabel(item.dateLabel)}
+                        </p>
+                        <p className="mt-2 text-sm leading-6 text-slate-600">
+                          {ensureVisibleTestLabel(item.summary)}
+                        </p>
                       </div>
                       <SltPrepTonePill
                         tone={

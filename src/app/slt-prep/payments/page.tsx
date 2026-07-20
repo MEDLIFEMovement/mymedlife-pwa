@@ -1,6 +1,7 @@
 import { AppShell } from "@/components/app-shell";
 import { DataSourceNotice } from "@/components/data-source-notice";
 import {
+  ensureVisibleTestLabel,
   SltPrepMiniStat,
   SltPrepSectionCard,
   SltPrepTonePill,
@@ -57,14 +58,16 @@ export default async function SltPrepPaymentsPage({
                   <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
                     Total trip cost
                   </p>
-                  <p className="mt-1 text-4xl font-black text-slate-950">$2,000</p>
-                  <p className="mt-1 text-sm text-slate-500">{workspace.traveler.tripLabel}</p>
+                  <p className="mt-1 text-4xl font-black text-slate-950">TEST $2,000</p>
+                  <p className="mt-1 text-sm text-slate-500">
+                    {ensureVisibleTestLabel(workspace.traveler.tripLabel)}
+                  </p>
                 </div>
                 <div className="text-right">
                   <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
                     Remaining
                   </p>
-                  <p className="mt-1 text-3xl font-black text-rose-600">$1,500</p>
+                  <p className="mt-1 text-3xl font-black text-rose-600">TEST $1,500</p>
                   <p className="mt-1 text-sm text-rose-500">Preview-only payment posture</p>
                 </div>
               </div>
@@ -102,15 +105,21 @@ export default async function SltPrepPaymentsPage({
                 >
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div className="min-w-0 flex-1">
-                      <h2 className="text-lg font-semibold text-slate-950">{item.title}</h2>
-                      <p className="mt-1 text-sm font-semibold text-slate-600">{item.amountLabel}</p>
-                      <p className="mt-2 text-sm leading-6 text-slate-600">{item.summary}</p>
+                      <h2 className="text-lg font-semibold text-slate-950">
+                        {ensureVisibleTestLabel(item.title)}
+                      </h2>
+                      <p className="mt-1 text-sm font-semibold text-slate-600">
+                        {ensureVisibleTestLabel(item.amountLabel)}
+                      </p>
+                      <p className="mt-2 text-sm leading-6 text-slate-600">
+                        {ensureVisibleTestLabel(item.summary)}
+                      </p>
                       <div className="mt-3 flex flex-wrap gap-2 text-xs text-slate-500">
                         <span className="rounded-full border border-slate-200 bg-white px-3 py-1">
-                          {item.dueLabel}
+                          {ensureVisibleTestLabel(item.dueLabel)}
                         </span>
                         <span className="rounded-full border border-slate-200 bg-white px-3 py-1">
-                          {item.sourceLabel}
+                          {ensureVisibleTestLabel(item.sourceLabel)}
                         </span>
                       </div>
                     </div>
