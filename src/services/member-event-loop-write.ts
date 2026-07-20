@@ -144,6 +144,15 @@ type AtomicMemberEventLoopRow = {
   attendance_count: number;
 };
 
+type MemberEventWriteContext =
+  | {
+      success: true;
+      profile: ProfileRow;
+      event: ChapterEventRow;
+      campaign: CampaignRow | null;
+    }
+  | { success: false; result: MemberEventLoopWriteResult };
+
 const testEventRouteAliases = new Map([
   [
     "chapter-event-ucla-kickoff",
@@ -215,57 +224,9 @@ export async function recordMemberEventLoopStep(
   input: RecordMemberEventLoopInput,
 ): Promise<MemberEventLoopWriteResult> {
   try {
-    const profile = await resolveActorProfile(client, input.actorUserId, input.actorEmail);
-
-    if (!profile || profile.status !== "active") {
-      return failure(
-        "profile_not_found",
-        input.routeEventId,
-        "The signed-in user does not have an active myMEDLIFE profile, so no RSVP, attendance, or points rows were recorded.",
-      );
-    }
-
-    const membership = await resolveActorMembership(client, profile.id);
-
-    if (!membership) {
-      return failure(
-        "membership_required",
-        input.routeEventId,
-        "The signed-in user needs an approved chapter membership before RSVP, attendance, or points can be recorded.",
-      );
-    }
-
-    const campaign = await resolveActiveCampaign(client, membership.chapter_id);
-    const event = await resolveOrCreateEvent(client, {
-      routeEventId: input.routeEventId,
-      profileId: profile.id,
-      chapterId: membership.chapter_id,
-      campaignId: campaign?.id ?? null,
-    });
-
-    if (!event) {
-      return failure(
-        "event_not_found",
-        input.routeEventId,
-        "The event could not be found or safely materialized, so no event-loop write ran.",
-      );
-    }
-
-    if (event.chapter_id !== membership.chapter_id) {
-      return failure(
-        "permission_denied",
-        input.routeEventId,
-        "The signed-in member cannot write RSVP, attendance, or points rows for a different chapter.",
-      );
-    }
-
-    if (isMemberEventClosedStatus(event.status)) {
-      return failure(
-        "event_closed",
-        input.routeEventId,
-        "This event is completed or canceled, so member RSVP, cancellation, check-in, attendance, and points writes are closed.",
-      );
-    }
+    const context = await resolveMemberEventWriteContext(client, input);
+    if (!context.success) return context.result;
+    const { profile, event, campaign } = context;
 
     if (input.operation === "cancel_rsvp") {
       return cancelRsvp(client, {
@@ -317,57 +278,9 @@ export async function recordMemberEventLoopStepAtomically(
   input: RecordMemberEventLoopInput,
 ): Promise<MemberEventLoopWriteResult> {
   try {
-    const profile = await resolveActorProfile(client, input.actorUserId, input.actorEmail);
-
-    if (!profile || profile.status !== "active") {
-      return failure(
-        "profile_not_found",
-        input.routeEventId,
-        "The signed-in user does not have an active myMEDLIFE profile, so no RSVP, attendance, or points rows were recorded.",
-      );
-    }
-
-    const membership = await resolveActorMembership(client, profile.id);
-
-    if (!membership) {
-      return failure(
-        "membership_required",
-        input.routeEventId,
-        "The signed-in user needs an approved chapter membership before RSVP, attendance, or points can be recorded.",
-      );
-    }
-
-    const campaign = await resolveActiveCampaign(client, membership.chapter_id);
-    const event = await resolveOrCreateEvent(client, {
-      routeEventId: input.routeEventId,
-      profileId: profile.id,
-      chapterId: membership.chapter_id,
-      campaignId: campaign?.id ?? null,
-    });
-
-    if (!event) {
-      return failure(
-        "event_not_found",
-        input.routeEventId,
-        "The event could not be found or safely materialized, so no event-loop write ran.",
-      );
-    }
-
-    if (event.chapter_id !== membership.chapter_id) {
-      return failure(
-        "permission_denied",
-        input.routeEventId,
-        "The signed-in member cannot write RSVP, attendance, or points rows for a different chapter.",
-      );
-    }
-
-    if (isMemberEventClosedStatus(event.status)) {
-      return failure(
-        "event_closed",
-        input.routeEventId,
-        "This event is completed or canceled, so member RSVP, cancellation, check-in, attendance, and points writes are closed.",
-      );
-    }
+    const context = await resolveMemberEventWriteContext(client, input);
+    if (!context.success) return context.result;
+    const { profile, event } = context;
 
     const response = await client.schema("app").rpc("record_member_event_loop_step", {
       actor_uuid: profile.id,
@@ -509,6 +422,80 @@ export function mapMemberEventLoopWriteResultMessage(
     default:
       return null;
   }
+}
+
+async function resolveMemberEventWriteContext(
+  client: SupabaseServiceClient,
+  input: RecordMemberEventLoopInput,
+): Promise<MemberEventWriteContext> {
+  const profile = await resolveActorProfile(client, input.actorUserId, input.actorEmail);
+
+  if (profile?.status !== "active") {
+    return {
+      success: false,
+      result: failure(
+        "profile_not_found",
+        input.routeEventId,
+        "The signed-in user does not have an active myMEDLIFE profile, so no RSVP, attendance, or points rows were recorded.",
+      ),
+    };
+  }
+
+  const membership = await resolveActorMembership(client, profile.id);
+
+  if (!membership) {
+    return {
+      success: false,
+      result: failure(
+        "membership_required",
+        input.routeEventId,
+        "The signed-in user needs an approved chapter membership before RSVP, attendance, or points can be recorded.",
+      ),
+    };
+  }
+
+  const campaign = await resolveActiveCampaign(client, membership.chapter_id);
+  const event = await resolveOrCreateEvent(client, {
+    routeEventId: input.routeEventId,
+    profileId: profile.id,
+    chapterId: membership.chapter_id,
+    campaignId: campaign?.id ?? null,
+  });
+
+  if (!event) {
+    return {
+      success: false,
+      result: failure(
+        "event_not_found",
+        input.routeEventId,
+        "The event could not be found or safely materialized, so no event-loop write ran.",
+      ),
+    };
+  }
+
+  if (event.chapter_id !== membership.chapter_id) {
+    return {
+      success: false,
+      result: failure(
+        "permission_denied",
+        input.routeEventId,
+        "The signed-in member cannot write RSVP, attendance, or points rows for a different chapter.",
+      ),
+    };
+  }
+
+  if (isMemberEventClosedStatus(event.status)) {
+    return {
+      success: false,
+      result: failure(
+        "event_closed",
+        input.routeEventId,
+        "This event is completed or canceled, so member RSVP, cancellation, check-in, attendance, and points writes are closed.",
+      ),
+    };
+  }
+
+  return { success: true, profile, event, campaign };
 }
 
 async function resolveActorProfile(
