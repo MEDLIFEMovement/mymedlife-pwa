@@ -33,6 +33,7 @@ import {
   buildMemberLaunchLaneEventDetailHref,
   getMemberLaunchLaneEventRowById,
 } from "@/services/member-launch-lane-events";
+import { resolveMemberEventRouteId } from "@/services/member-event-route-aliases";
 import {
   mapMemberEventLoopWriteResultMessage,
   memberEventLoopPointAward,
@@ -295,8 +296,9 @@ function getResolvedEventDetailData(
   data: ReadOnlyAppData,
   eventId: string,
 ) {
-  const liveEvent = getMemberLaunchLaneEventRowById(actor, data, eventId);
-  const liveSnapshot = getLaunchLaneEventSnapshotById(data, eventId);
+  const resolvedEventId = resolveMemberEventRouteId(data.chapterEventRows, eventId);
+  const liveEvent = getMemberLaunchLaneEventRowById(actor, data, resolvedEventId);
+  const liveSnapshot = getLaunchLaneEventSnapshotById(data, resolvedEventId);
 
   if (liveEvent && liveSnapshot) {
     return {

@@ -191,6 +191,47 @@ describe("member event detail route", () => {
     expect(html).not.toContain("Go to Check-In");
   });
 
+  it("resolves the canonical TEST route to the signed-in chapter's live event", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const dataModule = await import("@/services/read-only-app-data");
+    const data = getMockReadOnlyAppData("Testing production event alias resolution.");
+    const liveEventId = "6f9e4654-d14c-4d90-9d19-cb51891c4b0c";
+    const liveEvent = {
+      ...data.chapterEventRows[0],
+      id: liveEventId,
+      title: "TEST Intro GBM",
+      status: "published" as const,
+      starts_at: "2026-07-20T18:00:00Z",
+      ends_at: "2026-07-20T20:00:00Z",
+    };
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("member.a@mymedlife.test"),
+    );
+    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue({
+      ...data,
+      chapterEventRows: [liveEvent],
+      allChapterEventRows: [liveEvent],
+      eventRows: [],
+      allEventRows: [],
+      pointsEventRows: [],
+      allPointsEventRows: [],
+    });
+
+    const { default: EventDetailPage } = await import("@/app/app/events/[eventId]/page");
+    const html = renderToStaticMarkup(
+      await EventDetailPage({
+        params: Promise.resolve({ eventId: "chapter-event-ucla-kickoff" }),
+        searchParams: Promise.resolve({ source: "events", step: "rsvp" }),
+      }),
+    );
+
+    expect(html).toContain("Record your RSVP");
+    expect(html).toContain("Record RSVP in myMEDLIFE");
+    expect(html).toContain(`name="eventId" value="${liveEventId}"`);
+    expect(html).not.toContain("Event completed");
+  });
+
   it("renders the source-backed event detail shell on the standalone route", async () => {
     const actorModule = await import("@/services/local-actor-context");
     const dataModule = await import("@/services/read-only-app-data");
