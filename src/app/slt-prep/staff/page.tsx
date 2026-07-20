@@ -14,6 +14,7 @@ import {
   type SltTripPrepStaffFocusFilter,
   type SltTripPrepStaffRiskFilter,
 } from "@/services/slt-trip-prep-staff-workspace";
+import { ensureVisibleTestLabel } from "@/services/member-mobile-identity-context";
 import { getSltTripPrepSubnavItems } from "@/services/slt-trip-prep-workspace";
 import { getStaticRouteMetadata } from "@/services/static-route-metadata";
 import { getSltPrepPageContext } from "../page-context";
@@ -217,10 +218,14 @@ export default async function SltPrepStaffPage({ searchParams }: StaffPageProps)
                   >
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div>
-                        <h2 className="text-lg font-semibold text-white">{traveler.displayName}</h2>
-                        <p className="mt-1 text-sm text-white/58">{traveler.chapterName}</p>
+                        <h2 className="text-lg font-semibold text-white">
+                          {ensureVisibleTestLabel(traveler.displayName)}
+                        </h2>
+                        <p className="mt-1 text-sm text-white/58">
+                          {ensureVisibleTestLabel(traveler.chapterName)}
+                        </p>
                         <p className="mt-2 text-sm leading-6 text-white/68">
-                          {traveler.focusSummary}
+                          {ensureVisibleTestLabel(traveler.focusSummary)}
                         </p>
                       </div>
                       <div className="text-right">
@@ -247,14 +252,18 @@ export default async function SltPrepStaffPage({ searchParams }: StaffPageProps)
               </div>
             </SltPrepSectionCard>
 
-            <SltPrepSectionCard eyebrow="Selected traveler" title={workspace.selectedTraveler.displayName}>
+            <SltPrepSectionCard
+              eyebrow="Selected traveler"
+              title={ensureVisibleTestLabel(workspace.selectedTraveler.displayName)}
+            >
               <div className="space-y-3">
                 <div className="rounded-[1.25rem] border border-white/10 bg-black/20 p-4">
                   <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/46">
                     Chapter and trip
                   </p>
                   <p className="mt-2 text-sm leading-6 text-white/72">
-                    {workspace.selectedTraveler.chapterName} • {workspace.selectedTraveler.tripLabel}
+                    {ensureVisibleTestLabel(workspace.selectedTraveler.chapterName)} •{" "}
+                    {ensureVisibleTestLabel(workspace.selectedTraveler.tripLabel)}
                   </p>
                 </div>
                 {workspace.selectedTravelerHighlights.map((highlight) => (
@@ -262,7 +271,7 @@ export default async function SltPrepStaffPage({ searchParams }: StaffPageProps)
                     key={highlight}
                     className="rounded-[1.25rem] border border-white/10 bg-black/20 p-4 text-sm leading-6 text-white/68"
                   >
-                    {highlight}
+                    {ensureVisibleTestLabel(highlight)}
                   </p>
                 ))}
                 <Link
