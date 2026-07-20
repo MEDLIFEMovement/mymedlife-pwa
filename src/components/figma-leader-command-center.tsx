@@ -1745,6 +1745,7 @@ function EventsScreen({
 
 type LeaderLiveEventReadback = {
   chapterName: string;
+  selectedEventId: string | null;
   events: LaunchLaneLeaderEventReadback[];
   attendance: LaunchLaneLeaderAttendanceReadback[];
   leaderboard: LaunchLaneChapterLeaderboardReadback[];
@@ -1774,6 +1775,8 @@ function LeaderLiveEventsScreen({
     RSVP: event.rsvpCount,
     Attended: event.attendanceCount,
   }));
+  const selectedEvent = readback.selectedEventId
+    ? readback.events.find((event) => event.id === readback.selectedEventId) ?? null : null;
 
   return (
     <div className="space-y-5">
@@ -1794,6 +1797,31 @@ function LeaderLiveEventsScreen({
         <Kard label="Points Awarded" value={totals.points.toLocaleString()} sub="Deduped event awards" accent="#7C3AED" icon={Star}/>
       </div>
 
+      {readback.selectedEventId ? (
+        selectedEvent ? (
+          <section className="rounded-xl border border-blue-200 bg-blue-50 px-5 py-4" aria-label="Selected event detail">
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-wider text-blue-700">Selected event</p>
+                <h2 className="mt-1 text-base font-black text-slate-900">{selectedEvent.title}</h2>
+                <p className="mt-1 text-xs text-slate-600">{selectedEvent.timing} · {selectedEvent.location}</p>
+              </div>
+              <a href="/leader?view=events" className="text-xs font-bold text-blue-700 hover:underline">Back to all events</a>
+            </div>
+            <div className="mt-4 grid gap-3 text-xs sm:grid-cols-4">
+              <div><p className="font-bold uppercase text-slate-500">RSVPs</p><p className="mt-1 font-mono text-base font-black text-slate-900">{selectedEvent.rsvpCount}</p></div>
+              <div><p className="font-bold uppercase text-slate-500">Attendance</p><p className="mt-1 font-mono text-base font-black text-slate-900">{selectedEvent.attendanceCount}</p></div>
+              <div><p className="font-bold uppercase text-slate-500">Points</p><p className="mt-1 font-mono text-base font-black text-slate-900">{selectedEvent.pointsAwarded.toLocaleString()}</p></div>
+              <div><p className="font-bold uppercase text-slate-500">Status</p><p className="mt-1 font-black text-slate-900">{selectedEvent.statusLabel}</p></div>
+            </div>
+          </section>
+        ) : (
+          <section className="rounded-xl border border-amber-200 bg-amber-50 px-5 py-4" aria-label="Selected event unavailable">
+            <p className="text-sm font-bold text-amber-900">Selected event is not available in this chapter.</p>
+            <a href="/leader?view=events" className="mt-2 inline-block text-xs font-bold text-amber-800 hover:underline">Back to all events</a>
+          </section>
+        )
+      ) : null}
       <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
         <div className="flex items-center justify-between gap-4 border-b border-slate-100 px-5 py-3">
           <div>
@@ -1815,7 +1843,11 @@ function LeaderLiveEventsScreen({
             </thead>
             <tbody>
               {readback.events.map((event, index) => (
-                <tr key={event.id} className={`border-b border-slate-100 last:border-0 ${index % 2 ? 'bg-slate-50/40' : ''}`}>
+                <tr
+                  key={event.id}
+                  aria-current={event.id === readback.selectedEventId ? "true" : undefined}
+                  className={`border-b border-slate-100 last:border-0 ${event.id === readback.selectedEventId ? 'bg-blue-50' : index % 2 ? 'bg-slate-50/40' : ''}`}
+                >
                   <td className="px-3 py-3 font-semibold text-slate-800">{event.title}</td>
                   <td className="px-3 py-3 text-slate-500">{event.timing}</td>
                   <td className="px-3 py-3 text-slate-500">{event.location}</td>
@@ -1856,17 +1888,21 @@ function LeaderLiveEventsScreen({
         <div className="space-y-4">
           <div className="rounded-xl border border-slate-200 bg-white p-5">
             <SH>Latest Attendance</SH>
-            <div className="mt-3 space-y-2">
-              {readback.attendance.map((row) => (
-                <div key={`${row.name}-${row.status}`} className="flex items-center justify-between gap-3 rounded-lg bg-slate-50 px-3 py-2">
-                  <div>
-                    <p className="text-xs font-bold text-slate-800">{row.name}</p>
-                    <p className="text-[10px] text-slate-500">{row.status}</p>
+            {readback.attendance.length > 0 ? (
+              <div className="mt-3 space-y-2">
+                {readback.attendance.map((row) => (
+                  <div key={`${row.name}-${row.status}`} className="flex items-center justify-between gap-3 rounded-lg bg-slate-50 px-3 py-2">
+                    <div>
+                      <p className="text-xs font-bold text-slate-800">{row.name}</p>
+                      <p className="text-[10px] text-slate-500">{row.status}</p>
+                    </div>
+                    <span className="text-[11px] font-bold text-blue-600">{row.pointsLabel}</span>
                   </div>
-                  <span className="text-[11px] font-bold text-blue-600">{row.pointsLabel}</span>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            ) : (
+              <p className="mt-3 rounded-lg bg-slate-50 px-3 py-3 text-xs text-slate-500">No attendance has been recorded yet.</p>
+            )}
           </div>
 
           <div className="rounded-xl border border-slate-200 bg-white p-5">

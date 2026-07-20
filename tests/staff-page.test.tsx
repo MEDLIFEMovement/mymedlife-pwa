@@ -118,7 +118,7 @@ describe("staff page", () => {
     expect(html).toContain("Staff Command Center");
     expect(html).toContain("Portfolio Overview");
     expect(html).toContain("20 chapters");
-    expect(html).toContain("Jun 17, 2026");
+    expect(html).toContain("Operational workspace");
     expect(html).toContain("2 chapters need intervention");
 
     expect(html).toContain(">Chapters<");
@@ -181,6 +181,30 @@ describe("staff page", () => {
     expect(html).toContain(expectedEyebrow);
     expect(html).toContain(expectedTitle);
     expect(html).not.toContain("Figma page missing - implementation blocked");
+  });
+
+  it("renders a visible selected-event state for the staff Open event route", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("general.staff@mymedlife.test"),
+    );
+
+    const { default: StaffPage } = await import("@/app/staff/page");
+    const html = renderToStaticMarkup(
+      await StaffPage({
+        searchParams: Promise.resolve({
+          view: "events",
+          campaign: "rush-month",
+          event: "chapter-event-ucla-kickoff",
+        }),
+      }),
+    );
+
+    expect(html).toContain("Selected event");
+    expect(html).toContain("Rush Month kickoff social");
+    expect(html).toContain("Back to all events");
+    expect(html).toContain('aria-current="true"');
   });
 
   it.each([

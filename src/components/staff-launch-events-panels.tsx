@@ -33,6 +33,7 @@ type StaffLaunchEventsPanelsProps = {
 type StaffLiveLaunchEventsPanelsProps = {
   chapters: LaunchLaneStaffChapterReadback[];
   organization: LaunchLaneOrgPointsReadback;
+  selectedEventId: string | null;
 };
 
 type StaffLiveLaunchLeaderboardProps = {
@@ -43,8 +44,12 @@ type StaffLiveLaunchLeaderboardProps = {
 export function StaffLiveLaunchEventsOperations({
   chapters,
   organization,
+  selectedEventId,
 }: StaffLiveLaunchEventsPanelsProps) {
   const visibleEvents = chapters.filter((chapter) => chapter.chapterEventId);
+  const selectedChapter = selectedEventId
+    ? visibleEvents.find((chapter) => chapter.chapterEventId === selectedEventId) ?? null
+    : null;
 
   return (
     <div className="space-y-5">
@@ -54,6 +59,32 @@ export function StaffLiveLaunchEventsOperations({
         <StaffMetricCard label="Attendance" value={organization.totalAttendance.toLocaleString()} note="Confirmed check-ins" tone="green" />
         <StaffMetricCard label="Points awarded" value={organization.totalPoints.toLocaleString()} note="Attendance-backed points" tone="purple" />
       </div>
+
+      {selectedEventId ? (
+        selectedChapter ? (
+          <section className="rounded-xl border border-blue-200 bg-blue-50 px-5 py-4" aria-label="Selected staff event detail">
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-widest text-blue-700">Selected event</p>
+                <h2 className="mt-1 text-lg font-bold text-foreground">{selectedChapter.nextEvent}</h2>
+                <p className="mt-1 text-sm text-muted-foreground">{selectedChapter.name} · {selectedChapter.calendarLabel}</p>
+              </div>
+              <Link href="/staff?view=events" className="text-sm font-bold text-primary hover:underline">Back to all events</Link>
+            </div>
+            <div className="mt-4 grid gap-3 text-sm sm:grid-cols-4">
+              <div><p className="text-xs font-bold uppercase text-muted-foreground">RSVPs</p><p className="mt-1 font-mono text-lg font-black">{selectedChapter.rsvps}</p></div>
+              <div><p className="text-xs font-bold uppercase text-muted-foreground">Attendance</p><p className="mt-1 font-mono text-lg font-black">{selectedChapter.attendance}</p></div>
+              <div><p className="text-xs font-bold uppercase text-muted-foreground">Points</p><p className="mt-1 font-mono text-lg font-black">{selectedChapter.points.toLocaleString()}</p></div>
+              <div><p className="text-xs font-bold uppercase text-muted-foreground">Risk</p><p className="mt-1 font-bold">{selectedChapter.risk}</p></div>
+            </div>
+          </section>
+        ) : (
+          <section className="rounded-xl border border-amber-200 bg-amber-50 px-5 py-4" aria-label="Selected staff event unavailable">
+            <p className="font-bold text-amber-900">Selected event is not available in the staff readback.</p>
+            <Link href="/staff?view=events" className="mt-2 inline-block text-sm font-bold text-amber-800 hover:underline">Back to all events</Link>
+          </section>
+        )
+      ) : null}
 
       <section className="overflow-hidden rounded-xl border border-border bg-white shadow-sm">
         <div className="flex items-center justify-between gap-4 border-b border-border px-5 py-4">
@@ -76,7 +107,11 @@ export function StaffLiveLaunchEventsOperations({
             </thead>
             <tbody>
               {chapters.map((chapter) => (
-                <tr key={chapter.id} className="border-t border-border hover:bg-muted/30">
+                <tr
+                  key={chapter.id}
+                  aria-current={chapter.chapterEventId === selectedEventId ? "true" : undefined}
+                  className={`border-t border-border hover:bg-muted/30 ${chapter.chapterEventId === selectedEventId ? "bg-blue-50" : ""}`}
+                >
                   <td className="px-4 py-3 font-bold text-foreground">{chapter.name}</td>
                   <td className="px-4 py-3">
                     <div className="text-foreground">{chapter.calendarLabel}</div>

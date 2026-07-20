@@ -27,7 +27,6 @@ import {
   getMemberLaunchLaneLoopState,
   type MemberLaunchLaneLoopStage,
 } from "@/services/member-launch-lane-loop-state";
-import { getLaunchLaneAttendancePointsShortLabel } from "@/services/launch-lane-points-policy";
 import type { ReadOnlyAppData } from "@/services/read-only-app-data";
 
 type EventStatusTone = "blue" | "gold" | "slate";
@@ -171,29 +170,6 @@ const eventLoopSeeds: Record<string, EventLoopSeed> = {
     tone: "slate",
   },
 };
-
-const leaderAttendanceSeed: LaunchLaneLeaderAttendanceReadback[] = [
-  {
-    name: "Sofia Alvarez",
-    status: "Checked in",
-    pointsLabel: getLaunchLaneAttendancePointsShortLabel(),
-  },
-  {
-    name: "Nia Committee",
-    status: "Checked in",
-    pointsLabel: getLaunchLaneAttendancePointsShortLabel(),
-  },
-  {
-    name: "Taylor Traveler",
-    status: "RSVP only",
-    pointsLabel: "Waiting on attendance",
-  },
-  {
-    name: "Casey Chair",
-    status: "Needs follow-up",
-    pointsLabel: "No points yet",
-  },
-];
 
 export function getLaunchLaneMemberPointsReadback(
   actor: LocalActorContext,
@@ -369,7 +345,7 @@ export function getLaunchLaneLeaderAttendanceReadback(
   const latestEvent = getMostRecentLaunchLaneEventSnapshot(data);
 
   if (!latestEvent) {
-    return leaderAttendanceSeed;
+    return [];
   }
 
   const profileNames = new Map(
@@ -440,7 +416,7 @@ export function getLaunchLaneLeaderAttendanceReadback(
     ...rsvpOnlyRows,
     ...placeholderRows,
   ];
-  return combined.length > 0 ? combined.slice(0, 4) : leaderAttendanceSeed;
+  return combined.slice(0, 4);
 }
 
 export function getLaunchLaneChapterLeaderboardReadback(
