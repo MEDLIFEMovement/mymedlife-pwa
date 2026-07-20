@@ -16,6 +16,7 @@ import {
   getSltTripPrepSubnavItems,
   getSltTripPrepWorkspace,
   sltTripPrepMobileQuickNavItems,
+  withSltTripPrepTravelerHref,
 } from "@/services/slt-trip-prep-workspace";
 import { isPreviewWorkspaceAccess } from "@/services/workspace-access";
 import type { TripPrepTraveler } from "@/shared/types/slt-trip-prep";
@@ -28,14 +29,16 @@ export async function renderSltPrepPage(
   redirectPath = "/slt-prep",
   shellMode: SltPrepShellMode = "standalone",
   memberSource: MemberSltPrepSource = null,
+  travelerId?: string,
 ) {
   const { actor, data } = await getSltPrepPageContext(redirectPath);
-  const workspace = getSltTripPrepWorkspace(actor);
+  const workspace = getSltTripPrepWorkspace(actor, travelerId);
+  const selectedTravelerId = workspace.traveler?.id;
   const profileHref = memberSource === "home" ? "/profile?source=home" : "/profile";
   const content = (
     <>
       <DataSourceNotice source={data.source} />
-      <SltPrepSubnav items={[...getSltTripPrepSubnavItems(actor)]} />
+      <SltPrepSubnav items={[...getSltTripPrepSubnavItems(actor, selectedTravelerId)]} />
 
       {!workspace.canReadWorkspace || !workspace.traveler ? (
         <RestrictedState
@@ -45,7 +48,7 @@ export async function renderSltPrepPage(
           nextLabel={workspace.nextStep.label}
         />
       ) : (
-        <SltPrepOverviewSurface workspace={workspace} />
+          <SltPrepOverviewSurface workspace={workspace} travelerId={selectedTravelerId} />
       )}
     </>
   );
@@ -105,8 +108,10 @@ export async function renderSltPrepPage(
 
 function SltPrepOverviewSurface({
   workspace,
+  travelerId,
 }: {
   workspace: ReturnType<typeof getSltTripPrepWorkspace>;
+  travelerId?: string;
 }) {
   if (!workspace.traveler) {
     return null;
@@ -210,7 +215,7 @@ function SltPrepOverviewSurface({
               {ensureVisibleTestLabel(alert.summary)}
             </p>
             <Link
-              href={alert.href}
+              href={withSltTripPrepTravelerHref(alert.href, travelerId)}
               className="mt-4 inline-flex w-full items-center justify-center rounded-xl bg-[#FFB81C] px-4 py-3 text-base font-bold tracking-wide text-slate-950 shadow-sm transition hover:brightness-95"
             >
               Complete next step
@@ -223,7 +228,7 @@ function SltPrepOverviewSurface({
         <SltPrepSectionCard eyebrow="Next deadline" title="What is due next?" variant="light">
           {upcomingDeadlines[0] ? (
             <Link
-              href="/slt-prep/timeline"
+              href={withSltTripPrepTravelerHref("/slt-prep/timeline", travelerId)}
               className="block rounded-[1.35rem] border border-slate-200 bg-slate-50 px-4 py-4 transition hover:border-slate-300 hover:bg-slate-100/80"
             >
               <div className="flex items-start justify-between gap-3">
@@ -251,7 +256,7 @@ function SltPrepOverviewSurface({
         <SltPrepSectionCard eyebrow="Upcoming meeting" title="Stay ready for the next call" variant="light">
           {nextMeeting ? (
             <Link
-              href="/slt-prep/meetings"
+              href={withSltTripPrepTravelerHref("/slt-prep/meetings", travelerId)}
               className="block rounded-[1.35rem] border border-slate-200 bg-slate-50 px-4 py-4 transition hover:border-slate-300 hover:bg-slate-100/80"
             >
               <div className="flex items-start justify-between gap-3">
@@ -278,7 +283,7 @@ function SltPrepOverviewSurface({
           {sections.map((section) => (
             <Link
               key={section.label}
-              href={section.href}
+              href={withSltTripPrepTravelerHref(section.href, travelerId)}
               className="flex items-center gap-4 rounded-[1.35rem] border border-slate-200 bg-white px-4 py-4 shadow-sm transition hover:border-slate-300 hover:bg-slate-50"
             >
               <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${section.iconChrome}`}>

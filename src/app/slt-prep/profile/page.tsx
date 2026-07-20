@@ -14,9 +14,16 @@ import { getSltPrepPageContext } from "../page-context";
 export const metadata = getStaticRouteMetadata("sltPrepProfile");
 export const dynamic = "force-dynamic";
 
-export default async function SltPrepProfilePage() {
-  const { actor, data } = await getSltPrepPageContext("/slt-prep/profile");
-  const workspace = getSltTripPrepWorkspace(actor);
+export default async function SltPrepProfilePage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ traveler?: string }>;
+}) {
+  const [{ actor, data }, search] = await Promise.all([
+    getSltPrepPageContext("/slt-prep/profile"),
+    searchParams ?? Promise.resolve<{ traveler?: string }>({}),
+  ]);
+  const workspace = getSltTripPrepWorkspace(actor, search.traveler);
 
   return (
     <AppShell
@@ -25,7 +32,7 @@ export default async function SltPrepProfilePage() {
       mobileQuickItemsOverride={[...sltTripPrepMobileQuickNavItems]}
     >
       <DataSourceNotice source={data.source} />
-      <SltPrepSubnav items={[...getSltTripPrepSubnavItems(actor)]} />
+      <SltPrepSubnav items={[...getSltTripPrepSubnavItems(actor, workspace.traveler?.id)]} />
 
       {!workspace.canReadWorkspace || !workspace.traveler ? (
         <RestrictedState

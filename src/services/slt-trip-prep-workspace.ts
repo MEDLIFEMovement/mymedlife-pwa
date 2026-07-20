@@ -43,18 +43,38 @@ const staffSltTripPrepSubnavItems: ReadonlyArray<{
 
 export function getSltTripPrepSubnavItems(
   actor: Pick<LocalActorContext, "audience">,
+  travelerId?: string,
 ): ReadonlyArray<{
   href: string;
   label: string;
 }> {
+  let items: ReadonlyArray<{ href: string; label: string }>;
+
   switch (actor.audience) {
     case "coach":
     case "admin":
     case "super_admin":
-      return staffSltTripPrepSubnavItems;
+      items = staffSltTripPrepSubnavItems;
+      break;
     default:
-      return studentSltTripPrepSubnavItems;
+      items = studentSltTripPrepSubnavItems;
   }
+
+  return travelerId
+    ? items.map((item) => ({
+        ...item,
+        href: withSltTripPrepTravelerHref(item.href, travelerId),
+      }))
+    : items;
+}
+
+export function withSltTripPrepTravelerHref(href: string, travelerId?: string): string {
+  if (!travelerId) {
+    return href;
+  }
+
+  const separator = href.includes("?") ? "&" : "?";
+  return `${href}${separator}traveler=${encodeURIComponent(travelerId)}`;
 }
 
 export const sltTripPrepMobileQuickNavItems: ReadonlyArray<MobileNavigationItem> = [

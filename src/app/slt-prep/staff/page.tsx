@@ -274,10 +274,10 @@ export default async function SltPrepStaffPage({ searchParams }: StaffPageProps)
                   </p>
                 ))}
                 <Link
-                  href="/slt-prep"
+                  href={`/slt-prep?traveler=${encodeURIComponent(workspace.selectedTraveler.id)}`}
                   className="inline-flex rounded-full bg-[#f7d05e] px-4 py-2 text-sm font-semibold text-[#08224c]"
                 >
-                  Open traveler mobile view
+                  Open selected traveler mobile view
                 </Link>
               </div>
             </SltPrepSectionCard>

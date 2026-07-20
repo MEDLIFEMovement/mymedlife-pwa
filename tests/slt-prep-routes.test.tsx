@@ -159,7 +159,7 @@ describe("SLT Prep routes", () => {
     await primeSignedInActor("ds.admin@mymedlife.test");
 
     const { default: SltPrepPage } = await import("@/app/slt-prep/page");
-    const html = renderToStaticMarkup(await SltPrepPage());
+    const html = renderToStaticMarkup(await SltPrepPage({}));
 
     expect(html).toContain("Trip prep is hidden for DS Admin");
     expect(html).toContain("Open integration outbox");
@@ -222,7 +222,7 @@ describe("SLT Prep routes", () => {
     });
 
     const { default: SltPrepPage } = await import("@/app/slt-prep/page");
-    const html = renderToStaticMarkup(await SltPrepPage());
+    const html = renderToStaticMarkup(await SltPrepPage({}));
 
     expect(html).toContain("You&#x27;re on track");
     expect(html).toContain("No open deadlines remain in this preview.");
@@ -382,6 +382,41 @@ describe("SLT Prep routes", () => {
     expect(html).toContain("TEST Daniel Kim");
     expect(html).toContain('href="/slt-prep/staff?risk=high"');
     expect(html).not.toContain("risk=high&amp;traveler=sofia-alvarez");
+  });
+
+  it("preserves the selected staff traveler through the mobile SLT route family", async () => {
+    mockPathname = "/slt-prep/staff";
+    await primeSignedInActor("super.admin@mymedlife.test");
+
+    const { default: StaffPage } = await import("@/app/slt-prep/staff/page");
+    const staffHtml = renderToStaticMarkup(
+      await StaffPage({
+        searchParams: Promise.resolve({ traveler: "aria-patel" }),
+      }),
+    );
+
+    expect(staffHtml).toContain('href="/slt-prep?traveler=aria-patel"');
+    expect(staffHtml).toContain("Open selected traveler mobile view");
+
+    const { default: SltPrepPage } = await import("@/app/slt-prep/page");
+    const overviewHtml = renderToStaticMarkup(
+      await SltPrepPage({
+        searchParams: Promise.resolve({ traveler: "aria-patel" }),
+      }),
+    );
+
+    expect(overviewHtml).toContain("TEST UT Austin MEDLIFE");
+    expect(overviewHtml).toContain('href="/slt-prep/forms?traveler=aria-patel"');
+
+    const { default: ChecklistPage } = await import("@/app/slt-prep/checklist/page");
+    const checklistHtml = renderToStaticMarkup(
+      await ChecklistPage({
+        searchParams: Promise.resolve({ traveler: "aria-patel", filter: "all" }),
+      }),
+    );
+
+    expect(checklistHtml).toContain("traveler=aria-patel");
+    expect(checklistHtml).toContain("/slt-prep/checklist/passport-proof?traveler=aria-patel");
   });
 
   it.each([

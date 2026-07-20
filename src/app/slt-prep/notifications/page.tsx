@@ -17,9 +17,16 @@ import { getSltPrepPageContext } from "../page-context";
 export const metadata = getStaticRouteMetadata("sltPrepNotifications");
 export const dynamic = "force-dynamic";
 
-export default async function SltPrepNotificationsPage() {
-  const { actor, data } = await getSltPrepPageContext("/slt-prep/notifications");
-  const workspace = getSltTripPrepWorkspace(actor);
+export default async function SltPrepNotificationsPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ traveler?: string }>;
+}) {
+  const [{ actor, data }, search] = await Promise.all([
+    getSltPrepPageContext("/slt-prep/notifications"),
+    searchParams ?? Promise.resolve<{ traveler?: string }>({}),
+  ]);
+  const workspace = getSltTripPrepWorkspace(actor, search.traveler);
 
   return (
     <AppShell
@@ -28,7 +35,7 @@ export default async function SltPrepNotificationsPage() {
       mobileQuickItemsOverride={[...sltTripPrepMobileQuickNavItems]}
     >
       <DataSourceNotice source={data.source} />
-      <SltPrepSubnav items={[...getSltTripPrepSubnavItems(actor)]} />
+      <SltPrepSubnav items={[...getSltTripPrepSubnavItems(actor, workspace.traveler?.id)]} />
 
       {!workspace.canReadWorkspace || !workspace.traveler ? (
         <RestrictedState

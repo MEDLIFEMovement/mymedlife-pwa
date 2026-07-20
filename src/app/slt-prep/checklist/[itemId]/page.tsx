@@ -14,6 +14,7 @@ import {
   getSltTripPrepChecklistDetailWorkspace,
   getSltTripPrepSubnavItems,
   sltTripPrepMobileQuickNavItems,
+  withSltTripPrepTravelerHref,
 } from "@/services/slt-trip-prep-workspace";
 import { getStaticRouteMetadata } from "@/services/static-route-metadata";
 import { getSltPrepPageContext } from "../../page-context";
@@ -27,6 +28,7 @@ type ChecklistDetailPageProps = {
   }>;
   searchParams?: Promise<{
     preview?: string;
+    traveler?: string;
   }>;
 };
 
@@ -35,12 +37,12 @@ export default async function SltPrepChecklistDetailPage({
   searchParams,
 }: ChecklistDetailPageProps) {
   const { itemId } = await params;
-  const emptySearchParams: { preview?: string } = {};
+  const emptySearchParams: { preview?: string; traveler?: string } = {};
   const [{ actor, data }, search] = await Promise.all([
     getSltPrepPageContext(`/slt-prep/checklist/${itemId}`),
     searchParams ?? Promise.resolve(emptySearchParams),
   ]);
-  const workspace = getSltTripPrepChecklistDetailWorkspace(actor, itemId);
+  const workspace = getSltTripPrepChecklistDetailWorkspace(actor, itemId, search.traveler);
 
   if (!workspace) {
     notFound();
@@ -53,7 +55,9 @@ export default async function SltPrepChecklistDetailPage({
       mobileQuickItemsOverride={[...sltTripPrepMobileQuickNavItems]}
     >
       <DataSourceNotice source={data.source} />
-      <SltPrepSubnav items={[...getSltTripPrepSubnavItems(actor)]} />
+      <SltPrepSubnav
+        items={[...getSltTripPrepSubnavItems(actor, workspace.traveler?.id)]}
+      />
 
       {!workspace.canReadDetail || !workspace.item || !workspace.traveler ? (
         <RestrictedState
@@ -67,7 +71,13 @@ export default async function SltPrepChecklistDetailPage({
           <section className="overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-[0_20px_48px_rgba(15,23,42,0.08)]">
             <div className="bg-[#0066CC] px-4 py-4">
               <div className="flex items-center gap-3">
-                <Link href="/slt-prep/checklist" className="text-sm font-semibold text-white/86">
+                <Link
+                  href={withSltTripPrepTravelerHref(
+                    "/slt-prep/checklist",
+                    workspace.traveler.id,
+                  )}
+                  className="text-sm font-semibold text-white/86"
+                >
                   ← Checklist
                 </Link>
                 <h1 className="text-lg font-semibold text-white">
@@ -155,7 +165,10 @@ export default async function SltPrepChecklistDetailPage({
                     Submit flight information
                   </button>
                   <Link
-                    href="/slt-prep/notifications"
+                    href={withSltTripPrepTravelerHref(
+                      "/slt-prep/notifications",
+                      workspace.traveler.id,
+                    )}
                     className="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-3 text-base font-semibold text-slate-700 transition hover:border-slate-300"
                   >
                     Need help?
@@ -192,7 +205,10 @@ export default async function SltPrepChecklistDetailPage({
               <SltPrepSectionCard eyebrow="Action" title="Keep the next move simple" variant="light">
                 <div className="space-y-3">
                   <Link
-                    href={getPrimaryDetailHref(workspace.item.id)}
+                    href={withSltTripPrepTravelerHref(
+                      getPrimaryDetailHref(workspace.item.id),
+                      workspace.traveler.id,
+                    )}
                     className="inline-flex w-full items-center justify-center rounded-xl bg-[#0066CC] px-4 py-3 text-base font-bold text-white shadow-sm transition hover:brightness-95"
                   >
                     {getPrimaryDetailLabel(workspace.item.id)}
