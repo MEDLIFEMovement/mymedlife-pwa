@@ -212,6 +212,34 @@ describe("HubSpot read sync foundation", () => {
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
+  it("fails closed when the durable incremental checkpoint cannot be read", async () => {
+    const queries: FakeQuery[] = [];
+    const appClient = createFakeAppClient((query) => {
+      queries.push(query);
+      if (query.table === "staff_role_assignments") return ok([{ role_key: "ds_admin" }]);
+      if (query.table === "hubspot_sync_runs" && query.operation === "select") {
+        return query.filterValue("status") === "succeeded"
+          ? failed("checkpoint unavailable")
+          : ok([]);
+      }
+      return ok([]);
+    });
+
+    await expect(runHubSpotReadSync("actor-1", "incremental", {
+      env: enabledEnv,
+      appClient: appClient as never,
+      hubspotClient: emptyHubSpotClient(),
+    })).resolves.toMatchObject({
+      success: false,
+      code: "server_error",
+      plainEnglishMessage: "Could not read the HubSpot sync checkpoint: checkpoint unavailable",
+    });
+    expect(queries).not.toContainEqual(expect.objectContaining({
+      table: "hubspot_sync_runs",
+      operation: "insert",
+    }));
+  });
+
   it("reads contact-company associations without sending provider writes", async () => {
     const fetchMock = vi.fn().mockResolvedValue(jsonResponse({
       results: [{
@@ -373,6 +401,34 @@ describe("HubSpot read sync foundation", () => {
       checkpoint_after: "2026-07-19T22:00:00.000Z",
       source_company_count: 1,
       source_contact_count: 1,
+    });
+  });
+
+  it("does not report success when the durable final run status cannot be recorded", async () => {
+    const appClient = createFakeAppClient((query) => {
+      if (query.table === "staff_role_assignments") return ok([{ role_key: "ds_admin" }]);
+      if (query.table === "hubspot_sync_runs" && query.operation === "select") return ok([]);
+      if (query.table === "hubspot_sync_runs" && query.operation === "insert") return ok({ id: "run-finalize-failure" });
+      if (
+        query.table === "hubspot_sync_runs"
+        && query.operation === "update"
+        && (query.payload as { status?: string }).status === "succeeded"
+      ) {
+        return failed("final status unavailable");
+      }
+      return ok([]);
+    });
+
+    await expect(runHubSpotReadSync("actor-1", "backfill", {
+      env: enabledEnv,
+      appClient: appClient as never,
+      hubspotClient: emptyHubSpotClient(),
+      now: () => new Date("2026-07-20T20:00:00.000Z"),
+    })).resolves.toMatchObject({
+      success: false,
+      code: "server_error",
+      runId: "run-finalize-failure",
+      plainEnglishMessage: expect.stringContaining("final sync status could not be recorded"),
     });
   });
 
@@ -1018,6 +1074,44 @@ describe("HubSpot read sync foundation", () => {
     });
   });
 
+  it("does not create a chapter when the duplicate-name safety lookup fails", async () => {
+    const queries: FakeQuery[] = [];
+    const appClient = createFakeAppClient((query) => {
+      queries.push(query);
+      if (query.table === "staff_role_assignments") return ok([{ role_key: "ds_admin" }]);
+      if (query.table === "hubspot_sync_runs" && query.operation === "select") return ok([]);
+      if (query.table === "hubspot_sync_runs" && query.operation === "insert") return ok({ id: "run-name-lookup-failure" });
+      if (
+        query.table === "chapters"
+        && query.operation === "select"
+        && query.filters.some((filter) => filter.column === "name")
+      ) {
+        return failed("chapter name lookup unavailable");
+      }
+      return ok([]);
+    });
+
+    await expect(runHubSpotReadSync("actor-1", "backfill", {
+      env: enabledEnv,
+      appClient: appClient as never,
+      hubspotClient: oneCompanyClient(),
+      now: () => new Date("2026-07-20T20:00:00.000Z"),
+    })).resolves.toMatchObject({
+      success: true,
+      code: "hubspot_sync_partial",
+      counts: { failures: 1, materializedChapters: 0 },
+    });
+    expect(queries).not.toContainEqual(expect.objectContaining({
+      table: "chapters",
+      operation: "insert",
+    }));
+    expect(queries).toContainEqual(expect.objectContaining({
+      table: "hubspot_sync_failures",
+      operation: "insert",
+      payload: expect.objectContaining({ error_code: "chapter_name_lookup_failed" }),
+    }));
+  });
+
   it.each([
     ["company", "hubspot_company_imports", "company_stage_failed"],
     ["contact", "hubspot_contact_imports", "contact_stage_failed"],
@@ -1109,6 +1203,55 @@ describe("HubSpot read sync foundation", () => {
       hubspotClient,
       now: () => new Date("2026-07-19T22:00:00.000Z"),
     })).resolves.toMatchObject({ success: true, code: "hubspot_sync_partial", counts: { conflicts: 1 } });
+  });
+
+  it("quarantines duplicate app memberships instead of mutating an arbitrary row", async () => {
+    const queries: FakeQuery[] = [];
+    const appClient = createFakeAppClient((query) => {
+      queries.push(query);
+      if (query.table === "staff_role_assignments") return ok([{ role_key: "ds_admin" }]);
+      if (query.table === "hubspot_sync_runs" && query.operation === "select") return ok([]);
+      if (query.table === "hubspot_sync_runs" && query.operation === "insert") return ok({ id: "run-duplicate-memberships" });
+      if (query.table === "chapters" && query.operation === "select") {
+        return ok([{ id: "chapter-1", hubspot_company_id: "company-1", status: "active" }]);
+      }
+      if (query.table === "profiles" && query.operation === "select") {
+        return ok([{ id: "profile-1", hubspot_contact_id: "contact-1" }]);
+      }
+      if (query.table === "memberships" && query.operation === "select") {
+        return ok([
+          { id: "membership-1", hubspot_association_key: null },
+          { id: "membership-2", hubspot_association_key: null },
+        ]);
+      }
+      return ok([]);
+    });
+
+    await expect(runHubSpotReadSync("actor-1", "incremental", {
+      env: enabledEnv,
+      appClient: appClient as never,
+      hubspotClient: {
+        ...oneCompanyClient(),
+        readContactsWithCompanies: async () => [oneContact()],
+      },
+      now: () => new Date("2026-07-20T20:00:00.000Z"),
+    })).resolves.toMatchObject({
+      success: true,
+      code: "hubspot_sync_partial",
+      counts: { conflicts: 1 },
+    });
+    expect(queries).not.toContainEqual(expect.objectContaining({
+      table: "memberships",
+      operation: "update",
+    }));
+    expect(queries).toContainEqual(expect.objectContaining({
+      table: "hubspot_membership_imports",
+      operation: "update",
+      payload: expect.objectContaining({
+        reconciliation_status: "conflict",
+        reconciliation_note: "Multiple app memberships match this HubSpot association.",
+      }),
+    }));
   });
 
   it("marks a run partial when the shared audit ledger cannot record a materialization", async () => {

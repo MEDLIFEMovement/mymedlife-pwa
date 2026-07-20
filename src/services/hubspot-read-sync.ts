@@ -359,7 +359,11 @@ export async function runHubSpotReadSync(
     return failure("sync_already_running", "A HubSpot sync is already running. Review that run before retrying.");
   }
 
-  const checkpointBefore = await readLastCheckpoint(appClient);
+  const checkpointResult = await readLastCheckpoint(appClient);
+  if (checkpointResult.error) {
+    return failure("server_error", `Could not read the HubSpot sync checkpoint: ${checkpointResult.error}`);
+  }
+  const checkpointBefore = checkpointResult.checkpoint;
   const created = await appClient.schema("app").from("hubspot_sync_runs").insert({
     mode,
     status: "running",
@@ -453,7 +457,7 @@ export async function runHubSpotReadSync(
 
     const completedAt = now().toISOString();
     const status = counts.failures > 0 || counts.conflicts > 0 ? "partial" : "succeeded";
-    await finishRun(
+    const finalized = await finishRun(
       appClient,
       runId,
       status,
@@ -461,6 +465,13 @@ export async function runHubSpotReadSync(
       status === "succeeded" ? startedAt : null,
       counts,
     );
+    if (!finalized) {
+      return failure(
+        "server_error",
+        "HubSpot source data was processed, but the final sync status could not be recorded. The run remains incomplete and must not be treated as successful.",
+        runId,
+      );
+    }
     if (status === "succeeded" && triggerSource === "replay" && retryOfRunId) {
       await resolveReplayedFailures(appClient, retryOfRunId, completedAt);
     }
@@ -477,7 +488,14 @@ export async function runHubSpotReadSync(
     counts.failures += 1;
     const message = safeErrorMessage(error);
     await recordFailure(appClient, runId, "run", null, "hubspot_read_failed", message, {});
-    await finishRun(appClient, runId, "failed", now().toISOString(), null, counts, message);
+    const finalized = await finishRun(appClient, runId, "failed", now().toISOString(), null, counts, message);
+    if (!finalized) {
+      return failure(
+        "server_error",
+        `HubSpot read sync failed safely, but the failed run status could not be recorded: ${message}`,
+        runId,
+      );
+    }
     return failure("server_error", `HubSpot read sync failed safely: ${message}`, runId);
   }
 }
@@ -500,13 +518,21 @@ async function readActorRoles(client: AppClient, actorUserId: string): Promise<s
   return (result.data ?? []).map((row) => String(row.role_key));
 }
 
-async function readLastCheckpoint(client: AppClient): Promise<string | null> {
+async function readLastCheckpoint(
+  client: AppClient,
+): Promise<{ checkpoint: string | null; error: string | null }> {
   const result = await client.schema("app").from("hubspot_sync_runs")
     .select("checkpoint_after")
     .eq("status", "succeeded")
     .order("completed_at", { ascending: false })
     .limit(1);
-  return result.error ? null : String(result.data?.[0]?.checkpoint_after ?? "") || null;
+  if (result.error) {
+    return { checkpoint: null, error: result.error.message };
+  }
+  return {
+    checkpoint: String(result.data?.[0]?.checkpoint_after ?? "") || null,
+    error: null,
+  };
 }
 
 async function syncCompany(
@@ -557,7 +583,20 @@ async function syncCompany(
       .select("id,status,hubspot_company_id")
       .ilike("name", company.name)
       .limit(2);
-    const matches = nameMatches.error ? [] : nameMatches.data ?? [];
+    if (nameMatches.error) {
+      counts.failures += 1;
+      await recordFailure(
+        client,
+        runId,
+        "company",
+        company.id,
+        "chapter_name_lookup_failed",
+        nameMatches.error.message,
+        company.source,
+      );
+      return;
+    }
+    const matches = nameMatches.data ?? [];
     if (matches.length > 1 || (matches[0]?.hubspot_company_id && matches[0].hubspot_company_id !== company.id)) {
       counts.conflicts += 1;
       await markCompanyReconciliation(client, company.id, "conflict", "Multiple or externally linked app chapters match this HubSpot company.", null);
@@ -804,6 +843,18 @@ async function syncMembership(
     await recordFailure(client, runId, "membership", associationKey, "membership_lookup_failed", memberships.error.message, { associationKey });
     return;
   }
+  if ((memberships.data ?? []).length > 1) {
+    counts.conflicts += 1;
+    await markMembershipReconciliation(
+      client,
+      contact.id,
+      companyId,
+      "conflict",
+      "Multiple app memberships match this HubSpot association.",
+      null,
+    );
+    return;
+  }
 
   let membershipId = memberships.data?.[0]?.id ? String(memberships.data[0].id) : null;
   if (membershipId) {
@@ -999,8 +1050,8 @@ async function finishRun(
   checkpointAfter: string | null,
   counts: HubSpotSyncCounts,
   errorSummary: string | null = null,
-) {
-  await client.schema("app").from("hubspot_sync_runs").update({
+): Promise<boolean> {
+  const result = await client.schema("app").from("hubspot_sync_runs").update({
     status,
     completed_at: completedAt,
     checkpoint_after: checkpointAfter,
@@ -1017,6 +1068,7 @@ async function finishRun(
     failure_count: counts.failures,
     error_summary: errorSummary,
   }).eq("id", runId);
+  return !result.error;
 }
 
 async function heartbeatRun(client: AppClient, runId: string, heartbeatAt: string) {
