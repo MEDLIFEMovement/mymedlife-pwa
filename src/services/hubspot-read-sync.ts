@@ -767,17 +767,37 @@ async function syncContact(
     return;
   }
   counts.contactUpserts += 1;
-  if (!email) return;
 
-  const profiles = await client.schema("app").from("profiles")
+  const linkedProfiles = await client.schema("app").from("profiles")
     .select("id,hubspot_contact_id")
-    .ilike("email", email)
+    .eq("hubspot_contact_id", contact.id)
     .limit(2);
-  const matches = profiles.error ? [] : profiles.data ?? [];
-  if (profiles.error) {
+  if (linkedProfiles.error) {
     counts.failures += 1;
-    await recordFailure(client, runId, "contact", contact.id, "profile_lookup_failed", profiles.error.message, contact.source);
+    await recordFailure(
+      client,
+      runId,
+      "contact",
+      contact.id,
+      "profile_link_lookup_failed",
+      linkedProfiles.error.message,
+      contact.source,
+    );
     return;
+  }
+  let matches = linkedProfiles.data ?? [];
+  if (matches.length === 0) {
+    if (!email) return;
+    const emailProfiles = await client.schema("app").from("profiles")
+      .select("id,hubspot_contact_id")
+      .ilike("email", email)
+      .limit(2);
+    if (emailProfiles.error) {
+      counts.failures += 1;
+      await recordFailure(client, runId, "contact", contact.id, "profile_lookup_failed", emailProfiles.error.message, contact.source);
+      return;
+    }
+    matches = emailProfiles.data ?? [];
   }
   if (matches.length === 0) return;
   if (matches.length > 1 || (matches[0]?.hubspot_contact_id && matches[0].hubspot_contact_id !== contact.id)) {
