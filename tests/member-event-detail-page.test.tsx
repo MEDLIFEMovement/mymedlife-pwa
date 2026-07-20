@@ -228,6 +228,8 @@ describe("member event detail route", () => {
 
     expect(html).toContain("Record your RSVP");
     expect(html).toContain("Record RSVP in myMEDLIFE");
+    expect(html).toContain("20 points");
+    expect(html).not.toContain(">0 points<");
     expect(html).toContain(`name="eventId" value="${liveEventId}"`);
     expect(html).not.toContain("Event completed");
   });
@@ -254,6 +256,7 @@ describe("member event detail route", () => {
     expect(html).toContain("Event RSVP");
     expect(html).toContain("TEST Rush Month kickoff social");
     expect(html).toContain("Points Available");
+    expect(html).toContain("currently recorded");
     expect(html).toContain("preview link only");
     expect(html).toContain("Production-safe event loop");
     expect(html).toContain("Event completed");
@@ -270,6 +273,30 @@ describe("member event detail route", () => {
     expect(html).not.toContain('href="/app/events/chapter-event-ucla-kickoff?source=events&amp;step=rsvp"');
     expect(html).not.toContain('href="/app/events/chapter-event-ucla-kickoff?source=events&amp;step=checkin"');
     expect(html).toContain('href="/app/events/chapter-event-ucla-kickoff?source=events&amp;step=points"');
+  });
+
+  it("shows the configured attendance award as available on an open event", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const dataModule = await import("@/services/read-only-app-data");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("member.a@mymedlife.test"),
+    );
+    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
+      getOpenEventData("Testing open event attendance award messaging."),
+    );
+
+    const { default: EventDetailPage } = await import("@/app/app/events/[eventId]/page");
+    const html = renderToStaticMarkup(
+      await EventDetailPage({
+        params: Promise.resolve({ eventId: "chapter-event-ucla-kickoff" }),
+        searchParams: Promise.resolve({ source: "events" }),
+      }),
+    );
+
+    expect(html).toContain("Points Available");
+    expect(html).toContain("check-in required");
+    expect(html).toContain(">20<");
   });
 
   it("uses the signed-in member chapter and identity on direct event states", async () => {
@@ -326,6 +353,8 @@ describe("member event detail route", () => {
     expect(html).toContain("You&#x27;re RSVP&#x27;d!");
     expect(html).toContain("Go to Check-In");
     expect(html).toContain("RSVP locked after check-in");
+    expect(html).toContain("20 points");
+    expect(html).not.toContain(">0 points<");
     expect(html).toContain("Luma and external provider writes stay off");
     expect(html).toContain('href="/app/events/chapter-event-ucla-kickoff?source=home&amp;step=checkin"');
     expect(html).toContain('href="/app"');
@@ -431,6 +460,8 @@ describe("member event detail route", () => {
     expect(html).toContain("TEST Rush Month kickoff social");
     expect(html).toContain("Confirm the TEST check-in");
     expect(html).toContain("Confirm Check-In");
+    expect(html).toContain("20 points after check-in");
+    expect(html).not.toContain(">0 points after check-in");
   });
 
   it("keeps a canceled RSVP visibly canceled on the check-in step", async () => {
