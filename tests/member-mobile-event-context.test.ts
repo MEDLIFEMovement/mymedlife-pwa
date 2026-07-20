@@ -67,8 +67,9 @@ describe("member mobile event context", () => {
     const result = buildMemberMobileEventContext(data);
 
     expect(result.campaign).toEqual({
-      name: data.campaign.name,
-      objective: data.campaign.objective,
+      name: "TEST Rush Month",
+      objective:
+        "TEST Help the chapter invite new students, collect proof of outreach, and prepare a coach-readable progress decision.",
     });
     expect(result.events.map((event) => event.id)).toEqual([
       publishedId,
@@ -97,6 +98,23 @@ describe("member mobile event context", () => {
       }),
     );
     expect(result.events[2]?.status).toBe("Completed");
+    expect(result.events.every((event) => event.campaign === result.campaign.name)).toBe(true);
+  });
+
+  it("normalizes repeated TEST prefixes across campaign copy and event associations", () => {
+    const data = getMockReadOnlyAppData("Normalize production campaign copy.");
+    data.campaign.name = "Test Test Rush Month";
+    data.campaign.objective =
+      "Test Test New York University event, RSVP, attendance, points, and evidence loop.";
+    data.chapterEventRows = [createEvent("event-campaign")];
+
+    const result = buildMemberMobileEventContext(data);
+
+    expect(result.campaign).toEqual({
+      name: "TEST Rush Month",
+      objective: "TEST New York University event, RSVP, attendance, points, and evidence loop.",
+    });
+    expect(result.events[0]?.campaign).toBe("TEST Rush Month");
   });
 
   it("keeps missing and invalid dates honest and treats cancelled rows as history", () => {

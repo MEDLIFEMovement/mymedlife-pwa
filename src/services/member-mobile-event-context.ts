@@ -46,6 +46,7 @@ export function buildMemberMobileEventContext(data: ReadOnlyAppData): {
   events: MemberMobileEventContext[];
   campaign: MemberMobileCampaignContext;
 } {
+  const campaignName = ensureVisibleTestLabel(data.campaign.name);
   const lumaEventIds = new Set(
     data.lumaEventLinkRows
       .map((row) => row.chapter_event_id)
@@ -69,7 +70,7 @@ export function buildMemberMobileEventContext(data: ReadOnlyAppData): {
     loc: "Location not set",
     pts: getEventPoints(data, row.id),
     status: getMemberEventStatus(row.status),
-    campaign: data.campaign.name,
+    campaign: campaignName,
     eventType: getMemberEventType(row.event_type, row.title),
     featured: index === 0,
     luma: lumaEventIds.has(row.id),
@@ -79,8 +80,8 @@ export function buildMemberMobileEventContext(data: ReadOnlyAppData): {
   return {
     events,
     campaign: {
-      name: data.campaign.name,
-      objective: data.campaign.objective,
+      name: campaignName,
+      objective: ensureVisibleTestLabel(data.campaign.objective),
     },
   };
 }
