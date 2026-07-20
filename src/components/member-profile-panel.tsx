@@ -12,6 +12,7 @@ import { signOut } from "@/app/login/actions";
 import type { MvpMemberHome } from "@/services/mvp-event-tracking-workspace";
 import type { ProfileWorkspace } from "@/services/profile-workspace";
 import type { MemberRecognitionSummary } from "@/services/member-recognition";
+import type { LaunchLaneMemberProfileReadback } from "@/services/launch-lane-points-readback";
 import { ensureVisibleTestLabel } from "@/services/member-mobile-identity-context";
 import { StatusPill, SurfacePanel } from "@/components/visual-primitives";
 import type { ReactNode } from "react";
@@ -28,6 +29,7 @@ type MemberProfilePanelProps = {
   workspace: ProfileWorkspace;
   studentHome: MvpMemberHome;
   recognition: MemberRecognitionSummary;
+  profileReadback?: LaunchLaneMemberProfileReadback | null;
 };
 
 export function MemberProfilePanel({
@@ -42,6 +44,7 @@ export function MemberProfilePanel({
   workspace,
   studentHome,
   recognition,
+  profileReadback = null,
 }: MemberProfilePanelProps) {
   const launchLanePointsHref = buildProfilePointsHref(
     entrySource,
@@ -57,14 +60,29 @@ export function MemberProfilePanel({
   const profileLabel = workspace.profileLabel;
   const designationOptions = getDesignationOptions(profileLabel);
   const avatarMonogram = getAvatarMonogram(testDisplayName);
-  const taskCount =
-    recognition.selectedMember?.completedActions ?? recognition.recentApprovedActions.length;
+  const pointsTotal = profileReadback?.usesLiveLedger
+    ? profileReadback.totalPoints
+    : Math.max(
+        studentHome.pointsTotal,
+        recognition.selectedMember?.points ?? 0,
+        profileReadback?.totalPoints ?? 0,
+      );
+  const taskCount = profileReadback?.usesLiveLedger
+    ? profileReadback.completedActionCount
+    : Math.max(
+        recognition.selectedMember?.completedActions ?? recognition.recentApprovedActions.length,
+        profileReadback?.completedActionCount ?? 0,
+      );
   const primaryEventCount = studentHome.primaryEvent ? 1 : 0;
-  const eventCount =
-    taskCount > 0
-      ? Math.max(studentHome.recentHistory.length, primaryEventCount)
-      : 0;
-  const recentActivity = getRecentActivity(recognition, studentHome);
+  const eventCount = profileReadback?.usesLiveLedger
+    ? profileReadback.attendedEventCount
+    : Math.max(
+        taskCount > 0
+          ? Math.max(studentHome.recentHistory.length, primaryEventCount)
+          : 0,
+        profileReadback?.attendedEventCount ?? 0,
+      );
+  const recentActivity = getRecentActivity(recognition, studentHome, profileReadback);
   const previewMemberId = getPreviewMemberId(testChapterName);
   const continuityCard = getProfileContinuityCard({
     entrySource,
@@ -122,7 +140,7 @@ export function MemberProfilePanel({
                       <p className="mt-0.5 text-slate-500">Preview member ID</p>
                     </div>
                     <div className="rounded-xl bg-slate-100 py-3">
-                      <p className="text-sm font-bold text-slate-950">{studentHome.pointsTotal} pts</p>
+                      <p className="text-sm font-bold text-slate-950">{pointsTotal} pts</p>
                       <p className="mt-0.5 text-slate-500">Season Points</p>
                     </div>
                   </div>
@@ -135,7 +153,7 @@ export function MemberProfilePanel({
           </div>
 
           <div className="mt-5 grid grid-cols-3 gap-3">
-            <ProfileStatCard value={`${studentHome.pointsTotal}`} label="Total Points" />
+            <ProfileStatCard value={`${pointsTotal}`} label="Total Points" />
             <ProfileStatCard value={`${eventCount}`} label="Events" />
             <ProfileStatCard value={`${taskCount}`} label="Tasks Done" />
           </div>
@@ -612,7 +630,18 @@ function getDesignationOptions(current: string) {
 function getRecentActivity(
   recognition: MemberRecognitionSummary,
   studentHome: MvpMemberHome,
+  profileReadback: LaunchLaneMemberProfileReadback | null,
 ) {
+  if (profileReadback?.usesLiveLedger) {
+    return profileReadback.recentActivity.length > 0
+      ? profileReadback.recentActivity
+      : getEmptyRecentActivity();
+  }
+
+  if (profileReadback && profileReadback.recentActivity.length > 0) {
+    return profileReadback.recentActivity;
+  }
+
   const approvedActions = recognition.recentApprovedActions.slice(0, 5).map((action) => ({
     title: ensureVisibleTestLabel(action.title),
     detail: action.detail,
@@ -627,14 +656,7 @@ function getRecentActivity(
   const memberPointsTotal = recognition.selectedMember?.points ?? studentHome.pointsTotal;
 
   if (completedActions <= 0 && memberPointsTotal <= 0) {
-    return [
-      {
-        title: "No completed TEST activity yet",
-        detail:
-          "RSVP, check-in, attendance, and points readback are visible, but no activity is counted for this signed-in member yet.",
-        pointsLabel: "0 pts",
-      },
-    ];
+    return getEmptyRecentActivity();
   }
 
   const combinedActivity = [...approvedActions, ...historyActions].slice(0, 5);
@@ -648,6 +670,17 @@ function getRecentActivity(
     detail: entry.detail,
     pointsLabel: "Preview",
   }));
+}
+
+function getEmptyRecentActivity() {
+  return [
+    {
+      title: "No completed TEST activity yet",
+      detail:
+        "RSVP, check-in, attendance, and points readback are visible, but no activity is counted for this signed-in member yet.",
+      pointsLabel: "0 pts",
+    },
+  ];
 }
 
 function getBadgeGlyph(tone: MemberRecognitionSummary["badges"][number]["tone"]) {
