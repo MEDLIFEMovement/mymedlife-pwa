@@ -137,6 +137,8 @@ describe("staff page", () => {
     expect(html).toContain("Points/Yr");
     expect(html).toContain("TEST UC Berkeley");
     expect(html).toContain("TEST Maria Santos");
+    expect(html).toContain('whitespace-nowrap">TEST Maria Santos</td>');
+    expect(html).not.toContain('whitespace-nowrap">TEST</td>');
     expect(html).toContain("Search chapter or school");
     expect(html).toContain(">Type<");
     expect(html).toContain("High School");
@@ -1109,6 +1111,7 @@ describe("staff page", () => {
     expect(source).toContain("resolveStaffChapterSort(searchParams.get(\"chapterSort\"), initialSortBy)");
     expect(source).toContain("handleChapterFilterChange");
     expect(source).toContain('params.set(key, value);');
+    expect(source).not.toContain('ch.coach.split(" ")[0]');
   });
 
   it("keeps chapter portfolio filter context on the chapter-to-admin handoff", async () => {

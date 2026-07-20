@@ -959,7 +959,7 @@ function PortfolioOverview({
                       <div className="text-muted-foreground text-[10px]">{ch.country}</div>
                     </td>
                     <td className="px-3 py-2.5 text-muted-foreground whitespace-nowrap text-[11px]">{getStaffChapterTypeLabel(ch)}</td>
-                    <td className="px-3 py-2.5 text-muted-foreground whitespace-nowrap">{ch.coach.split(" ")[0]}</td>
+                    <td className="px-3 py-2.5 text-muted-foreground whitespace-nowrap">{ch.coach}</td>
                     <td className="px-3 py-2.5 text-muted-foreground whitespace-nowrap text-[11px]">{ch.medlifeRegion}</td>
                     <td className="px-3 py-2.5 font-mono font-bold text-foreground text-center">{ch.eventsThisYear}</td>
                     <td className="px-3 py-2.5 text-center">
@@ -1264,7 +1264,7 @@ function CampaignOps({ initialCampaign = null }: CampaignOpsProps) {
                   return (
                     <tr key={ch.id} className={`border-b border-border last:border-0 hover:bg-muted/20 transition-colors ${isAtRisk ? "bg-amber-50/30" : ""}`}>
                       <td className="px-3 py-2.5"><div className="font-semibold text-foreground">{ch.name}</div><div className="text-[10px] text-muted-foreground">{ch.country}</div></td>
-                      <td className="px-3 py-2.5 text-muted-foreground">{ch.coach.split(" ")[0]}</td>
+                      <td className="px-3 py-2.5 text-muted-foreground">{ch.coach}</td>
                       <td className="px-3 py-2.5 text-muted-foreground">{ch.medlifeRegion}</td>
                       <td className="px-3 py-2.5 font-mono font-bold text-foreground">{ch.activeMembers}</td>
                       <td className="px-3 py-2.5 font-mono text-muted-foreground">{h.rush.lyMembers}</td>
@@ -1307,7 +1307,7 @@ function CampaignOps({ initialCampaign = null }: CampaignOpsProps) {
                   return (
                     <tr key={ch.id} className={`border-b border-border last:border-0 hover:bg-muted/20 transition-colors ${isAtRisk ? "bg-amber-50/30" : ""}`}>
                       <td className="px-3 py-2.5"><div className="font-semibold text-foreground">{ch.name}</div><div className="text-[10px] text-muted-foreground">{ch.country}</div></td>
-                      <td className="px-3 py-2.5 text-muted-foreground">{ch.coach.split(" ")[0]}</td>
+                      <td className="px-3 py-2.5 text-muted-foreground">{ch.coach}</td>
                       <td className="px-3 py-2.5 text-muted-foreground">{ch.medlifeRegion}</td>
                       <td className="px-3 py-2.5 font-mono font-bold text-foreground">{ch.activeMembers}</td>
                       <td className="px-3 py-2.5 font-mono text-muted-foreground">{h.slt.lyMembers}</td>
@@ -1351,7 +1351,7 @@ function CampaignOps({ initialCampaign = null }: CampaignOpsProps) {
                   return (
                     <tr key={ch.id} className={`border-b border-border last:border-0 hover:bg-muted/20 transition-colors ${isAtRisk ? "bg-amber-50/30" : ""}`}>
                       <td className="px-3 py-2.5"><div className="font-semibold text-foreground">{ch.name}</div><div className="text-[10px] text-muted-foreground">{ch.country}</div></td>
-                      <td className="px-3 py-2.5 text-muted-foreground">{ch.coach.split(" ")[0]}</td>
+                      <td className="px-3 py-2.5 text-muted-foreground">{ch.coach}</td>
                       <td className="px-3 py-2.5 text-muted-foreground">{ch.medlifeRegion}</td>
                       <td className="px-3 py-2.5 font-mono font-bold text-foreground">{ch.activeMembers}</td>
                       <td className="px-3 py-2.5 font-mono text-muted-foreground">{h.mm.lyMembers}</td>
@@ -1393,7 +1393,7 @@ function CampaignOps({ initialCampaign = null }: CampaignOpsProps) {
                   return (
                     <tr key={ch.id} className={`border-b border-border last:border-0 hover:bg-muted/20 transition-colors ${isAtRisk ? "bg-amber-50/30" : ""}`}>
                       <td className="px-3 py-2.5"><div className="font-semibold text-foreground">{ch.name}</div><div className="text-[10px] text-muted-foreground">{ch.country}</div></td>
-                      <td className="px-3 py-2.5 text-muted-foreground">{ch.coach.split(" ")[0]}</td>
+                      <td className="px-3 py-2.5 text-muted-foreground">{ch.coach}</td>
                       <td className="px-3 py-2.5 text-muted-foreground">{ch.medlifeRegion}</td>
                       <td className="px-3 py-2.5 font-mono font-bold text-foreground">{ch.eventsThisMonth}</td>
                       <td className="px-3 py-2.5 font-mono text-muted-foreground">{h.events.lyMonthEvents}</td>
@@ -1464,7 +1464,7 @@ function CampaignOps({ initialCampaign = null }: CampaignOpsProps) {
                   return (
                     <tr key={ch.id} className="border-b border-border last:border-0 hover:bg-muted/20 transition-colors">
                       <td className="px-3 py-2.5"><div className="font-semibold text-foreground">{ch.name}</div><div className="text-[10px] text-muted-foreground">{ch.country}</div></td>
-                      <td className="px-3 py-2.5 text-muted-foreground">{ch.coach.split(" ")[0]}</td>
+                      <td className="px-3 py-2.5 text-muted-foreground">{ch.coach}</td>
                       <td className="px-3 py-2.5 text-muted-foreground">{ch.medlifeRegion}</td>
                       <td className="px-3 py-2.5 font-mono font-bold" style={{color:"#E1306C"}}>{s.ig.toLocaleString()}</td>
                       <td className="px-3 py-2.5 font-mono text-muted-foreground">{s.igLY.toLocaleString()}</td>

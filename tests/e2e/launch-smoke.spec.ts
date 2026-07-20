@@ -243,6 +243,9 @@ test.describe("myMEDLIFE launch route smoke", () => {
     await selectPreviewActor(context, "general.staff@mymedlife.test");
 
     await page.goto("/staff?view=chapters");
+    await expect(
+      page.getByRole("row", { name: /UC Berkeley/i }).getByRole("cell", { name: "TEST Maria Santos" }),
+    ).toBeVisible();
     await page.locator("select").nth(2).selectOption("needs_review");
 
     await expect(page.getByText("filtered")).toBeVisible();
