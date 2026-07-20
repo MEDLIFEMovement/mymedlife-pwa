@@ -8,7 +8,7 @@ const mocks = vi.hoisted(() => ({
   getAuthSessionState: vi.fn(),
   getMemberEventLoopWriteConfig: vi.fn(),
   createMemberEventLoopWriteClient: vi.fn(),
-  recordMemberEventLoopStep: vi.fn(),
+  recordMemberEventLoopStepAtomically: vi.fn(),
 }));
 
 vi.mock("next/navigation", () => ({
@@ -27,7 +27,7 @@ vi.mock("@/services/member-event-loop-write", () => ({
   createMemberEventLoopWriteClient: mocks.createMemberEventLoopWriteClient,
   getMemberEventLoopWriteConfig: mocks.getMemberEventLoopWriteConfig,
   memberEventLoopWriteResultParam: "memberEventLoopWriteResult",
-  recordMemberEventLoopStep: mocks.recordMemberEventLoopStep,
+  recordMemberEventLoopStepAtomically: mocks.recordMemberEventLoopStepAtomically,
 }));
 
 import {
@@ -133,7 +133,7 @@ describe("member event-loop server actions", () => {
       user: { id: "user-1", email: "member.a@mymedlife.test" },
     });
     mocks.createMemberEventLoopWriteClient.mockReturnValue(serviceClient);
-    mocks.recordMemberEventLoopStep.mockResolvedValue({
+    mocks.recordMemberEventLoopStepAtomically.mockResolvedValue({
       success: true,
       code: "checked_in",
       eventId: "materialized-event",
@@ -149,7 +149,7 @@ describe("member event-loop server actions", () => {
     );
 
     expect(result).toMatchObject({ success: true, code: "checked_in" });
-    expect(mocks.recordMemberEventLoopStep).toHaveBeenCalledWith(serviceClient, {
+    expect(mocks.recordMemberEventLoopStepAtomically).toHaveBeenCalledWith(serviceClient, {
       operation: "checkin",
       routeEventId: "chapter-event-ucla-kickoff",
       actorUserId: "user-1",
@@ -216,7 +216,7 @@ function enableSuccessfulActionResult(code: string, eventId: string) {
     user: { id: "user-1", email: "member.a@mymedlife.test" },
   });
   mocks.createMemberEventLoopWriteClient.mockReturnValue({ service: "client" });
-  mocks.recordMemberEventLoopStep.mockResolvedValue({
+  mocks.recordMemberEventLoopStepAtomically.mockResolvedValue({
     success: true,
     code,
     eventId,

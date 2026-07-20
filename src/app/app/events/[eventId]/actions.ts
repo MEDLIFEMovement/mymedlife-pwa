@@ -8,7 +8,7 @@ import {
   createMemberEventLoopWriteClient,
   getMemberEventLoopWriteConfig,
   memberEventLoopWriteResultParam,
-  recordMemberEventLoopStep,
+  recordMemberEventLoopStepAtomically,
   type MemberEventLoopWriteResult,
 } from "@/services/member-event-loop-write";
 
@@ -91,7 +91,7 @@ export async function submitMemberEventLoopStepForSupabase(
     };
   }
 
-  return recordMemberEventLoopStep(serviceClient, {
+  return recordMemberEventLoopStepAtomically(serviceClient, {
     operation,
     routeEventId,
     actorUserId: session.user.id,
