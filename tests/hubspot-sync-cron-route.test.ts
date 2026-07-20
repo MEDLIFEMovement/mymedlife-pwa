@@ -43,6 +43,32 @@ describe("HubSpot scheduled sync route", () => {
     });
   });
 
+  it("runs a complete daily backfill so removed associations are reconciled", async () => {
+    mocks.runHubSpotReadSync.mockResolvedValue({
+      success: true,
+      code: "hubspot_sync_succeeded",
+      runId: "run-backfill",
+      counts: {},
+      plainEnglishMessage: "private detail",
+    });
+    const response = await GET(new Request("https://mymedlife.org/api/cron/hubspot-sync", {
+      headers: {
+        authorization: "Bearer cron-secret",
+        "x-vercel-cron-schedule": "43 3 * * *",
+      },
+    }));
+
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({
+      ok: true,
+      code: "hubspot_sync_succeeded",
+      runId: "run-backfill",
+    });
+    expect(mocks.runHubSpotReadSync).toHaveBeenCalledWith(null, "backfill", {
+      triggerSource: "scheduled",
+    });
+  });
+
   it("returns a conflict when another run owns the database lock", async () => {
     mocks.runHubSpotReadSync.mockResolvedValue({
       success: false,

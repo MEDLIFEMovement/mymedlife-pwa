@@ -6,6 +6,10 @@
       "schedule": "17 * * * *"
     },
     {
+      "path": "/api/cron/hubspot-sync",
+      "schedule": "43 3 * * *"
+    },
+    {
       "path": "/api/cron/luma-event-sync",
       "schedule": "37 * * * *"
     }
