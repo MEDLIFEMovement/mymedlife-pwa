@@ -49,6 +49,23 @@ describe("Luma event read sync", () => {
       chapterId: "90000000-0000-4000-8000-000000000001",
       calendarId: "cal-production",
     });
+
+    expect(getLumaEventSyncConfig({
+      ...enabledEnv,
+      SUPABASE_SERVICE_ROLE_KEY: undefined,
+    })).toMatchObject({ enabled: false, reason: "Luma event read sync is disabled because the server-only Supabase client is incomplete." });
+    expect(getLumaEventSyncConfig({
+      ...enabledEnv,
+      MYMEDLIFE_AUTH_MODE: "staging_supabase",
+      MYMEDLIFE_ALLOW_PRODUCTION_LUMA_READ_SYNC: undefined,
+      MYMEDLIFE_ALLOW_STAGING_LUMA_READ_SYNC: "true",
+    })).toMatchObject({ enabled: true, environment: "staging" });
+    expect(getLumaEventSyncConfig({
+      ...enabledEnv,
+      MYMEDLIFE_AUTH_MODE: "local",
+      MYMEDLIFE_ALLOW_PRODUCTION_LUMA_READ_SYNC: undefined,
+      MYMEDLIFE_ALLOW_LOCAL_LUMA_READ_SYNC: "true",
+    })).toMatchObject({ enabled: true, environment: "local" });
   });
 
   it("paginates the official calendar event endpoint and keeps only the approved calendar", async () => {
@@ -278,6 +295,100 @@ describe("Luma event read sync", () => {
     });
   });
 
+  it("fails closed when chapter, recovery, lock, or run creation cannot be verified", async () => {
+    const scenarios = [
+      {
+        name: "missing chapter",
+        handler: (query: FakeQuery) => query.table === "staff_role_assignments"
+          ? ok([{ role_key: "ds_admin" }])
+          : ok([]),
+        code: "server_error",
+      },
+      {
+        name: "stale recovery failure",
+        handler: (query: FakeQuery) => {
+          if (query.table === "staff_role_assignments") return ok([{ role_key: "ds_admin" }]);
+          if (query.table === "chapters") return ok([{ id: enabledEnv.MYMEDLIFE_LUMA_CHAPTER_ID }]);
+          if (query.table === "luma_sync_runs" && query.operation === "update") return failed("recovery failed");
+          return ok([]);
+        },
+        code: "server_error",
+      },
+      {
+        name: "lock lookup failure",
+        handler: (query: FakeQuery) => {
+          if (query.table === "staff_role_assignments") return ok([{ role_key: "ds_admin" }]);
+          if (query.table === "chapters") return ok([{ id: enabledEnv.MYMEDLIFE_LUMA_CHAPTER_ID }]);
+          if (query.table === "luma_sync_runs" && query.operation === "select") return failed("lock failed");
+          return ok([]);
+        },
+        code: "server_error",
+      },
+      {
+        name: "run insert conflict",
+        handler: (query: FakeQuery) => {
+          if (query.table === "staff_role_assignments") return ok([{ role_key: "ds_admin" }]);
+          if (query.table === "chapters") return ok([{ id: enabledEnv.MYMEDLIFE_LUMA_CHAPTER_ID }]);
+          if (query.table === "luma_sync_runs" && query.operation === "insert") return failed("duplicate key", "23505");
+          return ok([]);
+        },
+        code: "sync_already_running",
+      },
+      {
+        name: "run insert failure",
+        handler: (query: FakeQuery) => {
+          if (query.table === "staff_role_assignments") return ok([{ role_key: "ds_admin" }]);
+          if (query.table === "chapters") return ok([{ id: enabledEnv.MYMEDLIFE_LUMA_CHAPTER_ID }]);
+          if (query.table === "luma_sync_runs" && query.operation === "insert") return failed("insert failed");
+          return ok([]);
+        },
+        code: "server_error",
+      },
+    ] as const;
+
+    for (const scenario of scenarios) {
+      const result = await runLumaEventSync("admin-1", "reconcile", {
+        env: enabledEnv,
+        appClient: createFakeAppClient(scenario.handler) as never,
+        lumaClient: { readEvents: async () => [] },
+        now: () => new Date("2026-07-20T06:00:00.000Z"),
+      });
+      expect(result, scenario.name).toMatchObject({ success: false, code: scenario.code });
+    }
+  });
+
+  it.each([
+    ["source staging", "luma_event_imports", "upsert"],
+    ["provider-link lookup", "luma_event_links", "select"],
+    ["chapter-event creation", "chapter_events", "insert"],
+    ["provider-link creation", "luma_event_links", "insert"],
+    ["chapter-event backlink", "chapter_events", "update"],
+    ["materialization marker", "luma_event_imports", "update"],
+    ["audit record", "audit_logs", "insert"],
+  ] as const)("surfaces %s persistence failures as partial reconciliation", async (_label, table, operation) => {
+    const appClient = createFakeAppClient((query) => {
+      if (query.table === "staff_role_assignments") return ok([{ role_key: "ds_admin" }]);
+      if (query.table === "chapters" && query.operation === "select") return ok([{ id: enabledEnv.MYMEDLIFE_LUMA_CHAPTER_ID }]);
+      if (query.table === "luma_sync_runs" && query.operation === "select") return ok([]);
+      if (query.table === "luma_sync_runs" && query.operation === "insert") return ok({ id: "run-fault" });
+      if (query.table === table && query.operation === operation) return failed(`${table} ${operation} failed`);
+      if (query.table === "luma_event_links" && query.operation === "select") return ok([]);
+      if (query.table === "chapter_events" && query.operation === "insert") return ok({ id: "event-fault" });
+      if (query.table === "luma_event_links" && query.operation === "insert") return ok({ id: "link-fault" });
+      return ok([]);
+    });
+
+    const result = await runLumaEventSync("admin-1", "backfill", {
+      env: enabledEnv,
+      appClient: appClient as never,
+      lumaClient: { readEvents: async () => [mappedLumaEvent()] },
+      now: () => new Date("2026-07-20T07:00:00.000Z"),
+    });
+
+    expect(result).toMatchObject({ success: true, code: "luma_sync_partial" });
+    if (result.success) expect(result.counts.failures).toBeGreaterThan(0);
+  });
+
   it("keeps mappings, snapshots, locks, failures, and admin-only RLS in the migration", () => {
     const sql = readFileSync(
       join(process.cwd(), "supabase/migrations/20260720014500_luma_event_ingestion_foundation.sql"),
@@ -362,4 +473,8 @@ function createFakeAppClient(handler: (query: FakeQuery) => FakeResult) {
 
 function ok(data: unknown): FakeResult {
   return { data, error: null };
+}
+
+function failed(message: string, code?: string): FakeResult {
+  return { data: null, error: { message, code } };
 }
