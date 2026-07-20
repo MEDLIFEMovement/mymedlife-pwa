@@ -94,6 +94,7 @@ export async function renderMemberMobileShellPage({
         chapters: data.chapterRows,
         chapterEvents: data.allChapterEventRows,
         profiles: data.profiles,
+        accessibleEventIds: data.chapterEventRows.map((row) => row.id),
       })
     : undefined;
   const sltPrepEntry =
