@@ -7,6 +7,8 @@ import { runHubSpotReadSync } from "@/services/hubspot-read-sync";
 export const dynamic = "force-dynamic";
 export const maxDuration = 300;
 
+export const HUBSPOT_BACKFILL_CRON_SCHEDULE = "43 3 * * *";
+
 export async function GET(request: Request) {
   const secret = process.env.CRON_SECRET;
   const authorization = request.headers.get("authorization") ?? "";
@@ -14,7 +16,10 @@ export async function GET(request: Request) {
     return NextResponse.json({ ok: false, code: "unauthorized" }, { status: 401 });
   }
 
-  const result = await runHubSpotReadSync(null, "incremental", {
+  const mode = request.headers.get("x-vercel-cron-schedule") === HUBSPOT_BACKFILL_CRON_SCHEDULE
+    ? "backfill"
+    : "incremental";
+  const result = await runHubSpotReadSync(null, mode, {
     triggerSource: "scheduled",
   });
   if (result.success) {
