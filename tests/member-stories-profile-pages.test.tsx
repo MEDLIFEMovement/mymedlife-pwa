@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
+import type { ComponentProps } from "react";
 
 import { MemberProfilePanel } from "@/components/member-profile-panel";
 import { getMockLocalActorContext } from "@/services/local-actor-context";
@@ -54,6 +55,81 @@ function getSignedOutActor(email: string) {
     "local_actor_email",
     "signed_out",
   );
+}
+
+function getProfilePanelProps(): ComponentProps<typeof MemberProfilePanel> {
+  return {
+    chapterName: "TEST Review Chapter",
+    displayName: "TEST Member",
+    workspace: {
+      title: "Your myMEDLIFE profile",
+      summary: "Preview profile",
+      profileLabel: "General Member",
+      nextStep: {
+        label: "Open events",
+        href: "/app/events?source=profile",
+        detail: "Preview next step",
+      },
+      identityRows: [],
+      scopeRows: [],
+      futureStructuredEvents: [],
+      safetyNotes: [],
+      counts: {
+        chapterRoles: 1,
+        staffRoles: 0,
+        chapterScopes: 1,
+        coachPortfolioChapters: 0,
+        profileWritesExpected: 0,
+        membershipWritesExpected: 0,
+        roleWritesExpected: 0,
+        externalWritesExpected: 0,
+      },
+    },
+    studentHome: {
+      greeting: "Hi, TEST Member",
+      chapterName: "TEST Review Chapter",
+      chapterMeta: "General Member",
+      primaryEvent: null,
+      pointsBalance: "145 pts",
+      pointsDetail: "Preview points",
+      pointsRankLabel: "#3",
+      pointsTotal: 145,
+      attendanceStatusLabel: "Attendance pending",
+      recognition: "Preview only",
+      recentHistory: [],
+      chapterCard: {
+        title: "TEST Review Chapter",
+        detail: "Profile preview",
+        profileHref: "/profile",
+      },
+      travelerHref: null,
+    },
+    recognition: {
+      canReadRecognition: true,
+      title: "Recognition",
+      summary: "Preview recognition",
+      selectedMember: {
+        displayName: "TEST Member",
+        rank: 3,
+        points: 145,
+        recognition: "Preview recognition",
+        completedActions: 3,
+      },
+      leaderboard: [],
+      impacts: [],
+      topStats: [],
+      campaignPoints: [],
+      badges: [],
+      recentApprovedActions: [],
+      explainer: {
+        title: "How points work",
+        body: "Preview only",
+        ctaLabel: "See how to earn more points",
+        ctaHref: "/app/events?source=profile",
+      },
+      pointsLedgerPosture: "mock_read_only",
+    },
+  };
 }
 
 describe("member stories and profile pages", () => {
@@ -850,6 +926,56 @@ describe("member stories and profile pages", () => {
     expect(html).toContain("Back to Home");
     expect(html).not.toContain("member.a@mymedlife.test");
     expect(html).not.toContain("Profile Details");
+  });
+
+  it("uses exact live-ledger profile totals and activity instead of larger preview values", () => {
+    const html = renderToStaticMarkup(
+      <MemberProfilePanel
+        {...getProfilePanelProps()}
+        profileReadback={{
+          usesLiveLedger: true,
+          totalPoints: 20,
+          attendedEventCount: 1,
+          completedActionCount: 1,
+          recentActivity: [
+            {
+              title: "Checked in to TEST Intro GBM",
+              detail: "Recorded in myMEDLIFE internal TEST ledger",
+              pointsLabel: "+20 pts",
+            },
+          ],
+        }}
+      />,
+    );
+
+    expect(html).toMatch(/>20<\/p><p[^>]*>Total Points/);
+    expect(html).toMatch(/>1<\/p><p[^>]*>Events/);
+    expect(html).toMatch(/>1<\/p><p[^>]*>Tasks Done/);
+    expect(html).toContain("20 pts</p><p class=\"mt-0.5 text-slate-500\">Season Points");
+    expect(html).toContain("Checked in to TEST Intro GBM");
+    expect(html).toContain("Recorded in myMEDLIFE internal TEST ledger");
+    expect(html).not.toContain(">145</p>");
+  });
+
+  it("keeps an empty live ledger empty instead of borrowing preview activity", () => {
+    const html = renderToStaticMarkup(
+      <MemberProfilePanel
+        {...getProfilePanelProps()}
+        profileReadback={{
+          usesLiveLedger: true,
+          totalPoints: 0,
+          attendedEventCount: 0,
+          completedActionCount: 0,
+          recentActivity: [],
+        }}
+      />,
+    );
+
+    expect(html).toMatch(/>0<\/p><p[^>]*>Total Points/);
+    expect(html).toMatch(/>0<\/p><p[^>]*>Events/);
+    expect(html).toMatch(/>0<\/p><p[^>]*>Tasks Done/);
+    expect(html).toContain("No completed TEST activity yet");
+    expect(html).not.toContain(">145</p>");
   });
 
   it("keeps zero-count signed-in profile readback from borrowing demo activity", () => {
