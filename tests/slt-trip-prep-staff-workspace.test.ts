@@ -20,6 +20,18 @@ describe("slt trip prep staff workspace", () => {
     expect(workspace.counts.externalWritesExpected).toBe(0);
   });
 
+  it("does not keep a selected traveler outside the active risk filter", () => {
+    const actor = getMockLocalActorContext("coach@mymedlife.test");
+    const workspace = getSltTripPrepStaffWorkspace(actor, {
+      riskFilter: "high",
+      travelerId: "sofia-alvarez",
+    });
+
+    expect(workspace.travelers).toHaveLength(1);
+    expect(workspace.selectedTraveler?.id).toBe("daniel-kim");
+    expect(workspace.selectedTraveler?.riskLevel).toBe("high");
+  });
+
   it("lets admin inspect a selected traveler with focus-specific highlights", () => {
     const actor = getMockLocalActorContext("admin@mymedlife.test");
     const workspace = getSltTripPrepStaffWorkspace(actor, {

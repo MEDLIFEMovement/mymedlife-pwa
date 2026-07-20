@@ -365,6 +365,25 @@ describe("SLT Prep routes", () => {
     expect(html).toContain("TEST Staff needs the final return itinerary upload");
   });
 
+  it("keeps risk-filter URLs and selected traveler details aligned", async () => {
+    mockPathname = "/slt-prep/staff";
+    await primeSignedInActor("coach@mymedlife.test");
+
+    const { default: StaffPage } = await import("@/app/slt-prep/staff/page");
+    const html = renderToStaticMarkup(
+      await StaffPage({
+        searchParams: Promise.resolve({
+          risk: "high",
+          traveler: "sofia-alvarez",
+        }),
+      }),
+    );
+
+    expect(html).toContain("TEST Daniel Kim");
+    expect(html).toContain('href="/slt-prep/staff?risk=high"');
+    expect(html).not.toContain("risk=high&amp;traveler=sofia-alvarez");
+  });
+
   it.each([
     ["medical-clearance", "Review form status"],
     ["orientation-rsvp", "Open meeting status"],

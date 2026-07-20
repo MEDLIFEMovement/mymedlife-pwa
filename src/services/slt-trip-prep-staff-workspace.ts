@@ -97,12 +97,15 @@ export function getSltTripPrepStaffWorkspace(
   const riskFilter = options?.riskFilter ?? "all";
   const focusFilter = options?.focusFilter ?? "all";
   const bulkAction = options?.bulkAction ?? "none";
-  const travelers = mockSltTripTravelers
-    .filter((traveler) => riskFilter === "all" || traveler.riskLevel === riskFilter)
-    .map((traveler) => toTravelerSummary(traveler, focusFilter));
+  const filteredTravelers = mockSltTripTravelers.filter(
+    (traveler) => riskFilter === "all" || traveler.riskLevel === riskFilter,
+  );
+  const travelers = filteredTravelers.map((traveler) =>
+    toTravelerSummary(traveler, focusFilter),
+  );
   const selectedTraveler =
-    mockSltTripTravelers.find((traveler) => traveler.id === options?.travelerId) ??
-    mockSltTripTravelers.find((traveler) => riskFilter === "all" || traveler.riskLevel === riskFilter) ??
+    filteredTravelers.find((traveler) => traveler.id === options?.travelerId) ??
+    filteredTravelers[0] ??
     mockSltTripTravelers[0];
   const selectedTravelerReadiness = calculateReadinessScore(selectedTraveler.checklist);
 
