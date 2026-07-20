@@ -43,6 +43,7 @@ import { getLocalActorContext } from "@/services/local-actor-context";
 import { getMemberRecognitionSummary } from "@/services/member-recognition";
 import {
   buildMemberIdentityContext,
+  ensureVisibleTestLabel,
   getVisibleMemberLeaderboardRows,
 } from "@/services/member-mobile-identity-context";
 import { getMvpMemberHome } from "@/services/mvp-event-tracking-workspace";
@@ -315,10 +316,6 @@ function getResolvedEventDetailData(
     event: getMemberLaunchLaneEventRowById(actor, mockData, eventId),
     snapshot: getLaunchLaneEventSnapshotById(mockData, eventId),
   };
-}
-
-function ensureVisibleTestLabel(value: string) {
-  return /\bTEST\b/.test(value) ? value : `TEST ${value}`;
 }
 
 function EventDetailView({
