@@ -5,7 +5,10 @@ import { join } from "node:path";
 
 import { FigmaMemberMobileHome } from "@/components/figma-member-mobile-home";
 import { getMockLocalActorContext } from "@/services/local-actor-context";
-import { getVisibleMemberGreetingName } from "@/services/member-mobile-identity-context";
+import {
+  ensureVisibleTestLabel,
+  getVisibleMemberGreetingName,
+} from "@/services/member-mobile-identity-context";
 
 vi.mock("next/navigation", () => ({
   redirect: vi.fn(),
@@ -69,7 +72,8 @@ describe("member mobile shell routes", () => {
     const { default: HomePage } = await import("@/app/app/member-home-page");
     const html = renderToStaticMarkup(await HomePage({}));
 
-    expect(html).toContain("Hi, TEST Test UCLA General Member Sam");
+    expect(html).toContain("Hi, TEST UCLA General Member Sam");
+    expect(html).not.toContain("TEST Test");
     expect(html).not.toContain("Hi, TEST Test 👋");
   });
 
@@ -139,8 +143,20 @@ describe("member mobile shell routes", () => {
 
     expect(getVisibleMemberGreetingName("Nick Ellis")).toBe("TEST Nick");
     expect(getVisibleMemberGreetingName("TEST Nick Ellis")).toBe("TEST Nick");
-    expect(homeHtml).toContain("Hi, TEST Test UCLA General Member Sam");
+    expect(homeHtml).toContain("Hi, TEST UCLA General Member Sam");
     expect(homeHtml).not.toContain("Hi, TEST Test 👋");
+  });
+
+  it("collapses title-case and repeated TEST prefixes to one visible label", () => {
+    expect(ensureVisibleTestLabel("Test New York University")).toBe(
+      "TEST New York University",
+    );
+    expect(ensureVisibleTestLabel("TEST Test New York University")).toBe(
+      "TEST New York University",
+    );
+    expect(
+      getVisibleMemberGreetingName("Test New York University General Member Jordan"),
+    ).toBe("TEST New York University General Member Jordan");
   });
 
   it("renders the Stories route through the shared Figma member shell", async () => {

@@ -1110,6 +1110,6 @@ describe("member stories and profile pages", () => {
     );
 
     expect(html).toContain(">T<");
-    expect(html).toContain(">TEST </h1>");
+    expect(html).toContain(">TEST</h1>");
   });
 });

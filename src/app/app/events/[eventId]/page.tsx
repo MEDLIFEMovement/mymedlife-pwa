@@ -43,6 +43,7 @@ import { getLocalActorContext } from "@/services/local-actor-context";
 import { getMemberRecognitionSummary } from "@/services/member-recognition";
 import {
   buildMemberIdentityContext,
+  ensureVisibleTestLabel,
   getVisibleMemberLeaderboardRows,
 } from "@/services/member-mobile-identity-context";
 import { getMvpMemberHome } from "@/services/mvp-event-tracking-workspace";
@@ -133,45 +134,7 @@ export default async function AppEventDetailPage({
   const resultState = mapMemberEventLoopWriteResultMessage(
     resolvedSearchParams.memberEventLoopWriteResult,
   );
-  const backHref =
-    step === "detail"
-      ? getEventReturnHref(
-          eventId,
-          resolvedSearchParams.source,
-          resolvedSearchParams.profileSource,
-          resolvedSearchParams.campaign,
-          resolvedSearchParams.storyFilter,
-          resolvedSearchParams.story,
-        )
-      : step === "rsvp"
-        ? buildEventStepHref(
-            eventId,
-            "detail",
-            resolvedSearchParams.source,
-            resolvedSearchParams.profileSource,
-            resolvedSearchParams.campaign,
-            resolvedSearchParams.storyFilter,
-            resolvedSearchParams.story,
-          )
-        : step === "checkin"
-          ? buildEventStepHref(
-              eventId,
-              "rsvp",
-              resolvedSearchParams.source,
-              resolvedSearchParams.profileSource,
-              resolvedSearchParams.campaign,
-              resolvedSearchParams.storyFilter,
-              resolvedSearchParams.story,
-            )
-          : buildEventStepHref(
-              eventId,
-              "checkin",
-              resolvedSearchParams.source,
-              resolvedSearchParams.profileSource,
-              resolvedSearchParams.campaign,
-              resolvedSearchParams.storyFilter,
-              resolvedSearchParams.story,
-            );
+  const backHref = getEventDetailBackHref(eventId, step, resolvedSearchParams);
   const activeTab = getEventDetailActiveTab(step);
   const navHrefOverrides = getEventDetailNavHrefOverrides(
     eventId,
@@ -245,6 +208,34 @@ export default async function AppEventDetailPage({
   );
 }
 
+function getEventDetailBackHref(
+  eventId: string,
+  step: EventDetailStep,
+  searchParams: Awaited<NonNullable<AppEventDetailPageProps["searchParams"]>>,
+) {
+  if (step === "detail") {
+    return getEventReturnHref(
+      eventId,
+      searchParams.source,
+      searchParams.profileSource,
+      searchParams.campaign,
+      searchParams.storyFilter,
+      searchParams.story,
+    );
+  }
+
+  const previousStep = step === "rsvp" ? "detail" : step === "checkin" ? "rsvp" : "checkin";
+  return buildEventStepHref(
+    eventId,
+    previousStep,
+    searchParams.source,
+    searchParams.profileSource,
+    searchParams.campaign,
+    searchParams.storyFilter,
+    searchParams.story,
+  );
+}
+
 function buildRouteKey(
   pathname: string,
   params: {
@@ -315,10 +306,6 @@ function getResolvedEventDetailData(
     event: getMemberLaunchLaneEventRowById(actor, mockData, eventId),
     snapshot: getLaunchLaneEventSnapshotById(mockData, eventId),
   };
-}
-
-function ensureVisibleTestLabel(value: string) {
-  return /\bTEST\b/.test(value) ? value : `TEST ${value}`;
 }
 
 function EventDetailView({
