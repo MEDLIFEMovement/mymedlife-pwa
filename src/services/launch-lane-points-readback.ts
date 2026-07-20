@@ -20,6 +20,7 @@ import {
   sumLaunchLanePointsForEvent,
 } from "@/services/launch-lane-event-snapshots";
 import type { LocalActorContext } from "@/services/local-actor-context";
+import { ensureVisibleTestLabel } from "@/services/member-mobile-identity-context";
 import {
   buildMemberLaunchLaneEventDetailHref,
 } from "@/services/member-launch-lane-events";
@@ -206,7 +207,9 @@ export function getLaunchLaneMemberPointsReadback(
   });
 
   return {
-    eventTitle: event.title,
+    eventTitle: /^test\b/iu.test(event.title)
+      ? ensureVisibleTestLabel(event.title)
+      : event.title,
     chapterName: event.chapterName,
     timing: event.timing,
     loopStage: loopState.stage,
