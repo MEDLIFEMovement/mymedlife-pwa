@@ -5,6 +5,7 @@ import {
   mapMemberEventLoopWriteResultMessage,
   memberEventLoopPointAward,
   recordMemberEventLoopStep,
+  recordMemberEventLoopStepAtomically,
   type SupabaseServiceClient,
 } from "@/services/member-event-loop-write";
 
@@ -63,6 +64,68 @@ describe("member event-loop write gate", () => {
       tone: "success",
       message:
         "Check-in recorded, attendance updated, and points awarded once in the myMEDLIFE ledger. External writes stayed off.",
+    });
+  });
+
+  it("maps one transactional check-in result without claiming external writes", async () => {
+    const client = new FakeSupabaseClient();
+    enqueueValidActorPath(client);
+    client.enqueueRpc({
+      data: [
+        {
+          result_code: "checked_in",
+          event_id: chapterEventRow.id,
+          points_awarded: 20,
+          attendance_count: 8,
+        },
+      ],
+    });
+
+    await expect(
+      recordMemberEventLoopStepAtomically(asServiceClient(client), {
+        operation: "checkin",
+        routeEventId: chapterEventRow.id,
+        actorUserId: profileRow.id,
+        actorEmail: profileRow.email,
+      }),
+    ).resolves.toMatchObject({
+      success: true,
+      code: "checked_in",
+      eventId: chapterEventRow.id,
+      pointsAwarded: 20,
+      attendanceCount: 8,
+      externalWritesEnabled: false,
+    });
+
+    expect(client.rpcCalls).toEqual([
+      {
+        functionName: "record_member_event_loop_step",
+        params: {
+          actor_uuid: profileRow.id,
+          chapter_event_uuid: chapterEventRow.id,
+          operation_input: "checkin",
+        },
+      },
+    ]);
+  });
+
+  it("fails closed when the transactional event-loop RPC rejects the write", async () => {
+    const client = new FakeSupabaseClient();
+    enqueueValidActorPath(client);
+    client.enqueueRpc({ error: { message: "transaction aborted" } });
+
+    await expect(
+      recordMemberEventLoopStepAtomically(asServiceClient(client), {
+        operation: "checkin",
+        routeEventId: chapterEventRow.id,
+        actorUserId: profileRow.id,
+        actorEmail: profileRow.email,
+      }),
+    ).resolves.toMatchObject({
+      success: false,
+      code: "server_error",
+      eventId: chapterEventRow.id,
+      externalWritesEnabled: false,
     });
   });
 
@@ -579,14 +642,28 @@ const chapterEventRow = {
 class FakeSupabaseClient {
   readonly inserts: Record<string, Record<string, unknown>[]> = {};
   readonly updates: Record<string, Record<string, unknown>[]> = {};
+  readonly rpcCalls: Array<{
+    functionName: string;
+    params: Record<string, unknown>;
+  }> = [];
   private readonly queues = new Map<string, FakeQueryOutcome[]>();
+  private readonly rpcQueue: FakeQueryOutcome[] = [];
 
   schema(schemaName: "app") {
     expect(schemaName).toBe("app");
 
     return {
       from: (tableName: string) => new FakeTableClient(this, tableName),
+      rpc: (functionName: string, params: Record<string, unknown>) => {
+        this.rpcCalls.push({ functionName, params });
+        const next = this.rpcQueue.shift() ?? { data: null, error: null };
+        return Promise.resolve({ data: next.data ?? null, error: next.error ?? null });
+      },
     };
+  }
+
+  enqueueRpc(outcome: FakeQueryOutcome) {
+    this.rpcQueue.push({ data: null, error: null, ...outcome });
   }
 
   enqueue(tableName: string, method: "maybeSingle" | "single" | "then", outcome: FakeQueryOutcome) {

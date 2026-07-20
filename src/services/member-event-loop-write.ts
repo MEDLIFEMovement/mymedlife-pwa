@@ -35,6 +35,14 @@ type SupabaseTableClient = {
 export type SupabaseServiceClient = {
   schema(schemaName: "app"): {
     from(tableName: string): SupabaseTableClient;
+    rpc(
+      functionName: "record_member_event_loop_step",
+      params: {
+        actor_uuid: string;
+        chapter_event_uuid: string;
+        operation_input: MemberEventLoopOperation;
+      },
+    ): Promise<SupabaseQueryResult<unknown>>;
   };
 };
 
@@ -127,6 +135,13 @@ type RecordMemberEventLoopInput = {
   routeEventId: string;
   actorUserId: string;
   actorEmail: string;
+};
+
+type AtomicMemberEventLoopRow = {
+  result_code: string;
+  event_id: string;
+  points_awarded: number;
+  attendance_count: number;
 };
 
 const testEventRouteAliases = new Map([
@@ -286,6 +301,115 @@ export async function recordMemberEventLoopStep(
       profile,
       campaignId: event.campaign_id ?? campaign?.id ?? null,
     });
+  } catch (error) {
+    return failure(
+      "server_error",
+      input.routeEventId,
+      error instanceof Error
+        ? `The app could not safely record this event-loop step: ${error.message}`
+        : "The app could not safely record this event-loop step.",
+    );
+  }
+}
+
+export async function recordMemberEventLoopStepAtomically(
+  client: SupabaseServiceClient,
+  input: RecordMemberEventLoopInput,
+): Promise<MemberEventLoopWriteResult> {
+  try {
+    const profile = await resolveActorProfile(client, input.actorUserId, input.actorEmail);
+
+    if (!profile || profile.status !== "active") {
+      return failure(
+        "profile_not_found",
+        input.routeEventId,
+        "The signed-in user does not have an active myMEDLIFE profile, so no RSVP, attendance, or points rows were recorded.",
+      );
+    }
+
+    const membership = await resolveActorMembership(client, profile.id);
+
+    if (!membership) {
+      return failure(
+        "membership_required",
+        input.routeEventId,
+        "The signed-in user needs an approved chapter membership before RSVP, attendance, or points can be recorded.",
+      );
+    }
+
+    const campaign = await resolveActiveCampaign(client, membership.chapter_id);
+    const event = await resolveOrCreateEvent(client, {
+      routeEventId: input.routeEventId,
+      profileId: profile.id,
+      chapterId: membership.chapter_id,
+      campaignId: campaign?.id ?? null,
+    });
+
+    if (!event) {
+      return failure(
+        "event_not_found",
+        input.routeEventId,
+        "The event could not be found or safely materialized, so no event-loop write ran.",
+      );
+    }
+
+    if (event.chapter_id !== membership.chapter_id) {
+      return failure(
+        "permission_denied",
+        input.routeEventId,
+        "The signed-in member cannot write RSVP, attendance, or points rows for a different chapter.",
+      );
+    }
+
+    if (isMemberEventClosedStatus(event.status)) {
+      return failure(
+        "event_closed",
+        input.routeEventId,
+        "This event is completed or canceled, so member RSVP, cancellation, check-in, attendance, and points writes are closed.",
+      );
+    }
+
+    const response = await client.schema("app").rpc("record_member_event_loop_step", {
+      actor_uuid: profile.id,
+      chapter_event_uuid: event.id,
+      operation_input: input.operation,
+    });
+
+    if (response.error) {
+      return mapAtomicWriteError(response.error.message, event.id);
+    }
+
+    const row = Array.isArray(response.data)
+      ? (response.data[0] as AtomicMemberEventLoopRow | undefined)
+      : (response.data as AtomicMemberEventLoopRow | null);
+
+    if (!row || !isAtomicSuccessCode(row.result_code)) {
+      return failure(
+        "server_error",
+        event.id,
+        "The transactional event-loop write returned an invalid result, so completion was not claimed.",
+      );
+    }
+
+    if (row.result_code === "rsvp_cancel_blocked_checked_in") {
+      return failure(
+        "rsvp_cancel_blocked_checked_in",
+        row.event_id,
+        "RSVP cancellation is locked after check-in because attendance and points are already recorded.",
+      );
+    }
+
+    return {
+      success: true,
+      code: row.result_code,
+      eventId: row.event_id,
+      pointsAwarded: row.points_awarded,
+      attendanceCount: row.attendance_count,
+      externalWritesEnabled: false,
+      plainEnglishMessage:
+        mapMemberEventLoopWriteResultMessage(row.result_code)?.message ??
+        "The internal myMEDLIFE event-loop step completed. External writes stayed off.",
+    };
   } catch (error) {
     return failure(
       "server_error",
@@ -868,4 +992,52 @@ function failure(
 
 function capitalize(value: string) {
   return `${value[0]?.toUpperCase() ?? ""}${value.slice(1)}`;
+}
+
+function isAtomicSuccessCode(
+  code: string,
+): code is Extract<MemberEventLoopWriteResult, { success: true }>["code"] | "rsvp_cancel_blocked_checked_in" {
+  return [
+    "rsvp_recorded",
+    "already_rsvpd",
+    "rsvp_cancelled",
+    "rsvp_cancel_not_found",
+    "checked_in",
+    "already_checked_in",
+    "rsvp_cancel_blocked_checked_in",
+  ].includes(code);
+}
+
+function mapAtomicWriteError(message: string | undefined, eventId: string) {
+  const normalized = message?.toLowerCase() ?? "";
+
+  if (normalized.includes("membership")) {
+    return failure(
+      "membership_required",
+      eventId,
+      "The signed-in user needs an approved membership in this event's chapter.",
+    );
+  }
+
+  if (normalized.includes("closed")) {
+    return failure(
+      "event_closed",
+      eventId,
+      "This event is completed or canceled, so member event-loop writes are closed.",
+    );
+  }
+
+  if (normalized.includes("profile") || normalized.includes("not found")) {
+    return failure(
+      "profile_not_found",
+      eventId,
+      "The active member profile or event could not be found.",
+    );
+  }
+
+  return failure(
+    "server_error",
+    eventId,
+    "The transactional event-loop write failed, so no partial completion was claimed.",
+  );
 }
