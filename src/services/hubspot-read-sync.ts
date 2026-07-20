@@ -6,6 +6,7 @@ const ACTIVE_CHAPTER_LIFECYCLE_STAGES = ["23878512", "23925576", "23925577"];
 const HUBSPOT_API_ROOT = "https://api.hubapi.com";
 
 export type HubSpotSyncMode = "backfill" | "incremental";
+export type HubSpotSyncTriggerSource = "manual" | "scheduled" | "replay";
 
 export type HubSpotReadSyncConfig = {
   enabled: boolean;
@@ -81,6 +82,8 @@ type HubSpotReadSyncDeps = {
   hubspotClient?: HubSpotReadClient;
   env?: Record<string, string | undefined>;
   now?: () => Date;
+  triggerSource?: HubSpotSyncTriggerSource;
+  retryOfRunId?: string | null;
 };
 
 type HubSpotObjectRow = {
@@ -233,8 +236,16 @@ export async function runHubSpotReadSync(
 ): Promise<HubSpotReadSyncResult> {
   const env = deps.env ?? process.env;
   const config = getHubSpotReadSyncConfig(env);
+  const triggerSource = deps.triggerSource ?? "manual";
+  const retryOfRunId = deps.retryOfRunId ?? null;
+  const now = deps.now ?? (() => new Date());
   if (!config.enabled) return failure("sync_disabled", config.reason);
-  if (!actorUserId) return failure("missing_auth", "Sign in with a DS Admin or Super Admin account before running HubSpot sync.");
+  if (triggerSource !== "scheduled" && !actorUserId) {
+    return failure("missing_auth", "Sign in with a DS Admin or Super Admin account before running HubSpot sync.");
+  }
+  if (triggerSource === "replay" && !retryOfRunId) {
+    return failure("server_error", "A replay must identify the failed or partial HubSpot sync run being retried.");
+  }
 
   const appClient = deps.appClient ?? createHubSpotSyncAppClient(env);
   const hubspotClient = deps.hubspotClient ?? createHubSpotReadClient(env);
@@ -242,10 +253,22 @@ export async function runHubSpotReadSync(
     return failure("sync_disabled", "The server-only HubSpot and Supabase sync clients are not configured.");
   }
 
-  const actorRoles = await readActorRoles(appClient, actorUserId);
-  if (!actorRoles.some((role) => role === "ds_admin" || role === "super_admin")) {
-    return failure("permission_denied", "Only a DS Admin or Super Admin can run HubSpot sync.");
+  if (actorUserId) {
+    const actorRoles = await readActorRoles(appClient, actorUserId);
+    if (!actorRoles.some((role) => role === "ds_admin" || role === "super_admin")) {
+      return failure("permission_denied", "Only a DS Admin or Super Admin can run HubSpot sync.");
+    }
   }
+
+  const startedAt = now().toISOString();
+  const staleBefore = new Date(Date.parse(startedAt) - 30 * 60 * 1000).toISOString();
+  const recovered = await appClient.schema("app").from("hubspot_sync_runs").update({
+    status: "failed",
+    completed_at: startedAt,
+    heartbeat_at: startedAt,
+    error_summary: "Recovered abandoned HubSpot sync after its heartbeat expired.",
+  }).eq("status", "running").lt("heartbeat_at", staleBefore);
+  if (recovered.error) return failure("server_error", "Could not recover abandoned HubSpot sync runs.");
 
   const running = await appClient.schema("app").from("hubspot_sync_runs")
     .select("id")
@@ -257,16 +280,24 @@ export async function runHubSpotReadSync(
   }
 
   const checkpointBefore = await readLastCheckpoint(appClient);
-  const startedAt = (deps.now ?? (() => new Date()))().toISOString();
   const created = await appClient.schema("app").from("hubspot_sync_runs").insert({
     mode,
     status: "running",
     requested_by: actorUserId,
+    trigger_source: triggerSource,
+    retry_of_run_id: retryOfRunId,
+    attempt: triggerSource === "replay" ? 2 : 1,
     checkpoint_before: mode === "incremental" ? checkpointBefore : null,
     started_at: startedAt,
+    heartbeat_at: startedAt,
   }).select("id").single();
   const runId = String(created.data?.id ?? "");
-  if (created.error || !runId) return failure("server_error", "Could not create the app-owned HubSpot sync run.");
+  if (created.error || !runId) {
+    if (isRunningRunConflict(created.error)) {
+      return failure("sync_already_running", "A HubSpot sync is already running. Review that run before retrying.");
+    }
+    return failure("server_error", "Could not create the app-owned HubSpot sync run.");
+  }
 
   const counts = emptyCounts();
   try {
@@ -284,18 +315,23 @@ export async function runHubSpotReadSync(
 
     counts.sourceCompanies = companies.length;
     counts.sourceContacts = contacts.length;
+    await heartbeatRun(appClient, runId, now().toISOString());
 
     const chapterIds = new Map<string, string>();
-    for (const company of companies) {
+    for (const [index, company] of companies.entries()) {
       await syncCompany(appClient, runId, actorUserId, company, counts, chapterIds);
+      if ((index + 1) % 25 === 0) await heartbeatRun(appClient, runId, now().toISOString());
     }
+    await heartbeatRun(appClient, runId, now().toISOString());
 
     const profileIds = new Map<string, string>();
-    for (const contact of contacts) {
+    for (const [index, contact] of contacts.entries()) {
       await syncContact(appClient, runId, actorUserId, contact, counts, profileIds);
+      if ((index + 1) % 25 === 0) await heartbeatRun(appClient, runId, now().toISOString());
     }
+    await heartbeatRun(appClient, runId, now().toISOString());
 
-    for (const contact of contacts) {
+    for (const [index, contact] of contacts.entries()) {
       for (const companyId of contact.companyIds) {
         await syncMembership(
           appClient,
@@ -308,11 +344,15 @@ export async function runHubSpotReadSync(
           counts,
         );
       }
+      if ((index + 1) % 25 === 0) await heartbeatRun(appClient, runId, now().toISOString());
     }
 
-    const completedAt = (deps.now ?? (() => new Date()))().toISOString();
+    const completedAt = now().toISOString();
     const status = counts.failures > 0 || counts.conflicts > 0 ? "partial" : "succeeded";
     await finishRun(appClient, runId, status, completedAt, counts);
+    if (status === "succeeded" && triggerSource === "replay" && retryOfRunId) {
+      await resolveReplayedFailures(appClient, retryOfRunId, completedAt);
+    }
     return {
       success: true,
       code: status === "partial" ? "hubspot_sync_partial" : "hubspot_sync_succeeded",
@@ -326,7 +366,7 @@ export async function runHubSpotReadSync(
     counts.failures += 1;
     const message = safeErrorMessage(error);
     await recordFailure(appClient, runId, "run", null, "hubspot_read_failed", message, {});
-    await finishRun(appClient, runId, "failed", (deps.now ?? (() => new Date()))().toISOString(), counts, message);
+    await finishRun(appClient, runId, "failed", now().toISOString(), counts, message);
     return failure("server_error", `HubSpot read sync failed safely: ${message}`, runId);
   }
 }
@@ -361,7 +401,7 @@ async function readLastCheckpoint(client: AppClient): Promise<string | null> {
 async function syncCompany(
   client: AppClient,
   runId: string,
-  actorUserId: string,
+  actorUserId: string | null,
   company: HubSpotCompanyRecord,
   counts: HubSpotSyncCounts,
   chapterIds: Map<string, string>,
@@ -455,7 +495,7 @@ async function syncCompany(
 async function syncContact(
   client: AppClient,
   runId: string,
-  actorUserId: string,
+  actorUserId: string | null,
   contact: HubSpotContactRecord,
   counts: HubSpotSyncCounts,
   profileIds: Map<string, string>,
@@ -519,7 +559,7 @@ async function syncContact(
 async function syncMembership(
   client: AppClient,
   runId: string,
-  actorUserId: string,
+  actorUserId: string | null,
   contact: HubSpotContactRecord,
   companyId: string,
   profileId: string | null,
@@ -598,7 +638,7 @@ async function syncMembership(
 async function recordAudit(
   client: AppClient,
   runId: string,
-  actorUserId: string,
+  actorUserId: string | null,
   chapterId: string | null,
   action: string,
   targetTable: string,
@@ -692,6 +732,18 @@ async function finishRun(
   }).eq("id", runId);
 }
 
+async function heartbeatRun(client: AppClient, runId: string, heartbeatAt: string) {
+  await client.schema("app").from("hubspot_sync_runs").update({
+    heartbeat_at: heartbeatAt,
+  }).eq("id", runId).eq("status", "running");
+}
+
+async function resolveReplayedFailures(client: AppClient, retryOfRunId: string, resolvedAt: string) {
+  await client.schema("app").from("hubspot_sync_failures").update({
+    resolved_at: resolvedAt,
+  }).eq("run_id", retryOfRunId).is("resolved_at", null);
+}
+
 export function mapChapterType(schoolType: string | null): "high_school" | "college_university" | "needs_review" {
   const normalized = (schoolType ?? "").trim().toLowerCase();
   if (normalized.includes("high school") || normalized.includes("secondary")) return "high_school";
@@ -777,6 +829,14 @@ function capitalize(value: string) {
 
 function safeErrorMessage(error: unknown): string {
   return error instanceof Error ? error.message.slice(0, 500) : "Unknown server error.";
+}
+
+function isRunningRunConflict(error: { message?: string; code?: string } | null): boolean {
+  const message = error?.message?.toLowerCase() ?? "";
+  return error?.code === "23505"
+    || message.includes("hubspot_sync_runs_one_running")
+    || message.includes("duplicate key")
+    || message.includes("unique constraint");
 }
 
 function emptyCounts(): HubSpotSyncCounts {

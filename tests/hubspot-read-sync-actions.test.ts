@@ -25,7 +25,7 @@ vi.mock("@/services/hubspot-read-sync", () => ({
   runHubSpotReadSync: mocks.runHubSpotReadSync,
 }));
 
-import { submitHubSpotReadSyncAction } from "@/app/admin/integrations/hubspot/actions";
+import { submitHubSpotReadSyncAction, submitHubSpotReplayAction } from "@/app/admin/integrations/hubspot/actions";
 
 describe("HubSpot read-sync server action", () => {
   beforeEach(() => {
@@ -75,5 +75,24 @@ describe("HubSpot read-sync server action", () => {
     );
     expect(mocks.getAuthSessionState).not.toHaveBeenCalled();
     expect(mocks.runHubSpotReadSync).toHaveBeenCalledWith(null, "backfill");
+  });
+
+  it("replays a named failed run only after exact confirmation", async () => {
+    const client = { auth: "client" };
+    mocks.createLocalSupabaseServerClient.mockResolvedValue({ client, config: { reason: "Enabled." } });
+    mocks.getAuthSessionState.mockResolvedValue({ status: "signed_in", user: { id: "actor-1" } });
+    mocks.runHubSpotReadSync.mockResolvedValue({ success: true, code: "hubspot_sync_succeeded", runId: "replay-1" });
+    const formData = new FormData();
+    formData.set("mode", "incremental");
+    formData.set("retryOfRunId", "failed-1");
+    formData.set("confirmation", "REPLAY HUBSPOT");
+
+    await expect(submitHubSpotReplayAction(formData)).rejects.toThrow(
+      "NEXT_REDIRECT:/admin/integrations/hubspot?hubspotSyncResult=hubspot_sync_succeeded&runId=replay-1",
+    );
+    expect(mocks.runHubSpotReadSync).toHaveBeenCalledWith("actor-1", "incremental", {
+      triggerSource: "replay",
+      retryOfRunId: "failed-1",
+    });
   });
 });

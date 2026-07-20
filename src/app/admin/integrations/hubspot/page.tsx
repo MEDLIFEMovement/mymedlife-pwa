@@ -2,7 +2,7 @@ import Link from "next/link";
 
 import { AppShell } from "@/components/app-shell";
 import { RestrictedState } from "@/components/restricted-state";
-import { submitHubSpotReadSyncAction } from "@/app/admin/integrations/hubspot/actions";
+import { submitHubSpotReadSyncAction, submitHubSpotReplayAction } from "@/app/admin/integrations/hubspot/actions";
 import { getAdminHubSpotSyncWorkspace } from "@/services/admin-hubspot-sync-workspace";
 import { getLandingRouteForActor } from "@/services/landing-route";
 import { buildLoginRedirectHref, shouldRedirectActorToLogin } from "@/services/login-route";
@@ -67,6 +67,8 @@ export default async function AdminHubSpotIntegrationPage({ searchParams }: Page
                 <dl className="mt-4 grid gap-3 sm:grid-cols-2">
                   <Detail label="Status" value={workspace.lastRun.status} />
                   <Detail label="Mode" value={workspace.lastRun.mode} />
+                  <Detail label="Trigger" value={workspace.lastRun.triggerSource} />
+                  <Detail label="Heartbeat" value={workspace.lastRun.heartbeatAt} />
                   <Detail label="Source companies" value={workspace.lastRun.sourceCompanies} />
                   <Detail label="Source contacts" value={workspace.lastRun.sourceContacts} />
                   <Detail label="Chapters created" value={workspace.lastRun.materializedChapters} />
@@ -92,6 +94,14 @@ export default async function AdminHubSpotIntegrationPage({ searchParams }: Page
             <SyncForm mode="incremental" enabled={workspace.config.enabled} />
           </section>
 
+          {workspace.lastRun && ["failed", "partial"].includes(workspace.lastRun.status) ? (
+            <ReplayForm
+              runId={workspace.lastRun.id}
+              mode={workspace.lastRun.mode === "incremental" ? "incremental" : "backfill"}
+              enabled={workspace.config.enabled}
+            />
+          ) : null}
+
           <section className="mt-4 rounded-lg border border-white/10 bg-white/[0.04] p-5">
             <h2 className="text-lg font-semibold text-white">Open failures</h2>
             <div className="mt-4 space-y-2">
@@ -106,6 +116,20 @@ export default async function AdminHubSpotIntegrationPage({ searchParams }: Page
         </>
       )}
     </AppShell>
+  );
+}
+
+function ReplayForm({ runId, mode, enabled }: { runId: string; mode: "backfill" | "incremental"; enabled: boolean }) {
+  return (
+    <form action={submitHubSpotReplayAction} className="mt-4 rounded-lg border border-amber-300/25 bg-amber-300/[0.06] p-5">
+      <h2 className="text-lg font-semibold text-white">Replay latest incomplete run</h2>
+      <p className="mt-2 text-sm leading-6 text-white/60">Retries the same idempotent app-owned reconciliation path. Prior failures remain open until this replay succeeds.</p>
+      <input type="hidden" name="retryOfRunId" value={runId} />
+      <input type="hidden" name="mode" value={mode} />
+      <label className="mt-4 block text-xs font-semibold uppercase tracking-[0.14em] text-white/60" htmlFor="confirmation-replay">Type REPLAY HUBSPOT</label>
+      <input id="confirmation-replay" name="confirmation" disabled={!enabled} className="mt-2 w-full rounded-md border border-white/15 bg-black/20 px-3 py-2 text-sm text-white" />
+      <button type="submit" disabled={!enabled} className="mt-3 rounded-md bg-amber-200 px-4 py-2 text-sm font-semibold text-[#061a33] disabled:cursor-not-allowed disabled:bg-white/10 disabled:text-white/40">Replay run</button>
+    </form>
   );
 }
 

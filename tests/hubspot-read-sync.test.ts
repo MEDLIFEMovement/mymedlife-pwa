@@ -337,6 +337,86 @@ describe("HubSpot read sync foundation", () => {
     expect(hubspotClient.readActiveChapterCompanies).not.toHaveBeenCalled();
   });
 
+  it("allows an authenticated scheduler to run without impersonating an admin", async () => {
+    const queries: FakeQuery[] = [];
+    const appClient = createFakeAppClient((query) => {
+      queries.push(query);
+      if (query.table === "hubspot_sync_runs" && query.operation === "insert") return ok({ id: "run-scheduled" });
+      return ok([]);
+    });
+
+    await expect(runHubSpotReadSync(null, "incremental", {
+      env: enabledEnv,
+      appClient: appClient as never,
+      hubspotClient: emptyHubSpotClient(),
+      triggerSource: "scheduled",
+      now: () => new Date("2026-07-19T22:00:00.000Z"),
+    })).resolves.toMatchObject({ success: true, code: "hubspot_sync_succeeded", runId: "run-scheduled" });
+
+    const runInsert = queries.find((query) => query.table === "hubspot_sync_runs" && query.operation === "insert");
+    expect(runInsert?.payload).toMatchObject({
+      requested_by: null,
+      trigger_source: "scheduled",
+      heartbeat_at: "2026-07-19T22:00:00.000Z",
+    });
+    expect(queries.some((query) => query.table === "staff_role_assignments")).toBe(false);
+  });
+
+  it("recovers stale runs and treats a database lock race as already running", async () => {
+    const queries: FakeQuery[] = [];
+    const appClient = createFakeAppClient((query) => {
+      queries.push(query);
+      if (query.table === "staff_role_assignments") return ok([{ role_key: "ds_admin" }]);
+      if (query.table === "hubspot_sync_runs" && query.operation === "insert") {
+        return failed("duplicate key violates unique constraint hubspot_sync_runs_one_running", "23505");
+      }
+      return ok([]);
+    });
+
+    await expect(runHubSpotReadSync("actor-1", "incremental", {
+      env: enabledEnv,
+      appClient: appClient as never,
+      hubspotClient: emptyHubSpotClient(),
+      now: () => new Date("2026-07-19T22:00:00.000Z"),
+    })).resolves.toMatchObject({ success: false, code: "sync_already_running" });
+
+    expect(queries).toContainEqual(expect.objectContaining({
+      table: "hubspot_sync_runs",
+      operation: "update",
+      payload: expect.objectContaining({ status: "failed" }),
+      filters: expect.arrayContaining([
+        { column: "status", value: "running" },
+        { column: "heartbeat_at", value: "2026-07-19T21:30:00.000Z" },
+      ]),
+    }));
+  });
+
+  it("resolves prior failures only after a successful replay", async () => {
+    const queries: FakeQuery[] = [];
+    const appClient = createFakeAppClient((query) => {
+      queries.push(query);
+      if (query.table === "staff_role_assignments") return ok([{ role_key: "super_admin" }]);
+      if (query.table === "hubspot_sync_runs" && query.operation === "insert") return ok({ id: "run-replay" });
+      return ok([]);
+    });
+
+    await expect(runHubSpotReadSync("actor-1", "backfill", {
+      env: enabledEnv,
+      appClient: appClient as never,
+      hubspotClient: emptyHubSpotClient(),
+      triggerSource: "replay",
+      retryOfRunId: "run-partial",
+      now: () => new Date("2026-07-19T22:00:00.000Z"),
+    })).resolves.toMatchObject({ success: true, code: "hubspot_sync_succeeded" });
+
+    expect(queries).toContainEqual(expect.objectContaining({
+      table: "hubspot_sync_failures",
+      operation: "update",
+      payload: { resolved_at: "2026-07-19T22:00:00.000Z" },
+      filters: expect.arrayContaining([{ column: "run_id", value: "run-partial" }]),
+    }));
+  });
+
   it("fails closed for missing auth, lock-read failure, and run-creation failure", async () => {
     const hubspotClient = {
       readActiveChapterCompanies: vi.fn(),
@@ -359,7 +439,7 @@ describe("HubSpot read sync foundation", () => {
         query.table === "hubspot_sync_runs" ? failed("lock unavailable") : baseHandler(query)
       )) as never,
       hubspotClient,
-    })).resolves.toMatchObject({ success: false, code: "server_error", plainEnglishMessage: expect.stringContaining("lock") });
+    })).resolves.toMatchObject({ success: false, code: "server_error", plainEnglishMessage: expect.stringContaining("recover") });
 
     await expect(runHubSpotReadSync("actor-1", "backfill", {
       env: enabledEnv,
@@ -745,6 +825,15 @@ describe("HubSpot read sync foundation", () => {
     expect(sql).toContain("enable row level security");
     expect(sql).toContain("using (app.is_ds_admin())");
     expect(sql).not.toContain("HUBSPOT_ACCESS_TOKEN");
+
+    const schedulerSql = readFileSync(
+      join(process.cwd(), "supabase/migrations/20260720010323_hubspot_sync_scheduler_replay.sql"),
+      "utf8",
+    );
+    expect(schedulerSql).toContain("trigger_source");
+    expect(schedulerSql).toContain("heartbeat_at");
+    expect(schedulerSql).toContain("retry_of_run_id");
+    expect(schedulerSql).toContain("hubspot_sync_runs_one_running");
   });
 });
 
@@ -755,7 +844,7 @@ function jsonResponse(value: unknown) {
   });
 }
 
-type FakeResult = { data: unknown; error: { message: string } | null; count?: number | null };
+type FakeResult = { data: unknown; error: { message: string; code?: string } | null; count?: number | null };
 
 class FakeQuery {
   operation = "select";
@@ -775,6 +864,7 @@ class FakeQuery {
   eq(column: string, value: unknown) { this.filters.push({ column, value }); return this; }
   ilike(column: string, value: unknown) { this.filters.push({ column, value }); return this; }
   is(column: string, value: unknown) { this.filters.push({ column, value }); return this; }
+  lt(column: string, value: unknown) { this.filters.push({ column, value }); return this; }
   order() { return this; }
   limit() { return this; }
   single() { this.singleRow = true; return Promise.resolve(this.handler(this)); }
@@ -796,8 +886,8 @@ function ok(data: unknown): FakeResult {
   return { data, error: null };
 }
 
-function failed(message: string): FakeResult {
-  return { data: null, error: { message } };
+function failed(message: string, code?: string): FakeResult {
+  return { data: null, error: { message, code } };
 }
 
 function oneCompanyClient() {
@@ -814,6 +904,13 @@ function oneCompanyClient() {
       updatedAt: "2026-07-19T20:00:00.000Z",
       source: { id: "company-1" },
     }],
+    readContactsWithCompanies: async () => [],
+  };
+}
+
+function emptyHubSpotClient() {
+  return {
+    readActiveChapterCompanies: async () => [],
     readContactsWithCompanies: async () => [],
   };
 }
