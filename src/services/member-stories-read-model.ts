@@ -5,6 +5,7 @@ import type {
   ProfileRow,
 } from "@/shared/types/persistence";
 import type { MemberStoryReactionReadback } from "@/services/member-story-reactions";
+import type { MemberStoryMediaReadback } from "@/services/member-story-media";
 
 export type MemberStorySource = "field";
 export type MemberStoryType =
@@ -29,6 +30,7 @@ export type MemberStory = {
   country: string;
   tag?: string;
   image: string | null;
+  mediaUrl: string | null;
   likes: number;
   liked: boolean;
   views: number;
@@ -39,7 +41,11 @@ export type MemberStory = {
   filters: MemberStoryFilter[];
   eventRouteId?: string;
   persisted: true;
-  mediaStatus: "public_media_ready" | "private_media_protected" | "metadata_only";
+  mediaStatus:
+    | "public_media_ready"
+    | "approved_media_ready"
+    | "private_media_protected"
+    | "metadata_only";
 };
 
 export function buildMemberStoriesReadModel(input: {
@@ -49,6 +55,7 @@ export function buildMemberStoriesReadModel(input: {
   profiles: ProfileRow[];
   accessibleEventIds?: Iterable<string>;
   reactionReadbacks?: MemberStoryReactionReadback[];
+  mediaReadbacks?: MemberStoryMediaReadback[];
 }): MemberStory[] {
   const chapters = new Map(input.chapters.map((row) => [row.id, row]));
   const events = new Map(input.chapterEvents.map((row) => [row.id, row]));
@@ -58,6 +65,9 @@ export function buildMemberStoriesReadModel(input: {
     : null;
   const reactions = new Map(
     (input.reactionReadbacks ?? []).map((row) => [row.evidenceItemId, row]),
+  );
+  const media = new Map(
+    (input.mediaReadbacks ?? []).map((row) => [row.evidenceItemId, row]),
   );
 
   return input.evidenceRows
@@ -71,7 +81,11 @@ export function buildMemberStoriesReadModel(input: {
       const event = row.chapter_event_id ? events.get(row.chapter_event_id) : null;
       const profile = profiles.get(row.submitted_by_user_id);
       const publicImage = getPublicImageUrl(row.url);
-      const mediaStatus = publicImage
+      const approvedMedia = media.get(row.id);
+      const resolvedImage = approvedMedia?.thumbnailUrl ?? publicImage;
+      const mediaStatus = approvedMedia?.thumbnailUrl || approvedMedia?.mediaUrl
+        ? "approved_media_ready"
+        : publicImage
         ? "public_media_ready"
         : row.storage_path
           ? "private_media_protected"
@@ -94,7 +108,8 @@ export function buildMemberStoriesReadModel(input: {
         chapter: chapterLabel,
         country: chapter?.region ?? chapter?.campus ?? "MEDLIFE",
         tag: event ? "Event proof" : "Approved story",
-        image: publicImage,
+        image: resolvedImage,
+        mediaUrl: approvedMedia?.mediaUrl ?? null,
         likes: reactions.get(row.id)?.reactionCount ?? 0,
         liked: reactions.get(row.id)?.likedByActor ?? false,
         views: 0,

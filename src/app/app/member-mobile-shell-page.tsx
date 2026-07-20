@@ -14,6 +14,10 @@ import { getLocalActorContext } from "@/services/local-actor-context";
 import { getMemberRecognitionSummary } from "@/services/member-recognition";
 import { buildMemberStoriesReadModel } from "@/services/member-stories-read-model";
 import {
+  getMemberStoryMediaReadbacks,
+  type MemberStoryMediaClient,
+} from "@/services/member-story-media";
+import {
   createMemberStoryReactionClient,
   getMemberStoryReactionConfig,
   getMemberStoryReactionReadbacks,
@@ -32,6 +36,7 @@ import { getReadOnlyAppData } from "@/services/read-only-app-data";
 import { canAccessMemberWorkspace, hasTravelerAccess } from "@/services/role-visibility";
 import { getSltTripPrepWorkspace } from "@/services/slt-trip-prep-workspace";
 import { isPreviewWorkspaceAccess } from "@/services/workspace-access";
+import { createLocalSupabaseServerClient } from "@/lib/supabase-server";
 
 export async function renderMemberMobileShellPage({
   initialScreen,
@@ -102,6 +107,15 @@ export async function renderMemberMobileShellPage({
   const storyReactionReadbacks = storyReactionClient
     ? await getMemberStoryReactionReadbacks(storyReactionClient, actor.user.id)
     : [];
+  const { client: storyMediaClient } = data.source.mode === "supabase"
+    ? await createLocalSupabaseServerClient()
+    : { client: null };
+  const storyMediaReadbacks = storyMediaClient
+    ? await getMemberStoryMediaReadbacks(
+        storyMediaClient as unknown as MemberStoryMediaClient,
+        data.storyEvidenceRows,
+      )
+    : [];
   const memberStories = data.source.mode === "supabase"
     ? buildMemberStoriesReadModel({
         evidenceRows: data.storyEvidenceRows,
@@ -110,6 +124,7 @@ export async function renderMemberMobileShellPage({
         profiles: data.profiles,
         accessibleEventIds: data.chapterEventRows.map((row) => row.id),
         reactionReadbacks: storyReactionReadbacks,
+        mediaReadbacks: storyMediaReadbacks,
       })
     : undefined;
   const sltPrepEntry =

@@ -92,6 +92,45 @@ describe("member stories read model", () => {
     expect(story).toMatchObject({ likes: 2, liked: true });
   });
 
+  it("uses approved signed thumbnails and video URLs without exposing storage paths", () => {
+    const stories = buildMemberStoriesReadModel({
+      evidenceRows: [
+        evidenceRow({ id: "photo-1", evidence_type: "event_photo" }),
+        evidenceRow({ id: "video-1", evidence_type: "bridge_video" }),
+      ],
+      chapters: [chapterRow],
+      chapterEvents: [eventRow],
+      profiles: [profileRow],
+      mediaReadbacks: [
+        {
+          evidenceItemId: "photo-1",
+          thumbnailUrl: "https://storage.example.test/signed-thumbnail",
+          mediaUrl: null,
+        },
+        {
+          evidenceItemId: "video-1",
+          thumbnailUrl: null,
+          mediaUrl: "https://storage.example.test/signed-video",
+        },
+      ],
+    });
+
+    expect(stories).toEqual([
+      expect.objectContaining({
+        id: "photo-1",
+        image: "https://storage.example.test/signed-thumbnail",
+        mediaUrl: null,
+        mediaStatus: "approved_media_ready",
+      }),
+      expect.objectContaining({
+        id: "video-1",
+        image: null,
+        mediaUrl: "https://storage.example.test/signed-video",
+        mediaStatus: "approved_media_ready",
+      }),
+    ]);
+  });
+
   it("uses only HTTPS image URLs with an image extension as publishable media", () => {
     const stories = buildMemberStoriesReadModel({
       evidenceRows: [

@@ -11,6 +11,7 @@ import {
   MemberStoryReactionForm,
   MemberStoryReactionResultBanner,
 } from "@/components/member-story-reaction-controls";
+import { MemberStoryVideo } from "@/components/member-story-video";
 import { getVisibleMemberLeaderboardRows } from "@/services/member-mobile-identity-context";
 import type {
   MemberMobileCampaignContext,
@@ -3038,12 +3039,13 @@ type StoryFilter = "For You" | "Events" | "SLT" | "Fundraising" | "Leadership";
 interface Story {
   id: string; title: string; caption: string; source: StorySource; type: StoryType;
   chapter: string; country: string; tag?: string; image: string | null; likes: number;
+  mediaUrl?: string | null;
   liked?: boolean;
   views: number; date: string; featured: boolean; trending?: boolean;
   isVideo?: boolean; embedUrl?: string; duration?: string; quote?: string; body?: string; filters: StoryFilter[];
   eventRouteId?: string;
   persisted?: boolean;
-  mediaStatus?: "public_media_ready" | "private_media_protected" | "metadata_only";
+  mediaStatus?: "public_media_ready" | "approved_media_ready" | "private_media_protected" | "metadata_only";
 }
 
 function stripTestPrefix(value: string) {
@@ -3426,7 +3428,9 @@ function VideoPlayer({ story }: { story: Story }) {
 
   return (
     <div className="relative w-full bg-black" style={{ aspectRatio: "16/9" }}>
-      {story.embedUrl ? (
+      {story.mediaUrl ? (
+        <MemberStoryVideo src={story.mediaUrl} title={story.title} />
+      ) : story.embedUrl ? (
         <iframe
           src={`${story.embedUrl}?autoplay=1`}
           className="w-full h-full"
