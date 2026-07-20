@@ -8,6 +8,7 @@ import {
   mapPrivateProofUploadRpcError,
   mapPrivateProofUploadRpcSuccess,
   parseFutureSharingConsent,
+  validatePrivateProofUploadMetadata,
 } from "@/services/private-proof-upload-write";
 
 describe("private proof upload write", () => {
@@ -30,6 +31,82 @@ describe("private proof upload write", () => {
       uploadsEnabled: true,
       publicPublishingEnabled: false,
     });
+  });
+
+  it("requires both dedicated flags before enabling production private upload", () => {
+    expect(
+      getPrivateProofUploadWriteConfig({
+        MYMEDLIFE_AUTH_MODE: "production_supabase",
+        MYMEDLIFE_ENABLE_PRIVATE_PROOF_UPLOAD_WRITE: "true",
+      }),
+    ).toMatchObject({
+      enabled: false,
+      environment: "production",
+      uploadsEnabled: false,
+    });
+
+    expect(
+      getPrivateProofUploadWriteConfig({
+        MYMEDLIFE_AUTH_MODE: "production_supabase",
+        MYMEDLIFE_ENABLE_PRIVATE_PROOF_UPLOAD_WRITE: "true",
+        MYMEDLIFE_ALLOW_PRODUCTION_PRIVATE_PROOF_UPLOAD_WRITE: "true",
+      }),
+    ).toMatchObject({
+      enabled: true,
+      environment: "production",
+      isLocalOnly: false,
+      uploadsEnabled: true,
+      publicPublishingEnabled: false,
+      externalWritesEnabled: false,
+    });
+  });
+
+  it("keeps hosted staging uploads disabled even when the generic flag is set", () => {
+    expect(
+      getPrivateProofUploadWriteConfig({
+        MYMEDLIFE_AUTH_MODE: "staging_supabase",
+        MYMEDLIFE_ENABLE_PRIVATE_PROOF_UPLOAD_WRITE: "true",
+      }),
+    ).toMatchObject({
+      enabled: false,
+      environment: "staging",
+    });
+  });
+
+  it("validates upload metadata before minting a signed storage ticket", () => {
+    const config = getPrivateProofUploadWriteConfig({
+      MYMEDLIFE_AUTH_MODE: "production_supabase",
+      MYMEDLIFE_ENABLE_PRIVATE_PROOF_UPLOAD_WRITE: "true",
+      MYMEDLIFE_ALLOW_PRODUCTION_PRIVATE_PROOF_UPLOAD_WRITE: "true",
+    });
+    const base = {
+      evidenceItemId: "60000000-0000-4000-8000-000000000001",
+      fileName: "TEST-event-photo.png",
+      mimeType: "image/png",
+      byteSize: 2048,
+      consentToMedlifeReview: true,
+      config,
+    };
+
+    expect(validatePrivateProofUploadMetadata(base)).toBeNull();
+    expect(
+      validatePrivateProofUploadMetadata({
+        ...base,
+        consentToMedlifeReview: false,
+      }),
+    ).toBe("review_consent_required");
+    expect(
+      validatePrivateProofUploadMetadata({
+        ...base,
+        mimeType: "text/html",
+      }),
+    ).toBe("file_type_blocked");
+    expect(
+      validatePrivateProofUploadMetadata({
+        ...base,
+        byteSize: 500 * 1024 * 1024 + 1,
+      }),
+    ).toBe("file_too_large");
   });
 
   it("parses the future sharing choice explicitly", () => {
@@ -63,6 +140,7 @@ describe("private proof upload write", () => {
     const row = buildPrivateProofUploadRow({
       actor,
       assignmentId: "assignment-1",
+      assignmentStatus: "submitted",
       assignmentTitle: "Rush social follow-up",
       chapterName: "UCLA MEDLIFE",
       evidenceItemId: "evidence-1",
@@ -92,6 +170,7 @@ describe("private proof upload write", () => {
     const row = buildPrivateProofUploadRow({
       actor,
       assignmentId: "assignment-1",
+      assignmentStatus: "submitted",
       assignmentTitle: "Rush social follow-up",
       chapterName: "UCLA MEDLIFE",
       evidenceItemId: "evidence-1",
@@ -107,6 +186,36 @@ describe("private proof upload write", () => {
 
     expect(row.canUpload).toBe(false);
     expect(row.canRemove).toBe(true);
+  });
+
+  it("does not advertise upload before the related assignment is submitted", () => {
+    const actor = getMockLocalActorContext(
+      "member.a@mymedlife.test",
+      "Signed in locally.",
+      "mock_fallback",
+      "local_auth_session",
+      "signed_in",
+    );
+    actor.user.id = "00000000-0000-4000-8000-000000000001";
+
+    const row = buildPrivateProofUploadRow({
+      actor,
+      assignmentId: "assignment-1",
+      assignmentStatus: "in_progress",
+      assignmentTitle: "Rush social follow-up",
+      chapterName: "UCLA MEDLIFE",
+      evidenceItemId: "evidence-1",
+      submittedBy: "Sofia Alvarez",
+      submittedByUserId: actor.user.id,
+      evidenceType: "bridge_video",
+      summary: "Bridge video metadata only.",
+      status: "pending_review",
+      sharingStatus: "submitted",
+      storagePath: null,
+    });
+
+    expect(row.canUpload).toBe(false);
+    expect(row.helperText).toContain("Finish or resubmit");
   });
 
   it("maps upload success and removal success into stable result codes", () => {

@@ -10,25 +10,16 @@ import type { PrivateProofUploadResultCode } from "@/services/private-proof-uplo
 
 type EnvSource = Record<string, string | undefined>;
 
-export type PrivateProofUploadWriteConfig =
-  | {
-      enabled: true;
-      isLocalOnly: true;
-      uploadsEnabled: true;
-      publicPublishingEnabled: false;
-      externalWritesEnabled: false;
-      reason: string;
-      bucket: ProofStorageBucket;
-    }
-  | {
-      enabled: false;
-      isLocalOnly: true;
-      uploadsEnabled: false;
-      publicPublishingEnabled: false;
-      externalWritesEnabled: false;
-      reason: string;
-      bucket: ProofStorageBucket;
-    };
+export type PrivateProofUploadWriteConfig = {
+  enabled: boolean;
+  environment: "local" | "staging" | "production";
+  isLocalOnly: boolean;
+  uploadsEnabled: boolean;
+  publicPublishingEnabled: false;
+  externalWritesEnabled: false;
+  reason: string;
+  bucket: ProofStorageBucket;
+};
 
 export type PrivateProofUploadPrepareRow = {
   evidence_item_id: string;
@@ -114,41 +105,102 @@ export function getPrivateProofUploadWriteConfig(
   env: EnvSource = process.env,
 ): PrivateProofUploadWriteConfig {
   const bucket = getProofStoragePlan().privateSubmissionBucket;
+  const environment = getPrivateProofUploadEnvironment(env);
 
-  if (env.MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES !== "true") {
+  if (environment === "production") {
+    if (env.MYMEDLIFE_ENABLE_PRIVATE_PROOF_UPLOAD_WRITE !== "true") {
+      return disabledConfig(
+        environment,
+        bucket,
+        "Private proof upload stays locked until the dedicated write flag is enabled.",
+      );
+    }
+
+    if (env.MYMEDLIFE_ALLOW_PRODUCTION_PRIVATE_PROOF_UPLOAD_WRITE !== "true") {
+      return disabledConfig(
+        environment,
+        bucket,
+        "Production private proof upload requires the separate production approval flag.",
+      );
+    }
+
     return {
-      enabled: false,
-      isLocalOnly: true,
-      uploadsEnabled: false,
+      enabled: true,
+      environment,
+      isLocalOnly: false,
+      uploadsEnabled: true,
       publicPublishingEnabled: false,
       externalWritesEnabled: false,
       reason:
-        "Local Supabase writes are disabled. Turn them on only for localhost write testing.",
+        "Production private proof upload is enabled for authenticated submitters. Raw media stays private; public publishing and external sends remain disabled.",
       bucket,
     };
   }
 
-  if (env.MYMEDLIFE_ENABLE_PRIVATE_PROOF_UPLOAD_WRITE !== "true") {
-    return {
-      enabled: false,
-      isLocalOnly: true,
-      uploadsEnabled: false,
-      publicPublishingEnabled: false,
-      externalWritesEnabled: false,
-      reason:
-        "Private proof upload stays locked until the dedicated local write flag is enabled.",
+  if (environment === "staging") {
+    return disabledConfig(
+      environment,
       bucket,
-    };
+      "Hosted staging private proof upload remains disabled until a dedicated staging approval is configured.",
+    );
+  }
+
+  if (env.MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES !== "true") {
+    return disabledConfig(
+      environment,
+      bucket,
+      "Local Supabase writes are disabled. Turn them on only for localhost write testing.",
+    );
+  }
+
+  if (env.MYMEDLIFE_ENABLE_PRIVATE_PROOF_UPLOAD_WRITE !== "true") {
+    return disabledConfig(
+      environment,
+      bucket,
+      "Private proof upload stays locked until the dedicated local write flag is enabled.",
+    );
   }
 
   return {
     enabled: true,
+    environment,
     isLocalOnly: true,
     uploadsEnabled: true,
     publicPublishingEnabled: false,
     externalWritesEnabled: false,
     reason:
       "Local private proof upload is enabled for localhost Supabase only. Public proof sharing and external sends remain disabled.",
+    bucket,
+  };
+}
+
+function getPrivateProofUploadEnvironment(
+  env: EnvSource,
+): "local" | "staging" | "production" {
+  if (env.MYMEDLIFE_AUTH_MODE === "production_supabase") {
+    return "production";
+  }
+
+  if (env.MYMEDLIFE_AUTH_MODE === "staging_supabase") {
+    return "staging";
+  }
+
+  return "local";
+}
+
+function disabledConfig(
+  environment: "local" | "staging" | "production",
+  bucket: ProofStorageBucket,
+  reason: string,
+): PrivateProofUploadWriteConfig {
+  return {
+    enabled: false,
+    environment,
+    isLocalOnly: environment === "local",
+    uploadsEnabled: false,
+    publicPublishingEnabled: false,
+    externalWritesEnabled: false,
+    reason,
     bucket,
   };
 }
@@ -169,7 +221,7 @@ export function getPrivateProofUploadWorkspaceBase(
     sourceMode,
     title: "Private proof upload queue",
     summary:
-      "Attach raw videos, photos, or PDFs only to approved local proof metadata records. This stays private to the submitter and HQ cleanup roles.",
+      "Attach raw videos, photos, or PDFs only to approved proof metadata records. This stays private to the submitter and HQ cleanup roles.",
     config,
     rows,
     counts: {
@@ -194,6 +246,7 @@ export function getPrivateProofUploadWorkspaceBase(
 export function buildPrivateProofUploadRow(params: {
   actor: LocalActorContext;
   assignmentId: string | null;
+  assignmentStatus: string | null;
   assignmentTitle: string;
   chapterName: string;
   evidenceItemId: string;
@@ -211,10 +264,22 @@ export function buildPrivateProofUploadRow(params: {
   const isSubmitter = params.submittedByUserId === params.actor.user.id;
   const isHqCleanupRole =
     params.actor.audience === "admin" || params.actor.audience === "super_admin";
+  const evidenceIsManageable =
+    ["pending_review", "changes_requested"].includes(params.status) &&
+    ["submitted", "in_hq_review"].includes(params.sharingStatus);
+  const uploadEligible =
+    params.assignmentId !== null &&
+    ["submitted", "changes_requested"].includes(params.assignmentStatus ?? "") &&
+    evidenceIsManageable;
   const canUpload =
-    signedInAsSelectedActor && isSubmitter && params.storagePath === null;
+    signedInAsSelectedActor &&
+    isSubmitter &&
+    uploadEligible &&
+    params.storagePath === null;
   const canRemove =
     signedInAsSelectedActor &&
+    params.assignmentId !== null &&
+    evidenceIsManageable &&
     params.storagePath !== null &&
     (isSubmitter || isHqCleanupRole);
 
@@ -237,6 +302,7 @@ export function buildPrivateProofUploadRow(params: {
       isSubmitter,
       hasStoragePath: params.storagePath !== null,
       signedInAsSelectedActor,
+      uploadEligible,
     }),
   };
 }
@@ -244,6 +310,35 @@ export function buildPrivateProofUploadRow(params: {
 export function validatePrivateProofUploadInput(params: {
   evidenceItemId: string;
   file: File | null;
+  consentToMedlifeReview: boolean;
+  config?: PrivateProofUploadWriteConfig;
+}): Exclude<
+  PrivateProofUploadResultCode,
+  | "duplicate_upload"
+  | "missing_auth"
+  | "permission_denied"
+  | "proof_uploaded"
+  | "server_error"
+  | "upload_not_present"
+  | "upload_removed"
+> | null {
+  const config = params.config ?? getPrivateProofUploadWriteConfig();
+
+  return validatePrivateProofUploadMetadata({
+    evidenceItemId: params.evidenceItemId,
+    fileName: params.file?.name ?? "",
+    mimeType: params.file?.type ?? "",
+    byteSize: params.file?.size ?? 0,
+    consentToMedlifeReview: params.consentToMedlifeReview,
+    config,
+  });
+}
+
+export function validatePrivateProofUploadMetadata(params: {
+  evidenceItemId: string;
+  fileName: string;
+  mimeType: string;
+  byteSize: number;
   consentToMedlifeReview: boolean;
   config?: PrivateProofUploadWriteConfig;
 }): Exclude<
@@ -266,17 +361,17 @@ export function validatePrivateProofUploadInput(params: {
     return "evidence_not_found";
   }
 
-  if (!params.file || params.file.size === 0) {
+  if (!params.fileName.trim() || params.byteSize <= 0) {
     return "file_required";
   }
 
-  if (!params.file.type || !isAllowedProofMimeType(params.file.type)) {
+  if (!params.mimeType || !isAllowedProofMimeType(params.mimeType)) {
     return "file_type_blocked";
   }
 
   const maxBytes = getProofStoragePlan().maxFileSizeMb * 1024 * 1024;
 
-  if (params.file.size > maxBytes) {
+  if (params.byteSize > maxBytes) {
     return "file_too_large";
   }
 
@@ -329,7 +424,7 @@ export function mapPrivateProofUploadRpcSuccess(
     outboxId: row.outbox_id,
     auditLogId: row.audit_log_id,
     plainEnglishMessage:
-      "Private proof uploaded locally. The app recorded the storage path, internal event, disabled outbox row, and audit log without publishing the file.",
+      "Private proof uploaded. The app recorded the storage path, internal event, disabled outbox row, and audit log without publishing the file.",
   };
 }
 
@@ -347,7 +442,7 @@ export function mapPrivateProofUploadRemovalRpcSuccess(
     outboxId: row.outbox_id,
     auditLogId: row.audit_log_id,
     plainEnglishMessage:
-      "Private proof upload removed locally. The proof row is back to metadata-only review and public sharing stayed off.",
+      "Private proof upload removed. The proof row is back to metadata-only review and public sharing stayed off.",
   };
 }
 
@@ -498,9 +593,10 @@ function getPrivateProofUploadHelperText(params: {
   isSubmitter: boolean;
   hasStoragePath: boolean;
   signedInAsSelectedActor: boolean;
+  uploadEligible: boolean;
 }): string {
   if (!params.signedInAsSelectedActor) {
-    return "Sign in as the matching local seed user before managing private proof files.";
+    return "Sign in as the matching user before managing private proof files.";
   }
 
   if (params.hasStoragePath) {
@@ -515,10 +611,14 @@ function getPrivateProofUploadHelperText(params: {
       return "HQ cleanup roles can remove the private file if policy or consent requires it.";
     }
 
-    return "This private file is attached, but this local role should not manage the raw upload.";
+    return "This private file is attached, but this role should not manage the raw upload.";
   }
 
   if (params.isSubmitter) {
+    if (!params.uploadEligible) {
+      return "Finish or resubmit the related assignment before attaching its private proof file.";
+    }
+
     return "This proof row is ready for one private upload. Public sharing stays off.";
   }
 

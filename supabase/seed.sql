@@ -24,6 +24,19 @@ insert into auth.users (
   ('00000000-0000-0000-0000-000000000000', '00000000-0000-4000-8000-000000000008', 'authenticated', 'authenticated', 'unrelated@mymedlife.test', crypt('password', gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}', '{"name":"Una Unrelated"}', now(), now())
 on conflict (id) do nothing;
 
+-- Current GoTrue scans these optional token fields as strings during password
+-- login. Keep local TEST identities compatible across fresh CLI resets.
+update auth.users
+set
+  confirmation_token = coalesce(confirmation_token, ''),
+  recovery_token = coalesce(recovery_token, ''),
+  email_change_token_new = coalesce(email_change_token_new, ''),
+  email_change = coalesce(email_change, ''),
+  phone_change_token = coalesce(phone_change_token, ''),
+  email_change_token_current = coalesce(email_change_token_current, ''),
+  reauthentication_token = coalesce(reauthentication_token, '')
+where email like '%@mymedlife.test';
+
 insert into app.profiles (id, display_name, email) values
   ('00000000-0000-4000-8000-000000000001', 'Sofia Alvarez', 'member.a@mymedlife.test'),
   ('00000000-0000-4000-8000-000000000002', 'Priya President', 'leader.a@mymedlife.test'),

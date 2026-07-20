@@ -77,6 +77,7 @@ function toPrivateProofUploadRow(
   return buildPrivateProofUploadRow({
     actor,
     assignmentId: row.assignment_id,
+    assignmentStatus: assignment?.status ?? null,
     assignmentTitle:
       assignment?.title ??
       (row.chapter_event_id ? "Event proof follow-up" : "Proof metadata item"),

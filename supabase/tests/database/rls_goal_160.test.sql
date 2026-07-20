@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(16);
+select plan(20);
 
 set local role authenticated;
 set local "request.jwt.claim.sub" = '00000000-0000-4000-8000-000000000002';
@@ -171,6 +171,19 @@ select lives_ok(
   'Submitter can insert one storage object into the private bucket path'
 );
 
+select ok(
+  (
+    select
+      position('evidence.storage_path IS NULL' in qual) > 0
+      and position('can_prepare_private_proof_upload' in qual) > 0
+    from pg_policies
+    where schemaname = 'storage'
+      and tablename = 'objects'
+      and policyname = 'private_proof_upload_delete_submitter_or_hq'
+  ),
+  'Delete policy admits submitter rollback while metadata finalization is uncommitted'
+);
+
 select lives_ok(
   $$ select * from app.record_private_proof_upload(
     'd9600000-0000-4000-8000-000000000001',
@@ -336,6 +349,41 @@ select is(
   'Removal clears the storage path and returns the proof row to metadata-only submitted state'
 );
 
+select lives_ok(
+  $$ select * from app.record_private_proof_upload(
+    'd9600000-0000-4000-8000-000000000001',
+    'chapters/10000000-0000-4000-8000-000000000001/evidence/d9600000-0000-4000-8000-000000000001/corrected-rush-social-bridge-video.mov',
+    'Corrected Rush Social Bridge Video.MOV',
+    'video/quicktime',
+    12000000,
+    true,
+    false
+  ) $$,
+  'Submitter can record a corrected private upload after audited removal'
+);
+
+select lives_ok(
+  $$ select * from app.record_private_proof_upload_removal(
+    'd9600000-0000-4000-8000-000000000001',
+    'The corrected TEST file completed repeatable-history verification.'
+  ) $$,
+  'Submitter can record a second audited removal without rewriting history'
+);
+
+set local "request.jwt.claim.sub" = '00000000-0000-4000-8000-000000000004';
+set local "request.jwt.claim.role" = 'authenticated';
+
+select is(
+  (
+    select count(distinct idempotency_key)::int
+    from app.automation_outbox
+    where event_type in ('proof_upload_recorded', 'proof_upload_removed')
+      and payload->>'evidenceItemId' = 'd9600000-0000-4000-8000-000000000001'
+  ),
+  4,
+  'Every upload and removal cycle keeps a unique disabled outbox history row'
+);
+
 set local "request.jwt.claim.sub" = '00000000-0000-4000-8000-000000000004';
 set local "request.jwt.claim.role" = 'authenticated';
 
@@ -346,8 +394,8 @@ select is(
     where action = 'proof_upload_removed'
       and target_id = 'd9600000-0000-4000-8000-000000000001'
   ),
-  1,
-  'Removal creates one audit log entry'
+  2,
+  'Each removal creates its own audit log entry'
 );
 
 reset role;

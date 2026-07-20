@@ -29,7 +29,7 @@ function getSignedInActor(email: string) {
 }
 
 describe("proof library routes", () => {
-  it("renders the upload-readiness route with blocked storage and publishing controls", async () => {
+  it("renders the private upload route with explicit publishing and export guards", async () => {
     const actorModule = await import("@/services/local-actor-context");
 
     vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
@@ -37,15 +37,14 @@ describe("proof library routes", () => {
     );
 
     const { default: ProofLibraryUploadPage } = await import("@/app/proof-library/upload/page");
-    const html = renderToStaticMarkup(await ProofLibraryUploadPage());
+    const html = renderToStaticMarkup(await ProofLibraryUploadPage({}));
 
-    expect(html).toContain("Proof upload readiness");
-    expect(html).toContain("Prepare your proof upload");
-    expect(html).toContain("Uploads stay disabled");
-    expect(html).toContain("Upload file");
-    expect(html).toContain("Publish proof");
-    expect(html).toContain("Export raw proof");
-    expect(html).toContain("Goal 159 proof storage intake packet");
+    expect(html).toContain("Private proof upload");
+    expect(html).toContain("Attach source media for private MEDLIFE review");
+    expect(html).toContain("Uploads locked");
+    expect(html).toContain("No public publishing");
+    expect(html).toContain("No external exports");
+    expect(html).toContain("MEDLIFE review consent is mandatory");
   });
 
   it("renders HQ proof posture for admin reviewers without enabling sharing", async () => {
@@ -75,6 +74,6 @@ describe("proof library routes", () => {
     const { default: ProofLibraryUploadPage } = await import("@/app/proof-library/upload/page");
 
     await expect(ProofLibraryPage()).rejects.toThrow("NEXT_REDIRECT:/admin");
-    await expect(ProofLibraryUploadPage()).rejects.toThrow("NEXT_REDIRECT:/admin");
+    await expect(ProofLibraryUploadPage({})).rejects.toThrow("NEXT_REDIRECT:/admin");
   });
 });

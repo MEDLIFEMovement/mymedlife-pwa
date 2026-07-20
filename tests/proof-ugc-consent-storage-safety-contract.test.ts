@@ -6,15 +6,17 @@ import {
 } from "@/services/proof-ugc-consent-storage-safety-contract";
 
 describe("proof / evidence / UGC consent and storage safety contract", () => {
-  it("keeps the proof routes review-first while acknowledging the localhost-only private upload lane", () => {
+  it("keeps review routes non-publishing while allowing the gated private upload lane", () => {
     const contract = getProofUgcConsentStorageSafetyContract();
 
-    expect(contract.currentLocalWritePath).toMatchObject({
+    expect(contract.currentPrivateWritePath).toMatchObject({
       exists: true,
       route: "/proof-library/upload",
       serverActions: [
-        "submitPrivateProofUploadForLocalSupabase",
-        "removePrivateProofUploadForLocalSupabase",
+        "preparePrivateProofUploadForSupabase",
+        "recordPrivateProofUploadForSupabase",
+        "discardPreparedPrivateProofUploadForSupabase",
+        "removePrivateProofUploadForSupabase",
       ],
     });
     expect(contract.validation.ready).toBe(true);
@@ -25,10 +27,10 @@ describe("proof / evidence / UGC consent and storage safety contract", () => {
         status: "read_only_preview",
       });
     expect(
-      contract.lanes.find((lane) => lane.key === "private_proof_upload_localhost"),
+      contract.lanes.find((lane) => lane.key === "private_proof_upload"),
     ).toMatchObject({
       route: "/proof-library/upload",
-      status: "implemented_local_only",
+      status: "implemented_private_write",
     });
     expect(
       contract.lanes.find((lane) => lane.key === "proof_sharing_review"),
@@ -83,15 +85,15 @@ describe("proof / evidence / UGC consent and storage safety contract", () => {
     const output = formatProofUgcConsentStorageSafetyContract();
 
     expect(output).toContain(
-      "Proof / evidence / UGC consent and storage safety contract: READ-ONLY readiness spec",
+      "Proof / evidence / UGC consent and storage safety contract: PRIVATE upload boundary",
     );
     expect(output).toContain("/proof-library/upload");
-    expect(output).toContain("submitPrivateProofUploadForLocalSupabase");
+    expect(output).toContain("preparePrivateProofUploadForSupabase");
     expect(output).toContain("UGC embed links and social references");
     expect(output).toContain("Coach notes, moderation, and consent decisions");
     expect(output).toContain("Campaign proof handoff, social reuse, and exports");
     expect(output).toContain(
-      "Public publishing, social/provider sync, warehouse export, AI proof summaries, and external moderation remain disabled even when a local private raw-proof upload succeeds.",
+      "Public publishing, social/provider sync, warehouse export, AI proof summaries, and external moderation remain disabled even when a private raw-proof upload succeeds.",
     );
     expect(output).toContain(
       "Test/Figma/sandbox/sample rows, localhost uploads, preview-cookie review, and staging artifacts do not count as production pilot proof, rollout packet evidence, or invite-gate truth.",
