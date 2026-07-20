@@ -20,3 +20,21 @@ export async function submitHubSpotReadSyncAction(formData: FormData) {
   const result = await runHubSpotReadSync(session?.user?.id ?? null, mode as HubSpotSyncMode);
   redirect(`/admin/integrations/hubspot?hubspotSyncResult=${result.code}${result.runId ? `&runId=${encodeURIComponent(result.runId)}` : ""}`);
 }
+
+export async function submitHubSpotReplayAction(formData: FormData) {
+  const retryOfRunId = String(formData.get("retryOfRunId") ?? "").trim();
+  const mode = formData.get("mode") === "incremental" ? "incremental" : "backfill";
+  const confirmation = String(formData.get("confirmation") ?? "").trim();
+
+  if (!retryOfRunId || confirmation !== "REPLAY HUBSPOT") {
+    redirect("/admin/integrations/hubspot?hubspotSyncResult=replay_confirmation_required");
+  }
+
+  const { client } = await createLocalSupabaseServerClient();
+  const session = client ? await getAuthSessionState(client) : null;
+  const result = await runHubSpotReadSync(session?.user?.id ?? null, mode as HubSpotSyncMode, {
+    triggerSource: "replay",
+    retryOfRunId,
+  });
+  redirect(`/admin/integrations/hubspot?hubspotSyncResult=${result.code}${result.runId ? `&runId=${encodeURIComponent(result.runId)}` : ""}`);
+}

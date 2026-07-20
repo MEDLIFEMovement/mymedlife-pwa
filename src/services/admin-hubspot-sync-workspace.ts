@@ -10,8 +10,11 @@ export type AdminHubSpotSyncWorkspace = {
     id: string;
     mode: string;
     status: string;
+    triggerSource: string;
+    retryOfRunId: string | null;
     startedAt: string;
     completedAt: string | null;
+    heartbeatAt: string;
     sourceCompanies: number;
     sourceContacts: number;
     materializedChapters: number;
@@ -54,7 +57,7 @@ export async function getAdminHubSpotSyncWorkspace(
 
   const app = client.schema("app");
   const [runs, companies, contacts, memberships, pendingCompanies, pendingContacts, pendingMemberships, failures] = await Promise.all([
-    app.from("hubspot_sync_runs").select("id,mode,status,started_at,completed_at,source_company_count,source_contact_count,materialized_chapter_count,matched_profile_count,conflict_count,failure_count").order("started_at", { ascending: false }).limit(1),
+    app.from("hubspot_sync_runs").select("id,mode,status,trigger_source,retry_of_run_id,started_at,completed_at,heartbeat_at,source_company_count,source_contact_count,materialized_chapter_count,matched_profile_count,conflict_count,failure_count").order("started_at", { ascending: false }).limit(1),
     app.from("hubspot_company_imports").select("hubspot_company_id", { count: "exact", head: true }),
     app.from("hubspot_contact_imports").select("hubspot_contact_id", { count: "exact", head: true }),
     app.from("hubspot_membership_imports").select("hubspot_contact_id", { count: "exact", head: true }),
@@ -78,8 +81,11 @@ export async function getAdminHubSpotSyncWorkspace(
       id: String(run.id),
       mode: String(run.mode),
       status: String(run.status),
+      triggerSource: String(run.trigger_source ?? "manual"),
+      retryOfRunId: run.retry_of_run_id ? String(run.retry_of_run_id) : null,
       startedAt: String(run.started_at),
       completedAt: run.completed_at ? String(run.completed_at) : null,
+      heartbeatAt: String(run.heartbeat_at ?? run.started_at),
       sourceCompanies: Number(run.source_company_count ?? 0),
       sourceContacts: Number(run.source_contact_count ?? 0),
       materializedChapters: Number(run.materialized_chapter_count ?? 0),
