@@ -61,7 +61,6 @@ describe("Luma event read sync", () => {
         entries: [
           lumaEvent({ id: "evt-two" }),
           lumaEvent({ id: "evt-wrong", calendar_id: "cal-other" }),
-          { id: "malformed" },
         ],
       }));
 
@@ -91,6 +90,17 @@ describe("Luma event read sync", () => {
     const url = String(fetchMock.mock.calls[0]?.[0]);
     expect(url).toContain("after=2026-04-21T00%3A00%3A00.000Z");
     expect(url).toContain("before=2027-07-20T00%3A00%3A00.000Z");
+  });
+
+  it("fails the read before materialization when Luma returns malformed events", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(jsonResponse({
+      entries: [lumaEvent(), { id: "missing-required-fields" }],
+    }));
+    const client = createLumaReadClient(enabledEnv, fetchMock);
+
+    await expect(client?.readEvents("backfill", new Date("2026-07-20T00:00:00.000Z"))).rejects.toThrow(
+      "Luma returned 1 malformed event record(s); reconciliation stopped before materialization.",
+    );
   });
 
   it("retries transient provider failures and never exposes provider response content", async () => {
@@ -220,6 +230,8 @@ describe("Luma event read sync", () => {
       expect.objectContaining({ table: "chapter_events", operation: "update" }),
       expect.objectContaining({ table: "luma_event_links", operation: "update" }),
     ]));
+    const eventUpdate = queries.find((query) => query.table === "chapter_events" && query.operation === "update");
+    expect(eventUpdate?.payload).not.toHaveProperty("promotion_summary");
   });
 
   it("records provider failures and cross-chapter link conflicts without provider writes", async () => {

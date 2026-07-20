@@ -174,7 +174,12 @@ export function createLumaReadClient(
         if (cursor) params.set("pagination_cursor", cursor);
 
         const page = await request<LumaEventPage>(`/v1/calendars/events/list?${params}`);
-        events.push(...(page.entries ?? []).map(mapLumaEvent).filter(isPresent));
+        const mapped = (page.entries ?? []).map(mapLumaEvent);
+        const malformedCount = mapped.filter((event) => event === null).length;
+        if (malformedCount > 0) {
+          throw new Error(`Luma returned ${malformedCount} malformed event record(s); reconciliation stopped before materialization.`);
+        }
+        events.push(...mapped.filter(isPresent));
         cursor = optional(page.next_cursor);
       } while (cursor);
 
@@ -375,9 +380,6 @@ async function reconcileEvent(
     status: Date.parse(event.endsAt) <= Date.parse(importedAt) ? "completed" : "published",
     starts_at: event.startsAt,
     ends_at: event.endsAt,
-    promotion_summary: event.locationLabel
-      ? `Imported from Luma. Location: ${event.locationLabel}`
-      : "Imported from Luma. Review provider details before promotion.",
   };
 
   if (chapterEventId) {
@@ -394,6 +396,9 @@ async function reconcileEvent(
       planned_by_user_id: actorUserId,
       owner_user_id: actorUserId,
       ...eventPatch,
+      promotion_summary: event.locationLabel
+        ? `Imported from Luma. Location: ${event.locationLabel}`
+        : "Imported from Luma. Review provider details before promotion.",
     }).select("id").single();
     chapterEventId = inserted.error ? null : String(inserted.data?.id ?? "") || null;
     if (!chapterEventId) {
