@@ -151,6 +151,23 @@ describe("production operational data fail-closed integration", () => {
     expect(data.chapter.name).not.toContain("TEST");
   });
 
+  it("fails closed for hosted admin reads without an actor when access is disabled", async () => {
+    mocks.createSupabaseReadonlyAccess.mockResolvedValue({
+      enabled: false,
+      reason: "Hosted session read is unavailable.",
+      isLocalOnly: false,
+      mode: "mock_fallback",
+    });
+
+    const data = await getReadOnlyAppData();
+
+    expect(data.source.status).toBe("chapter_access_missing");
+    expect(data.source.mode).toBe("supabase");
+    expect(data.chapterRows).toEqual([]);
+    expect(data.profiles).toEqual([]);
+    expect(data.chapter.name).not.toContain("TEST");
+  });
+
   it("returns an empty operational model when a hosted read throws", async () => {
     mocks.createSupabaseReadonlyAccess.mockResolvedValue({
       enabled: true,
@@ -169,5 +186,97 @@ describe("production operational data fail-closed integration", () => {
     expect(data.source.status).toBe("chapter_access_missing");
     expect(data.source.message).toContain("query failed");
     expect(data.profiles).toEqual([]);
+  });
+
+  it("fails closed for hosted admin reads without an actor when the read throws", async () => {
+    mocks.createSupabaseReadonlyAccess.mockResolvedValue({
+      enabled: true,
+      reason: "Reading hosted production data.",
+      isLocalOnly: false,
+      mode: "auth_session",
+      client: {
+        selectRows: async () => {
+          throw new Error("query failed");
+        },
+      },
+    });
+
+    const data = await getReadOnlyAppData();
+
+    expect(data.source.status).toBe("chapter_access_missing");
+    expect(data.source.message).toContain("query failed");
+    expect(data.chapterRows).toEqual([]);
+    expect(data.profiles).toEqual([]);
+  });
+
+  it("fails closed for hosted admin reads when operational data has no chapters", async () => {
+    mocks.createSupabaseReadonlyAccess.mockResolvedValue({
+      enabled: true,
+      reason: "Reading hosted production data.",
+      isLocalOnly: false,
+      mode: "auth_session",
+      client: {
+        selectRows: async () => [],
+      },
+    });
+
+    const data = await getReadOnlyAppData();
+
+    expect(data.source.status).toBe("chapter_access_missing");
+    expect(data.source.message).toContain("no active chapters");
+    expect(data.chapterRows).toEqual([]);
+    expect(data.profiles).toEqual([]);
+  });
+
+  it("keeps TEST fallback available when local operational access is disabled", async () => {
+    mocks.createSupabaseReadonlyAccess.mockResolvedValue({
+      enabled: false,
+      reason: "Local operational reads are disabled.",
+      isLocalOnly: true,
+      mode: "mock_fallback",
+    });
+
+    const data = await getReadOnlyAppData();
+
+    expect(data.source.status).toBe("mock_fallback");
+    expect(data.chapter.name).toContain("UCLA");
+  });
+
+  it("keeps TEST fallback available when a local operational read throws", async () => {
+    mocks.createSupabaseReadonlyAccess.mockResolvedValue({
+      enabled: true,
+      reason: "Reading local operational data.",
+      isLocalOnly: true,
+      mode: "local_service_role",
+      client: {
+        selectRows: async () => {
+          throw new Error("local query failed");
+        },
+      },
+    });
+
+    const data = await getReadOnlyAppData();
+
+    expect(data.source.status).toBe("supabase_error");
+    expect(data.source.message).toContain("local query failed");
+    expect(data.chapter.name).toContain("UCLA");
+  });
+
+  it("keeps TEST fallback available when local operational data has no chapters", async () => {
+    mocks.createSupabaseReadonlyAccess.mockResolvedValue({
+      enabled: true,
+      reason: "Reading local operational data.",
+      isLocalOnly: true,
+      mode: "local_service_role",
+      client: {
+        selectRows: async () => [],
+      },
+    });
+
+    const data = await getReadOnlyAppData();
+
+    expect(data.source.status).toBe("mock_fallback");
+    expect(data.source.message).toContain("no chapters");
+    expect(data.chapter.name).toContain("UCLA");
   });
 });
