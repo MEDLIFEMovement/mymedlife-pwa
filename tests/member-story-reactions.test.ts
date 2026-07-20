@@ -30,6 +30,36 @@ describe("member story reactions", () => {
     ).toMatchObject({ enabled: true, environment: "production" });
   });
 
+  it("requires the service-role key and the matching non-production approval flag", () => {
+    expect(
+      getMemberStoryReactionConfig({
+        MYMEDLIFE_ENABLE_MEMBER_STORY_REACTION_WRITE: "true",
+        MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES: "true",
+      }),
+    ).toMatchObject({
+      enabled: false,
+      environment: "local",
+      reason: expect.stringContaining("service-role key"),
+    });
+
+    expect(
+      getMemberStoryReactionConfig({
+        MYMEDLIFE_ENABLE_MEMBER_STORY_REACTION_WRITE: "true",
+        MYMEDLIFE_AUTH_MODE: "staging_supabase",
+        SUPABASE_SERVICE_ROLE_KEY: "server-secret",
+        MYMEDLIFE_ALLOW_STAGING_SUPABASE_WRITES: "true",
+      }),
+    ).toMatchObject({ enabled: true, environment: "staging" });
+
+    expect(
+      getMemberStoryReactionConfig({
+        MYMEDLIFE_ENABLE_MEMBER_STORY_REACTION_WRITE: "true",
+        SUPABASE_SERVICE_ROLE_KEY: "server-secret",
+        MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES: "true",
+      }),
+    ).toMatchObject({ enabled: true, environment: "local" });
+  });
+
   it("maps aggregate reaction readbacks for the signed-in actor", async () => {
     const rpc = vi.fn().mockResolvedValue({
       data: [
@@ -50,6 +80,21 @@ describe("member story reactions", () => {
     expect(rpc).toHaveBeenCalledWith("get_member_story_reactions", {
       actor_uuid: "member-1",
     });
+  });
+
+  it("returns no readbacks when the aggregate transaction fails or is malformed", async () => {
+    const failed = vi.fn().mockResolvedValue({
+      data: null,
+      error: { message: "read failed" },
+    });
+    const malformed = vi.fn().mockResolvedValue({ data: {}, error: null });
+
+    await expect(
+      getMemberStoryReactionReadbacks(clientWithRpc(failed), "member-1"),
+    ).resolves.toEqual([]);
+    await expect(
+      getMemberStoryReactionReadbacks(clientWithRpc(malformed), "member-1"),
+    ).resolves.toEqual([]);
   });
 
   it.each([
@@ -102,6 +147,39 @@ describe("member story reactions", () => {
         evidenceItemId: "story-1",
       }),
     ).resolves.toMatchObject({ success: false, code: "story_not_found" });
+  });
+
+  it("maps profile and unknown database failures without changing the visible count", async () => {
+    const missingProfile = vi.fn().mockResolvedValue({
+      data: null,
+      error: { message: "active member profile not found" },
+    });
+    const unknown = vi.fn().mockResolvedValue({
+      data: null,
+      error: { message: "database unavailable" },
+    });
+
+    await expect(
+      toggleMemberStoryLike(clientWithRpc(missingProfile), {
+        actorUserId: "member-1",
+        evidenceItemId: "story-1",
+      }),
+    ).resolves.toMatchObject({
+      success: false,
+      code: "profile_not_found",
+      reactionCount: 0,
+    });
+
+    await expect(
+      toggleMemberStoryLike(clientWithRpc(unknown), {
+        actorUserId: "member-1",
+        evidenceItemId: "story-1",
+      }),
+    ).resolves.toMatchObject({
+      success: false,
+      code: "server_error",
+      reactionCount: 0,
+    });
   });
 });
 
