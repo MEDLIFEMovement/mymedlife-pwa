@@ -107,6 +107,47 @@ describe("launch lane points readback", () => {
     });
   });
 
+  it("returns an honest empty profile readback when the actor has no profile row", () => {
+    const actor = getMockLocalActorContext("missing.member@mymedlife.test");
+    const data = getMockReadOnlyAppData("Testing missing member profile readback.");
+
+    expect(getLaunchLaneMemberProfileReadback(actor, data)).toEqual({
+      usesLiveLedger: false,
+      totalPoints: 0,
+      attendedEventCount: 0,
+      completedActionCount: 0,
+      recentActivity: [],
+    });
+  });
+
+  it("marks Supabase profile rows as live and normalizes repeated TEST event labels", () => {
+    const actor = getMockLocalActorContext("member.a@mymedlife.test");
+    const data = getMockReadOnlyAppData("Testing live member profile readback.");
+    const liveData: ReadOnlyAppData = {
+      ...data,
+      source: { ...data.source, mode: "supabase" },
+      chapterEventRows: data.chapterEventRows.map((event) =>
+        event.id === "chapter-event-ucla-kickoff"
+          ? { ...event, title: "Test Test Rush Month kickoff social" }
+          : event,
+      ),
+      allChapterEventRows: data.allChapterEventRows.map((event) =>
+        event.id === "chapter-event-ucla-kickoff"
+          ? { ...event, title: "Test Test Rush Month kickoff social" }
+          : event,
+      ),
+    };
+
+    expect(getLaunchLaneMemberProfileReadback(actor, liveData)).toMatchObject({
+      usesLiveLedger: true,
+      recentActivity: [
+        expect.objectContaining({
+          title: "Checked in to TEST Rush Month kickoff social",
+        }),
+      ],
+    });
+  });
+
   it("builds an org readback for staff from chapter-level event and points data", () => {
     const data = getMockReadOnlyAppData("Testing org launch-lane readback.");
 
