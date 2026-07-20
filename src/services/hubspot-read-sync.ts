@@ -457,6 +457,9 @@ export async function runHubSpotReadSync(
 
     const completedAt = now().toISOString();
     const status = counts.failures > 0 || counts.conflicts > 0 ? "partial" : "succeeded";
+    if (status === "succeeded" && triggerSource === "replay" && retryOfRunId) {
+      await resolveReplayedFailures(appClient, retryOfRunId, completedAt);
+    }
     const finalized = await finishRun(
       appClient,
       runId,
@@ -471,9 +474,6 @@ export async function runHubSpotReadSync(
         "HubSpot source data was processed, but the final sync status could not be recorded. The run remains incomplete and must not be treated as successful.",
         runId,
       );
-    }
-    if (status === "succeeded" && triggerSource === "replay" && retryOfRunId) {
-      await resolveReplayedFailures(appClient, retryOfRunId, completedAt);
     }
     return {
       success: true,
@@ -1020,27 +1020,36 @@ async function recordAudit(
 }
 
 async function markCompanyReconciliation(client: AppClient, id: string, status: string, note: string | null, chapterId: string | null) {
-  await client.schema("app").from("hubspot_company_imports").update({
+  const result = await client.schema("app").from("hubspot_company_imports").update({
     reconciliation_status: status,
     reconciliation_note: note,
     materialized_chapter_id: chapterId,
   }).eq("hubspot_company_id", id);
+  if (result.error) {
+    throw new Error("HubSpot company reconciliation status could not be recorded.");
+  }
 }
 
 async function markContactReconciliation(client: AppClient, id: string, status: string, note: string | null, profileId: string | null) {
-  await client.schema("app").from("hubspot_contact_imports").update({
+  const result = await client.schema("app").from("hubspot_contact_imports").update({
     reconciliation_status: status,
     reconciliation_note: note,
     matched_profile_id: profileId,
   }).eq("hubspot_contact_id", id);
+  if (result.error) {
+    throw new Error("HubSpot contact reconciliation status could not be recorded.");
+  }
 }
 
 async function markMembershipReconciliation(client: AppClient, contactId: string, companyId: string, status: string, note: string | null, membershipId: string | null) {
-  await client.schema("app").from("hubspot_membership_imports").update({
+  const result = await client.schema("app").from("hubspot_membership_imports").update({
     reconciliation_status: status,
     reconciliation_note: note,
     materialized_membership_id: membershipId,
   }).eq("hubspot_contact_id", contactId).eq("hubspot_company_id", companyId);
+  if (result.error) {
+    throw new Error("HubSpot membership reconciliation status could not be recorded.");
+  }
 }
 
 async function recordFailure(
@@ -1092,15 +1101,21 @@ async function finishRun(
 }
 
 async function heartbeatRun(client: AppClient, runId: string, heartbeatAt: string) {
-  await client.schema("app").from("hubspot_sync_runs").update({
+  const result = await client.schema("app").from("hubspot_sync_runs").update({
     heartbeat_at: heartbeatAt,
   }).eq("id", runId).eq("status", "running");
+  if (result.error) {
+    throw new Error("The HubSpot sync heartbeat could not be recorded.");
+  }
 }
 
 async function resolveReplayedFailures(client: AppClient, retryOfRunId: string, resolvedAt: string) {
-  await client.schema("app").from("hubspot_sync_failures").update({
+  const result = await client.schema("app").from("hubspot_sync_failures").update({
     resolved_at: resolvedAt,
   }).eq("run_id", retryOfRunId).is("resolved_at", null);
+  if (result.error) {
+    throw new Error("The replayed HubSpot failures could not be marked resolved.");
+  }
 }
 
 export function mapChapterType(schoolType: string | null): "high_school" | "college_university" | "needs_review" {

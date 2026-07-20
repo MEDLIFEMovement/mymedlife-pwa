@@ -981,6 +981,81 @@ describe("HubSpot read sync foundation", () => {
     }));
   });
 
+  it("fails the current replay when prior failures cannot be marked resolved", async () => {
+    const queries: FakeQuery[] = [];
+    const appClient = createFakeAppClient((query) => {
+      queries.push(query);
+      if (query.table === "staff_role_assignments") return ok([{ role_key: "super_admin" }]);
+      if (query.table === "hubspot_sync_runs" && query.operation === "insert") return ok({ id: "run-replay-resolution-failed" });
+      if (query.table === "hubspot_sync_failures" && query.operation === "update") {
+        return failed("failure register unavailable");
+      }
+      return ok([]);
+    });
+
+    await expect(runHubSpotReadSync("actor-1", "backfill", {
+      env: enabledEnv,
+      appClient: appClient as never,
+      hubspotClient: emptyHubSpotClient(),
+      triggerSource: "replay",
+      retryOfRunId: "run-partial",
+      now: () => new Date("2026-07-19T22:00:00.000Z"),
+    })).resolves.toMatchObject({
+      success: false,
+      code: "server_error",
+      runId: "run-replay-resolution-failed",
+      plainEnglishMessage: expect.stringContaining("could not be marked resolved"),
+    });
+
+    expect(queries).toContainEqual(expect.objectContaining({
+      table: "hubspot_sync_runs",
+      operation: "update",
+      payload: expect.objectContaining({ status: "failed", checkpoint_after: null }),
+    }));
+    expect(queries).not.toContainEqual(expect.objectContaining({
+      table: "hubspot_sync_runs",
+      operation: "update",
+      payload: expect.objectContaining({ status: "succeeded" }),
+    }));
+  });
+
+  it("fails the run when its durable heartbeat cannot be refreshed", async () => {
+    const queries: FakeQuery[] = [];
+    const appClient = createFakeAppClient((query) => {
+      queries.push(query);
+      const payload = (query.payload ?? {}) as Record<string, unknown>;
+      if (query.table === "staff_role_assignments") return ok([{ role_key: "ds_admin" }]);
+      if (query.table === "hubspot_sync_runs" && query.operation === "insert") return ok({ id: "run-heartbeat-failed" });
+      if (
+        query.table === "hubspot_sync_runs"
+        && query.operation === "update"
+        && "heartbeat_at" in payload
+        && !("status" in payload)
+      ) {
+        return failed("heartbeat unavailable");
+      }
+      return ok([]);
+    });
+
+    await expect(runHubSpotReadSync("actor-1", "incremental", {
+      env: enabledEnv,
+      appClient: appClient as never,
+      hubspotClient: emptyHubSpotClient(),
+      now: () => new Date("2026-07-19T22:00:00.000Z"),
+    })).resolves.toMatchObject({
+      success: false,
+      code: "server_error",
+      runId: "run-heartbeat-failed",
+      plainEnglishMessage: expect.stringContaining("heartbeat could not be recorded"),
+    });
+
+    expect(queries).toContainEqual(expect.objectContaining({
+      table: "hubspot_sync_runs",
+      operation: "update",
+      payload: expect.objectContaining({ status: "failed", checkpoint_after: null }),
+    }));
+  });
+
   it("fails closed for missing auth, lock-read failure, and run-creation failure", async () => {
     const hubspotClient = {
       readActiveChapterCompanies: vi.fn(),
@@ -1378,6 +1453,45 @@ describe("HubSpot read sync foundation", () => {
       code: "hubspot_sync_partial",
       counts: { failures: 1 },
     });
+  });
+
+  it("fails the run when a materialized chapter cannot record its reconciliation state", async () => {
+    const queries: FakeQuery[] = [];
+    const appClient = createFakeAppClient((query) => {
+      queries.push(query);
+      if (query.table === "staff_role_assignments") return ok([{ role_key: "ds_admin" }]);
+      if (query.table === "hubspot_sync_runs" && query.operation === "select") return ok([]);
+      if (query.table === "hubspot_sync_runs" && query.operation === "insert") return ok({ id: "run-reconciliation-failed" });
+      if (query.table === "chapters" && query.operation === "select") {
+        return ok([{ id: "chapter-existing", hubspot_company_id: "company-1", status: "active" }]);
+      }
+      if (query.table === "hubspot_company_imports" && query.operation === "update") {
+        return failed("reconciliation unavailable");
+      }
+      return ok([]);
+    });
+
+    await expect(runHubSpotReadSync("actor-1", "incremental", {
+      env: enabledEnv,
+      appClient: appClient as never,
+      hubspotClient: oneCompanyClient(),
+      now: () => new Date("2026-07-20T20:00:00.000Z"),
+    })).resolves.toMatchObject({
+      success: false,
+      code: "server_error",
+      runId: "run-reconciliation-failed",
+      plainEnglishMessage: expect.stringContaining("reconciliation status could not be recorded"),
+    });
+
+    expect(queries).toContainEqual(expect.objectContaining({
+      table: "hubspot_sync_runs",
+      operation: "update",
+      payload: expect.objectContaining({ status: "failed", checkpoint_after: null }),
+    }));
+    expect(queries).not.toContainEqual(expect.objectContaining({
+      table: "audit_logs",
+      operation: "insert",
+    }));
   });
 
   it("returns database-backed admin sync readback and fails closed on query errors", async () => {
