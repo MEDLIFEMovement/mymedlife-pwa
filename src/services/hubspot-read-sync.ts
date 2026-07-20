@@ -427,7 +427,14 @@ export async function runHubSpotReadSync(
 
     const completedAt = now().toISOString();
     const status = counts.failures > 0 || counts.conflicts > 0 ? "partial" : "succeeded";
-    await finishRun(appClient, runId, status, completedAt, counts);
+    await finishRun(
+      appClient,
+      runId,
+      status,
+      completedAt,
+      status === "succeeded" ? startedAt : null,
+      counts,
+    );
     if (status === "succeeded" && triggerSource === "replay" && retryOfRunId) {
       await resolveReplayedFailures(appClient, retryOfRunId, completedAt);
     }
@@ -444,7 +451,7 @@ export async function runHubSpotReadSync(
     counts.failures += 1;
     const message = safeErrorMessage(error);
     await recordFailure(appClient, runId, "run", null, "hubspot_read_failed", message, {});
-    await finishRun(appClient, runId, "failed", now().toISOString(), counts, message);
+    await finishRun(appClient, runId, "failed", now().toISOString(), null, counts, message);
     return failure("server_error", `HubSpot read sync failed safely: ${message}`, runId);
   }
 }
@@ -790,13 +797,14 @@ async function finishRun(
   runId: string,
   status: "succeeded" | "partial" | "failed",
   completedAt: string,
+  checkpointAfter: string | null,
   counts: HubSpotSyncCounts,
   errorSummary: string | null = null,
 ) {
   await client.schema("app").from("hubspot_sync_runs").update({
     status,
     completed_at: completedAt,
-    checkpoint_after: completedAt,
+    checkpoint_after: checkpointAfter,
     source_company_count: counts.sourceCompanies,
     source_contact_count: counts.sourceContacts,
     company_upsert_count: counts.companyUpserts,

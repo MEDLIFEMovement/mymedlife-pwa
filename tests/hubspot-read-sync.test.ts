@@ -332,11 +332,14 @@ describe("HubSpot read sync foundation", () => {
       }],
     };
 
+    let nowCalls = 0;
     const result = await runHubSpotReadSync("actor-1", "incremental", {
       env: enabledEnv,
       appClient: appClient as never,
       hubspotClient,
-      now: () => new Date("2026-07-19T22:00:00.000Z"),
+      now: () => new Date(nowCalls++ === 0
+        ? "2026-07-19T22:00:00.000Z"
+        : "2026-07-19T22:05:00.000Z"),
     });
 
     expect(result).toMatchObject({
@@ -364,7 +367,13 @@ describe("HubSpot read sync foundation", () => {
     ]));
     expect(queries.filter((query) => query.table === "audit_logs")).toHaveLength(3);
     const finalRunUpdate = queries.findLast((query) => query.table === "hubspot_sync_runs" && query.operation === "update");
-    expect(finalRunUpdate?.payload).toMatchObject({ status: "succeeded", source_company_count: 1, source_contact_count: 1 });
+    expect(finalRunUpdate?.payload).toMatchObject({
+      status: "succeeded",
+      completed_at: "2026-07-19T22:05:00.000Z",
+      checkpoint_after: "2026-07-19T22:00:00.000Z",
+      source_company_count: 1,
+      source_contact_count: 1,
+    });
   });
 
   it("rejects non-admin actors and records provider failures without partial materialization", async () => {
@@ -404,6 +413,12 @@ describe("HubSpot read sync foundation", () => {
       expect.objectContaining({ table: "hubspot_sync_failures", operation: "insert" }),
       expect.objectContaining({ table: "hubspot_sync_runs", operation: "update" }),
     ]));
+    const failedRunUpdate = failureQueries.findLast((query) => (
+      query.table === "hubspot_sync_runs"
+      && query.operation === "update"
+      && (query.payload as { status?: string }).status === "failed"
+    ));
+    expect(failedRunUpdate?.payload).toMatchObject({ checkpoint_after: null });
   });
 
   it("honors the sync lock before reading HubSpot", async () => {
@@ -728,6 +743,12 @@ describe("HubSpot read sync foundation", () => {
       operation: "insert",
       payload: expect.objectContaining({ error_code: failureCode }),
     }));
+    const partialRunUpdate = queries.findLast((query) => (
+      query.table === "hubspot_sync_runs"
+      && query.operation === "update"
+      && (query.payload as { status?: string }).status === "partial"
+    ));
+    expect(partialRunUpdate?.payload).toMatchObject({ checkpoint_after: null });
   });
 
   it("preserves conflicts for externally linked profiles and memberships", async () => {
