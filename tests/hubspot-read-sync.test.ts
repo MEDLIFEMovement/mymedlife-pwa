@@ -851,6 +851,26 @@ describe("HubSpot read sync foundation", () => {
       },
     })).resolves.toMatchObject({ success: false, code: "permission_denied" });
 
+    const roleReadClient = createFakeAppClient((query) => (
+      query.table === "staff_role_assignments"
+        ? failed("role store unavailable")
+        : ok([])
+    ));
+    const roleReadHubSpotClient = {
+      readActiveChapterCompanies: vi.fn(),
+      readContactsWithCompanies: vi.fn(),
+    };
+    await expect(runHubSpotReadSync("admin-1", "backfill", {
+      env: enabledEnv,
+      appClient: roleReadClient as never,
+      hubspotClient: roleReadHubSpotClient,
+    })).resolves.toMatchObject({
+      success: false,
+      code: "server_error",
+      plainEnglishMessage: "Could not verify the HubSpot sync administrator role.",
+    });
+    expect(roleReadHubSpotClient.readActiveChapterCompanies).not.toHaveBeenCalled();
+
     const failureQueries: FakeQuery[] = [];
     const failureClient = createFakeAppClient((query) => {
       failureQueries.push(query);
@@ -880,6 +900,45 @@ describe("HubSpot read sync foundation", () => {
       && (query.payload as { status?: string }).status === "failed"
     ));
     expect(failedRunUpdate?.payload).toMatchObject({ checkpoint_after: null });
+  });
+
+  it("fails the run explicitly when provider failure details cannot be persisted", async () => {
+    const queries: FakeQuery[] = [];
+    const appClient = createFakeAppClient((query) => {
+      queries.push(query);
+      if (query.table === "staff_role_assignments") return ok([{ role_key: "super_admin" }]);
+      if (query.table === "hubspot_sync_runs" && query.operation === "select") return ok([]);
+      if (query.table === "hubspot_sync_runs" && query.operation === "insert") return ok({ id: "run-failure-register-down" });
+      if (query.table === "hubspot_sync_failures" && query.operation === "insert") {
+        return failed("failure register unavailable");
+      }
+      return ok([]);
+    });
+
+    await expect(runHubSpotReadSync("super-1", "backfill", {
+      env: enabledEnv,
+      appClient: appClient as never,
+      hubspotClient: {
+        readActiveChapterCompanies: async () => { throw new Error("provider unavailable"); },
+        readContactsWithCompanies: async () => [],
+      },
+      now: () => new Date("2026-07-19T22:00:00.000Z"),
+    })).resolves.toMatchObject({
+      success: false,
+      code: "server_error",
+      runId: "run-failure-register-down",
+      plainEnglishMessage: expect.stringContaining("failure register could not be updated"),
+    });
+
+    expect(queries).toContainEqual(expect.objectContaining({
+      table: "hubspot_sync_runs",
+      operation: "update",
+      payload: expect.objectContaining({
+        status: "failed",
+        checkpoint_after: null,
+        error_summary: expect.stringContaining("failure register could not be updated"),
+      }),
+    }));
   });
 
   it("honors the sync lock before reading HubSpot", async () => {

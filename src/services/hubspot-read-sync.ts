@@ -334,8 +334,11 @@ export async function runHubSpotReadSync(
   }
 
   if (actorUserId) {
-    const actorRoles = await readActorRoles(appClient, actorUserId);
-    if (!actorRoles.some((role) => role === "ds_admin" || role === "super_admin")) {
+    const actorRoleResult = await readActorRoles(appClient, actorUserId);
+    if (actorRoleResult.error) {
+      return failure("server_error", "Could not verify the HubSpot sync administrator role.");
+    }
+    if (!actorRoleResult.roles.some((role) => role === "ds_admin" || role === "super_admin")) {
       return failure("permission_denied", "Only a DS Admin or Super Admin can run HubSpot sync.");
     }
   }
@@ -487,16 +490,27 @@ export async function runHubSpotReadSync(
   } catch (error) {
     counts.failures += 1;
     const message = safeErrorMessage(error);
-    await recordFailure(appClient, runId, "run", null, "hubspot_read_failed", message, {});
-    const finalized = await finishRun(appClient, runId, "failed", now().toISOString(), null, counts, message);
+    const failureDetailsRecorded = await tryRecordFailure(
+      appClient,
+      runId,
+      "run",
+      null,
+      "hubspot_read_failed",
+      message,
+      {},
+    );
+    const errorSummary = failureDetailsRecorded
+      ? message
+      : `${message} The HubSpot sync failure register could not be updated.`;
+    const finalized = await finishRun(appClient, runId, "failed", now().toISOString(), null, counts, errorSummary);
     if (!finalized) {
       return failure(
         "server_error",
-        `HubSpot read sync failed safely, but the failed run status could not be recorded: ${message}`,
+        `HubSpot read sync failed safely, but the failed run status could not be recorded: ${errorSummary}`,
         runId,
       );
     }
-    return failure("server_error", `HubSpot read sync failed safely: ${message}`, runId);
+    return failure("server_error", `HubSpot read sync failed safely: ${errorSummary}`, runId);
   }
 }
 
@@ -509,13 +523,19 @@ function createHubSpotSyncAppClient(env: Record<string, string | undefined>): Ap
   }) as AppClient;
 }
 
-async function readActorRoles(client: AppClient, actorUserId: string): Promise<string[]> {
+async function readActorRoles(
+  client: AppClient,
+  actorUserId: string,
+): Promise<{ roles: string[]; error: string | null }> {
   const result = await client.schema("app").from("staff_role_assignments")
     .select("role_key")
     .eq("user_id", actorUserId)
     .eq("status", "active");
-  if (result.error) return [];
-  return (result.data ?? []).map((row) => String(row.role_key));
+  if (result.error) return { roles: [], error: result.error.message };
+  return {
+    roles: (result.data ?? []).map((row) => String(row.role_key)),
+    error: null,
+  };
 }
 
 async function readLastCheckpoint(
@@ -1061,7 +1081,7 @@ async function recordFailure(
   errorMessage: string,
   sourcePayload: Record<string, unknown>,
 ) {
-  await client.schema("app").from("hubspot_sync_failures").insert({
+  const result = await client.schema("app").from("hubspot_sync_failures").insert({
     run_id: runId,
     object_type: objectType,
     external_id: externalId,
@@ -1069,6 +1089,26 @@ async function recordFailure(
     error_message: errorMessage,
     source_payload: sourcePayload,
   });
+  if (result.error) {
+    throw new Error("The HubSpot sync failure register could not be updated.");
+  }
+}
+
+async function tryRecordFailure(
+  client: AppClient,
+  runId: string,
+  objectType: "company" | "contact" | "membership" | "run",
+  externalId: string | null,
+  errorCode: string,
+  errorMessage: string,
+  sourcePayload: Record<string, unknown>,
+): Promise<boolean> {
+  try {
+    await recordFailure(client, runId, objectType, externalId, errorCode, errorMessage, sourcePayload);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 async function finishRun(
