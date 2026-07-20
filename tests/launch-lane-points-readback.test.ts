@@ -95,6 +95,7 @@ describe("launch lane points readback", () => {
     expect(getLaunchLaneMemberProfileReadback(actor, data)).toEqual({
       usesLiveLedger: false,
       totalPoints: 20,
+      weeklyPoints: 0,
       attendedEventCount: 1,
       completedActionCount: 1,
       recentActivity: [
@@ -114,10 +115,24 @@ describe("launch lane points readback", () => {
     expect(getLaunchLaneMemberProfileReadback(actor, data)).toEqual({
       usesLiveLedger: false,
       totalPoints: 0,
+      weeklyPoints: 0,
       attendedEventCount: 0,
       completedActionCount: 0,
       recentActivity: [],
     });
+  });
+
+  it("calculates current-week points from the member ledger", () => {
+    const actor = getMockLocalActorContext("member.a@mymedlife.test");
+    const data = getMockReadOnlyAppData("Testing weekly member points readback.");
+
+    expect(
+      getLaunchLaneMemberProfileReadback(
+        actor,
+        data,
+        new Date("2026-11-15T23:00:00Z"),
+      ).weeklyPoints,
+    ).toBe(20);
   });
 
   it("marks Supabase profile rows as live and normalizes repeated TEST event labels", () => {

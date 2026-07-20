@@ -28,7 +28,9 @@ import {
 } from "@/services/member-mobile-identity-context";
 import { buildMemberMobileEventContext } from "@/services/member-mobile-event-context";
 import {
+  getLaunchLaneMemberProfileReadback,
   getLaunchLaneMemberPointsReadback,
+  type LaunchLaneMemberProfileReadback,
   type LaunchLaneMemberPointsReadback,
 } from "@/services/launch-lane-points-readback";
 import { getMvpMemberHome } from "@/services/mvp-event-tracking-workspace";
@@ -93,9 +95,11 @@ export async function renderMemberMobileShellPage({
   const pointsReadback = pointsReturnEventId
     ? getLaunchLaneMemberPointsReadback(actor, data, pointsReturnEventId)
     : null;
+  const profileReadback = getLaunchLaneMemberProfileReadback(actor, data);
   const memberContext = applyEventLoopPointsReadback(
     buildMemberIdentityContext(actor, studentHome, recognition, data.chapter.campus),
     pointsReadback,
+    profileReadback,
   );
   const memberEventContext = data.source.mode === "supabase"
     ? buildMemberMobileEventContext(data)
@@ -175,20 +179,29 @@ export async function renderMemberMobileShellPage({
 function applyEventLoopPointsReadback(
   memberContext: MemberMobileIdentityContext,
   pointsReadback: LaunchLaneMemberPointsReadback | null,
+  profileReadback: LaunchLaneMemberProfileReadback,
 ): MemberMobileIdentityContext {
-  if (!pointsReadback || pointsReadback.memberPointsAwarded <= 0) {
+  const memberPointsAwarded = profileReadback.usesLiveLedger
+    ? profileReadback.totalPoints
+    : pointsReadback?.memberPointsAwarded ?? 0;
+
+  if (!profileReadback.usesLiveLedger && memberPointsAwarded <= 0) {
     return memberContext;
   }
 
   const leaderboardRows = memberContext.leaderboardRows.map((row) =>
-    row.me ? { ...row, pts: pointsReadback.memberPointsAwarded } : row,
+    row.me ? { ...row, pts: memberPointsAwarded } : row,
   );
 
   return {
     ...memberContext,
-    pointsTotal: pointsReadback.memberPointsAwarded,
-    pointsWeeklyLabel: `+${pointsReadback.memberPointsAwarded}`,
-    completedActions: Math.max(memberContext.completedActions, 1),
+    pointsTotal: memberPointsAwarded,
+    pointsWeeklyLabel: profileReadback.usesLiveLedger
+      ? `${profileReadback.weeklyPoints > 0 ? "+" : ""}${profileReadback.weeklyPoints}`
+      : `+${memberPointsAwarded}`,
+    completedActions: profileReadback.usesLiveLedger
+      ? profileReadback.completedActionCount
+      : Math.max(memberContext.completedActions, 1),
     leaderboardRows: leaderboardRows.some((row) => row.me)
       ? leaderboardRows
       : [
@@ -197,7 +210,7 @@ function applyEventLoopPointsReadback(
             rank: leaderboardRows.length + 1,
             name: memberContext.displayName,
             role: "General Member",
-            pts: pointsReadback.memberPointsAwarded,
+            pts: memberPointsAwarded,
             me: true,
           },
         ],

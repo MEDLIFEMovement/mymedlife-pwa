@@ -149,6 +149,37 @@ describe("home page", () => {
     expect(html).not.toContain("chapter-event-lakeside-welcome");
   });
 
+  it("uses exact live ledger totals on the ordinary member home route", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const dataModule = await import("@/services/read-only-app-data");
+    const data = getMockReadOnlyAppData("Testing live home ledger totals.");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("member.a@mymedlife.test"),
+    );
+    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue({
+      ...data,
+      source: {
+        mode: "supabase",
+        status: "supabase_ready",
+        message: "Reading actor-scoped production data.",
+      },
+    });
+
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-11-15T23:00:00Z"));
+
+    try {
+      const { default: HomePage } = await import("@/app/app/page");
+      const html = renderToStaticMarkup(await HomePage({}));
+
+      expect(html).toContain('text-3xl font-extrabold">20</span>');
+      expect(html).toContain("+20 this week");
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it("keeps committee members on the owned mobile home route instead of redirecting them away", async () => {
     const actorModule = await import("@/services/local-actor-context");
     const dataModule = await import("@/services/read-only-app-data");

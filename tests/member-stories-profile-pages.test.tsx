@@ -935,6 +935,7 @@ describe("member stories and profile pages", () => {
         profileReadback={{
           usesLiveLedger: true,
           totalPoints: 20,
+          weeklyPoints: 20,
           attendedEventCount: 1,
           completedActionCount: 1,
           recentActivity: [
@@ -964,6 +965,7 @@ describe("member stories and profile pages", () => {
         profileReadback={{
           usesLiveLedger: true,
           totalPoints: 0,
+          weeklyPoints: 0,
           attendedEventCount: 0,
           completedActionCount: 0,
           recentActivity: [],
