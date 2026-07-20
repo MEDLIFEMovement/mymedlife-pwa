@@ -352,6 +352,9 @@ function EventDetailView({
   const visibleEventTitle = ensureVisibleTestLabel(event.title);
   const visibleChapterName = memberContext.chapterName;
   const visibleLocationLabel = ensureVisibleTestLabel(snapshot.memberLocationLabel);
+  const pointsAvailable = event.memberActionsClosed
+    ? event.pointsAwarded
+    : memberEventLoopPointAward;
   let eventStatusLabel = event.memberRsvpState === "registered" ? "RSVP'd" : "RSVP Open";
   let eventStatusVariant: "green" | "gray" = "green";
   let primaryAction: ReactNode;
@@ -449,7 +452,7 @@ function EventDetailView({
 
         <div className="mt-4 grid grid-cols-3 gap-2">
           <QuickStat label="RSVPs" value={String(event.rsvpCount)} />
-          <QuickStat label="Points" value={String(event.pointsAwarded)} />
+          <QuickStat label="Points" value={String(pointsAvailable)} />
           <QuickStat label="Duration" value={getDurationLabel(snapshot.startsAt, snapshot.endsAt)} />
         </div>
       </div>
@@ -551,8 +554,8 @@ function EventDetailView({
           <div className="grid grid-cols-2 gap-3">
             <PointsCard
               label="Attendance"
-              value={String(event.pointsAwarded)}
-              detail="check-in required"
+              value={String(pointsAvailable)}
+              detail={event.memberActionsClosed ? "currently recorded" : "check-in required"}
             />
             <PointsCard
               label="Luma"
@@ -637,6 +640,8 @@ function EventRsvpConfirmView({
     "RSVP can be recorded in myMEDLIFE when the approved internal write gate is enabled. Luma and external provider writes stay off.";
   let rsvpSafetyDetail =
     "This production-safe TEST flow records only internal myMEDLIFE rows after the write gate is approved. It does not write to Luma or any external provider.";
+  let rsvpPointsLabel = "Attend and check in to earn";
+  let rsvpPointsValue = memberEventLoopPointAward;
   let rsvpAction: ReactNode;
 
   if (event.memberActionsClosed) {
@@ -645,6 +650,8 @@ function EventRsvpConfirmView({
     rsvpPointsDetail = "This event is closed. No member RSVP, attendance, or points write can run.";
     rsvpSafetyDetail =
       "This route is read-only. No myMEDLIFE, Luma, notification, or external provider write can run from the closed event.";
+    rsvpPointsLabel = "Points currently recorded";
+    rsvpPointsValue = event.pointsAwarded;
     rsvpAction = <ClosedEventActionNotice label={event.memberLifecycleLabel} />;
   } else if (rsvpConfirmed) {
     rsvpAction = (
@@ -705,9 +712,9 @@ function EventRsvpConfirmView({
         <div className="mb-5 w-full rounded-2xl border border-amber-200 bg-amber-50 p-4">
           <div className="mb-1 flex items-center gap-2">
             <Star size={18} className="fill-amber-400 text-amber-500" />
-            <span className="text-sm font-bold text-slate-950">Attend and check in to earn</span>
+            <span className="text-sm font-bold text-slate-950">{rsvpPointsLabel}</span>
           </div>
-          <p className="ml-7 text-3xl font-extrabold text-amber-600">{event.pointsAwarded} points</p>
+          <p className="ml-7 text-3xl font-extrabold text-amber-600">{rsvpPointsValue} points</p>
           <p className="ml-7 mt-1 text-xs text-amber-700">
             {rsvpPointsDetail}
           </p>
@@ -766,7 +773,7 @@ function EventCheckInView({
   let checkInStatusLabel = hasActiveRsvp ? "RSVP'd" : "RSVP not active";
   let checkInStatusVariant: "green" | "gray" = hasActiveRsvp ? "green" : "gray";
   let checkInMessage = "Your RSVP is not active. Walk-in check-in can still record attendance and points in myMEDLIFE.";
-  let checkInPointsLabel = `${event.pointsAwarded} points after check-in`;
+  let checkInPointsLabel = `${memberEventLoopPointAward} points after check-in`;
   let checkInAction: ReactNode = <ClosedEventActionNotice label={event.memberLifecycleLabel} />;
 
   if (event.memberActionsClosed) {
