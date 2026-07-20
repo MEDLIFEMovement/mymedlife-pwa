@@ -4,6 +4,7 @@ import type {
   EvidenceItemRow,
   ProfileRow,
 } from "@/shared/types/persistence";
+import type { MemberStoryReactionReadback } from "@/services/member-story-reactions";
 
 export type MemberStorySource = "field";
 export type MemberStoryType =
@@ -29,6 +30,7 @@ export type MemberStory = {
   tag?: string;
   image: string | null;
   likes: number;
+  liked: boolean;
   views: number;
   date: string;
   featured: boolean;
@@ -46,6 +48,7 @@ export function buildMemberStoriesReadModel(input: {
   chapterEvents: ChapterEventRow[];
   profiles: ProfileRow[];
   accessibleEventIds?: Iterable<string>;
+  reactionReadbacks?: MemberStoryReactionReadback[];
 }): MemberStory[] {
   const chapters = new Map(input.chapters.map((row) => [row.id, row]));
   const events = new Map(input.chapterEvents.map((row) => [row.id, row]));
@@ -53,6 +56,9 @@ export function buildMemberStoriesReadModel(input: {
   const accessibleEventIds = input.accessibleEventIds
     ? new Set(input.accessibleEventIds)
     : null;
+  const reactions = new Map(
+    (input.reactionReadbacks ?? []).map((row) => [row.evidenceItemId, row]),
+  );
 
   return input.evidenceRows
     .filter(
@@ -89,7 +95,8 @@ export function buildMemberStoriesReadModel(input: {
         country: chapter?.region ?? chapter?.campus ?? "MEDLIFE",
         tag: event ? "Event proof" : "Approved story",
         image: publicImage,
-        likes: 0,
+        likes: reactions.get(row.id)?.reactionCount ?? 0,
+        liked: reactions.get(row.id)?.likedByActor ?? false,
         views: 0,
         date: formatStoryDate(row.submitted_at),
         featured: false,
