@@ -384,12 +384,20 @@ describe("HubSpot read sync foundation", () => {
       if (query.table === "hubspot_sync_runs" && query.operation === "select") return ok([]);
       if (query.table === "hubspot_sync_runs" && query.operation === "insert") return ok({ id: "run-removal" });
       if (query.table === "memberships" && query.operation === "select") {
-        return ok([{
-          id: "membership-removed",
-          chapter_id: "chapter-1",
-          status: "approved",
-          hubspot_association_key: "contact-1:company-1",
-        }]);
+        return ok([
+          {
+            id: "membership-removed",
+            chapter_id: "chapter-1",
+            status: "approved",
+            hubspot_association_key: "contact-1:company-1",
+          },
+          {
+            id: "membership-malformed",
+            chapter_id: null,
+            status: "approved",
+            hubspot_association_key: "malformed-key",
+          },
+        ]);
       }
       return ok([]);
     });
@@ -404,7 +412,7 @@ describe("HubSpot read sync foundation", () => {
     expect(result).toMatchObject({
       success: true,
       code: "hubspot_sync_succeeded",
-      counts: { membershipDeactivations: 1 },
+      counts: { membershipDeactivations: 2 },
     });
     expect(queries).toEqual(expect.arrayContaining([
       expect.objectContaining({
@@ -427,7 +435,140 @@ describe("HubSpot read sync foundation", () => {
       && query.operation === "update"
       && (query.payload as { status?: string }).status === "succeeded"
     ));
-    expect(finalRunUpdate?.payload).toMatchObject({ membership_deactivation_count: 1 });
+    expect(finalRunUpdate?.payload).toMatchObject({ membership_deactivation_count: 2 });
+  });
+
+  it("records a partial run when the complete membership reconciliation lookup fails", async () => {
+    const queries: FakeQuery[] = [];
+    const appClient = createFakeAppClient((query) => {
+      queries.push(query);
+      if (query.table === "staff_role_assignments") return ok([{ role_key: "super_admin" }]);
+      if (query.table === "hubspot_sync_runs" && query.operation === "select") return ok([]);
+      if (query.table === "hubspot_sync_runs" && query.operation === "insert") return ok({ id: "run-lookup-failure" });
+      if (query.table === "memberships" && query.operation === "select") return failed("membership read unavailable");
+      return ok([]);
+    });
+
+    await expect(runHubSpotReadSync("super-1", "backfill", {
+      env: enabledEnv,
+      appClient: appClient as never,
+      hubspotClient: emptyHubSpotClient(),
+      now: () => new Date("2026-07-20T13:30:00.000Z"),
+    })).resolves.toMatchObject({
+      success: true,
+      code: "hubspot_sync_partial",
+      counts: { failures: 1, membershipDeactivations: 0 },
+    });
+
+    expect(queries).toContainEqual(expect.objectContaining({
+      table: "hubspot_sync_failures",
+      operation: "insert",
+      payload: expect.objectContaining({
+        error_code: "membership_reconciliation_lookup_failed",
+      }),
+    }));
+  });
+
+  it("records a partial run when a removed membership cannot be deactivated", async () => {
+    const queries: FakeQuery[] = [];
+    const appClient = createFakeAppClient((query) => {
+      queries.push(query);
+      if (query.table === "staff_role_assignments") return ok([{ role_key: "super_admin" }]);
+      if (query.table === "hubspot_sync_runs" && query.operation === "select") return ok([]);
+      if (query.table === "hubspot_sync_runs" && query.operation === "insert") return ok({ id: "run-update-failure" });
+      if (query.table === "memberships" && query.operation === "select") {
+        return ok([{
+          id: "membership-removed",
+          chapter_id: "chapter-1",
+          status: "approved",
+          hubspot_association_key: "contact-1:company-1",
+        }]);
+      }
+      if (query.table === "memberships" && query.operation === "update") {
+        return failed("membership update blocked");
+      }
+      return ok([]);
+    });
+
+    await expect(runHubSpotReadSync("super-1", "backfill", {
+      env: enabledEnv,
+      appClient: appClient as never,
+      hubspotClient: emptyHubSpotClient(),
+      now: () => new Date("2026-07-20T13:30:00.000Z"),
+    })).resolves.toMatchObject({
+      success: true,
+      code: "hubspot_sync_partial",
+      counts: { failures: 1, membershipDeactivations: 0 },
+    });
+
+    expect(queries).toContainEqual(expect.objectContaining({
+      table: "hubspot_sync_failures",
+      operation: "insert",
+      payload: expect.objectContaining({
+        error_code: "membership_deactivation_failed",
+      }),
+    }));
+  });
+
+  it("skips current and already inactive HubSpot-linked memberships during a backfill", async () => {
+    const queries: FakeQuery[] = [];
+    const appClient = createFakeAppClient((query) => {
+      queries.push(query);
+      if (query.table === "staff_role_assignments") return ok([{ role_key: "super_admin" }]);
+      if (query.table === "hubspot_sync_runs" && query.operation === "select") return ok([]);
+      if (query.table === "hubspot_sync_runs" && query.operation === "insert") return ok({ id: "run-skip" });
+      if (query.table === "chapters" && query.operation === "select") {
+        return ok([{ id: "chapter-1", hubspot_company_id: "company-1" }]);
+      }
+      if (query.table === "profiles" && query.operation === "select") {
+        return ok([{ id: "profile-1", hubspot_contact_id: "contact-1" }]);
+      }
+      if (query.table === "memberships" && query.operation === "select") {
+        if (query.filterValue("hubspot_association_key:is:not") === null) {
+          return ok([
+            {
+              id: "membership-current",
+              chapter_id: "chapter-1",
+              status: "approved",
+              hubspot_association_key: "contact-1:company-1",
+            },
+            {
+              id: "membership-inactive",
+              chapter_id: "chapter-2",
+              status: "inactive",
+              hubspot_association_key: "contact-2:company-2",
+            },
+            {
+              id: "membership-empty-key",
+              chapter_id: "chapter-3",
+              status: "approved",
+              hubspot_association_key: "",
+            },
+          ]);
+        }
+        return ok([]);
+      }
+      return ok([]);
+    });
+
+    await expect(runHubSpotReadSync("super-1", "backfill", {
+      env: enabledEnv,
+      appClient: appClient as never,
+      hubspotClient: {
+        readActiveChapterCompanies: oneCompanyClient().readActiveChapterCompanies,
+        readContactsWithCompanies: async () => [oneContact()],
+      },
+      now: () => new Date("2026-07-20T13:30:00.000Z"),
+    })).resolves.toMatchObject({
+      success: true,
+      counts: { membershipDeactivations: 0 },
+    });
+
+    expect(queries.some((query) => (
+      query.table === "memberships"
+      && query.operation === "update"
+      && (query.payload as { status?: string }).status === "inactive"
+    ))).toBe(false);
   });
 
   it("does not deactivate missing memberships during an incremental run", async () => {
