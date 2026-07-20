@@ -14,6 +14,13 @@ security definer
 set search_path = app, public
 as $$
 declare
+  operation_rsvp constant text := 'rsvp';
+  operation_cancel_rsvp constant text := 'cancel_rsvp';
+  operation_checkin constant text := 'checkin';
+  event_rsvp_recorded constant text := 'event_rsvp_recorded';
+  event_rsvp_cancelled constant text := 'event_rsvp_cancelled';
+  event_attendance_recorded constant text := 'event_attendance_recorded';
+  member_event_loop_source constant text := 'member_event_loop';
   target_profile app.profiles%rowtype;
   target_event app.chapter_events%rowtype;
   target_membership app.memberships%rowtype;
@@ -23,7 +30,7 @@ declare
   next_attendance_count integer;
   next_attendance_rate numeric;
 begin
-  if operation_input not in ('rsvp', 'cancel_rsvp', 'checkin') then
+  if operation_input not in (operation_rsvp, operation_cancel_rsvp, operation_checkin) then
     raise exception 'unsupported member event-loop operation' using errcode = '22023';
   end if;
 
@@ -74,7 +81,7 @@ begin
   from app.events
   where chapter_event_id = chapter_event_uuid
     and actor_user_id = actor_uuid
-    and event_type in ('event_rsvp_recorded', 'event_rsvp_cancelled')
+    and event_type in (event_rsvp_recorded, event_rsvp_cancelled)
   order by occurred_at desc, created_at desc, id desc
   limit 1;
 
@@ -86,8 +93,8 @@ begin
   order by created_at asc, id asc
   limit 1;
 
-  if operation_input = 'rsvp' then
-    if latest_intent.id is not null and latest_intent.event_type = 'event_rsvp_recorded' then
+  if operation_input = operation_rsvp then
+    if latest_intent.id is not null and latest_intent.event_type = event_rsvp_recorded then
       return query select
         'already_rsvpd'::text,
         target_event.id,
@@ -105,14 +112,14 @@ begin
       payload,
       correlation_id
     ) values (
-      'event_rsvp_recorded',
+      event_rsvp_recorded,
       actor_uuid,
       target_event.chapter_id,
       target_event.campaign_id,
       target_event.id,
       jsonb_build_object(
-        'source', 'member_event_loop',
-        'operation', 'rsvp',
+        'source', member_event_loop_source,
+        'operation', operation_rsvp,
         'userId', actor_uuid,
         'userEmail', target_profile.email,
         'liveExternalWrite', false
@@ -128,7 +135,7 @@ begin
     return;
   end if;
 
-  if operation_input = 'cancel_rsvp' then
+  if operation_input = operation_cancel_rsvp then
     if existing_points.id is not null then
       return query select
         'rsvp_cancel_blocked_checked_in'::text,
@@ -138,7 +145,7 @@ begin
       return;
     end if;
 
-    if latest_intent.id is null or latest_intent.event_type <> 'event_rsvp_recorded' then
+    if latest_intent.id is null or latest_intent.event_type <> event_rsvp_recorded then
       return query select
         'rsvp_cancel_not_found'::text,
         target_event.id,
@@ -156,14 +163,14 @@ begin
       payload,
       correlation_id
     ) values (
-      'event_rsvp_cancelled',
+      event_rsvp_cancelled,
       actor_uuid,
       target_event.chapter_id,
       target_event.campaign_id,
       target_event.id,
       jsonb_build_object(
-        'source', 'member_event_loop',
-        'operation', 'cancel_rsvp',
+        'source', member_event_loop_source,
+        'operation', operation_cancel_rsvp,
         'userId', actor_uuid,
         'userEmail', target_profile.email,
         'previousRsvpEventId', latest_intent.id,
@@ -233,13 +240,13 @@ begin
     payload,
     correlation_id
   ) values (
-    'event_attendance_recorded',
+    event_attendance_recorded,
     actor_uuid,
     target_event.chapter_id,
     target_event.campaign_id,
     target_event.id,
     jsonb_build_object(
-      'source', 'member_event_loop',
+      'source', member_event_loop_source,
       'checkedInUserId', actor_uuid,
       'attendanceCount', next_attendance_count,
       'pointsEventId', inserted_points_id,

@@ -129,6 +129,106 @@ describe("member event-loop write gate", () => {
     });
   });
 
+  it.each([
+    ["rsvp_recorded", 0, 7],
+    ["already_rsvpd", 0, 7],
+    ["rsvp_cancelled", 0, 7],
+    ["rsvp_cancel_not_found", 0, 7],
+    ["already_checked_in", 20, 8],
+  ] as const)("maps the %s transactional result", async (resultCode, points, attendance) => {
+    const client = new FakeSupabaseClient();
+    enqueueValidActorPath(client);
+    client.enqueueRpc({
+      data: {
+        result_code: resultCode,
+        event_id: chapterEventRow.id,
+        points_awarded: points,
+        attendance_count: attendance,
+      },
+    });
+
+    await expect(
+      recordMemberEventLoopStepAtomically(asServiceClient(client), {
+        operation: resultCode.includes("cancel") ? "cancel_rsvp" : "rsvp",
+        routeEventId: chapterEventRow.id,
+        actorUserId: profileRow.id,
+        actorEmail: profileRow.email,
+      }),
+    ).resolves.toMatchObject({
+      success: true,
+      code: resultCode,
+      pointsAwarded: points,
+      attendanceCount: attendance,
+    });
+  });
+
+  it("maps a transactional cancellation lock to a truthful failure", async () => {
+    const client = new FakeSupabaseClient();
+    enqueueValidActorPath(client);
+    client.enqueueRpc({
+      data: [{
+        result_code: "rsvp_cancel_blocked_checked_in",
+        event_id: chapterEventRow.id,
+        points_awarded: 20,
+        attendance_count: 8,
+      }],
+    });
+
+    await expect(
+      recordMemberEventLoopStepAtomically(asServiceClient(client), {
+        operation: "cancel_rsvp",
+        routeEventId: chapterEventRow.id,
+        actorUserId: profileRow.id,
+        actorEmail: profileRow.email,
+      }),
+    ).resolves.toMatchObject({
+      success: false,
+      code: "rsvp_cancel_blocked_checked_in",
+    });
+  });
+
+  it("rejects an invalid transactional result", async () => {
+    const client = new FakeSupabaseClient();
+    enqueueValidActorPath(client);
+    client.enqueueRpc({
+      data: [{
+        result_code: "unexpected_result",
+        event_id: chapterEventRow.id,
+        points_awarded: 0,
+        attendance_count: 0,
+      }],
+    });
+
+    await expect(
+      recordMemberEventLoopStepAtomically(asServiceClient(client), {
+        operation: "rsvp",
+        routeEventId: chapterEventRow.id,
+        actorUserId: profileRow.id,
+        actorEmail: profileRow.email,
+      }),
+    ).resolves.toMatchObject({ success: false, code: "server_error" });
+  });
+
+  it.each([
+    ["approved chapter membership required", "membership_required"],
+    ["member event loop is closed", "event_closed"],
+    ["active member profile not found", "profile_not_found"],
+    ["transaction aborted", "server_error"],
+  ] as const)("maps RPC error %s to %s", async (message, expectedCode) => {
+    const client = new FakeSupabaseClient();
+    enqueueValidActorPath(client);
+    client.enqueueRpc({ error: { message } });
+
+    await expect(
+      recordMemberEventLoopStepAtomically(asServiceClient(client), {
+        operation: "checkin",
+        routeEventId: chapterEventRow.id,
+        actorUserId: profileRow.id,
+        actorEmail: profileRow.email,
+      }),
+    ).resolves.toMatchObject({ success: false, code: expectedCode });
+  });
+
   it("records a TEST RSVP row when the member, membership, campaign, and event are valid", async () => {
     const client = new FakeSupabaseClient();
     enqueueValidActorPath(client);
