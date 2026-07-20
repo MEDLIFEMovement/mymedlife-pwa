@@ -267,8 +267,8 @@ export async function getLocalActorContext(): Promise<LocalActorContext> {
         return getUnavailableSignedInActorContext(
           resolvedActor,
           error instanceof Error
-            ? `Hosted actor read failed: ${error.message}`
-            : "Hosted actor read failed.",
+            ? `Operational actor read failed: ${error.message}`
+            : "Operational actor read failed.",
         );
       }
 
@@ -304,6 +304,15 @@ export async function getLocalActorContext(): Promise<LocalActorContext> {
         },
       );
     } catch (error) {
+      if (resolvedActor.authSessionStatus === "signed_in") {
+        return getUnavailableSignedInActorContext(
+          resolvedActor,
+          error instanceof Error
+            ? `Hosted actor read failed: ${error.message}`
+            : "Hosted actor read failed.",
+        );
+      }
+
       return getMockLocalActorContext(
         resolvedActor.email,
         error instanceof Error
