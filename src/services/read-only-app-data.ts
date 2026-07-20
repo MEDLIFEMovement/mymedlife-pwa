@@ -116,13 +116,17 @@ export type ReadOnlyAppDataScope = {
   actorUserId?: string | null;
 };
 
+type SupabaseReadOnlyAppDataOptions = {
+  allowMockFallbackWhenEmpty?: boolean;
+};
+
 export async function getReadOnlyAppData(
   scope: ReadOnlyAppDataScope = {},
 ): Promise<ReadOnlyAppData> {
   const access = await createSupabaseReadonlyAccess();
 
   if (!access.enabled) {
-    if (scope.actorUserId && !access.isLocalOnly) {
+    if (!access.isLocalOnly) {
       return getUnavailableReadOnlyAppData(access.reason);
     }
 
@@ -130,9 +134,11 @@ export async function getReadOnlyAppData(
   }
 
   try {
-    return await getSupabaseReadOnlyAppData(access.client, access.reason, scope);
+    return await getSupabaseReadOnlyAppData(access.client, access.reason, scope, {
+      allowMockFallbackWhenEmpty: access.isLocalOnly,
+    });
   } catch (error) {
-    if (scope.actorUserId && !access.isLocalOnly) {
+    if (!access.isLocalOnly) {
       return getUnavailableReadOnlyAppData(
         error instanceof Error
           ? `Operational data could not be read: ${error.message}`
@@ -153,6 +159,9 @@ export async function getSupabaseReadOnlyAppData(
   client: SupabaseReadonlyClient,
   message = "Reading local Supabase data in read-only mode.",
   scope: ReadOnlyAppDataScope = {},
+  options: SupabaseReadOnlyAppDataOptions = {
+    allowMockFallbackWhenEmpty: true,
+  },
 ): Promise<ReadOnlyAppData> {
   const snapshot = await readLocalDataSnapshot(client);
   const chapter = selectChapterForActor(snapshot, scope.actorUserId);
@@ -164,7 +173,15 @@ export async function getSupabaseReadOnlyAppData(
       );
     }
 
-    return getMockReadOnlyAppData("Supabase returned no chapters, so mock fallback is active.");
+    if (options.allowMockFallbackWhenEmpty ?? true) {
+      return getMockReadOnlyAppData(
+        "Supabase returned no chapters, so mock fallback is active.",
+      );
+    }
+
+    return getUnavailableReadOnlyAppData(
+      "Operational data returned no active chapters. Verify the chapter import and access configuration.",
+    );
   }
 
   const persistedCampaign =
