@@ -68,6 +68,18 @@ export type LaunchLaneMemberHistoryItem = {
   detail: string;
 };
 
+export type LaunchLaneMemberProfileReadback = {
+  usesLiveLedger: boolean;
+  totalPoints: number;
+  attendedEventCount: number;
+  completedActionCount: number;
+  recentActivity: Array<{
+    title: string;
+    detail: string;
+    pointsLabel: string;
+  }>;
+};
+
 export type LaunchLaneLeaderEventReadback = {
   id: string;
   chapterName: string;
@@ -207,9 +219,7 @@ export function getLaunchLaneMemberPointsReadback(
   });
 
   return {
-    eventTitle: /^test\b/iu.test(event.title)
-      ? ensureVisibleTestLabel(event.title)
-      : event.title,
+    eventTitle: getVisibleLaunchLaneEventTitle(event.title),
     chapterName: event.chapterName,
     timing: event.timing,
     loopStage: loopState.stage,
@@ -224,6 +234,59 @@ export function getLaunchLaneMemberPointsReadback(
     leaderboardHref: getLaunchLaneMemberPointsHref("points"),
     nextStepLabel: loopState.nextStepLabel,
     nextStepDetail: loopState.nextStepDetail,
+  };
+}
+
+export function getLaunchLaneMemberProfileReadback(
+  actor: LocalActorContext,
+  data: ReadOnlyAppData,
+): LaunchLaneMemberProfileReadback {
+  const profileId = findLaunchLaneProfileIdByEmail(data.profiles, actor.user.email);
+
+  if (!profileId) {
+    return {
+      usesLiveLedger: data.source.mode === "supabase",
+      totalPoints: 0,
+      attendedEventCount: 0,
+      completedActionCount: 0,
+      recentActivity: [],
+    };
+  }
+
+  const memberRows = data.allPointsEventRows
+    .filter((row) => row.awarded_to_user_id === profileId)
+    .sort((left, right) => right.created_at.localeCompare(left.created_at));
+  const eventSnapshots = new Map(
+    getLaunchLaneEventSnapshots(data).map((event) => [event.id, event]),
+  );
+  const attendedEventIds = new Set(
+    memberRows
+      .map((row) => row.chapter_event_id)
+      .filter((eventId): eventId is string => Boolean(eventId)),
+  );
+
+  return {
+    usesLiveLedger: data.source.mode === "supabase",
+    totalPoints: memberRows.reduce((total, row) => total + row.points_delta, 0),
+    attendedEventCount: attendedEventIds.size,
+    completedActionCount: memberRows.length,
+    recentActivity: memberRows.slice(0, 5).map((row) => {
+      const event = row.chapter_event_id
+        ? eventSnapshots.get(row.chapter_event_id)
+        : null;
+
+      return {
+        title: event
+          ? `Checked in to ${
+              data.source.mode === "mock"
+                ? ensureVisibleTestLabel(event.title)
+                : getVisibleLaunchLaneEventTitle(event.title)
+            }`
+          : ensureVisibleTestLabel(row.reason),
+        detail: "Recorded in myMEDLIFE internal TEST ledger",
+        pointsLabel: `${row.points_delta > 0 ? "+" : ""}${row.points_delta} pts`,
+      };
+    }),
   };
 }
 
@@ -471,6 +534,10 @@ function dedupeAttendanceRows<
     seen.add(row.key);
     return true;
   });
+}
+
+function getVisibleLaunchLaneEventTitle(title: string) {
+  return /^test\b/iu.test(title) ? ensureVisibleTestLabel(title) : title;
 }
 
 function toAttendanceRowKey(userId: string | null, name: string) {

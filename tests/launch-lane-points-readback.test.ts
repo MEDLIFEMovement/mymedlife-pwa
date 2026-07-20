@@ -5,6 +5,7 @@ import {
   getLaunchLaneLeaderAttendanceReadback,
   getLaunchLaneLeaderEventReadback,
   getLaunchLaneMemberHistory,
+  getLaunchLaneMemberProfileReadback,
   getLaunchLaneMemberPointsReadback,
   getLaunchLaneOrgPointsReadback,
   getLaunchLaneOrgLeaderboardRows,
@@ -85,6 +86,25 @@ describe("launch lane points readback", () => {
         "chapter-event-ucla-kickoff",
       ),
     ).toMatchObject({ eventTitle: "TEST Rush Month kickoff social" });
+  });
+
+  it("keeps profile totals and recent activity aligned with the member points ledger", () => {
+    const actor = getMockLocalActorContext("member.a@mymedlife.test");
+    const data = getMockReadOnlyAppData("Testing member profile ledger readback.");
+
+    expect(getLaunchLaneMemberProfileReadback(actor, data)).toEqual({
+      usesLiveLedger: false,
+      totalPoints: 20,
+      attendedEventCount: 1,
+      completedActionCount: 1,
+      recentActivity: [
+        {
+          title: "Checked in to TEST Rush Month kickoff social",
+          detail: "Recorded in myMEDLIFE internal TEST ledger",
+          pointsLabel: "+20 pts",
+        },
+      ],
+    });
   });
 
   it("builds an org readback for staff from chapter-level event and points data", () => {

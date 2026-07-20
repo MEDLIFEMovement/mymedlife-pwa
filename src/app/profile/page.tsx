@@ -3,6 +3,7 @@ import { MemberBottomNav } from "@/components/member-bottom-nav";
 import { MemberProfilePanel } from "@/components/member-profile-panel";
 import { MemberOperationalDataUnavailable } from "@/components/member-operational-data-unavailable";
 import { getLocalActorContext } from "@/services/local-actor-context";
+import { getLaunchLaneMemberProfileReadback } from "@/services/launch-lane-points-readback";
 import { getMemberRecognitionSummary } from "@/services/member-recognition";
 import { getMvpMemberHome } from "@/services/mvp-event-tracking-workspace";
 import { getProfileWorkspace } from "@/services/profile-workspace";
@@ -68,6 +69,7 @@ export default async function ProfilePage(props: ProfilePageProps) {
   const workspace = getProfileWorkspace(actor, data);
   const studentHome = getMvpMemberHome(actor, data);
   const recognition = getMemberRecognitionSummary(actor, data);
+  const profileReadback = getLaunchLaneMemberProfileReadback(actor, data);
 
   return (
     <main className="min-h-screen bg-[#d6e0f0] px-0 py-0 text-[#10223f] md:px-4 md:py-8">
@@ -86,6 +88,7 @@ export default async function ProfilePage(props: ProfilePageProps) {
               workspace={workspace}
               studentHome={studentHome}
               recognition={recognition}
+              profileReadback={profileReadback}
             />
           ) : null}
         </div>
