@@ -27,11 +27,18 @@ import {
 import {
   StaffLaunchEventsOperations,
   StaffLaunchOrganizationLeaderboard,
+  StaffLiveLaunchEventsOperations,
+  StaffLiveLaunchOrganizationLeaderboard,
 } from "@/components/staff-launch-events-panels";
 import { WORKSPACE_ACCOUNT_MENU_SHELL_CLEARANCE } from "@/components/workspace-account-menu";
 import { getStaffChapterTypeFilterLabel, getStaffChapterTypeLabel, getStaffChapterTypeValue, staffChapterTypeFilterOptions, type StaffLaunchChapterTypeFilter } from "@/services/staff-chapter-type";
 import type { SOPCampaign } from "@/components/figma-sop-builder";
 import { FigmaAdminPanel as AdminPanel } from "@/components/figma-admin-panel";
+import type {
+  LaunchLaneOrgLeaderboardRow,
+  LaunchLaneOrgPointsReadback,
+  LaunchLaneStaffChapterReadback,
+} from "@/services/launch-lane-points-readback";
 
 /* ─────────────────────────────────────────────────────────── */
 /*  TYPES                                                       */
@@ -2739,6 +2746,11 @@ type FigmaStaffCommandCenterProps = {
   canAccessAdminPanel?: boolean;
   initialView?: string;
   initialCampaign?: string | null;
+  liveEventReadback?: {
+    chapters: LaunchLaneStaffChapterReadback[];
+    organization: LaunchLaneOrgPointsReadback;
+    leaderboard: LaunchLaneOrgLeaderboardRow[];
+  } | null;
   initialRouteParams?: Partial<
     Record<
       "view" | "campaign" | "chapter" | "ugcCard" | "adminView" | "returnView" | "chapterContext" | "chapterSchool" | "chapterRegionName" | "chapterCoachName" | "chapterMembers" | "chapterRisk" | "chapterEvents" | "chapterRsvps" | "chapterAttendance" | "chapterPoints" | "chapterPointsWeek" | "proofStatus" | "proofPlatform" | "chapterSearch" | "chapterRegion" | "chapterCoach" | "chapterType" | "chapterSort",
@@ -2751,6 +2763,7 @@ export function FigmaStaffCommandCenter({
   canAccessAdminPanel = false,
   initialView,
   initialCampaign = null,
+  liveEventReadback = null,
   initialRouteParams,
 }: FigmaStaffCommandCenterProps = {}) {
   const router = useRouter();
@@ -2996,8 +3009,26 @@ export function FigmaStaffCommandCenter({
                 initialSortBy={initialChapterSort}
               />
             )}
-            {activeScreen === "events" && <StaffLaunchEventsOperations chapters={CHAPTERS} />}
-            {activeScreen === "reports" && <StaffLaunchOrganizationLeaderboard chapters={CHAPTERS} />}
+            {activeScreen === "events" && (
+              liveEventReadback ? (
+                <StaffLiveLaunchEventsOperations
+                  chapters={liveEventReadback.chapters}
+                  organization={liveEventReadback.organization}
+                />
+              ) : (
+                <StaffLaunchEventsOperations chapters={CHAPTERS} />
+              )
+            )}
+            {activeScreen === "reports" && (
+              liveEventReadback ? (
+                <StaffLiveLaunchOrganizationLeaderboard
+                  rows={liveEventReadback.leaderboard}
+                  organization={liveEventReadback.organization}
+                />
+              ) : (
+                <StaffLaunchOrganizationLeaderboard chapters={CHAPTERS} />
+              )
+            )}
             {activeScreen === "campaigns" && <CampaignOps initialCampaign={initialCampaign} />}
             {activeScreen === "ugc" && (
               <ProofUGCQueue

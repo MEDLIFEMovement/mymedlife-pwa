@@ -24,6 +24,11 @@ import {
   resolveLeaderCommandCenterScreen,
   type LeaderCommandCenterScreen,
 } from "@/services/leader-command-center-routing";
+import type {
+  LaunchLaneChapterLeaderboardReadback,
+  LaunchLaneLeaderAttendanceReadback,
+  LaunchLaneLeaderEventReadback,
+} from "@/services/launch-lane-points-readback";
 
 // ─── Types ───────────────────────────────────────────────────────
 type Screen = LeaderCommandCenterScreen;
@@ -1527,10 +1532,12 @@ function NpsResultsPanel({ nps, attendees, totalMembers, rsvp }: { nps: NpsResul
 
 function EventsScreen({
   externalCreate,
+  liveReadback,
   onExternalCreateHandled,
   onNavigate,
 }: {
   externalCreate?: boolean;
+  liveReadback?: LeaderLiveEventReadback | null;
   onExternalCreateHandled?: () => void;
   onNavigate?: (screen: Screen) => void;
 }) {
@@ -1567,6 +1574,15 @@ function EventsScreen({
         onOpenHome={() => onNavigate?.("home")}
         onOpenCommittees={() => onNavigate?.("committees")}
         onOpenEvents={() => onNavigate?.("events")}
+      />
+    );
+  }
+
+  if (liveReadback) {
+    return (
+      <LeaderLiveEventsScreen
+        readback={liveReadback}
+        onCreateEvent={() => setShowCreate(true)}
       />
     );
   }
@@ -1720,6 +1736,152 @@ function EventsScreen({
                 <div className="text-[11px] text-slate-400">{l}</div>
               </div>
             ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+type LeaderLiveEventReadback = {
+  chapterName: string;
+  events: LaunchLaneLeaderEventReadback[];
+  attendance: LaunchLaneLeaderAttendanceReadback[];
+  leaderboard: LaunchLaneChapterLeaderboardReadback[];
+};
+
+function LeaderLiveEventsScreen({
+  readback,
+  onCreateEvent,
+}: {
+  readback: LeaderLiveEventReadback;
+  onCreateEvent: () => void;
+}) {
+  const totals = readback.events.reduce(
+    (summary, event) => ({
+      rsvps: summary.rsvps + event.rsvpCount,
+      attendance: summary.attendance + event.attendanceCount,
+      points: summary.points + event.pointsAwarded,
+    }),
+    { rsvps: 0, attendance: 0, points: 0 },
+  );
+  const attendanceRate = totals.rsvps > 0
+    && totals.attendance <= totals.rsvps
+    ? `${Math.round((totals.attendance / totals.rsvps) * 100)}% of RSVPs`
+    : "Pending";
+  const chartData = readback.events.map((event) => ({
+    name: event.title.length > 16 ? `${event.title.slice(0, 16)}...` : event.title,
+    RSVP: event.rsvpCount,
+    Attended: event.attendanceCount,
+  }));
+
+  return (
+    <div className="space-y-5">
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-black text-slate-900">Event Performance</h1>
+          <p className="mt-1 text-sm text-slate-500">
+            Live RSVP, check-in, attendance, and points readback for {readback.chapterName}.
+          </p>
+        </div>
+        <Btn variant="primary" onClick={onCreateEvent}><Plus size={11}/>Create Event Preview</Btn>
+      </div>
+
+      <div className="grid gap-3 md:grid-cols-4">
+        <Kard label="Visible Events" value={readback.events.length.toString()} accent={BLUE} icon={Calendar}/>
+        <Kard label="RSVPs" value={totals.rsvps.toString()} accent="#16A34A" icon={CheckCircle}/>
+        <Kard label="Attendance" value={totals.attendance.toString()} sub={attendanceRate} accent={YELLOW} icon={Activity}/>
+        <Kard label="Points Awarded" value={totals.points.toLocaleString()} sub="Deduped event awards" accent="#7C3AED" icon={Star}/>
+      </div>
+
+      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+        <div className="flex items-center justify-between gap-4 border-b border-slate-100 px-5 py-3">
+          <div>
+            <SH>Live chapter event loop</SH>
+            <p className="mt-1 text-[11px] text-slate-500">Supabase operational truth</p>
+          </div>
+          <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[10px] font-bold uppercase tracking-wide text-emerald-700">
+            Live readback
+          </span>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[62rem] text-xs">
+            <thead className="border-b border-slate-200 bg-slate-50">
+              <tr>
+                {['Event', 'Timing', 'Location', 'RSVP', 'Attended', 'Att. Rate', 'Status', 'Points', 'Detail'].map((heading) => (
+                  <th key={heading} className="px-3 py-2.5 text-left text-[10px] font-bold uppercase tracking-wider text-slate-400">{heading}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {readback.events.map((event, index) => (
+                <tr key={event.id} className={`border-b border-slate-100 last:border-0 ${index % 2 ? 'bg-slate-50/40' : ''}`}>
+                  <td className="px-3 py-3 font-semibold text-slate-800">{event.title}</td>
+                  <td className="px-3 py-3 text-slate-500">{event.timing}</td>
+                  <td className="px-3 py-3 text-slate-500">{event.location}</td>
+                  <td className="px-3 py-3 text-center font-mono">{event.rsvpCount}</td>
+                  <td className="px-3 py-3 text-center font-mono">{event.attendanceCount}</td>
+                  <td className="px-3 py-3 text-center font-mono font-bold">
+                    {event.rsvpCount > 0 && event.attendanceCount <= event.rsvpCount
+                      ? `${Math.round((event.attendanceCount / event.rsvpCount) * 100)}%`
+                      : '-'}
+                  </td>
+                  <td className="px-3 py-3"><Pill label={event.statusLabel} color={event.tone === 'gold' ? 'yellow' : event.tone === 'blue' ? 'blue' : 'slate'}/></td>
+                  <td className="px-3 py-3 text-center font-mono font-bold">{event.pointsAwarded.toLocaleString()}</td>
+                  <td className="px-3 py-3">
+                    <a href={event.detailHref} className="font-bold text-blue-600 hover:underline">Open</a>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div className="grid gap-4 lg:grid-cols-3">
+        <div className="rounded-xl border border-slate-200 bg-white p-5 lg:col-span-2">
+          <SH>RSVP vs. Actual Attendance</SH>
+          <ResponsiveContainer width="100%" height={220}>
+            <BarChart data={chartData} margin={{top:8,right:8,left:-8,bottom:0}}>
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.04)"/>
+              <XAxis dataKey="name" tick={{fontSize:9,fill:'#94A3B8'}} axisLine={false} tickLine={false}/>
+              <YAxis tick={{fontSize:10,fill:'#94A3B8'}} axisLine={false} tickLine={false}/>
+              <Tooltip contentStyle={{fontSize:11,borderRadius:8}}/>
+              <Bar dataKey="RSVP" fill="#BFDBFE" radius={[4,4,0,0]}/>
+              <Bar dataKey="Attended" fill={BLUE} radius={[4,4,0,0]}/>
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+
+        <div className="space-y-4">
+          <div className="rounded-xl border border-slate-200 bg-white p-5">
+            <SH>Latest Attendance</SH>
+            <div className="mt-3 space-y-2">
+              {readback.attendance.map((row) => (
+                <div key={`${row.name}-${row.status}`} className="flex items-center justify-between gap-3 rounded-lg bg-slate-50 px-3 py-2">
+                  <div>
+                    <p className="text-xs font-bold text-slate-800">{row.name}</p>
+                    <p className="text-[10px] text-slate-500">{row.status}</p>
+                  </div>
+                  <span className="text-[11px] font-bold text-blue-600">{row.pointsLabel}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="rounded-xl border border-slate-200 bg-white p-5">
+            <SH>Chapter Points</SH>
+            <div className="mt-3 space-y-2">
+              {readback.leaderboard.map((row, index) => (
+                <div key={row.name} className="flex items-center justify-between gap-3 border-b border-slate-100 pb-2 last:border-0 last:pb-0">
+                  <div>
+                    <p className="text-xs font-bold text-slate-800">#{index + 1} {row.name}</p>
+                    <p className="text-[10px] text-slate-500">{row.detail}</p>
+                  </div>
+                  <span className="font-mono text-xs font-black text-violet-700">{row.points}</span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
@@ -4189,10 +4351,12 @@ const LABELS: Record<Screen,string> = {
 // ─── App ──────────────────────────────────────────────────────────
 type FigmaLeaderCommandCenterProps = {
   initialScreen?: Screen;
+  liveEventReadback?: LeaderLiveEventReadback | null;
 };
 
 export function FigmaLeaderCommandCenter({
   initialScreen = "home",
+  liveEventReadback = null,
 }: FigmaLeaderCommandCenterProps = {}) {
   const router = useRouter();
   const pathname = usePathname();
@@ -4319,6 +4483,7 @@ export function FigmaLeaderCommandCenter({
           {screen==="events"      && (
             <EventsScreen
               externalCreate={showCreateEvent}
+              liveReadback={liveEventReadback}
               onExternalCreateHandled={() => setShowCreateEvent(false)}
               onNavigate={navigateToScreen}
             />

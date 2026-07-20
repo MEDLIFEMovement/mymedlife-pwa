@@ -205,7 +205,7 @@ describe("leader page", () => {
     expect(html).not.toContain("Leadership page not yet available");
   });
 
-  it("opens the requested service-backed event screen from the leader view query", async () => {
+  it("opens the requested live event-loop screen from the leader view query", async () => {
     const actorModule = await import("@/services/local-actor-context");
     const dataModule = await import("@/services/read-only-app-data");
 
@@ -227,12 +227,14 @@ describe("leader page", () => {
 
     expect(html).toContain("Event Performance");
     expect(html).toContain("Create Event");
-    expect(html).toContain("All Events — June 2025");
-    expect(html).toContain("attendance readback");
-    expect(html).toContain("Preview-only event operations");
+    expect(html).toContain("Live chapter event loop");
+    expect(html).toContain("Supabase operational truth");
+    expect(html).toContain("Rush Month kickoff social");
+    expect(html).toContain("Latest Attendance");
+    expect(html).toContain("Chapter Points");
+    expect(html).toContain("Create Event Preview");
     expect(html).not.toContain("Chapter Metrics — June 2025");
-    expect(html).not.toContain("Live event controls");
-    expect(html).not.toContain("Luma readback");
+    expect(html).not.toContain("All Events — June 2025");
   });
 
   it("renders the chapter leaderboard when reviewers open /leader?view=leaderboard", async () => {
@@ -344,7 +346,7 @@ describe("leader page", () => {
   it.each([
     ["overview", "This Week&#x27;s Priority"],
     ["leaderboard", "Ideas to try"],
-    ["events", "All Events — June 2025"],
+    ["events", "Live chapter event loop"],
   ])("renders the %s core launch view as its own screen", async (view, expectedCopy) => {
     const actorModule = await import("@/services/local-actor-context");
     const dataModule = await import("@/services/read-only-app-data");
@@ -686,7 +688,7 @@ describe("leader page", () => {
     const lineCount = source.split("\n").length;
 
     expect(lineCount).toBeGreaterThanOrEqual(3950);
-    expect(lineCount).toBeLessThanOrEqual(4350);
+    expect(lineCount).toBeLessThanOrEqual(4550);
     expect(source).toContain('initialScreen = "home"');
     expect(source).toContain("const [screen, setScreen] = useState<Screen>(initialScreen);");
     expect(source).toContain("<Sidebar");

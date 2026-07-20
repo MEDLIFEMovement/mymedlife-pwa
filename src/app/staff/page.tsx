@@ -8,6 +8,12 @@ import {
   shouldRedirectActorToLogin,
 } from "@/services/login-route";
 import { getLocalActorContext } from "@/services/local-actor-context";
+import {
+  getLaunchLaneOrgLeaderboardRows,
+  getLaunchLaneOrgPointsReadback,
+  getLaunchLaneStaffChapterReadback,
+} from "@/services/launch-lane-points-readback";
+import { getReadOnlyAppData } from "@/services/read-only-app-data";
 import { canAccessAdminWorkspace, canAccessStaffWorkspace } from "@/services/role-visibility";
 import { getStaffLaunchLaneCanonicalHref } from "@/services/staff-launch-lane";
 import { getStaticRouteMetadata } from "@/services/static-route-metadata";
@@ -49,6 +55,16 @@ export default async function StaffPage({ searchParams }: StaffPageProps) {
     redirect(canonicalHref);
   }
 
+  const shouldLoadLiveEventReadback =
+    requestedView === "events" || requestedView === "leaderboard";
+  const liveEventReadback = shouldLoadLiveEventReadback
+    ? await getReadOnlyAppData({ actorUserId: actor.user.id }).then((data) => ({
+        chapters: getLaunchLaneStaffChapterReadback(data),
+        organization: getLaunchLaneOrgPointsReadback(data),
+        leaderboard: getLaunchLaneOrgLeaderboardRows(data),
+      }))
+    : null;
+
   return (
     <>
       <WorkspaceAccountMenu actor={actor} currentWorkspace="staff_command_center" />
@@ -56,6 +72,7 @@ export default async function StaffPage({ searchParams }: StaffPageProps) {
         canAccessAdminPanel={canAccessAdminWorkspace(actor)}
         initialView={resolvedSearchParams?.view}
         initialCampaign={resolvedSearchParams?.campaign}
+        liveEventReadback={liveEventReadback}
         initialRouteParams={{
           view: resolvedSearchParams?.view,
           campaign: resolvedSearchParams?.campaign,
