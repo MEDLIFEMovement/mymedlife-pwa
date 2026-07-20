@@ -2,6 +2,7 @@ import { createClient } from "@supabase/supabase-js";
 
 import { isUuid } from "@/services/action-start-write";
 import { isMemberEventClosedStatus } from "@/services/member-event-lifecycle";
+import { getMemberTestEventRouteTemplate } from "@/services/member-event-route-aliases";
 
 type EnvSource = Record<string, string | undefined>;
 type MemberEventLoopEnvironment = "local" | "staging" | "production";
@@ -152,19 +153,6 @@ type MemberEventWriteContext =
       campaign: CampaignRow | null;
     }
   | { success: false; result: MemberEventLoopWriteResult };
-
-const testEventRouteAliases = new Map([
-  [
-    "chapter-event-ucla-kickoff",
-    {
-      title: "TEST Intro GBM",
-      eventType: "social",
-      promotionSummary:
-        "Production-safe TEST event loop for RSVP, check-in, attendance, and points. No Luma or external provider write runs from this event.",
-      locationLabel: "TEST chapter event",
-    },
-  ],
-]);
 
 export function getMemberEventLoopWriteConfig(
   env: EnvSource = process.env,
@@ -591,9 +579,7 @@ async function resolveOrCreateEvent(
     return existing.data && !existing.error ? existing.data : null;
   }
 
-  const template =
-    testEventRouteAliases.get(input.routeEventId) ??
-    testEventRouteAliases.get("chapter-event-ucla-kickoff");
+  const template = getMemberTestEventRouteTemplate(input.routeEventId);
 
   if (!template) {
     return null;
