@@ -18,9 +18,16 @@ import { getSltPrepPageContext } from "../page-context";
 export const metadata = getStaticRouteMetadata("sltPrepForms");
 export const dynamic = "force-dynamic";
 
-export default async function SltPrepFormsPage() {
-  const { actor, data } = await getSltPrepPageContext("/slt-prep/forms");
-  const workspace = getSltTripPrepWorkspace(actor);
+export default async function SltPrepFormsPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ traveler?: string }>;
+}) {
+  const [{ actor, data }, search] = await Promise.all([
+    getSltPrepPageContext("/slt-prep/forms"),
+    searchParams ?? Promise.resolve<{ traveler?: string }>({}),
+  ]);
+  const workspace = getSltTripPrepWorkspace(actor, search.traveler);
 
   return (
     <AppShell
@@ -29,7 +36,7 @@ export default async function SltPrepFormsPage() {
       mobileQuickItemsOverride={[...sltTripPrepMobileQuickNavItems]}
     >
       <DataSourceNotice source={data.source} />
-      <SltPrepSubnav items={[...getSltTripPrepSubnavItems(actor)]} />
+      <SltPrepSubnav items={[...getSltTripPrepSubnavItems(actor, workspace.traveler?.id)]} />
 
       {!workspace.canReadWorkspace || !workspace.traveler ? (
         <RestrictedState

@@ -14,6 +14,7 @@ import {
   getSltTripPrepSubnavItems,
   type SltTripPrepChecklistFilter,
   sltTripPrepMobileQuickNavItems,
+  withSltTripPrepTravelerHref,
 } from "@/services/slt-trip-prep-workspace";
 import { getStaticRouteMetadata } from "@/services/static-route-metadata";
 import type { TripPrepChecklistItem } from "@/shared/types/slt-trip-prep";
@@ -25,17 +26,19 @@ export const dynamic = "force-dynamic";
 type ChecklistPageProps = {
   searchParams?: Promise<{
     filter?: string;
+    traveler?: string;
   }>;
 };
 
 export default async function SltPrepChecklistPage({ searchParams }: ChecklistPageProps) {
-  const emptySearchParams: { filter?: string } = {};
+  const emptySearchParams: { filter?: string; traveler?: string } = {};
   const [{ actor, data }, search] = await Promise.all([
     getSltPrepPageContext("/slt-prep/checklist"),
     searchParams ?? Promise.resolve(emptySearchParams),
   ]);
   const filter = parseChecklistFilter(search.filter);
-  const workspace = getSltTripPrepChecklistWorkspace(actor, filter);
+  const workspace = getSltTripPrepChecklistWorkspace(actor, filter, search.traveler);
+  const travelerId = workspace.traveler?.id;
 
   return (
     <AppShell
@@ -44,7 +47,7 @@ export default async function SltPrepChecklistPage({ searchParams }: ChecklistPa
       mobileQuickItemsOverride={[...sltTripPrepMobileQuickNavItems]}
     >
       <DataSourceNotice source={data.source} />
-      <SltPrepSubnav items={[...getSltTripPrepSubnavItems(actor)]} />
+      <SltPrepSubnav items={[...getSltTripPrepSubnavItems(actor, travelerId)]} />
 
       {!workspace.canReadChecklist || !workspace.traveler ? (
         <RestrictedState
@@ -58,7 +61,10 @@ export default async function SltPrepChecklistPage({ searchParams }: ChecklistPa
           <section className="overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-[0_20px_48px_rgba(15,23,42,0.08)]">
             <div className="bg-[#0066CC] px-4 py-4">
               <div className="flex items-center gap-3">
-                <Link href="/slt-prep" className="text-sm font-semibold text-white/86">
+                <Link
+                  href={withSltTripPrepTravelerHref("/slt-prep", travelerId)}
+                  className="text-sm font-semibold text-white/86"
+                >
                   ← Trip Prep
                 </Link>
                 <h1 className="text-lg font-semibold text-white">Readiness Checklist</h1>
@@ -94,7 +100,10 @@ export default async function SltPrepChecklistPage({ searchParams }: ChecklistPa
               return (
                 <Link
                   key={option.key}
-                  href={`/slt-prep/checklist?filter=${option.key}`}
+                  href={withSltTripPrepTravelerHref(
+                    `/slt-prep/checklist?filter=${option.key}`,
+                    travelerId,
+                  )}
                   aria-current={isActive ? "page" : undefined}
                   className={[
                     "rounded-full border px-4 py-2 text-sm font-semibold transition",
@@ -123,7 +132,10 @@ export default async function SltPrepChecklistPage({ searchParams }: ChecklistPa
                     {group.items.map((item) => (
                       <Link
                         key={item.id}
-                        href={`/slt-prep/checklist/${item.id}`}
+                        href={withSltTripPrepTravelerHref(
+                          `/slt-prep/checklist/${item.id}`,
+                          travelerId,
+                        )}
                         className="block rounded-[1.35rem] border border-slate-200 bg-slate-50 px-4 py-4 transition hover:border-slate-300 hover:bg-slate-100/80"
                       >
                         <div className="flex flex-wrap items-start justify-between gap-3">
