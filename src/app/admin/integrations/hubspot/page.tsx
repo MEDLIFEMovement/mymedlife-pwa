@@ -71,6 +71,7 @@ export default async function AdminHubSpotIntegrationPage({ searchParams }: Page
                   <Detail label="Heartbeat" value={workspace.lastRun.heartbeatAt} />
                   <Detail label="Source companies" value={workspace.lastRun.sourceCompanies} />
                   <Detail label="Source contacts" value={workspace.lastRun.sourceContacts} />
+                  <Detail label="Memberships deactivated" value={workspace.lastRun.membershipDeactivations} />
                   <Detail label="Chapters created" value={workspace.lastRun.materializedChapters} />
                   <Detail label="Profiles matched" value={workspace.lastRun.matchedProfiles} />
                   <Detail label="Conflicts" value={workspace.lastRun.conflicts} />

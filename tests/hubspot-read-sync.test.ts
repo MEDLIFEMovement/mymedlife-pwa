@@ -376,6 +376,133 @@ describe("HubSpot read sync foundation", () => {
     });
   });
 
+  it("deactivates HubSpot-linked memberships missing from a complete backfill", async () => {
+    const queries: FakeQuery[] = [];
+    const appClient = createFakeAppClient((query) => {
+      queries.push(query);
+      if (query.table === "staff_role_assignments") return ok([{ role_key: "super_admin" }]);
+      if (query.table === "hubspot_sync_runs" && query.operation === "select") return ok([]);
+      if (query.table === "hubspot_sync_runs" && query.operation === "insert") return ok({ id: "run-removal" });
+      if (query.table === "memberships" && query.operation === "select") {
+        return ok([{
+          id: "membership-removed",
+          chapter_id: "chapter-1",
+          status: "approved",
+          hubspot_association_key: "contact-1:company-1",
+        }]);
+      }
+      return ok([]);
+    });
+
+    const result = await runHubSpotReadSync("super-1", "backfill", {
+      env: enabledEnv,
+      appClient: appClient as never,
+      hubspotClient: emptyHubSpotClient(),
+      now: () => new Date("2026-07-20T13:30:00.000Z"),
+    });
+
+    expect(result).toMatchObject({
+      success: true,
+      code: "hubspot_sync_succeeded",
+      counts: { membershipDeactivations: 1 },
+    });
+    expect(queries).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        table: "memberships",
+        operation: "update",
+        payload: { status: "inactive" },
+      }),
+      expect.objectContaining({
+        table: "hubspot_membership_imports",
+        operation: "update",
+      }),
+      expect.objectContaining({
+        table: "audit_logs",
+        operation: "insert",
+        payload: expect.objectContaining({ action: "hubspot_membership_deactivated" }),
+      }),
+    ]));
+    const finalRunUpdate = queries.findLast((query) => (
+      query.table === "hubspot_sync_runs"
+      && query.operation === "update"
+      && (query.payload as { status?: string }).status === "succeeded"
+    ));
+    expect(finalRunUpdate?.payload).toMatchObject({ membership_deactivation_count: 1 });
+  });
+
+  it("does not deactivate missing memberships during an incremental run", async () => {
+    const queries: FakeQuery[] = [];
+    const appClient = createFakeAppClient((query) => {
+      queries.push(query);
+      if (query.table === "staff_role_assignments") return ok([{ role_key: "ds_admin" }]);
+      if (query.table === "hubspot_sync_runs" && query.operation === "select") {
+        return ok(query.filterValue("status") === "succeeded"
+          ? [{ checkpoint_after: "2026-07-20T12:00:00.000Z" }]
+          : []);
+      }
+      if (query.table === "hubspot_sync_runs" && query.operation === "insert") return ok({ id: "run-incremental" });
+      return ok([]);
+    });
+
+    await expect(runHubSpotReadSync("admin-1", "incremental", {
+      env: enabledEnv,
+      appClient: appClient as never,
+      hubspotClient: emptyHubSpotClient(),
+      now: () => new Date("2026-07-20T13:30:00.000Z"),
+    })).resolves.toMatchObject({
+      success: true,
+      counts: { membershipDeactivations: 0 },
+    });
+
+    expect(queries.some((query) => query.table === "memberships")).toBe(false);
+  });
+
+  it("reactivates an existing inactive membership when its HubSpot association returns", async () => {
+    const queries: FakeQuery[] = [];
+    const appClient = createFakeAppClient((query) => {
+      queries.push(query);
+      if (query.table === "staff_role_assignments") return ok([{ role_key: "super_admin" }]);
+      if (query.table === "hubspot_sync_runs" && query.operation === "select") return ok([]);
+      if (query.table === "hubspot_sync_runs" && query.operation === "insert") return ok({ id: "run-reactivate" });
+      if (query.table === "chapters" && query.operation === "select") {
+        return ok([{ id: "chapter-1", hubspot_company_id: "company-1" }]);
+      }
+      if (query.table === "profiles" && query.operation === "select") {
+        return ok([{ id: "profile-1", hubspot_contact_id: "contact-1" }]);
+      }
+      if (query.table === "memberships" && query.operation === "select") {
+        return ok([{
+          id: "membership-1",
+          status: "inactive",
+          hubspot_association_key: "contact-1:company-1",
+        }]);
+      }
+      return ok([]);
+    });
+
+    await expect(runHubSpotReadSync("super-1", "incremental", {
+      env: enabledEnv,
+      appClient: appClient as never,
+      hubspotClient: {
+        readActiveChapterCompanies: oneCompanyClient().readActiveChapterCompanies,
+        readContactsWithCompanies: async () => [oneContact()],
+      },
+      now: () => new Date("2026-07-20T13:30:00.000Z"),
+    })).resolves.toMatchObject({
+      success: true,
+      counts: { membershipUpserts: 1 },
+    });
+
+    expect(queries).toContainEqual(expect.objectContaining({
+      table: "memberships",
+      operation: "update",
+      payload: expect.objectContaining({
+        status: "approved",
+        hubspot_association_key: "contact-1:company-1",
+      }),
+    }));
+  });
+
   it("rejects non-admin actors and records provider failures without partial materialization", async () => {
     const memberClient = createFakeAppClient((query) => {
       if (query.table === "staff_role_assignments") return ok([{ role_key: "general_member" }]);
@@ -943,6 +1070,15 @@ describe("HubSpot read sync foundation", () => {
     expect(schedulerSql).toContain("heartbeat_at");
     expect(schedulerSql).toContain("retry_of_run_id");
     expect(schedulerSql).toContain("hubspot_sync_runs_one_running");
+
+    const membershipReconciliationSql = readFileSync(
+      join(process.cwd(), "supabase/migrations/20260720133000_hubspot_membership_removal_reconciliation.sql"),
+      "utf8",
+    );
+    expect(membershipReconciliationSql).toContain("membership_deactivation_count");
+    expect(membershipReconciliationSql).toContain("auth.role() = 'service_role'");
+    expect(membershipReconciliationSql).toContain("HubSpot sync cannot rewrite membership identity or metadata");
+    expect(membershipReconciliationSql).toContain("new.status not in ('approved', 'inactive')");
   });
 });
 
@@ -973,6 +1109,10 @@ class FakeQuery {
   eq(column: string, value: unknown) { this.filters.push({ column, value }); return this; }
   ilike(column: string, value: unknown) { this.filters.push({ column, value }); return this; }
   is(column: string, value: unknown) { this.filters.push({ column, value }); return this; }
+  not(column: string, operator: string, value: unknown) {
+    this.filters.push({ column: `${column}:${operator}:not`, value });
+    return this;
+  }
   lt(column: string, value: unknown) { this.filters.push({ column, value }); return this; }
   order() { return this; }
   limit() { return this; }
