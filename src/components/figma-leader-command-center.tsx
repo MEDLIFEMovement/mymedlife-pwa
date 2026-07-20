@@ -1531,26 +1531,14 @@ function NpsResultsPanel({ nps, attendees, totalMembers, rsvp }: { nps: NpsResul
 }
 
 function EventsScreen({
-  externalCreate,
   liveReadback,
-  onExternalCreateHandled,
   onNavigate,
 }: {
-  externalCreate?: boolean;
   liveReadback?: LeaderLiveEventReadback | null;
-  onExternalCreateHandled?: () => void;
-  onNavigate?: (screen: Screen) => void;
+  onNavigate: (screen: Screen) => void;
 }) {
-  const [showCreate,   setShowCreate]   = useState(false);
   const [surveyEvent,  setSurveyEvent]  = useState<{id:number; name:string}|null>(null);
   const [npsEventId,   setNpsEventId]   = useState<number|null>(null);
-
-  useEffect(() => {
-    if (externalCreate) {
-      setShowCreate(true);
-      onExternalCreateHandled?.();
-    }
-  }, [externalCreate]);
 
   const past      = EVENTS.filter(e => e.attended !== null);
   const chartData = past.map(e => ({
@@ -1567,22 +1555,11 @@ function EventsScreen({
   const totalMembersConverted = npsEvents.reduce((a,e) => a + NPS_RESULTS[e.id].membersAttending, 0);
   const totalMembers          = npsEvents.reduce((a,e) => a + NPS_RESULTS[e.id].totalMembers, 0);
 
-  if (showCreate) {
-    return (
-      <CreateEventForm
-        onBack={() => setShowCreate(false)}
-        onOpenHome={() => onNavigate?.("home")}
-        onOpenCommittees={() => onNavigate?.("committees")}
-        onOpenEvents={() => onNavigate?.("events")}
-      />
-    );
-  }
-
   if (liveReadback) {
     return (
       <LeaderLiveEventsScreen
         readback={liveReadback}
-        onCreateEvent={() => setShowCreate(true)}
+        onCreateEvent={() => onNavigate("create-event")}
       />
     );
   }
@@ -1599,7 +1576,7 @@ function EventsScreen({
           <h1 className="text-2xl font-black text-slate-900">Event Performance</h1>
           <p className="text-sm text-slate-500 mt-1">Track TEST event execution previews, survey posture, committee follow-through, and chapter-wide attendance readback without turning on live event operations.</p>
         </div>
-        <Btn variant="primary" onClick={() => setShowCreate(true)}><Plus size={11}/>Create Event Preview</Btn>
+        <Btn variant="primary" onClick={() => onNavigate("create-event")}><Plus size={11}/>Create Event Preview</Btn>
       </div>
 
       {/* Summary cards — now includes NPS */}
@@ -4402,7 +4379,6 @@ export function FigmaLeaderCommandCenter({
   const [selectedId, setSelectedId] = useState<number>(1);
   const [showAssignAction, setShowAssignAction] = useState(false);
   const [showPromote, setShowPromote] = useState(false);
-  const [showCreateEvent, setShowCreateEvent] = useState(false);
   const [assignActionMemberIds, setAssignActionMemberIds] = useState<number[]>([]);
   const [promoteInitialMemberId, setPromoteInitialMemberId] = useState<number | null>(null);
 
@@ -4422,8 +4398,7 @@ export function FigmaLeaderCommandCenter({
   };
 
   const handleCreateEvent = () => {
-    navigateToScreen("events");
-    setShowCreateEvent(true);
+    navigateToScreen("create-event");
   };
 
   const openAssignActionPreview = (memberIds: number[] = []) => {
@@ -4518,9 +4493,7 @@ export function FigmaLeaderCommandCenter({
           )}
           {screen==="events"      && (
             <EventsScreen
-              externalCreate={showCreateEvent}
               liveReadback={liveEventReadback}
-              onExternalCreateHandled={() => setShowCreateEvent(false)}
               onNavigate={navigateToScreen}
             />
           )}

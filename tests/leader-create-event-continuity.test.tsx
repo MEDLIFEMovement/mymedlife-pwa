@@ -23,6 +23,11 @@ describe("leader create-event continuity", () => {
   it("wires the create-event continuity controls through the leader shell routes", () => {
     const source = readFileSync("src/components/figma-leader-command-center.tsx", "utf8");
 
+    expect(source).toContain('navigateToScreen("create-event")');
+    expect(source).toContain('onCreateEvent={() => onNavigate("create-event")}');
+    expect(source).toContain('onClick={() => onNavigate("create-event")}');
+    expect(source).not.toContain("setShowCreate(true)");
+    expect(source).not.toContain("showCreateEvent");
     expect(source).toContain('onOpenHome={() => navigateToScreen("home")}');
     expect(source).toContain('onOpenCommittees={() => navigateToScreen("committees")}');
     expect(source).toContain('onOpenEvents={() => navigateToScreen("events")}');
