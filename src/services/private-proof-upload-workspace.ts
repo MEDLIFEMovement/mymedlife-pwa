@@ -1,6 +1,6 @@
 import {
-  createSupabaseReadonlyClient,
-  getSupabaseReadConfig,
+  createSupabaseReadonlyAccess,
+  type SupabaseReadonlyAccess,
 } from "@/lib/supabase-readonly";
 import type { LocalActorContext } from "@/services/local-actor-context";
 import { readLocalDataSnapshot } from "@/services/read-only-app-data";
@@ -18,14 +18,19 @@ import type {
 
 export async function getPrivateProofUploadWorkspace(
   actor: LocalActorContext,
+  options: {
+    createReadonlyAccess?: () => Promise<SupabaseReadonlyAccess>;
+  } = {},
 ): Promise<PrivateProofUploadWorkspace> {
-  const readConfig = getSupabaseReadConfig();
+  const access = await (
+    options.createReadonlyAccess ?? createSupabaseReadonlyAccess
+  )();
 
-  if (!readConfig.enabled) {
+  if (!access.enabled) {
     return getPrivateProofUploadWorkspaceBase(actor, [], "mock");
   }
 
-  const snapshot = await readLocalDataSnapshot(createSupabaseReadonlyClient(readConfig));
+  const snapshot = await readLocalDataSnapshot(access.client);
   const assignmentById = new Map(
     snapshot.assignments.map((assignment) => [assignment.id, assignment]),
   );
