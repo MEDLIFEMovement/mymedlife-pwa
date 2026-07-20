@@ -1,3 +1,11 @@
+import Link from "next/link";
+
+import type {
+  LaunchLaneOrgLeaderboardRow,
+  LaunchLaneOrgPointsReadback,
+  LaunchLaneStaffChapterReadback,
+} from "@/services/launch-lane-points-readback";
+
 type CampaignStatus = "on-track" | "behind" | "not-started" | "complete" | "paused";
 
 type StaffLaunchChapter = {
@@ -21,6 +29,131 @@ type StaffLaunchChapter = {
 type StaffLaunchEventsPanelsProps = {
   chapters: StaffLaunchChapter[];
 };
+
+type StaffLiveLaunchEventsPanelsProps = {
+  chapters: LaunchLaneStaffChapterReadback[];
+  organization: LaunchLaneOrgPointsReadback;
+};
+
+type StaffLiveLaunchLeaderboardProps = {
+  rows: LaunchLaneOrgLeaderboardRow[];
+  organization: LaunchLaneOrgPointsReadback;
+};
+
+export function StaffLiveLaunchEventsOperations({
+  chapters,
+  organization,
+}: StaffLiveLaunchEventsPanelsProps) {
+  const visibleEvents = chapters.filter((chapter) => chapter.chapterEventId);
+
+  return (
+    <div className="space-y-5">
+      <div className="grid gap-4 md:grid-cols-4">
+        <StaffMetricCard label="Visible events" value={visibleEvents.length.toString()} note="Supabase chapter events" tone="blue" />
+        <StaffMetricCard label="RSVPs" value={organization.totalRsvps.toLocaleString()} note="Active RSVP records" tone="yellow" />
+        <StaffMetricCard label="Attendance" value={organization.totalAttendance.toLocaleString()} note="Confirmed check-ins" tone="green" />
+        <StaffMetricCard label="Points awarded" value={organization.totalPoints.toLocaleString()} note="Attendance-backed points" tone="purple" />
+      </div>
+
+      <section className="overflow-hidden rounded-xl border border-border bg-white shadow-sm">
+        <div className="flex items-center justify-between gap-4 border-b border-border px-5 py-4">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-widest text-primary">Live event-loop readback</p>
+            <h2 className="text-lg font-bold text-foreground">RSVP, attendance, and points by chapter</h2>
+          </div>
+          <span className="rounded-full border border-emerald-100 bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700">
+            Supabase operational truth
+          </span>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[60rem] text-left text-sm">
+            <thead className="bg-muted/40 text-xs uppercase tracking-wider text-muted-foreground">
+              <tr>
+                {['Chapter', 'Calendar', 'Next event', 'RSVPs', 'Attended', 'Points', 'Risk', 'Detail'].map((heading) => (
+                  <th key={heading} className="px-4 py-3 font-bold">{heading}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {chapters.map((chapter) => (
+                <tr key={chapter.id} className="border-t border-border hover:bg-muted/30">
+                  <td className="px-4 py-3 font-bold text-foreground">{chapter.name}</td>
+                  <td className="px-4 py-3">
+                    <div className="text-foreground">{chapter.calendarLabel}</div>
+                    <div className="text-xs text-muted-foreground">{chapter.calendarStatusLabel}</div>
+                  </td>
+                  <td className="px-4 py-3 text-muted-foreground">{chapter.nextEvent}</td>
+                  <td className="px-4 py-3 font-mono">{chapter.rsvps}</td>
+                  <td className="px-4 py-3 font-mono">{chapter.attendance}</td>
+                  <td className="px-4 py-3 font-mono font-bold">{chapter.points.toLocaleString()}</td>
+                  <td className="px-4 py-3">
+                    <span className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-bold text-slate-700">
+                      {chapter.risk}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3">
+                    {chapter.detailHref ? (
+                      <Link href={chapter.detailHref} className="font-bold text-primary hover:underline">
+                        Open event
+                      </Link>
+                    ) : (
+                      <span className="text-xs text-muted-foreground">No event</span>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+export function StaffLiveLaunchOrganizationLeaderboard({
+  rows,
+  organization,
+}: StaffLiveLaunchLeaderboardProps) {
+  return (
+    <div className="space-y-5">
+      <div className="grid gap-4 md:grid-cols-4">
+        <StaffMetricCard label="Org points" value={organization.totalPoints.toLocaleString()} note="All durable points rows" tone="purple" />
+        <StaffMetricCard label="Top chapter" value={organization.topChapterName ?? "Pending"} note={organization.topChapterName ? `${organization.topChapterPoints.toLocaleString()} points` : "No points yet"} tone="yellow" />
+        <StaffMetricCard label="Chapters scoring" value={organization.chaptersWithPoints.toString()} note="At least one points row" tone="green" />
+        <StaffMetricCard label="Attendance" value={organization.totalAttendance.toLocaleString()} note="Confirmed check-ins" tone="blue" />
+      </div>
+
+      <section className="overflow-hidden rounded-xl border border-border bg-white shadow-sm">
+        <div className="border-b border-border px-5 py-4">
+          <p className="text-xs font-bold uppercase tracking-widest text-primary">Live organization leaderboard</p>
+          <h2 className="text-lg font-bold text-foreground">Chapter ranking by attendance-backed points</h2>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-sm">
+            <thead className="bg-muted/40 text-xs uppercase tracking-wider text-muted-foreground">
+              <tr>
+                {['Rank', 'Chapter', 'Points', 'Events', 'Status'].map((heading) => (
+                  <th key={heading} className="px-4 py-3 font-bold">{heading}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((row, index) => (
+                <tr key={row.chapterName} className="border-t border-border hover:bg-muted/30">
+                  <td className="px-4 py-3 font-black text-primary">#{index + 1}</td>
+                  <td className="px-4 py-3 font-bold text-foreground">{row.chapterName}</td>
+                  <td className="px-4 py-3 font-mono font-bold">{row.points.toLocaleString()}</td>
+                  <td className="px-4 py-3 font-mono">{row.eventCount}</td>
+                  <td className="px-4 py-3 text-muted-foreground">{row.statusLabel}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  );
+}
 
 export function StaffLaunchEventsOperations({
   chapters,

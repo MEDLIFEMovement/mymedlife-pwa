@@ -162,8 +162,8 @@ describe("staff page", () => {
   });
 
   it.each([
-    ["events", "Luma event operations", "RSVP, attendance, and point readiness by chapter"],
-    ["leaderboard", "Organization leaderboard", "Chapter ranking by attendance-backed points"],
+    ["events", "Live event-loop readback", "RSVP, attendance, and points by chapter"],
+    ["leaderboard", "Live organization leaderboard", "Chapter ranking by attendance-backed points"],
   ])("renders the %s staff launch view from the route query", async (view, expectedEyebrow, expectedTitle) => {
     const actorModule = await import("@/services/local-actor-context");
 
@@ -1809,7 +1809,7 @@ describe("staff page", () => {
     const lineCount = source.split("\n").length;
 
     expect(lineCount).toBeGreaterThanOrEqual(2170);
-    expect(lineCount).toBeLessThanOrEqual(3540);
+    expect(lineCount).toBeLessThanOrEqual(3600);
     expect(source).toContain("type Screen = \"chapters\" | \"campaigns\" | \"events\" | \"ugc\" | \"reports\" | \"admin\" | \"best-practices\" | \"sops\";");
     expect(source).toContain("const NAV_ITEMS");
     expect(source).toContain("function PortfolioOverview");

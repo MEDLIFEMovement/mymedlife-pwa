@@ -17,6 +17,11 @@ import {
 import { getLocalActorContext } from "@/services/local-actor-context";
 import { canAccessLeaderWorkspace, getActorSurfaceFamily } from "@/services/role-visibility";
 import { getReadOnlyAppData } from "@/services/read-only-app-data";
+import {
+  getLaunchLaneChapterLeaderboardReadback,
+  getLaunchLaneLeaderAttendanceReadback,
+  getLaunchLaneLeaderEventReadback,
+} from "@/services/launch-lane-points-readback";
 import { getStaticRouteMetadata } from "@/services/static-route-metadata";
 import { isPreviewWorkspaceAccess } from "@/services/workspace-access";
 import { getLeaderLaunchLaneCanonicalHref } from "@/services/leader-launch-lane";
@@ -167,6 +172,29 @@ export default async function LeaderPage({ searchParams }: LeaderPageProps) {
             ? "assign_action"
             : undefined,
       }),
+    );
+  }
+
+  if (requestedView === "events") {
+    const data = await getReadOnlyAppData({ actorUserId: actor.user.id });
+    const liveEventReadback = {
+      chapterName: data.chapter.name,
+      events: getLaunchLaneLeaderEventReadback(data),
+      attendance: getLaunchLaneLeaderAttendanceReadback(data),
+      leaderboard: getLaunchLaneChapterLeaderboardReadback(data),
+    };
+
+    return (
+      <>
+        <WorkspaceAccountMenu actor={actor} currentWorkspace="leader_command_center" />
+        {shouldRenderFigmaLeaderPreview ? (
+          <WorkspacePreviewBanner workspaceLabel="the Student Command Center" />
+        ) : null}
+        <FigmaLeaderCommandCenter
+          initialScreen={initialScreen}
+          liveEventReadback={liveEventReadback}
+        />
+      </>
     );
   }
 
