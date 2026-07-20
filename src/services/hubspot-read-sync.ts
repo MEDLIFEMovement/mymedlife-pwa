@@ -70,6 +70,7 @@ export type HubSpotSyncCounts = {
   contactUpserts: number;
   membershipUpserts: number;
   membershipDeactivations: number;
+  chapterDeactivations: number;
   materializedChapters: number;
   matchedProfiles: number;
   conflicts: number;
@@ -401,6 +402,15 @@ export async function runHubSpotReadSync(
       await syncCompany(appClient, runId, actorUserId, company, counts, chapterIds);
       if ((index + 1) % 25 === 0) await heartbeatRun(appClient, runId, now().toISOString());
     }
+    if (mode === "backfill") {
+      await deactivateMissingHubSpotChapters(
+        appClient,
+        runId,
+        actorUserId,
+        activeCompanyIds,
+        counts,
+      );
+    }
     await heartbeatRun(appClient, runId, now().toISOString());
 
     const profileIds = new Map<string, string>();
@@ -531,7 +541,7 @@ async function syncCompany(
   counts.companyUpserts += 1;
 
   const existing = await client.schema("app").from("chapters")
-    .select("id,name,campus,hubspot_company_id")
+    .select("id,name,campus,status,hubspot_company_id")
     .eq("hubspot_company_id", company.id)
     .limit(2);
   if (existing.error) {
@@ -541,9 +551,10 @@ async function syncCompany(
   }
 
   let chapterId = existing.data?.[0]?.id ? String(existing.data[0].id) : null;
+  let existingStatus = existing.data?.[0]?.status ? String(existing.data[0].status) : null;
   if (!chapterId) {
     const nameMatches = await client.schema("app").from("chapters")
-      .select("id,hubspot_company_id")
+      .select("id,status,hubspot_company_id")
       .ilike("name", company.name)
       .limit(2);
     const matches = nameMatches.error ? [] : nameMatches.data ?? [];
@@ -555,11 +566,15 @@ async function syncCompany(
 
     if (matches[0]?.id) {
       chapterId = String(matches[0].id);
+      existingStatus = matches[0].status ? String(matches[0].status) : null;
       const linked = await client.schema("app").from("chapters").update({
         hubspot_company_id: company.id,
+        name: company.name,
+        campus: company.name,
         region: company.region,
         country: company.country,
         chapter_type: mapChapterType(company.schoolType),
+        ...(existingStatus === "inactive" ? { status: "active" } : {}),
       }).eq("id", chapterId);
       if (linked.error) chapterId = null;
     } else {
@@ -585,12 +600,104 @@ async function syncCompany(
     return;
   }
 
+  if (existing.data?.[0]?.id) {
+    const refreshed = await client.schema("app").from("chapters").update({
+      name: company.name,
+      campus: company.name,
+      region: company.region,
+      country: company.country,
+      chapter_type: mapChapterType(company.schoolType),
+      ...(existingStatus === "inactive" ? { status: "active" } : {}),
+    }).eq("id", chapterId).eq("hubspot_company_id", company.id);
+    if (refreshed.error) {
+      counts.failures += 1;
+      await recordFailure(client, runId, "company", company.id, "chapter_refresh_failed", refreshed.error.message, company.source);
+      return;
+    }
+  }
+
   chapterIds.set(company.id, chapterId);
   await markCompanyReconciliation(client, company.id, "materialized", null, chapterId);
+  if (existingStatus === "inactive") {
+    await recordAudit(client, runId, actorUserId, chapterId, "hubspot_chapter_reactivated", "chapters", chapterId, {
+      hubspot_company_id: company.id,
+      status: "active",
+    }, counts);
+  }
   await recordAudit(client, runId, actorUserId, chapterId, "hubspot_chapter_materialized", "chapters", chapterId, {
     hubspot_company_id: company.id,
     name: company.name,
   }, counts);
+}
+
+async function deactivateMissingHubSpotChapters(
+  client: AppClient,
+  runId: string,
+  actorUserId: string | null,
+  activeCompanyIds: Set<string>,
+  counts: HubSpotSyncCounts,
+) {
+  const linked = await client.schema("app").from("chapters")
+    .select("id,status,hubspot_company_id")
+    .not("hubspot_company_id", "is", null);
+  if (linked.error) {
+    counts.failures += 1;
+    await recordFailure(
+      client,
+      runId,
+      "run",
+      null,
+      "chapter_reconciliation_lookup_failed",
+      linked.error.message,
+      {},
+    );
+    return;
+  }
+
+  for (const row of linked.data ?? []) {
+    const companyId = String(row.hubspot_company_id ?? "");
+    if (!companyId || activeCompanyIds.has(companyId) || row.status !== "active") {
+      continue;
+    }
+
+    const chapterId = String(row.id);
+    const deactivated = await client.schema("app").from("chapters").update({
+      status: "inactive",
+    }).eq("id", chapterId).eq("hubspot_company_id", companyId).eq("status", "active");
+    if (deactivated.error) {
+      counts.failures += 1;
+      await recordFailure(
+        client,
+        runId,
+        "company",
+        companyId,
+        "chapter_deactivation_failed",
+        deactivated.error.message,
+        { companyId, chapterId },
+      );
+      continue;
+    }
+
+    await markCompanyReconciliation(
+      client,
+      companyId,
+      "ignored",
+      "The HubSpot company was absent from the latest complete active-chapter backfill, so the app chapter was deactivated.",
+      chapterId,
+    );
+    counts.chapterDeactivations += 1;
+    await recordAudit(
+      client,
+      runId,
+      actorUserId,
+      chapterId,
+      "hubspot_chapter_deactivated",
+      "chapters",
+      chapterId,
+      { hubspot_company_id: companyId, status: "inactive" },
+      counts,
+    );
+  }
 }
 
 async function syncContact(
@@ -903,6 +1010,7 @@ async function finishRun(
     contact_upsert_count: counts.contactUpserts,
     membership_upsert_count: counts.membershipUpserts,
     membership_deactivation_count: counts.membershipDeactivations,
+    chapter_deactivation_count: counts.chapterDeactivations,
     materialized_chapter_count: counts.materializedChapters,
     matched_profile_count: counts.matchedProfiles,
     conflict_count: counts.conflicts,
@@ -1029,6 +1137,7 @@ function emptyCounts(): HubSpotSyncCounts {
     contactUpserts: 0,
     membershipUpserts: 0,
     membershipDeactivations: 0,
+    chapterDeactivations: 0,
     materializedChapters: 0,
     matchedProfiles: 0,
     conflicts: 0,
