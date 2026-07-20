@@ -13,6 +13,7 @@ import type {
   MemberMobileEventType,
 } from "@/services/member-mobile-event-context";
 import type { LaunchLaneMemberPointsReadback } from "@/services/launch-lane-points-readback";
+import type { MemberStory } from "@/services/member-stories-read-model";
 import {
   Home, BarChart2, CalendarDays, Trophy, User, Users,
   ChevronRight, ChevronLeft, CheckCircle2, Clock, Circle,
@@ -3030,10 +3031,13 @@ type StoryType = "Field Story" | "Student Story" | "Chapter Highlight" | "Trip M
 type StoryFilter = "For You" | "Events" | "SLT" | "Fundraising" | "Leadership";
 
 interface Story {
-  id: number; title: string; caption: string; source: StorySource; type: StoryType;
-  chapter: string; country: string; tag?: string; image: string; likes: number;
+  id: string; title: string; caption: string; source: StorySource; type: StoryType;
+  chapter: string; country: string; tag?: string; image: string | null; likes: number;
   views: number; date: string; featured: boolean; trending?: boolean;
   isVideo?: boolean; embedUrl?: string; duration?: string; quote?: string; body?: string; filters: StoryFilter[];
+  eventRouteId?: string;
+  persisted?: boolean;
+  mediaStatus?: "public_media_ready" | "private_media_protected" | "metadata_only";
 }
 
 function stripTestPrefix(value: string) {
@@ -3042,7 +3046,7 @@ function stripTestPrefix(value: string) {
 
 const stories: Story[] = [
   {
-    id: 1, title: "TEST Students in Lima joined a Mobile Clinic this weekend",
+    id: "1", title: "TEST Students in Lima joined a Mobile Clinic this weekend",
     caption: "TEST Twenty-three MEDLIFE volunteers set up in San Juan de Lurigancho, seeing over 180 patients in a single day. This is why we show up.",
     source: "field", type: "Field Story", chapter: "TEST Nationwide", country: "TEST Peru", tag: "Featured",
     image: "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=900&h=600&fit=crop&auto=format",
@@ -3052,7 +3056,7 @@ const stories: Story[] = [
     filters: ["For You", "Leadership"],
   },
   {
-    id: 2, title: "TEST UConn MEDLIFE chapter packed the room at their intro event",
+    id: "2", title: "TEST UConn MEDLIFE chapter packed the room at their intro event",
     caption: "TEST Over 90 students showed up to learn about MEDLIFE's mission. The chapter is already planning their first fundraiser for September.",
     source: "instagram", type: "Chapter Highlight", chapter: "TEST UConn", country: "TEST USA",
     image: "https://images.unsplash.com/photo-1523580494863-6f3031224c94?w=800&h=530&fit=crop&auto=format",
@@ -3060,7 +3064,7 @@ const stories: Story[] = [
     filters: ["For You", "Events", "Leadership"],
   },
   {
-    id: 3, title: "TEST Trip reflection: two weeks in Ecuador changed everything",
+    id: "3", title: "TEST Trip reflection: two weeks in Ecuador changed everything",
     caption: "TEST Cassandra from TEST Florida State shares what she learned in the cloud forests of Chimborazo Province — from patient care to community organizing.",
     source: "linkedin", type: "Student Story", chapter: "TEST Florida State", country: "TEST Ecuador",
     image: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=530&fit=crop&auto=format",
@@ -3070,7 +3074,7 @@ const stories: Story[] = [
     filters: ["For You", "Leadership"],
   },
   {
-    id: 4, title: "TEST Safe Homes project update: 12 stoves, 4 weeks, one community",
+    id: "4", title: "TEST Safe Homes project update: 12 stoves, 4 weeks, one community",
     caption: "TEST The Cajamarca team completed Phase 2 of the smokeless stove installation project. Respiratory illness rates in this community are already declining.",
     source: "field", type: "Field Story", chapter: "TEST Program Staff", country: "TEST Peru", tag: "From the Field",
     image: "https://images.unsplash.com/photo-1593113598332-cd288d649433?w=800&h=530&fit=crop&auto=format",
@@ -3080,7 +3084,7 @@ const stories: Story[] = [
     filters: ["For You", "Fundraising"],
   },
   {
-    id: 5, title: "TEST Why I joined MEDLIFE — a student interview",
+    id: "5", title: "TEST Why I joined MEDLIFE — a student interview",
     caption: "TEST Marcus from TEST Rutgers talks about growing up without healthcare access and why that shaped his decision to volunteer internationally.",
     source: "loom", type: "Student Story", chapter: "TEST Rutgers", country: "TEST USA",
     image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=800&h=530&fit=crop&auto=format",
@@ -3089,7 +3093,7 @@ const stories: Story[] = [
     filters: ["For You", "Leadership"],
   },
   {
-    id: 6, title: "TEST Community health fair draws 300+ in Managua",
+    id: "6", title: "TEST Community health fair draws 300+ in Managua",
     caption: "TEST The Nicaragua team partnered with a local health center to run dental screenings, vision checks, and preventive health education for an entire Saturday.",
     source: "facebook", type: "Event Highlight", chapter: "TEST Miami MEDLIFE", country: "TEST Nicaragua",
     image: "https://images.unsplash.com/photo-1517048676732-d65bc937f952?w=800&h=530&fit=crop&auto=format",
@@ -3097,7 +3101,7 @@ const stories: Story[] = [
     filters: ["For You", "Events"],
   },
   {
-    id: 7, title: "TEST Fundraising milestone: $42,000 raised for Safe Homes 2025",
+    id: "7", title: "TEST Fundraising milestone: $42,000 raised for Safe Homes 2025",
     caption: "TEST Seventeen chapters rallied to hit this goal before summer. Every dollar funds construction materials and community labor for stove and water filter projects.",
     source: "instagram", type: "Fundraising", chapter: "TEST National Campaign", country: "MEDLIFE", tag: "Trending",
     image: "https://images.unsplash.com/photo-1532629345422-7515f3d16bb6?w=800&h=530&fit=crop&auto=format",
@@ -3105,7 +3109,7 @@ const stories: Story[] = [
     filters: ["For You", "Fundraising"],
   },
   {
-    id: 8, title: "TEST A grandmother's story: forty years without access to a doctor",
+    id: "8", title: "TEST A grandmother's story: forty years without access to a doctor",
     caption: "TEST Doña Carmen, 72, describes what it meant to finally receive a full health evaluation — and the student who sat with her through the wait.",
     source: "field", type: "Patient Voice", chapter: "TEST Program Staff", country: "TEST Guatemala", tag: "Patient Voice",
     image: "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=800&h=530&fit=crop&auto=format",
@@ -3115,7 +3119,7 @@ const stories: Story[] = [
     filters: ["For You", "Leadership"],
   },
   {
-    id: 9, title: "TEST Yale chapter hosts pre-trip training weekend",
+    id: "9", title: "TEST Yale chapter hosts pre-trip training weekend",
     caption: "TEST Forty-two students went through clinical skills workshops, cultural competency training, and logistics prep ahead of their July trip to Peru.",
     source: "youtube", type: "Chapter Highlight", chapter: "TEST Yale", country: "TEST USA",
     image: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800&h=530&fit=crop&auto=format",
@@ -3125,8 +3129,8 @@ const stories: Story[] = [
   },
 ];
 
-const STORY_EVENT_CONTINUITY: Partial<Record<number, { eventId: number; campaign: CampaignTag }>> = {
-  2: { eventId: 1, campaign: "Rush Month" },
+const STORY_EVENT_CONTINUITY: Partial<Record<string, { eventId: number; campaign: CampaignTag }>> = {
+  "2": { eventId: 1, campaign: "Rush Month" },
 };
 
 const sourceConfig: Record<StorySource, { label: string; color: string; bg: string; icon: string }> = {
@@ -3153,21 +3157,17 @@ function resolveStoryFilter(value?: string | null): StoryFilter {
   return STORY_FILTERS.find((filter) => filter === value) ?? "For You";
 }
 
-function getStoryById(value?: string | null) {
-  const parsed = Number(value);
-
-  if (!Number.isInteger(parsed)) {
-    return null;
-  }
-
-  return stories.find((story) => story.id === parsed) ?? null;
+function getStoryById(value: string | null | undefined, availableStories: Story[] = stories) {
+  if (!value) return null;
+  return availableStories.find((story) => story.id === value) ?? null;
 }
 
 function getStoryByIdForFilter(
   value: string | null | undefined,
   filter: StoryFilter,
+  availableStories: Story[] = stories,
 ) {
-  const story = getStoryById(value);
+  const story = getStoryById(value, availableStories);
 
   if (!story || !story.filters.includes(filter)) {
     return null;
@@ -3181,13 +3181,13 @@ function buildStoriesHref({
   storyId,
 }: {
   filter: StoryFilter;
-  storyId?: number | null;
+  storyId?: string | null;
 }) {
   const params = new URLSearchParams();
   params.set("filter", filter);
 
-  if (typeof storyId === "number") {
-    params.set("story", String(storyId));
+  if (storyId) {
+    params.set("story", storyId);
   }
 
   return `/app/stories?${params.toString()}`;
@@ -3202,7 +3202,7 @@ function getStoryPreviewAvatarLabel(chapter: string) {
   return stripTestPrefix(chapter).charAt(0).toUpperCase() || "M";
 }
 
-function getStoryLoopEvent(storyId: number) {
+function getStoryLoopEvent(storyId: string) {
   const continuity = STORY_EVENT_CONTINUITY[storyId];
 
   if (!continuity) {
@@ -3232,6 +3232,29 @@ function SourceBadge({ source }: { source: StorySource }) {
   );
 }
 
+function StoryImage({ story, className }: { story: Story; className: string }) {
+  if (story.image) {
+    return <img src={story.image} alt={story.title} className={className} />;
+  }
+
+  const detail =
+    story.mediaStatus === "private_media_protected"
+      ? "Approved story metadata is live. The private original remains protected."
+      : "Approved story metadata is live. No publishable thumbnail is available.";
+
+  return (
+    <div
+      className={`flex flex-col items-center justify-center bg-[#e9eff8] px-8 text-center text-[#1b4b8e] ${className}`}
+      role="img"
+      aria-label={`${story.title}. ${detail}`}
+    >
+      <Camera size={34} aria-hidden="true" />
+      <p className="mt-3 text-sm font-bold">Media not published</p>
+      <p className="mt-1 max-w-xs text-xs leading-5 text-[#4c668b]">{detail}</p>
+    </div>
+  );
+}
+
 function TagBadge({ tag }: { tag: string }) {
   const variants: Record<string, string> = {
     "Featured":       "bg-primary/10 text-primary border border-primary/20",
@@ -3249,7 +3272,7 @@ function TagBadge({ tag }: { tag: string }) {
   );
 }
 
-function HeartBtn({ count, storyId, liked, onToggle }: { count: number; storyId: number; liked: boolean; onToggle: (id: number) => void }) {
+function HeartBtn({ count, storyId, liked, onToggle }: { count: number; storyId: string; liked: boolean; onToggle: (id: string) => void }) {
   void storyId;
   void liked;
   void onToggle;
@@ -3278,7 +3301,7 @@ function HeartBtn({ count, storyId, liked, onToggle }: { count: number; storyId:
 function MobileStoryCard({ story, liked, onToggleLike, onClick }: {
   story: Story;
   liked: boolean;
-  onToggleLike: (id: number) => void;
+  onToggleLike: (id: string) => void;
   onClick: (s: Story) => void;
 }) {
   void liked;
@@ -3291,11 +3314,7 @@ function MobileStoryCard({ story, liked, onToggleLike, onClick }: {
     >
       {/* Full-bleed image with overlaid text — 4:5 portrait ratio */}
       <div className="relative w-full" style={{ aspectRatio: "4/5" }}>
-        <img
-          src={story.image}
-          alt={story.title}
-          className="w-full h-full object-cover"
-        />
+        <StoryImage story={story} className="h-full w-full object-cover" />
 
         {/* Gradient: light at top, heavy at bottom for text legibility */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-black/10" />
@@ -3373,7 +3392,7 @@ function VideoPlayer({ story }: { story: Story }) {
   if (!playing) {
     return (
       <div className="relative w-full bg-black" style={{ aspectRatio: "16/9" }}>
-        <img src={story.image} alt={story.title} className="w-full h-full object-cover opacity-80" />
+        <StoryImage story={story} className="h-full w-full object-cover opacity-80" />
         <div className="absolute inset-0 bg-black/30" />
         <button type="button"
           onClick={() => setPlaying(true)}
@@ -3423,7 +3442,7 @@ function VideoPlayer({ story }: { story: Story }) {
 // Desktop: editorial grid with featured 2-col hero
 
 function StoryCard({ story, liked, onToggleLike, onClick, featured }: {
-  story: Story; liked: boolean; onToggleLike: (id: number) => void; onClick: (s: Story) => void; featured?: boolean;
+  story: Story; liked: boolean; onToggleLike: (id: string) => void; onClick: (s: Story) => void; featured?: boolean;
 }) {
   if (featured) {
     return (
@@ -3433,8 +3452,7 @@ function StoryCard({ story, liked, onToggleLike, onClick, featured }: {
         {/* ── Mobile: stacked (image top, text below) ── */}
         <div className="md:hidden">
           <div className="relative overflow-hidden bg-muted aspect-[16/9]">
-            <img src={story.image} alt={story.title}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+            <StoryImage story={story} className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
             {story.isVideo && (
               <div className="absolute inset-0 flex items-center justify-center">
@@ -3473,8 +3491,7 @@ function StoryCard({ story, liked, onToggleLike, onClick, featured }: {
         {/* ── Desktop: 2-col side-by-side ── */}
         <div className="hidden md:grid md:grid-cols-2 min-h-[340px]">
           <div className="relative overflow-hidden bg-muted" style={{ minHeight: "280px" }}>
-            <img src={story.image} alt={story.title}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+            <StoryImage story={story} className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />
             <div className="absolute inset-0 bg-gradient-to-r from-transparent to-card/20" />
             {story.isVideo && (
               <div className="absolute inset-0 flex items-center justify-center">
@@ -3520,8 +3537,7 @@ function StoryCard({ story, liked, onToggleLike, onClick, featured }: {
 
       {/* Image */}
       <div className="relative overflow-hidden bg-muted aspect-[16/9] flex-shrink-0">
-        <img src={story.image} alt={story.title}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+        <StoryImage story={story} className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
         {story.isVideo && (
           <div className="absolute inset-0 flex items-center justify-center">
@@ -3575,7 +3591,7 @@ function StoryModal({
 }: {
   story: Story;
   liked: boolean;
-  onToggleLike: (id: number) => void;
+  onToggleLike: (id: string) => void;
   closeHref: string;
   activeFilter: StoryFilter;
 }) {
@@ -3585,34 +3601,36 @@ function StoryModal({
     storyFilter: activeFilter,
   });
   const showLoopContinuity = activeFilter === "Events";
-  const loopEvent = showLoopContinuity ? getStoryLoopEvent(story.id) : null;
-  const loopEventDetailHref = loopEvent
-    ? `${getMemberEventDetailHref(loopEvent.event.id, "stories", loopEvent.campaign, null, activeFilter)}&story=${story.id}`
+  const previewLoopEvent = showLoopContinuity ? getStoryLoopEvent(story.id) : null;
+  const loopEventRouteId = story.eventRouteId ?? previewLoopEvent?.event.routeId ?? null;
+  const loopEventCampaign = previewLoopEvent?.campaign ?? null;
+  const loopEventDetailHref = loopEventRouteId
+    ? buildPersistedStoryEventHref(loopEventRouteId, activeFilter, story.id, loopEventCampaign)
     : null;
-  const loopEventPointsHref = loopEvent
+  const loopEventPointsHref = loopEventRouteId
     ? (() => {
         const url = new URL("https://mymedlife.local/app/points?source=stories");
-        url.searchParams.set("event", loopEvent.event.routeId ?? "");
+        url.searchParams.set("event", loopEventRouteId);
         url.searchParams.set("storyFilter", activeFilter);
-        url.searchParams.set("campaign", loopEvent.campaign);
+        if (loopEventCampaign) url.searchParams.set("campaign", loopEventCampaign);
         url.searchParams.set("story", String(story.id));
         return `${url.pathname}${url.search}`;
       })()
     : null;
-  const loopEventProfileHref = loopEvent
+  const loopEventProfileHref = loopEventRouteId
     ? (() => {
         const url = new URL("https://mymedlife.local/profile?source=stories");
-        url.searchParams.set("event", loopEvent.event.routeId ?? "");
+        url.searchParams.set("event", loopEventRouteId);
         url.searchParams.set("storyFilter", activeFilter);
-        url.searchParams.set("campaign", loopEvent.campaign);
+        if (loopEventCampaign) url.searchParams.set("campaign", loopEventCampaign);
         url.searchParams.set("story", String(story.id));
         return `${url.pathname}${url.search}`;
       })()
     : null;
-  const loopPointsHref: string = loopEvent
+  const loopPointsHref: string = loopEventRouteId
     ? loopEventPointsHref ?? "/app/points?source=stories"
     : getEventsBottomNavPointsHref("stories", null, null, activeFilter) ?? "/app/points?source=stories";
-  const loopProfileHref: string = loopEvent
+  const loopProfileHref: string = loopEventRouteId
     ? loopEventProfileHref ?? getStoriesBottomNavProfileHref(activeFilter)
     : getStoriesBottomNavProfileHref(activeFilter);
   return (
@@ -3628,7 +3646,7 @@ function StoryModal({
           </div>
         ) : (
           <div className="relative flex-shrink-0 bg-muted aspect-[16/9]">
-            <img src={story.image} alt={story.title} className="w-full h-full object-cover" />
+            <StoryImage story={story} className="h-full w-full object-cover" />
             <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
             <Link href={closeHref} aria-label="Back to stories feed" className="absolute top-4 left-4 w-10 h-10 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center text-white hover:bg-black/60 transition-colors">
               <ArrowLeft size={18} />
@@ -3706,51 +3724,81 @@ function StoryModal({
             <button
               type="button"
               disabled
-              title="Preview-only reaction. Likes are not saved, synced, or counted as production proof."
+              title={story.persisted
+                ? "Reactions are not enabled for approved stories yet."
+                : "Preview-only reaction. Likes are not saved, synced, or counted as production proof."}
               className="inline-flex cursor-not-allowed items-center gap-2 opacity-75"
             >
               <Heart size={20} className="text-black" />
               <span className="text-sm font-semibold text-foreground">
-                {story.likes.toLocaleString()} preview likes
+                {story.persisted
+                  ? `${story.likes.toLocaleString()} reactions`
+                  : `${story.likes.toLocaleString()} preview likes`}
               </span>
             </button>
-            <span className="text-xs text-muted-foreground" style={{ fontFamily: "'DM Mono', monospace" }}>{story.views.toLocaleString()} preview views</span>
+            <span className="text-xs text-muted-foreground" style={{ fontFamily: "'DM Mono', monospace" }}>
+              {story.persisted
+                ? "View tracking not enabled"
+                : `${story.views.toLocaleString()} preview views`}
+            </span>
           </div>
           <div className="flex items-center gap-2">
-            <button type="button" disabled title="Story saving is blocked in this preview" className="flex cursor-not-allowed items-center gap-1.5 rounded-xl px-3 py-2.5 text-sm text-muted-foreground opacity-75">
+            <button type="button" disabled title={story.persisted ? "Story saving is not enabled yet" : "Story saving is blocked in this preview"} className="flex cursor-not-allowed items-center gap-1.5 rounded-xl px-3 py-2.5 text-sm text-muted-foreground opacity-75">
               <Bookmark size={15} />
               <span className="hidden sm:inline">Save</span>
             </button>
-            <button type="button" disabled title="External source links are blocked in this preview until feed-sharing approval is complete" className="flex items-center gap-1.5 text-sm font-semibold px-4 py-2.5 rounded-xl text-white opacity-75 cursor-not-allowed" style={{ background: cfg.bg }}>
+            <button type="button" disabled title={story.persisted ? "No approved external source link is available" : "External source links are blocked in this preview until feed-sharing approval is complete"} className="flex items-center gap-1.5 text-sm font-semibold px-4 py-2.5 rounded-xl text-white opacity-75 cursor-not-allowed" style={{ background: cfg.bg }}>
               <ExternalLink size={14} /> {cfg.label}
             </button>
           </div>
         </div>
         <div className="border-t border-border bg-card px-5 pb-4">
-          <p className="pt-3 text-center text-[11px] text-muted-foreground" style={{ fontFamily: "'DM Mono', monospace" }}>Preview only - reactions, save preview, and source previews stay blocked in this reader.</p>
+          <p className="pt-3 text-center text-[11px] text-muted-foreground" style={{ fontFamily: "'DM Mono', monospace" }}>
+            {story.persisted
+              ? "Approved myMEDLIFE story metadata. Reactions, saves, and external source opening are not enabled."
+              : "Preview only - reactions, save preview, and source previews stay blocked in this reader."}
+          </p>
         </div>
       </div>
     </div>
   );
 }
 
+function buildPersistedStoryEventHref(
+  eventRouteId: string,
+  filter: StoryFilter,
+  storyId: string,
+  campaign: string | null,
+) {
+  const url = new URL(`https://mymedlife.local/app/events/${eventRouteId}`);
+  url.searchParams.set("source", "stories");
+  url.searchParams.set("storyFilter", filter);
+  if (campaign) url.searchParams.set("campaign", campaign);
+  url.searchParams.set("story", storyId);
+  return `${url.pathname}${url.search}`;
+}
+
 function StoriesScreen({
   navigate,
   initialFilter,
   initialStoryId,
+  memberStories,
 }: {
   navigate: (s: Screen) => void;
   initialFilter?: string | null;
   initialStoryId?: string | null;
+  memberStories?: MemberStory[];
 }) {
+  const availableStories: Story[] = memberStories ?? stories;
+  const isPersistedFeed = memberStories !== undefined;
   const activeFilter = resolveStoryFilter(initialFilter);
-  const selectedStory = getStoryByIdForFilter(initialStoryId, activeFilter);
+  const selectedStory = getStoryByIdForFilter(initialStoryId, activeFilter, availableStories);
 
-  const toggleLike = (id: number) => {
+  const toggleLike = (id: string) => {
     void id;
   };
 
-  const filtered = stories.filter((s) => s.filters.includes(activeFilter));
+  const filtered = availableStories.filter((s) => s.filters.includes(activeFilter));
   const closeHref = buildStoriesHref({ filter: activeFilter });
 
   return (
@@ -3766,12 +3814,18 @@ function StoriesScreen({
                 <h1 className="truncate text-xl font-bold text-black" style={{ fontFamily: "'Playfair Display', serif" }}>
                   Stories
                 </h1>
-                <p className="mt-1 text-[11px] font-medium text-gray-400">MEDLIFE Stories · preview-only student feed</p>
+                <p className="mt-1 text-[11px] font-medium text-gray-400">
+                  {isPersistedFeed
+                    ? "Approved myMEDLIFE story metadata"
+                    : "MEDLIFE Stories · preview-only student feed"}
+                </p>
               </div>
             </div>
             <div className="flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-slate-400" />
-              <span className="text-gray-400 text-xs">Preview</span>
+              <span className="text-gray-400 text-xs">
+                {isPersistedFeed ? "Live read-only" : "Preview"}
+              </span>
             </div>
           </div>
           <div className="flex gap-2 overflow-x-auto pb-2" style={{ scrollbarWidth: "none" }}>
@@ -3837,11 +3891,7 @@ function StoriesScreen({
                     className="relative block w-full bg-gray-100 cursor-pointer"
                     style={{ aspectRatio: "1/1" }}
                   >
-                    <img
-                      src={story.image}
-                      alt={story.title}
-                      className="w-full h-full object-cover"
-                    />
+                    <StoryImage story={story} className="h-full w-full object-cover" />
                     {story.isVideo && (
                       <div className="absolute inset-0 flex items-center justify-center">
                         <div className="w-16 h-16 rounded-full bg-black/40 border-[3px] border-white flex items-center justify-center">
@@ -3857,7 +3907,9 @@ function StoriesScreen({
                         <button
                           type="button"
                           disabled
-                          title="Preview-only reaction. Likes are not saved, synced, or counted as production proof."
+                          title={story.persisted
+                            ? "Reactions are not enabled for approved stories yet."
+                            : "Preview-only reaction. Likes are not saved, synced, or counted as production proof."}
                           className="cursor-not-allowed opacity-70"
                         >
                           <Heart size={26} className="text-black" />
@@ -3871,7 +3923,9 @@ function StoriesScreen({
                         <button
                           type="button"
                           disabled
-                          title="Sharing is blocked in this preview until publishing approval is complete."
+                          title={story.persisted
+                            ? "Sharing is not enabled for approved stories yet."
+                            : "Sharing is blocked in this preview until publishing approval is complete."}
                           className="cursor-not-allowed opacity-60"
                         >
                           <Share2 size={23} className="text-black" />
@@ -3880,7 +3934,9 @@ function StoriesScreen({
                       <button
                         type="button"
                         disabled
-                        title="Saving stories is blocked in this preview."
+                        title={story.persisted
+                          ? "Saving is not enabled for approved stories yet."
+                          : "Saving stories is blocked in this preview."}
                         className="cursor-not-allowed opacity-60"
                       >
                         <Bookmark size={23} className="text-black" />
@@ -3888,7 +3944,9 @@ function StoriesScreen({
                     </div>
 
                     <p className="text-[13px] font-semibold text-black mt-1.5 mb-1">
-                      {story.likes.toLocaleString()} preview likes
+                      {story.persisted
+                        ? `${story.likes.toLocaleString()} reactions`
+                        : `${story.likes.toLocaleString()} preview likes`}
                     </p>
 
                     <p className="text-[13px] text-black leading-snug">
@@ -3907,7 +3965,9 @@ function StoriesScreen({
                       className="mt-1 text-[11px] text-gray-400"
                       style={{ fontFamily: "'DM Mono', monospace" }}
                     >
-                      Preview only - comments open the reader; shares and saves stay blocked.
+                      {story.persisted
+                        ? "Approved myMEDLIFE metadata - reactions, shares, and saves are not enabled."
+                        : "Preview only - comments open the reader; shares and saves stay blocked."}
                     </p>
 
                     <p className="text-[10px] text-gray-400 uppercase tracking-wide mt-1 pb-3">
@@ -3957,6 +4017,7 @@ export function FigmaMemberMobileHome({
   memberContext = DEFAULT_MEMBER_IDENTITY_CONTEXT,
   memberEvents,
   memberCampaign = null,
+  memberStories,
   repaintKey,
 }: {
   initialScreen?: MemberMobileLaunchScreen;
@@ -3976,6 +4037,7 @@ export function FigmaMemberMobileHome({
   memberContext?: MemberMobileIdentityContext;
   memberEvents?: MemberMobileEventContext[];
   memberCampaign?: MemberMobileCampaignContext | null;
+  memberStories?: MemberStory[];
   repaintKey?: string;
 }) {
   const [screen, setScreen] = useState<Screen>(initialScreen);
@@ -4076,6 +4138,7 @@ export function FigmaMemberMobileHome({
             navigate={navigate}
             initialFilter={initialStoriesFilter}
             initialStoryId={initialStoryId}
+            memberStories={memberStories}
           />
         );
       case "leader": return <LeadershipDashboard navigate={navigate} />;

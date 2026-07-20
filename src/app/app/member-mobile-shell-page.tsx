@@ -12,6 +12,7 @@ import { getLandingRouteForActor } from "@/services/landing-route";
 import { buildLoginRedirectHref, shouldRedirectActorToLogin } from "@/services/login-route";
 import { getLocalActorContext } from "@/services/local-actor-context";
 import { getMemberRecognitionSummary } from "@/services/member-recognition";
+import { buildMemberStoriesReadModel } from "@/services/member-stories-read-model";
 import {
   buildMemberIdentityContext,
   ensureVisibleTestLabel,
@@ -87,6 +88,14 @@ export async function renderMemberMobileShellPage({
   const memberEventContext = data.source.mode === "supabase"
     ? buildMemberMobileEventContext(data)
     : null;
+  const memberStories = data.source.mode === "supabase"
+    ? buildMemberStoriesReadModel({
+        evidenceRows: data.storyEvidenceRows,
+        chapters: data.chapterRows,
+        chapterEvents: data.allChapterEventRows,
+        profiles: data.profiles,
+      })
+    : undefined;
   const sltPrepEntry =
     sltPrepWorkspace?.canReadWorkspace && sltPrepWorkspace.traveler
       ? {
@@ -123,6 +132,7 @@ export async function renderMemberMobileShellPage({
         memberContext={memberContext}
         memberEvents={memberEventContext?.events}
         memberCampaign={memberEventContext?.campaign}
+        memberStories={memberStories}
         repaintKey={repaintKey}
       />
     </>
