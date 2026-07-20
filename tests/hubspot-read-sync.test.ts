@@ -489,6 +489,69 @@ describe("HubSpot read sync foundation", () => {
     expect(finalRunUpdate?.payload).toMatchObject({ chapter_deactivation_count: 1 });
   });
 
+  it("fails closed when complete chapter reconciliation cannot read linked chapters", async () => {
+    const queries: FakeQuery[] = [];
+    const appClient = createFakeAppClient((query) => {
+      queries.push(query);
+      if (query.table === "staff_role_assignments") return ok([{ role_key: "super_admin" }]);
+      if (query.table === "hubspot_sync_runs" && query.operation === "select") return ok([]);
+      if (query.table === "hubspot_sync_runs" && query.operation === "insert") return ok({ id: "run-chapter-lookup-failure" });
+      if (query.table === "chapters" && query.operation === "select") return failed("chapter lookup unavailable");
+      if (query.table === "memberships" && query.operation === "select") return ok([]);
+      return ok([]);
+    });
+
+    await expect(runHubSpotReadSync("super-1", "backfill", {
+      env: enabledEnv,
+      appClient: appClient as never,
+      hubspotClient: emptyHubSpotClient(),
+      now: () => new Date("2026-07-20T18:45:00.000Z"),
+    })).resolves.toMatchObject({
+      success: true,
+      code: "hubspot_sync_partial",
+      counts: { chapterDeactivations: 0, failures: 1 },
+    });
+
+    expect(queries).toContainEqual(expect.objectContaining({
+      table: "hubspot_sync_failures",
+      operation: "insert",
+      payload: expect.objectContaining({ error_code: "chapter_reconciliation_lookup_failed" }),
+    }));
+  });
+
+  it("fails closed when a missing HubSpot chapter cannot be deactivated", async () => {
+    const queries: FakeQuery[] = [];
+    const appClient = createFakeAppClient((query) => {
+      queries.push(query);
+      if (query.table === "staff_role_assignments") return ok([{ role_key: "super_admin" }]);
+      if (query.table === "hubspot_sync_runs" && query.operation === "select") return ok([]);
+      if (query.table === "hubspot_sync_runs" && query.operation === "insert") return ok({ id: "run-chapter-deactivation-failure" });
+      if (query.table === "chapters" && query.operation === "select") {
+        return ok([{ id: "chapter-1", status: "active", hubspot_company_id: "company-1" }]);
+      }
+      if (query.table === "chapters" && query.operation === "update") return failed("chapter update unavailable");
+      if (query.table === "memberships" && query.operation === "select") return ok([]);
+      return ok([]);
+    });
+
+    await expect(runHubSpotReadSync("super-1", "backfill", {
+      env: enabledEnv,
+      appClient: appClient as never,
+      hubspotClient: emptyHubSpotClient(),
+      now: () => new Date("2026-07-20T18:45:00.000Z"),
+    })).resolves.toMatchObject({
+      success: true,
+      code: "hubspot_sync_partial",
+      counts: { chapterDeactivations: 0, failures: 1 },
+    });
+
+    expect(queries).toContainEqual(expect.objectContaining({
+      table: "hubspot_sync_failures",
+      operation: "insert",
+      payload: expect.objectContaining({ error_code: "chapter_deactivation_failed" }),
+    }));
+  });
+
   it("does not deactivate missing memberships during an incremental run", async () => {
     const queries: FakeQuery[] = [];
     const appClient = createFakeAppClient((query) => {
@@ -596,6 +659,38 @@ describe("HubSpot read sync foundation", () => {
       table: "audit_logs",
       operation: "insert",
       payload: expect.objectContaining({ action: "hubspot_chapter_reactivated" }),
+    }));
+  });
+
+  it("records a partial run when an existing HubSpot chapter cannot refresh", async () => {
+    const queries: FakeQuery[] = [];
+    const appClient = createFakeAppClient((query) => {
+      queries.push(query);
+      if (query.table === "staff_role_assignments") return ok([{ role_key: "super_admin" }]);
+      if (query.table === "hubspot_sync_runs" && query.operation === "select") return ok([]);
+      if (query.table === "hubspot_sync_runs" && query.operation === "insert") return ok({ id: "run-chapter-refresh-failure" });
+      if (query.table === "chapters" && query.operation === "select") {
+        return ok([{ id: "chapter-1", status: "active", hubspot_company_id: "company-1" }]);
+      }
+      if (query.table === "chapters" && query.operation === "update") return failed("chapter refresh unavailable");
+      return ok([]);
+    });
+
+    await expect(runHubSpotReadSync("super-1", "incremental", {
+      env: enabledEnv,
+      appClient: appClient as never,
+      hubspotClient: oneCompanyClient(),
+      now: () => new Date("2026-07-20T18:45:00.000Z"),
+    })).resolves.toMatchObject({
+      success: true,
+      code: "hubspot_sync_partial",
+      counts: { failures: 1 },
+    });
+
+    expect(queries).toContainEqual(expect.objectContaining({
+      table: "hubspot_sync_failures",
+      operation: "insert",
+      payload: expect.objectContaining({ error_code: "chapter_refresh_failed" }),
     }));
   });
 
