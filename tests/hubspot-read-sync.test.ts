@@ -404,6 +404,93 @@ describe("HubSpot read sync foundation", () => {
     });
   });
 
+  it.each([
+    ["changed email", "changed@example.org"],
+    ["missing email", null],
+  ] as const)("preserves an existing HubSpot profile link when the contact has a %s", async (_case, email) => {
+    const queries: FakeQuery[] = [];
+    const appClient = createFakeAppClient((query) => {
+      queries.push(query);
+      if (query.table === "staff_role_assignments") return ok([{ role_key: "ds_admin" }]);
+      if (query.table === "hubspot_sync_runs" && query.operation === "select") return ok([]);
+      if (query.table === "hubspot_sync_runs" && query.operation === "insert") return ok({ id: "run-stable-profile-link" });
+      if (query.table === "chapters" && query.operation === "select") {
+        return ok([{ id: "chapter-1", hubspot_company_id: "company-1", status: "active" }]);
+      }
+      if (query.table === "profiles" && query.operation === "select") {
+        return query.filterValue("hubspot_contact_id") === "contact-1"
+          ? ok([{ id: "profile-1", hubspot_contact_id: "contact-1" }])
+          : ok([]);
+      }
+      if (query.table === "memberships" && query.operation === "select") return ok([]);
+      if (query.table === "memberships" && query.operation === "insert") return ok({ id: "membership-1" });
+      return ok([]);
+    });
+
+    await expect(runHubSpotReadSync("actor-1", "incremental", {
+      env: enabledEnv,
+      appClient: appClient as never,
+      hubspotClient: {
+        ...oneCompanyClient(),
+        readContactsWithCompanies: async () => [{ ...oneContact(), email }],
+      },
+      now: () => new Date("2026-07-20T21:30:00.000Z"),
+    })).resolves.toMatchObject({
+      success: true,
+      code: "hubspot_sync_succeeded",
+      counts: { matchedProfiles: 1, membershipUpserts: 1 },
+    });
+    expect(queries).toContainEqual(expect.objectContaining({
+      table: "profiles",
+      operation: "select",
+      filters: expect.arrayContaining([{ column: "hubspot_contact_id", value: "contact-1" }]),
+    }));
+    expect(queries.some((query) => (
+      query.table === "profiles"
+      && query.filters.some((filter) => filter.column === "email")
+    ))).toBe(false);
+  });
+
+  it("fails closed before email fallback when the stable profile-link lookup fails", async () => {
+    const queries: FakeQuery[] = [];
+    const appClient = createFakeAppClient((query) => {
+      queries.push(query);
+      if (query.table === "staff_role_assignments") return ok([{ role_key: "ds_admin" }]);
+      if (query.table === "hubspot_sync_runs" && query.operation === "select") return ok([]);
+      if (query.table === "hubspot_sync_runs" && query.operation === "insert") return ok({ id: "run-profile-link-lookup-failure" });
+      if (query.table === "chapters" && query.operation === "select") {
+        return ok([{ id: "chapter-1", hubspot_company_id: "company-1", status: "active" }]);
+      }
+      if (query.table === "profiles" && query.operation === "select") {
+        return failed("stable profile lookup unavailable");
+      }
+      return ok([]);
+    });
+
+    await expect(runHubSpotReadSync("actor-1", "incremental", {
+      env: enabledEnv,
+      appClient: appClient as never,
+      hubspotClient: {
+        ...oneCompanyClient(),
+        readContactsWithCompanies: async () => [oneContact()],
+      },
+      now: () => new Date("2026-07-20T21:30:00.000Z"),
+    })).resolves.toMatchObject({
+      success: true,
+      code: "hubspot_sync_partial",
+      counts: { failures: 1, matchedProfiles: 0 },
+    });
+    expect(queries).toContainEqual(expect.objectContaining({
+      table: "hubspot_sync_failures",
+      operation: "insert",
+      payload: expect.objectContaining({ error_code: "profile_link_lookup_failed" }),
+    }));
+    expect(queries.some((query) => (
+      query.table === "profiles"
+      && query.filters.some((filter) => filter.column === "email")
+    ))).toBe(false);
+  });
+
   it("does not report success when the durable final run status cannot be recorded", async () => {
     const appClient = createFakeAppClient((query) => {
       if (query.table === "staff_role_assignments") return ok([{ role_key: "ds_admin" }]);
