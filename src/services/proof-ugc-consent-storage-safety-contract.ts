@@ -22,7 +22,7 @@ export type ProofUgcConsentStorageLane = {
   key:
     | "evidence_submission_queue"
     | "member_proof_status"
-    | "private_proof_upload_localhost"
+    | "private_proof_upload"
     | "hq_proof_review"
     | "proof_sharing_review"
     | "ugc_embed_and_social_links"
@@ -33,7 +33,7 @@ export type ProofUgcConsentStorageLane = {
   route: string;
   status:
     | "read_only_preview"
-    | "implemented_local_only"
+    | "implemented_private_write"
     | "blocked_pending_future_lane";
   roleScope: readonly string[];
   requiredTables: readonly string[];
@@ -46,17 +46,14 @@ export type ProofUgcConsentStorageLane = {
 export type ProofUgcConsentStorageSafetyContract = {
   title: string;
   summary: readonly string[];
-  currentLocalWritePath: {
+  currentPrivateWritePath: {
     exists: true;
     route: "/proof-library/upload";
-    serverActions: readonly [
-      "submitPrivateProofUploadForLocalSupabase",
-      "removePrivateProofUploadForLocalSupabase",
-    ];
+    serverActions: readonly string[];
     requiredFlags: readonly string[];
     allowedActors: readonly string[];
     futureWrites: readonly string[];
-    localOnlyReason: string;
+    gateReason: string;
   };
   globalGuards: readonly string[];
   requiredFoundations: readonly string[];
@@ -71,12 +68,10 @@ export type ProofUgcConsentStorageSafetyContract = {
   };
 };
 
-const localRequiredFlags = [
-  "MYMEDLIFE_AUTH_MODE=local_supabase",
-  "NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321",
-  "NEXT_PUBLIC_SUPABASE_ANON_KEY=local-anon-key",
-  "MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES=true",
+const productionRequiredFlags = [
+  "MYMEDLIFE_AUTH_MODE=production_supabase",
   "MYMEDLIFE_ENABLE_PRIVATE_PROOF_UPLOAD_WRITE=true",
+  "MYMEDLIFE_ALLOW_PRODUCTION_PRIVATE_PROOF_UPLOAD_WRITE=true",
 ] as const;
 
 const lanes = [
@@ -123,10 +118,10 @@ const lanes = [
     ],
   },
   {
-    key: "private_proof_upload_localhost",
-    label: "Localhost-only private raw-proof upload",
+    key: "private_proof_upload",
+    label: "Authenticated private raw-proof upload",
     route: "/proof-library/upload",
-    status: "implemented_local_only",
+    status: "implemented_private_write",
     roleScope: ["chapter_member", "chapter_leader", "admin", "super_admin"],
     requiredTables: [
       "storage.objects",
@@ -136,15 +131,15 @@ const lanes = [
       "automation_outbox",
       "audit_logs",
     ],
-    requiredFlags: localRequiredFlags,
+    requiredFlags: productionRequiredFlags,
     forbiddenSideEffects: [
       "No public proof URL.",
       "No story/UGC publishing.",
       "No provider sync or external moderation send.",
-      "No hosted staging or hosted production write approval.",
+      "No anonymous upload or overwrite.",
     ],
     plainEnglishRule:
-      "A narrow localhost-only server path can store private source files for an existing proof row, but it stays private, local, and non-publishing by design.",
+      "An authenticated submitter can attach one private source file to an existing proof row. The upload is audited and removable, while public publishing and external sends stay disabled.",
     sourceOfTruth: [
       "src/services/private-proof-upload-write.ts",
       "src/app/proof-library/upload/actions.ts",
@@ -298,13 +293,19 @@ export function getProofUgcConsentStorageSafetyContract(
     MYMEDLIFE_ENABLE_PRIVATE_PROOF_UPLOAD_WRITE: "true",
     ...env,
   });
-  const hostedStagingAuth = getSupabaseAuthConfig({
+  const hostedStagingUploadConfig = getPrivateProofUploadWriteConfig({
     MYMEDLIFE_AUTH_MODE: "staging_supabase",
-    NEXT_PUBLIC_SUPABASE_URL: "https://rceupryepjgkdeqgxzrc.supabase.co",
-    NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: "staging-publishable-key",
-    NEXT_PUBLIC_SITE_URL: "https://staging.mymedlife.org",
-    MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES: "true",
     MYMEDLIFE_ENABLE_PRIVATE_PROOF_UPLOAD_WRITE: "true",
+    ...env,
+  });
+  const productionUploadWithoutApproval = getPrivateProofUploadWriteConfig({
+    MYMEDLIFE_AUTH_MODE: "production_supabase",
+    MYMEDLIFE_ENABLE_PRIVATE_PROOF_UPLOAD_WRITE: "true",
+  });
+  const productionUploadConfig = getPrivateProofUploadWriteConfig({
+    MYMEDLIFE_AUTH_MODE: "production_supabase",
+    MYMEDLIFE_ENABLE_PRIVATE_PROOF_UPLOAD_WRITE: "true",
+    MYMEDLIFE_ALLOW_PRODUCTION_PRIVATE_PROOF_UPLOAD_WRITE: "true",
     ...env,
   });
   const hostedProductionAuth = getSupabaseAuthConfig({
@@ -312,8 +313,8 @@ export function getProofUgcConsentStorageSafetyContract(
     NEXT_PUBLIC_SUPABASE_URL: "https://fnlhontvvprwgooevzdl.supabase.co",
     NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: "production-publishable-key",
     NEXT_PUBLIC_SITE_URL: "https://www.mymedlife.org",
-    MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES: "true",
     MYMEDLIFE_ENABLE_PRIVATE_PROOF_UPLOAD_WRITE: "true",
+    MYMEDLIFE_ALLOW_PRODUCTION_PRIVATE_PROOF_UPLOAD_WRITE: "true",
     ...env,
   });
 
@@ -346,30 +347,32 @@ export function getProofUgcConsentStorageSafetyContract(
         "The proof upload intake route stays review-first: upload, public publishing, and exports remain disabled.",
     },
     {
-      key: "private_upload_local_lane_exists_but_stays_private",
+      key: "private_upload_lane_exists_but_stays_private",
       passed:
         localUploadConfig.enabled &&
         localUploadConfig.isLocalOnly &&
+        productionUploadConfig.enabled &&
+        !productionUploadConfig.isLocalOnly &&
         localUploadConfig.publicPublishingEnabled === false &&
-        localUploadConfig.externalWritesEnabled === false,
+        productionUploadConfig.publicPublishingEnabled === false &&
+        productionUploadConfig.externalWritesEnabled === false,
       message:
-        "The only implemented raw-proof write lane remains localhost-only and private, with public publishing and external writes disabled.",
+        "The raw-proof write lane is available only behind environment-specific gates and stays private, non-publishing, and send-free.",
     },
     {
-      key: "hosted_staging_blocked_when_proof_upload_flags_on",
-      passed:
-        !hostedStagingAuth.enabled &&
-        hostedStagingAuth.reason.includes("MYMEDLIFE_ENABLE_PRIVATE_PROOF_UPLOAD_WRITE"),
+      key: "hosted_staging_upload_stays_blocked",
+      passed: !hostedStagingUploadConfig.enabled,
       message:
-        "Hosted staging Supabase Auth stays disabled when proof-upload write flags are on.",
+        "Hosted staging upload remains blocked until it receives its own approval boundary.",
     },
     {
-      key: "hosted_production_blocked_when_proof_upload_flags_on",
+      key: "production_upload_requires_two_explicit_gates",
       passed:
-        !hostedProductionAuth.enabled &&
-        hostedProductionAuth.reason.includes("MYMEDLIFE_ENABLE_PRIVATE_PROOF_UPLOAD_WRITE"),
+        !productionUploadWithoutApproval.enabled &&
+        productionUploadConfig.enabled &&
+        hostedProductionAuth.enabled,
       message:
-        "Hosted production Supabase Auth stays disabled when proof-upload write flags are on.",
+        "Production upload requires both dedicated flags without disabling the authenticated Supabase session.",
     },
     {
       key: "hq_review_stays_non_publishing",
@@ -421,20 +424,22 @@ export function getProofUgcConsentStorageSafetyContract(
   ];
 
   return {
-    title: "Proof / evidence / UGC consent and storage safety contract: READ-ONLY readiness spec",
+    title: "Proof / evidence / UGC consent and storage safety contract: PRIVATE upload boundary",
     summary: [
-      "This contract is read-only. It does not create production users, write production Supabase rows, upload files to production, publish stories, sync providers, or claim rollout proof.",
-      "Current source supports preview-only proof submission, preview-only consent and sharing review, and one localhost-only private raw-proof upload lane guarded by local auth plus explicit write flags.",
+      "This contract permits one authenticated private-file upload and removal boundary. It does not create users, publish stories, sync providers, or claim rollout proof.",
+      "Current source supports private proof upload in local and explicitly approved production environments while consent and sharing review remain non-publishing.",
       "Anything that looks like consent approval, story publishing, coach-note persistence, moderation, social sync, campaign completion, or pilot proof must remain blocked until a later approved server boundary exists.",
     ],
-    currentLocalWritePath: {
+    currentPrivateWritePath: {
       exists: true,
       route: "/proof-library/upload",
       serverActions: [
-        "submitPrivateProofUploadForLocalSupabase",
-        "removePrivateProofUploadForLocalSupabase",
+        "preparePrivateProofUploadForSupabase",
+        "recordPrivateProofUploadForSupabase",
+        "discardPreparedPrivateProofUploadForSupabase",
+        "removePrivateProofUploadForSupabase",
       ],
-      requiredFlags: localRequiredFlags,
+      requiredFlags: productionRequiredFlags,
       allowedActors: ["submitter", "admin", "super_admin"],
       futureWrites: [
         "storage.objects",
@@ -444,12 +449,11 @@ export function getProofUgcConsentStorageSafetyContract(
         "automation_outbox",
         "audit_logs",
       ],
-      localOnlyReason:
-        localUploadConfig.reason,
+      gateReason: productionUploadConfig.reason,
     },
     globalGuards: [
       "Test/Figma/sandbox/sample rows, localhost uploads, preview-cookie review, and staging artifacts do not count as production pilot proof, rollout packet evidence, or invite-gate truth.",
-      "Public publishing, social/provider sync, warehouse export, AI proof summaries, and external moderation remain disabled even when a local private raw-proof upload succeeds.",
+      "Public publishing, social/provider sync, warehouse export, AI proof summaries, and external moderation remain disabled even when a private raw-proof upload succeeds.",
       "Consent review posture is not the same thing as public-sharing approval, moderation approval, or story-publish readiness.",
       "Coach notes, moderation outcomes, campaign proof completion, and reminder delivery must not appear live until a later audited server boundary exists.",
     ],
@@ -457,7 +461,7 @@ export function getProofUgcConsentStorageSafetyContract(
       "A dedicated consent-and-moderation schema with durable audit history, rollback posture, and reviewer ownership.",
       "A story/UGC publishing boundary that separates private source media from future public reuse and social/provider sync.",
       "A reviewed storage and deletion model for takedown requests, retention, and raw-file cleanup.",
-      "Hosted staging and hosted production gates that remain off by default until Coordinator-approved proof, storage, and rollback drills exist.",
+      "Hosted environment gates that stay off by default and require explicit approval plus storage and rollback drills.",
       "Explicit operator evidence showing local/Test/sandbox proof stays excluded from production pilot proof, rollout packet evidence, and invite-gate decisions.",
     ],
     lanes,
@@ -477,16 +481,16 @@ export function formatProofUgcConsentStorageSafetyContract(
     "Summary:",
     ...formatList(contract.summary),
     "",
-    "Current local write path:",
-    `- exists: ${contract.currentLocalWritePath.exists ? "yes" : "no"}`,
-    `- route: ${contract.currentLocalWritePath.route}`,
-    `- server actions: ${contract.currentLocalWritePath.serverActions.join(", ")}`,
-    `- allowed actors: ${contract.currentLocalWritePath.allowedActors.join(", ")}`,
-    `- local-only reason: ${contract.currentLocalWritePath.localOnlyReason}`,
+    "Current private write path:",
+    `- exists: ${contract.currentPrivateWritePath.exists ? "yes" : "no"}`,
+    `- route: ${contract.currentPrivateWritePath.route}`,
+    `- server actions: ${contract.currentPrivateWritePath.serverActions.join(", ")}`,
+    `- allowed actors: ${contract.currentPrivateWritePath.allowedActors.join(", ")}`,
+    `- gate reason: ${contract.currentPrivateWritePath.gateReason}`,
     "- required flags:",
-    ...formatNestedList(contract.currentLocalWritePath.requiredFlags),
+    ...formatNestedList(contract.currentPrivateWritePath.requiredFlags),
     "- future writes:",
-    ...formatNestedList(contract.currentLocalWritePath.futureWrites),
+    ...formatNestedList(contract.currentPrivateWritePath.futureWrites),
     "",
     "Lanes:",
     ...contract.lanes.flatMap((lane) => [

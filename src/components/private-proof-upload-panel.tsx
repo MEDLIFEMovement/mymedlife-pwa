@@ -1,7 +1,5 @@
-import {
-  removePrivateProofUploadAction,
-  submitPrivateProofUploadAction,
-} from "@/app/proof-library/upload/actions";
+import { removePrivateProofUploadAction } from "@/app/proof-library/upload/actions";
+import { PrivateProofUploadControl } from "@/components/private-proof-upload-control";
 import {
   getPrivateProofUploadResultState,
   type PrivateProofUploadResultCode,
@@ -11,11 +9,16 @@ import type { PrivateProofUploadWorkspace } from "@/services/private-proof-uploa
 type PrivateProofUploadPanelProps = {
   workspace: PrivateProofUploadWorkspace;
   resultCode?: PrivateProofUploadResultCode;
+  uploadClientConfig: {
+    supabaseUrl: string;
+    supabasePublishableKey: string;
+  } | null;
 };
 
 export function PrivateProofUploadPanel({
   workspace,
   resultCode,
+  uploadClientConfig,
 }: PrivateProofUploadPanelProps) {
   const resultState = resultCode
     ? getPrivateProofUploadResultState(resultCode)
@@ -27,7 +30,7 @@ export function PrivateProofUploadPanel({
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-100/78">
-              Local private upload lane
+              Private proof upload lane
             </p>
             <h2 className="mt-2 text-2xl font-semibold text-white">
               {workspace.title}
@@ -162,69 +165,15 @@ export function PrivateProofUploadPanel({
               </div>
 
               <div className="mt-4 grid gap-4 xl:grid-cols-2">
-                <form
-                  action={submitPrivateProofUploadAction}
-                  className="rounded-2xl border border-white/10 bg-black/20 p-4"
-                >
-                  <input type="hidden" name="evidenceItemId" value={row.evidenceItemId} />
-                  <p className="text-sm font-semibold text-white">Attach private file</p>
-                  <p className="mt-2 text-sm leading-6 text-white/62">
-                    One private raw file per proof row. Public proof stays disabled.
-                  </p>
-
-                  <label
-                    className="mt-4 block text-sm font-semibold text-white"
-                    htmlFor={`proofFile-${row.evidenceItemId}`}
-                  >
-                    Raw proof file
-                  </label>
-                  <input
-                    id={`proofFile-${row.evidenceItemId}`}
-                    name="proofFile"
-                    type="file"
-                    accept={workspace.allowedMimeTypes.join(",")}
-                    className="mt-2 block w-full text-sm text-white file:mr-4 file:rounded-full file:border-0 file:bg-sky-200 file:px-4 file:py-2 file:font-semibold file:text-[#06211d]"
-                    disabled={!row.canUpload}
-                  />
-
-                  <label
-                    className="mt-4 block text-sm font-semibold text-white"
-                    htmlFor={`futureSharing-${row.evidenceItemId}`}
-                  >
-                    Future sharing consent
-                  </label>
-                  <select
-                    id={`futureSharing-${row.evidenceItemId}`}
-                    name="consentToFutureSharing"
-                    defaultValue="declined"
-                    className="mt-2 w-full rounded-2xl border border-white/10 bg-black/30 p-3 text-sm text-white outline-none disabled:cursor-not-allowed disabled:text-white/38"
-                    disabled={!row.canUpload}
-                  >
-                    <option value="declined">Declined</option>
-                    <option value="granted">Granted</option>
-                  </select>
-
-                  <label className="mt-4 flex items-start gap-3 text-sm leading-6 text-white/72">
-                    <input
-                      type="checkbox"
-                      name="consentToMedlifeReview"
-                      value="true"
-                      className="mt-1 h-4 w-4 rounded border-white/20 bg-black/30"
-                      disabled={!row.canUpload}
-                    />
-                    <span>
-                      I confirm this file may be stored privately for MEDLIFE review only.
-                    </span>
-                  </label>
-
-                  <button
-                    type="submit"
-                    disabled={!row.canUpload}
-                    className="mt-4 w-full rounded-full bg-sky-200 px-5 py-3 text-sm font-semibold text-[#06211d] transition hover:bg-sky-100 disabled:cursor-not-allowed disabled:bg-white/12 disabled:text-white/38"
-                  >
-                    {row.canUpload ? "Upload private proof locally" : "Upload locked"}
-                  </button>
-                </form>
+                <PrivateProofUploadControl
+                  evidenceItemId={row.evidenceItemId}
+                  canUpload={row.canUpload && Boolean(uploadClientConfig)}
+                  allowedMimeTypes={workspace.allowedMimeTypes}
+                  supabaseUrl={uploadClientConfig?.supabaseUrl ?? ""}
+                  supabasePublishableKey={
+                    uploadClientConfig?.supabasePublishableKey ?? ""
+                  }
+                />
 
                 <form
                   action={removePrivateProofUploadAction}
@@ -255,7 +204,7 @@ export function PrivateProofUploadPanel({
                     disabled={!row.canRemove}
                     className="mt-4 w-full rounded-full border border-rose-300/30 bg-rose-300/12 px-5 py-3 text-sm font-semibold text-rose-100 transition hover:bg-rose-300/20 disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/12 disabled:text-white/38"
                   >
-                    {row.canRemove ? "Remove private file locally" : "Removal locked"}
+                    {row.canRemove ? "Remove private file" : "Removal locked"}
                   </button>
                 </form>
               </div>

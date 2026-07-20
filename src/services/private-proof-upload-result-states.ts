@@ -37,7 +37,7 @@ const privateProofUploadResultStates = [
     code: "proof_uploaded",
     title: "Private proof file attached",
     plainEnglishMessage:
-      "The raw proof file is now attached to the approved local proof record for private MEDLIFE review only.",
+      "The raw proof file is attached to its proof record for private MEDLIFE review only.",
     nextStep:
       "Keep the file private, keep public sharing off, and continue through the review path.",
     tone: "success",
@@ -50,7 +50,7 @@ const privateProofUploadResultStates = [
     code: "upload_removed",
     title: "Private proof file removed",
     plainEnglishMessage:
-      "The local private upload was removed and the proof record now points back to metadata only.",
+      "The private upload was removed and the proof record now points back to metadata only.",
     nextStep:
       "Upload a corrected file later if needed, or continue with metadata-only review.",
     tone: "success",
@@ -63,9 +63,9 @@ const privateProofUploadResultStates = [
     code: "write_disabled",
     title: "Private upload is still locked",
     plainEnglishMessage:
-      "This route can explain the upload path, but the local private upload write lane is not turned on yet.",
+      "This route can explain the upload path, but private upload is not turned on in this environment.",
     nextStep:
-      "Keep using the review packet until the local write flag and local auth session are both ready.",
+      "Keep using the review path until the environment-specific upload flags and auth session are ready.",
     tone: "info",
     success: false,
     retryAllowed: false,
@@ -76,8 +76,8 @@ const privateProofUploadResultStates = [
     code: "missing_auth",
     title: "Sign-in is required",
     plainEnglishMessage:
-      "The app needs a signed-in local Supabase user before it can attach or remove a private proof file.",
-    nextStep: "Sign in as the same local seed user who owns the proof item, then try again.",
+      "The app needs a signed-in Supabase user before it can attach or remove a private proof file.",
+    nextStep: "Sign in as the same user who owns the proof item, then try again.",
     tone: "warning",
     success: false,
     retryAllowed: true,
@@ -88,7 +88,7 @@ const privateProofUploadResultStates = [
     code: "evidence_not_found",
     title: "Proof item was not found",
     plainEnglishMessage:
-      "The selected proof record could not be found in local Supabase, so no private file was attached.",
+      "The selected proof record could not be found, so no private file was attached.",
     nextStep: "Create or refresh the proof metadata record first, then reopen this upload route.",
     tone: "error",
     success: false,
@@ -101,7 +101,7 @@ const privateProofUploadResultStates = [
     title: "This user cannot manage that private file",
     plainEnglishMessage:
       "Private proof uploads belong to the original submitter or approved HQ cleanup roles only.",
-    nextStep: "Switch to the correct local user or ask HQ to handle the cleanup.",
+    nextStep: "Switch to the correct user or ask HQ to handle the cleanup.",
     tone: "error",
     success: false,
     retryAllowed: false,
@@ -136,7 +136,7 @@ const privateProofUploadResultStates = [
     code: "file_too_large",
     title: "That file is too large",
     plainEnglishMessage:
-      "The selected file is larger than the current local proof-upload size limit.",
+      "The selected file is larger than the current private proof-upload size limit.",
     nextStep: "Compress the file or choose a smaller asset before retrying.",
     tone: "warning",
     success: false,
@@ -197,7 +197,7 @@ const privateProofUploadResultStates = [
     title: "Something went wrong",
     plainEnglishMessage:
       "The app could not safely finish the private proof upload step. Public sharing and external sends stayed off.",
-    nextStep: "Retry once, then inspect the local audit path if the problem continues.",
+    nextStep: "Retry once, then inspect the audit path if the problem continues.",
     tone: "error",
     success: false,
     retryAllowed: true,

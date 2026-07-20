@@ -10,111 +10,122 @@ import {
   mapPrivateProofUploadRemovalRpcSuccess,
   mapPrivateProofUploadRpcError,
   mapPrivateProofUploadRpcSuccess,
-  parseFutureSharingConsent,
-  validatePrivateProofUploadInput,
+  validatePrivateProofUploadMetadata,
   type PrivateProofUploadPrepareRow,
   type PrivateProofUploadRecordRow,
   type PrivateProofUploadRemovalRow,
   type PrivateProofUploadServerResult,
 } from "@/services/private-proof-upload-write";
 
-export async function submitPrivateProofUploadAction(formData: FormData) {
-  const result = await submitPrivateProofUploadForLocalSupabase(formData);
+export type PrivateProofUploadPrepareInput = {
+  evidenceItemId: string;
+  fileName: string;
+  mimeType: string;
+  byteSize: number;
+  consentToMedlifeReview: boolean;
+  consentToFutureSharing: boolean;
+};
 
-  redirect(`/proof-library/upload?proofUploadResult=${result.code}`);
-}
+export type PrivateProofUploadPrepareResult =
+  | {
+      success: true;
+      evidenceItemId: string;
+      bucket: string;
+      storagePath: string;
+      uploadToken: string;
+      input: PrivateProofUploadPrepareInput;
+    }
+  | {
+      success: false;
+      code: Exclude<PrivateProofUploadResultCode, "proof_uploaded" | "upload_removed">;
+      plainEnglishMessage: string;
+    };
+
+export type PreparedPrivateProofUploadTicket = Omit<
+  Extract<PrivateProofUploadPrepareResult, { success: true }>,
+  "success" | "uploadToken"
+>;
+
+export type PrivateProofUploadCleanupResult = {
+  success: boolean;
+  plainEnglishMessage: string;
+};
 
 export async function removePrivateProofUploadAction(formData: FormData) {
-  const result = await removePrivateProofUploadForLocalSupabase(formData);
+  const result = await removePrivateProofUploadForSupabase(formData);
 
   redirect(`/proof-library/upload?proofUploadResult=${result.code}`);
 }
 
-export async function submitPrivateProofUploadForLocalSupabase(
-  formData: FormData,
-): Promise<PrivateProofUploadServerResult> {
-  const evidenceItemId = String(formData.get("evidenceItemId") ?? "").trim();
-  const file = getFormFile(formData.get("proofFile"));
-  const consentToMedlifeReview = formData.get("consentToMedlifeReview") === "true";
-  const consentToFutureSharing = parseFutureSharingConsent(
-    formData.get("consentToFutureSharing"),
-  );
+export async function preparePrivateProofUploadForSupabase(
+  input: PrivateProofUploadPrepareInput,
+): Promise<PrivateProofUploadPrepareResult> {
   const config = getPrivateProofUploadWriteConfig();
-
-  if (!config.enabled) {
-    return failureResult(evidenceItemId, "write_disabled", config.reason);
-  }
-
-  if (consentToFutureSharing === null) {
-    return failureResult(
-      evidenceItemId,
-      "server_error",
-      "The future sharing consent choice was not recognized.",
-    );
-  }
-
-  const validationCode = validatePrivateProofUploadInput({
-    evidenceItemId,
-    file,
-    consentToMedlifeReview,
+  const validationCode = validatePrivateProofUploadMetadata({
+    evidenceItemId: input.evidenceItemId,
+    fileName: input.fileName,
+    mimeType: input.mimeType,
+    byteSize: input.byteSize,
+    consentToMedlifeReview: input.consentToMedlifeReview,
     config,
   });
 
   if (validationCode) {
-    return failureResult(
-      evidenceItemId,
-      validationCode,
-      validationCode === "evidence_not_found"
-        ? "The selected proof record could not be recognized."
-        : validationCode === "file_required"
-          ? "Choose one private proof file before uploading."
-          : validationCode === "file_type_blocked"
-            ? "That private proof file type is not allowed in the current upload lane."
-            : validationCode === "file_too_large"
-              ? "That private proof file is larger than the current 500 MB limit."
-              : validationCode === "review_consent_required"
-                ? "Private MEDLIFE review consent is required before storing this raw proof file."
-                : config.reason,
-    );
-  }
-
-  if (!file) {
-    return failureResult(
-      evidenceItemId,
-      "file_required",
-      "Choose one private proof file before uploading.",
-    );
+    return {
+      success: false,
+      code: validationCode,
+      plainEnglishMessage: getValidationMessage(validationCode, config.reason),
+    };
   }
 
   const { client, config: authConfig } = await createLocalSupabaseServerClient();
 
   if (!client) {
-    return failureResult(evidenceItemId, "write_disabled", authConfig.reason);
+    return {
+      success: false,
+      code: "write_disabled",
+      plainEnglishMessage: authConfig.reason,
+    };
   }
 
   const authSession = await getAuthSessionState(client);
 
   if (authSession.status !== "signed_in") {
-    return failureResult(
-      evidenceItemId,
-      "missing_auth",
-      "Sign in with the matching local seed user before managing a private proof file.",
-    );
+    return {
+      success: false,
+      code: "missing_auth",
+      plainEnglishMessage:
+        "Sign in as the proof submitter before attaching a private file.",
+    };
   }
 
   const { data: preparedData, error: prepareError } = await client
     .schema("app")
     .rpc("prepare_proof_upload_intake", {
-      evidence_uuid: evidenceItemId,
-      original_file_name_input: file.name,
-      mime_type_input: file.type,
-      byte_size_input: file.size,
-      consent_to_medlife_review_input: consentToMedlifeReview,
-      consent_to_future_sharing_input: consentToFutureSharing,
+      evidence_uuid: input.evidenceItemId,
+      original_file_name_input: input.fileName,
+      mime_type_input: input.mimeType,
+      byte_size_input: input.byteSize,
+      consent_to_medlife_review_input: input.consentToMedlifeReview,
+      consent_to_future_sharing_input: input.consentToFutureSharing,
     });
 
   if (prepareError) {
-    return mapPrivateProofUploadRpcError(evidenceItemId, prepareError);
+    const result = mapPrivateProofUploadRpcError(input.evidenceItemId, prepareError);
+
+    if (result.success) {
+      return {
+        success: false,
+        code: "server_error",
+        plainEnglishMessage: "The app could not prepare the private upload path.",
+      };
+    }
+
+    return {
+      success: false,
+      code: result.code,
+      plainEnglishMessage: result.plainEnglishMessage,
+    };
   }
 
   const preparedRow = Array.isArray(preparedData)
@@ -122,54 +133,87 @@ export async function submitPrivateProofUploadForLocalSupabase(
     : undefined;
 
   if (!preparedRow) {
+    return {
+      success: false,
+      code: "server_error",
+      plainEnglishMessage: "The app could not prepare the private upload path.",
+    };
+  }
+
+  const { data: signedUpload, error: signedUploadError } = await client.storage
+    .from(preparedRow.private_bucket)
+    .createSignedUploadUrl(preparedRow.storage_path, { upsert: false });
+
+  if (signedUploadError || !signedUpload?.token) {
+    return {
+      success: false,
+      code: "server_error",
+      plainEnglishMessage:
+        "The app could not create a short-lived private upload ticket.",
+    };
+  }
+
+  return {
+    success: true,
+    evidenceItemId: input.evidenceItemId,
+    bucket: preparedRow.private_bucket,
+    storagePath: preparedRow.storage_path,
+    uploadToken: signedUpload.token,
+    input,
+  };
+}
+
+export async function recordPrivateProofUploadForSupabase(
+  ticket: PreparedPrivateProofUploadTicket,
+): Promise<PrivateProofUploadServerResult> {
+  const config = getPrivateProofUploadWriteConfig();
+  const validationCode = validatePrivateProofUploadMetadata({
+    evidenceItemId: ticket.evidenceItemId,
+    fileName: ticket.input.fileName,
+    mimeType: ticket.input.mimeType,
+    byteSize: ticket.input.byteSize,
+    consentToMedlifeReview: ticket.input.consentToMedlifeReview,
+    config,
+  });
+
+  if (validationCode || ticket.bucket !== config.bucket) {
     return failureResult(
-      evidenceItemId,
-      "server_error",
-      "The app could not prepare the local private upload path.",
+      ticket.evidenceItemId,
+      validationCode ?? "permission_denied",
+      getValidationMessage(validationCode ?? "permission_denied", config.reason),
     );
   }
 
-  const { error: uploadError } = await client
-    .storage
-    .from(preparedRow.private_bucket)
-    .upload(preparedRow.storage_path, file, {
-      contentType: file.type,
-      upsert: false,
-    });
+  const { client, config: authConfig } = await createLocalSupabaseServerClient();
 
-  if (uploadError) {
-    const message = uploadError.message.toLowerCase();
+  if (!client) {
+    return failureResult(ticket.evidenceItemId, "write_disabled", authConfig.reason);
+  }
 
-    if (message.includes("exists") || message.includes("duplicate")) {
-      return failureResult(
-        evidenceItemId,
-        "duplicate_upload",
-        "A private file already exists at this path, so the app blocked a duplicate upload.",
-      );
-    }
+  const authSession = await getAuthSessionState(client);
 
+  if (authSession.status !== "signed_in") {
     return failureResult(
-      evidenceItemId,
-      "server_error",
-      "The private file could not be stored safely in local Supabase Storage.",
+      ticket.evidenceItemId,
+      "missing_auth",
+      "Sign in as the proof submitter before completing a private upload.",
     );
   }
 
   const { data: recordData, error: recordError } = await client
     .schema("app")
     .rpc("record_private_proof_upload", {
-      evidence_uuid: evidenceItemId,
-      storage_path_input: preparedRow.storage_path,
-      original_file_name_input: file.name,
-      mime_type_input: file.type,
-      byte_size_input: file.size,
-      consent_to_medlife_review_input: consentToMedlifeReview,
-      consent_to_future_sharing_input: consentToFutureSharing,
+      evidence_uuid: ticket.evidenceItemId,
+      storage_path_input: ticket.storagePath,
+      original_file_name_input: ticket.input.fileName,
+      mime_type_input: ticket.input.mimeType,
+      byte_size_input: ticket.input.byteSize,
+      consent_to_medlife_review_input: ticket.input.consentToMedlifeReview,
+      consent_to_future_sharing_input: ticket.input.consentToFutureSharing,
     });
-
   if (recordError) {
-    await client.storage.from(preparedRow.private_bucket).remove([preparedRow.storage_path]);
-    return mapPrivateProofUploadRpcError(evidenceItemId, recordError);
+    await client.storage.from(config.bucket).remove([ticket.storagePath]);
+    return mapPrivateProofUploadRpcError(ticket.evidenceItemId, recordError);
   }
 
   const recordRow = Array.isArray(recordData)
@@ -177,18 +221,96 @@ export async function submitPrivateProofUploadForLocalSupabase(
     : undefined;
 
   if (!recordRow) {
-    await client.storage.from(preparedRow.private_bucket).remove([preparedRow.storage_path]);
+    await client.storage.from(config.bucket).remove([ticket.storagePath]);
     return failureResult(
-      evidenceItemId,
+      ticket.evidenceItemId,
       "server_error",
-      "Local Supabase did not return the expected private upload record bundle.",
+      "Supabase did not return the expected private upload audit bundle.",
     );
   }
 
-  return mapPrivateProofUploadRpcSuccess(evidenceItemId, recordRow);
+  return mapPrivateProofUploadRpcSuccess(ticket.evidenceItemId, recordRow);
 }
 
-export async function removePrivateProofUploadForLocalSupabase(
+export async function discardPreparedPrivateProofUploadForSupabase(
+  ticket: PreparedPrivateProofUploadTicket,
+): Promise<PrivateProofUploadCleanupResult> {
+  const config = getPrivateProofUploadWriteConfig();
+  const validationCode = validatePrivateProofUploadMetadata({
+    evidenceItemId: ticket.evidenceItemId,
+    fileName: ticket.input.fileName,
+    mimeType: ticket.input.mimeType,
+    byteSize: ticket.input.byteSize,
+    consentToMedlifeReview: ticket.input.consentToMedlifeReview,
+    config,
+  });
+
+  if (validationCode || ticket.bucket !== config.bucket) {
+    return {
+      success: false,
+      plainEnglishMessage: getValidationMessage(
+        validationCode ?? "permission_denied",
+        config.reason,
+      ),
+    };
+  }
+
+  const { client, config: authConfig } = await createLocalSupabaseServerClient();
+
+  if (!client) {
+    return { success: false, plainEnglishMessage: authConfig.reason };
+  }
+
+  const authSession = await getAuthSessionState(client);
+
+  if (authSession.status !== "signed_in") {
+    return {
+      success: false,
+      plainEnglishMessage:
+        "Sign in as the proof submitter before cleaning up an interrupted upload.",
+    };
+  }
+
+  const { data: preparedData, error: prepareError } = await client
+    .schema("app")
+    .rpc("prepare_proof_upload_intake", {
+      evidence_uuid: ticket.evidenceItemId,
+      original_file_name_input: ticket.input.fileName,
+      mime_type_input: ticket.input.mimeType,
+      byte_size_input: ticket.input.byteSize,
+      consent_to_medlife_review_input: ticket.input.consentToMedlifeReview,
+      consent_to_future_sharing_input: ticket.input.consentToFutureSharing,
+    });
+
+  const preparedRow = Array.isArray(preparedData)
+    ? (preparedData[0] as PrivateProofUploadPrepareRow | undefined)
+    : undefined;
+
+  if (prepareError || !preparedRow || preparedRow.storage_path !== ticket.storagePath) {
+    return {
+      success: false,
+      plainEnglishMessage:
+        "The app refused to clean up a private file whose canonical upload path could not be verified.",
+    };
+  }
+
+  const { error: removeError } = await client.storage
+    .from(config.bucket)
+    .remove([ticket.storagePath]);
+
+  return removeError
+    ? {
+        success: false,
+        plainEnglishMessage:
+          "The interrupted private upload still needs storage cleanup.",
+      }
+    : {
+        success: true,
+        plainEnglishMessage: "The interrupted private upload was removed.",
+      };
+}
+
+export async function removePrivateProofUploadForSupabase(
   formData: FormData,
 ): Promise<PrivateProofUploadServerResult> {
   const evidenceItemId = String(formData.get("evidenceItemId") ?? "").trim();
@@ -219,7 +341,7 @@ export async function removePrivateProofUploadForLocalSupabase(
     return failureResult(
       evidenceItemId,
       "missing_auth",
-      "Sign in with the matching local seed user before removing a private proof file.",
+      "Sign in as the submitter or an approved HQ cleanup role before removing a private proof file.",
     );
   }
 
@@ -243,7 +365,7 @@ export async function removePrivateProofUploadForLocalSupabase(
     return failureResult(
       evidenceItemId,
       "evidence_not_found",
-      "The selected proof record was not found in local Supabase.",
+      "The selected proof record was not found.",
     );
   }
 
@@ -256,7 +378,7 @@ export async function removePrivateProofUploadForLocalSupabase(
     return failureResult(
       evidenceItemId,
       "permission_denied",
-      "This local user cannot remove the selected private proof file.",
+      "This user cannot remove the selected private proof file.",
     );
   }
 
@@ -277,7 +399,7 @@ export async function removePrivateProofUploadForLocalSupabase(
     return failureResult(
       evidenceItemId,
       "server_error",
-      "The app could not remove the private file from local Supabase Storage.",
+      "The app could not remove the private file from private Supabase Storage.",
     );
   }
 
@@ -300,19 +422,35 @@ export async function removePrivateProofUploadForLocalSupabase(
     return failureResult(
       evidenceItemId,
       "server_error",
-      "Local Supabase did not return the expected private upload removal bundle.",
+      "Supabase did not return the expected private upload removal bundle.",
     );
   }
 
   return mapPrivateProofUploadRemovalRpcSuccess(evidenceItemId, recordRow);
 }
 
-function getFormFile(value: FormDataEntryValue | null): File | null {
-  if (!(value instanceof File)) {
-    return null;
+function getValidationMessage(
+  code: Exclude<PrivateProofUploadResultCode, "proof_uploaded" | "upload_removed">,
+  writeDisabledReason: string,
+): string {
+  switch (code) {
+    case "write_disabled":
+      return writeDisabledReason;
+    case "evidence_not_found":
+      return "The selected proof record could not be recognized.";
+    case "file_required":
+      return "Choose one private proof file before uploading.";
+    case "file_type_blocked":
+      return "Use an approved image, video, or PDF file type.";
+    case "file_too_large":
+      return "The selected private proof file exceeds the 500 MB limit.";
+    case "review_consent_required":
+      return "Private MEDLIFE review consent is required before storing this file.";
+    case "permission_denied":
+      return "This signed-in user cannot manage the selected private proof file.";
+    default:
+      return "The app could not safely prepare the private proof upload.";
   }
-
-  return value.size > 0 ? value : null;
 }
 
 function failureResult(

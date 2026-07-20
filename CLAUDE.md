@@ -83,6 +83,17 @@ publication boundary for imported provider events; every materialization must
 retain the source event ID and snapshot and write an audit-log entry tied to the
 initiating admin or scheduled sync run.
 
+An authenticated proof submitter may attach one private source file to an
+already-eligible app-owned evidence record when both dedicated production proof
+upload flags are enabled. This exception was explicitly authorized by the
+product owner on 2026-07-20 as part of the launch-critical real-workflow repair.
+The file must upload through a short-lived signed Storage ticket; finalization
+must retain consent, source metadata, an internal event, a disabled outbox row,
+and an audit log. Submitters and approved HQ cleanup roles may remove the file
+without deleting append-only history. This exception does not permit anonymous
+uploads, overwrite, public proof publishing, provider or warehouse sends,
+automatic approval, or treating TEST/private review media as rollout proof.
+
 When in doubt about whether something is a gate change, treat it as MUST BLOCK
 and escalate. Escalating is cheap; an unsafe merge is not.
 
