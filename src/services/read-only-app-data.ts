@@ -89,6 +89,7 @@ export type ReadOnlyAppData = {
   riskFlags: RiskFlagRow[];
   closeouts: CampaignCloseoutRow[];
   evidenceItems: EvidenceItem[];
+  storyEvidenceRows: EvidenceItemRow[];
   chapterEventRows: ChapterEventRow[];
   lumaEventLinkRows: LumaEventLinkRow[];
   chapterLumaCalendarRows: ChapterLumaCalendarRow[];
@@ -201,6 +202,7 @@ export async function getSupabaseReadOnlyAppData(
     riskFlags: scoped.riskFlags,
     closeouts: scoped.closeouts,
     evidenceItems: scoped.evidenceItems,
+    storyEvidenceRows: snapshot.evidenceItems.filter(isPublishedStoryEvidence),
     chapterEventRows: scoped.chapterEventRows,
     lumaEventLinkRows: scoped.lumaEventLinkRows,
     chapterLumaCalendarRows: snapshot.chapterLumaCalendarRows,
@@ -1469,6 +1471,7 @@ export function getMockReadOnlyAppData(
     riskFlags: [],
     closeouts: [],
     evidenceItems: mockEvidenceItems,
+    storyEvidenceRows: [],
     chapterEventRows: mockChapterEventRows.filter((row) => row.chapter_id === mockChapter.id),
     lumaEventLinkRows: mockLumaEventLinkRows.filter((row) => row.chapter_id === mockChapter.id),
     chapterLumaCalendarRows: mockChapterLumaCalendarRows,
@@ -1535,6 +1538,7 @@ export function getUnavailableReadOnlyAppData(message: string): ReadOnlyAppData 
     riskFlags: [],
     closeouts: [],
     evidenceItems: [],
+    storyEvidenceRows: [],
     chapterEventRows: [],
     lumaEventLinkRows: [],
     chapterLumaCalendarRows: [],
@@ -1724,6 +1728,10 @@ function toDomainEvidenceItem(row: EvidenceItemRow): EvidenceItem {
     summary: row.summary,
     status: row.status,
   };
+}
+
+function isPublishedStoryEvidence(row: EvidenceItemRow) {
+  return row.status === "approved" && row.sharing_status === "approved_for_sharing";
 }
 
 function toDomainIntegrationEvent(row: IntegrationEventRow): IntegrationEvent {
