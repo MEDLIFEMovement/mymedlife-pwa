@@ -254,78 +254,31 @@ export async function getLocalActorContext(): Promise<LocalActorContext> {
   const config = getSupabaseReadConfig();
 
   if (config.enabled) {
-    try {
-      return await getSupabaseLocalActorContext(
-        createSupabaseReadonlyClient(config),
-        resolvedActor.email,
-        actorContextMessage(resolvedActor, config.reason),
-        resolvedActor.identitySource,
-        resolvedActor.authSessionStatus,
-      );
-    } catch (error) {
-      if (resolvedActor.authSessionStatus === "signed_in") {
-        return getUnavailableSignedInActorContext(
-          resolvedActor,
-          error instanceof Error
-            ? `Operational actor read failed: ${error.message}`
-            : "Operational actor read failed.",
-        );
-      }
-
-      return getMockLocalActorContext(
-        resolvedActor.email,
-        error instanceof Error
-          ? actorContextMessage(
-              resolvedActor,
-              `Local actor read failed, so mock fallback is active: ${error.message}`,
-            )
-          : "Local actor read failed, so mock fallback is active.",
-        "supabase_error",
-        resolvedActor.identitySource,
-        resolvedActor.authSessionStatus,
-      );
-    }
+    return readActorContextWithFallback(
+      createSupabaseReadonlyClient(config),
+      resolvedActor,
+      config.reason,
+      "Operational actor read failed",
+      "Local actor read failed, so mock fallback is active",
+      true,
+    );
   }
 
   const hostedSession = await getHostedSessionReadonlyClient();
 
   if (hostedSession.enabled) {
-    try {
-      return await getSupabaseLocalActorContext(
-        hostedSession.client,
-        resolvedActor.email,
-        actorContextMessage(resolvedActor, hostedSession.reason),
-        resolvedActor.identitySource,
-        resolvedActor.authSessionStatus,
-        false,
-        {
-          allowMockFallbackWhenProfileMissing:
-            resolvedActor.authSessionStatus !== "signed_in",
-        },
-      );
-    } catch (error) {
-      if (resolvedActor.authSessionStatus === "signed_in") {
-        return getUnavailableSignedInActorContext(
-          resolvedActor,
-          error instanceof Error
-            ? `Hosted actor read failed: ${error.message}`
-            : "Hosted actor read failed.",
-        );
-      }
-
-      return getMockLocalActorContext(
-        resolvedActor.email,
-        error instanceof Error
-          ? actorContextMessage(
-              resolvedActor,
-              `Hosted actor read failed, so mock fallback is active: ${error.message}`,
-            )
-          : "Hosted actor read failed, so mock fallback is active.",
-        "supabase_error",
-        resolvedActor.identitySource,
-        resolvedActor.authSessionStatus,
-      );
-    }
+    return readActorContextWithFallback(
+      hostedSession.client,
+      resolvedActor,
+      hostedSession.reason,
+      "Hosted actor read failed",
+      "Hosted actor read failed, so mock fallback is active",
+      false,
+      {
+        allowMockFallbackWhenProfileMissing:
+          resolvedActor.authSessionStatus !== "signed_in",
+      },
+    );
   }
 
   if (resolvedActor.authSessionStatus === "signed_in") {
@@ -339,6 +292,45 @@ export async function getLocalActorContext(): Promise<LocalActorContext> {
     resolvedActor.identitySource,
     resolvedActor.authSessionStatus,
   );
+}
+
+async function readActorContextWithFallback(
+  client: SupabaseReadonlyClient,
+  resolvedActor: ActorEmailResolution,
+  dataSourceReason: string,
+  unavailableMessage: string,
+  mockFallbackMessage: string,
+  isLocalOnly: boolean,
+  options: SupabaseActorContextOptions = {},
+): Promise<LocalActorContext> {
+  try {
+    return await getSupabaseLocalActorContext(
+      client,
+      resolvedActor.email,
+      actorContextMessage(resolvedActor, dataSourceReason),
+      resolvedActor.identitySource,
+      resolvedActor.authSessionStatus,
+      isLocalOnly,
+      options,
+    );
+  } catch (error) {
+    const detail = error instanceof Error ? `: ${error.message}` : ".";
+
+    if (resolvedActor.authSessionStatus === "signed_in") {
+      return getUnavailableSignedInActorContext(
+        resolvedActor,
+        `${unavailableMessage}${detail}`,
+      );
+    }
+
+    return getMockLocalActorContext(
+      resolvedActor.email,
+      actorContextMessage(resolvedActor, `${mockFallbackMessage}${detail}`),
+      "supabase_error",
+      resolvedActor.identitySource,
+      resolvedActor.authSessionStatus,
+    );
+  }
 }
 
 export function getUnavailableSignedInActorContext(
@@ -739,7 +731,7 @@ function getAudience(
   return "chapter_member";
 }
 
-function isReadableMembershipStatus(status: MembershipRow["status"] | string | null | undefined) {
+function isReadableMembershipStatus(status: string | null | undefined) {
   return status === "approved" || status === "active";
 }
 
