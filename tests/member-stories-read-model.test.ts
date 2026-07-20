@@ -52,6 +52,7 @@ describe("member stories read model", () => {
         evidenceRow({ id: "safe", url: "https://cdn.example.org/story.webp" }),
         evidenceRow({ id: "not-image", url: "https://example.org/story" }),
         evidenceRow({ id: "not-https", url: "http://cdn.example.org/story.jpg" }),
+        evidenceRow({ id: "invalid-url", url: ":not-a-url" }),
       ],
       chapters: [chapterRow],
       chapterEvents: [eventRow],
@@ -62,7 +63,82 @@ describe("member stories read model", () => {
       ["safe", "https://cdn.example.org/story.webp", "public_media_ready"],
       ["not-image", null, "metadata_only"],
       ["not-https", null, "metadata_only"],
+      ["invalid-url", null, "metadata_only"],
     ]);
+  });
+
+  it("handles incomplete approved metadata without inventing identity or media", () => {
+    const stories = buildMemberStoriesReadModel({
+      evidenceRows: [
+        evidenceRow({
+          id: "real-testimonial",
+          chapter_id: "missing-chapter",
+          chapter_event_id: null,
+          submitted_by_user_id: "missing-profile",
+          evidence_type: "testimonial_text",
+          summary: "A real member reflection. More context follows.",
+          hesitation_addressed: null,
+          submitted_at: "not-a-date",
+        }),
+        evidenceRow({
+          id: "test-video",
+          chapter_id: campusOnlyChapter.id,
+          chapter_event_id: null,
+          evidence_type: "bridge_video",
+          summary: "",
+          storage_path: "test/video/story.mov",
+          hesitation_addressed: null,
+        }),
+        evidenceRow({
+          id: "real-field-note",
+          chapter_id: campusOnlyChapter.id,
+          chapter_event_id: null,
+          evidence_type: "text",
+          summary: "A chapter update",
+          hesitation_addressed: null,
+        }),
+      ],
+      chapters: [campusOnlyChapter],
+      chapterEvents: [],
+      profiles: [],
+    });
+
+    const byId = Object.fromEntries(stories.map((story) => [story.id, story]));
+
+    expect(byId["real-field-note"]).toEqual(
+      expect.objectContaining({
+        id: "real-field-note",
+        title: "A chapter update",
+        chapter: "Campus Chapter",
+        country: "Campus Only",
+        type: "Field Story",
+        tag: "Approved story",
+        body: undefined,
+        filters: ["For You"],
+      }),
+    );
+    expect(byId["test-video"]).toEqual(
+      expect.objectContaining({
+        id: "test-video",
+        title: "TEST Campus Chapter story",
+        type: "Chapter Highlight",
+        isVideo: true,
+        mediaStatus: "private_media_protected",
+        filters: ["For You", "Leadership"],
+      }),
+    );
+    expect(byId["real-testimonial"]).toEqual(
+      expect.objectContaining({
+        id: "real-testimonial",
+        title: "A real member reflection.",
+        chapter: "MEDLIFE chapter",
+        country: "MEDLIFE",
+        type: "Student Story",
+        date: "Date unavailable",
+        body: undefined,
+        filters: ["For You", "Leadership"],
+      }),
+    );
   });
 
   it("renders persisted approved metadata without falling back to the preview feed", () => {
@@ -122,6 +198,13 @@ const chapterRow = {
   name: "TEST Review Chapter",
   campus: "TEST Campus",
   region: "TEST Region",
+} as ChapterRow;
+
+const campusOnlyChapter = {
+  id: "chapter-campus-only",
+  name: "Campus Chapter",
+  campus: "Campus Only",
+  region: null,
 } as ChapterRow;
 
 const eventRow = {
