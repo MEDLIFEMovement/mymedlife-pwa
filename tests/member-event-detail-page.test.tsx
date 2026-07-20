@@ -445,7 +445,7 @@ describe("member event detail route", () => {
       getSignedInActor("member.a@mymedlife.test"),
     );
     vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
-      getOpenEventData("Testing member check-in preview state."),
+      getCancelableRsvpData(),
     );
 
     const { default: EventDetailPage } = await import("@/app/app/events/[eventId]/page");
@@ -462,6 +462,33 @@ describe("member event detail route", () => {
     expect(html).toContain("Confirm Check-In");
     expect(html).toContain("20 points after check-in");
     expect(html).not.toContain(">0 points after check-in");
+  });
+
+  it("renders durable checked-in state without offering a duplicate check-in action", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const dataModule = await import("@/services/read-only-app-data");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("member.a@mymedlife.test"),
+    );
+    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
+      getOpenEventData("Testing durable checked-in member state."),
+    );
+
+    const { default: EventDetailPage } = await import("@/app/app/events/[eventId]/page");
+    const html = renderToStaticMarkup(
+      await EventDetailPage({
+        params: Promise.resolve({ eventId: "chapter-event-ucla-kickoff" }),
+        searchParams: Promise.resolve({ source: "events", step: "checkin" }),
+      }),
+    );
+
+    expect(html).toContain("Check-in recorded");
+    expect(html).toContain("Your attendance is already recorded in myMEDLIFE");
+    expect(html).toContain("20 points recorded");
+    expect(html).toContain("View attendance and points readback");
+    expect(html).not.toContain("Confirm Check-In");
+    expect(html).not.toContain("Preview event QR code");
   });
 
   it("keeps a canceled RSVP visibly canceled on the check-in step", async () => {

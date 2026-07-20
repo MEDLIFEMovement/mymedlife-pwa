@@ -757,6 +757,10 @@ function EventCheckInView({
 }>) {
   const visibleEventTitle = ensureVisibleTestLabel(event.title);
   const hasActiveRsvp = event.memberRsvpState === "registered";
+  const checkInConfirmed =
+    event.memberPointsAwarded > 0 ||
+    resultState?.code === "checked_in" ||
+    resultState?.code === "already_checked_in";
   let checkInStatusLabel = hasActiveRsvp ? "RSVP'd" : "RSVP not active";
   let checkInStatusVariant: "green" | "gray" = hasActiveRsvp ? "green" : "gray";
   let checkInMessage = "Your RSVP is not active. Walk-in check-in can still record attendance and points in myMEDLIFE.";
@@ -768,6 +772,20 @@ function EventCheckInView({
     checkInStatusVariant = "gray";
     checkInMessage = "Member check-in is closed for this completed or canceled event.";
     checkInPointsLabel = `${event.pointsAwarded} points currently recorded for this event`;
+  } else if (checkInConfirmed) {
+    checkInStatusLabel = "Checked in";
+    checkInStatusVariant = "green";
+    checkInMessage = "Your attendance is already recorded in myMEDLIFE. Another check-in is not needed.";
+    checkInPointsLabel = event.memberPointsAwarded > 0
+      ? `${event.memberPointsAwarded} points recorded`
+      : "Attendance recorded; points readback pending";
+    checkInAction = (
+      <PrimaryLink
+        href={buildEventStepHref(event.id, "points", source, profileSource, campaign, storyFilter, storyId)}
+        label="View attendance and points readback"
+        icon={<CheckCircle2 size={20} />}
+      />
+    );
   } else {
     if (hasActiveRsvp) {
       checkInMessage = "Confirm the TEST check-in to record attendance and award points once in myMEDLIFE.";
@@ -810,6 +828,12 @@ function EventCheckInView({
             <div className="mb-5 flex h-[188px] w-[188px] flex-col items-center justify-center rounded-2xl border border-slate-300 bg-slate-100 p-6 text-slate-700">
               <Clock size={36} />
               <p className="mt-3 text-base font-bold">Check-in closed</p>
+            </div>
+          ) : checkInConfirmed ? (
+            <div className="mb-5 flex h-[188px] w-[188px] flex-col items-center justify-center rounded-2xl border border-emerald-200 bg-emerald-50 p-6 text-emerald-800">
+              <CheckCircle2 size={44} />
+              <p className="mt-3 text-base font-bold">Check-in recorded</p>
+              <p className="mt-1 text-xs">Duplicate attendance and points are blocked.</p>
             </div>
           ) : (
             <>
