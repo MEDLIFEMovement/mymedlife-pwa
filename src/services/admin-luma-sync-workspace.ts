@@ -70,27 +70,16 @@ export async function getAdminLumaSyncWorkspace(
     return emptyWorkspace(config, `Luma sync readback is unavailable: ${queryError.message}`);
   }
 
-  const run = runs.data?.[0];
+  const lastRun = runs.data?.[0]
+    ? normalizeRun(runs.data[0] as Record<string, unknown>)
+    : null;
+  const openFailures = Array.isArray(failures.data)
+    ? failures.data.map((row: unknown) => normalizeFailure(row as Record<string, unknown>))
+    : [];
   return {
     canRead: true,
     config,
-    lastRun: run ? {
-      id: String(run.id),
-      mode: String(run.mode),
-      status: String(run.status),
-      triggerSource: String(run.trigger_source ?? "manual"),
-      retryOfRunId: run.retry_of_run_id ? String(run.retry_of_run_id) : null,
-      calendarId: String(run.calendar_id),
-      chapterId: String(run.chapter_id),
-      startedAt: String(run.started_at),
-      completedAt: run.completed_at ? String(run.completed_at) : null,
-      heartbeatAt: String(run.heartbeat_at ?? run.started_at),
-      sourceEvents: Number(run.source_event_count ?? 0),
-      materializedEvents: Number(run.materialized_event_count ?? 0),
-      updatedEvents: Number(run.updated_event_count ?? 0),
-      conflicts: Number(run.conflict_count ?? 0),
-      failures: Number(run.failure_count ?? 0),
-    } : null,
+    lastRun,
     counts: {
       calendars: calendars.count ?? 0,
       importedEvents: imports.count ?? 0,
@@ -98,18 +87,47 @@ export async function getAdminLumaSyncWorkspace(
       conflicts: conflicts.count ?? 0,
       openFailures: failures.count ?? 0,
     },
-    failures: (failures.data ?? []).map((failure: Record<string, unknown>) => ({
-      id: String(failure.id),
-      objectType: String(failure.object_type),
-      externalId: failure.external_id ? String(failure.external_id) : null,
-      code: String(failure.error_code),
-      message: String(failure.error_message),
-      retryCount: Number(failure.retry_count ?? 0),
-      createdAt: String(failure.created_at),
-    })),
+    failures: openFailures,
     message: config.enabled
       ? "Luma event reads and app-owned reconciliation writes are enabled. Luma provider writes remain off."
       : config.reason,
+  };
+}
+
+function normalizeRun(row: Record<string, unknown>): NonNullable<AdminLumaSyncWorkspace["lastRun"]> {
+  const text = (key: string) => String(row[key] ?? "");
+  const count = (key: string) => Number(row[key] ?? 0);
+  const optionalText = (key: string) => row[key] ? String(row[key]) : null;
+
+  return {
+    id: text("id"),
+    mode: text("mode"),
+    status: text("status"),
+    triggerSource: text("trigger_source") || "manual",
+    retryOfRunId: optionalText("retry_of_run_id"),
+    calendarId: text("calendar_id"),
+    chapterId: text("chapter_id"),
+    startedAt: text("started_at"),
+    completedAt: optionalText("completed_at"),
+    heartbeatAt: text("heartbeat_at") || text("started_at"),
+    sourceEvents: count("source_event_count"),
+    materializedEvents: count("materialized_event_count"),
+    updatedEvents: count("updated_event_count"),
+    conflicts: count("conflict_count"),
+    failures: count("failure_count"),
+  };
+}
+
+function normalizeFailure(row: Record<string, unknown>): AdminLumaSyncWorkspace["failures"][number] {
+  const { id, object_type, external_id, error_code, error_message, retry_count, created_at } = row;
+  return {
+    id: String(id ?? ""),
+    objectType: String(object_type ?? ""),
+    externalId: external_id ? String(external_id) : null,
+    code: String(error_code ?? ""),
+    message: String(error_message ?? ""),
+    retryCount: Number(retry_count ?? 0),
+    createdAt: String(created_at ?? ""),
   };
 }
 
