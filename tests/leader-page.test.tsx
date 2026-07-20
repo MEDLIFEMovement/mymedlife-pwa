@@ -237,6 +237,33 @@ describe("leader page", () => {
     expect(html).not.toContain("All Events — June 2025");
   });
 
+  it("renders a visible selected-event state for the live Open route", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const dataModule = await import("@/services/read-only-app-data");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("leader.a@mymedlife.test"),
+    );
+    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
+      getMockReadOnlyAppData("Testing selected live leader event."),
+    );
+
+    const { default: LeaderPage } = await import("@/app/leader/page");
+    const html = renderToStaticMarkup(
+      await LeaderPage({
+        searchParams: Promise.resolve({
+          view: "events",
+          event: "chapter-event-ucla-kickoff",
+        }),
+      }),
+    );
+
+    expect(html).toContain("Selected event");
+    expect(html).toContain("Rush Month kickoff social");
+    expect(html).toContain("Back to all events");
+    expect(html).toContain('aria-current="true"');
+  });
+
   it("renders the chapter leaderboard when reviewers open /leader?view=leaderboard", async () => {
     const actorModule = await import("@/services/local-actor-context");
     const dataModule = await import("@/services/read-only-app-data");

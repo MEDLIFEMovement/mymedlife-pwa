@@ -179,6 +179,7 @@ export default async function LeaderPage({ searchParams }: LeaderPageProps) {
     const data = await getReadOnlyAppData({ actorUserId: actor.user.id });
     const liveEventReadback = {
       chapterName: data.chapter.name,
+      selectedEventId: resolvedSearchParams?.event ?? null,
       events: getLaunchLaneLeaderEventReadback(data),
       attendance: getLaunchLaneLeaderAttendanceReadback(data),
       leaderboard: getLaunchLaneChapterLeaderboardReadback(data),

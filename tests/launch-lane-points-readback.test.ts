@@ -136,6 +136,30 @@ describe("launch lane points readback", () => {
     });
   });
 
+  it("does not substitute preview people when a live event has no attendance", () => {
+    const data = getMockReadOnlyAppData("Testing empty live leader attendance.");
+    const latestEventId = data.chapterEventRows[0]?.id;
+    const emptyAttendanceData: ReadOnlyAppData = {
+      ...data,
+      chapterEventRows: data.chapterEventRows.map((event) =>
+        event.id === latestEventId
+          ? { ...event, attendance_count: 0, attendance_rate: 0 }
+          : event,
+      ),
+      allChapterEventRows: data.allChapterEventRows.map((event) =>
+        event.id === latestEventId
+          ? { ...event, attendance_count: 0, attendance_rate: 0 }
+          : event,
+      ),
+      eventRows: data.eventRows.filter((row) => row.chapter_event_id !== latestEventId),
+      allEventRows: data.allEventRows.filter((row) => row.chapter_event_id !== latestEventId),
+      pointsEventRows: data.pointsEventRows.filter((row) => row.chapter_event_id !== latestEventId),
+      allPointsEventRows: data.allPointsEventRows.filter((row) => row.chapter_event_id !== latestEventId),
+    };
+
+    expect(getLaunchLaneLeaderAttendanceReadback(emptyAttendanceData)).toEqual([]);
+  });
+
   it("keeps staff chapter rows and the org leaderboard tied to the same totals", () => {
     const data = getMockReadOnlyAppData("Testing staff launch-lane readback.");
 

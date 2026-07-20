@@ -2747,6 +2747,7 @@ type FigmaStaffCommandCenterProps = {
   initialView?: string;
   initialCampaign?: string | null;
   liveEventReadback?: {
+    selectedEventId: string | null;
     chapters: LaunchLaneStaffChapterReadback[];
     organization: LaunchLaneOrgPointsReadback;
     leaderboard: LaunchLaneOrgLeaderboardRow[];
@@ -2952,7 +2953,7 @@ export function FigmaStaffCommandCenter({
               {activeScreen === "sops" && (sopView === "builder" && sopCampaign ? `${sopCampaign.name} · ${sopCampaign.version}` : "Build, version, and publish campaign workflows — steps, roles, points, and comms")}
             </div>
           </div>
-          <div className="ml-4 hidden flex-shrink-0 text-xs font-mono text-muted-foreground xl:block">Jun 17, 2026 · 14:41 UTC</div>
+          <div className="ml-4 hidden flex-shrink-0 text-xs font-mono text-muted-foreground xl:block">Operational workspace</div>
         </div>
       )}
 
@@ -3014,6 +3015,7 @@ export function FigmaStaffCommandCenter({
                 <StaffLiveLaunchEventsOperations
                   chapters={liveEventReadback.chapters}
                   organization={liveEventReadback.organization}
+                  selectedEventId={liveEventReadback.selectedEventId}
                 />
               ) : (
                 <StaffLaunchEventsOperations chapters={CHAPTERS} />
