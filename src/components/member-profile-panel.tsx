@@ -59,52 +59,21 @@ export function MemberProfilePanel({
   const avatarMonogram = getAvatarMonogram(testDisplayName);
   const taskCount =
     recognition.selectedMember?.completedActions ?? recognition.recentApprovedActions.length;
+  const primaryEventCount = studentHome.primaryEvent ? 1 : 0;
   const eventCount =
     taskCount > 0
-      ? Math.max(studentHome.recentHistory.length, studentHome.primaryEvent ? 1 : 0)
+      ? Math.max(studentHome.recentHistory.length, primaryEventCount)
       : 0;
   const recentActivity = getRecentActivity(recognition, studentHome);
   const previewMemberId = getPreviewMemberId(testChapterName);
-  const continuityCard =
-    entrySource === "home"
-      ? {
-          eyebrow: "Opened from the TEST home walkthrough",
-          body:
-            "This profile stays inside the student shell so you can review your TEST identity, points, and next event context without falling out of the member app.",
-          href: "/app",
-          cta: "Back to Home",
-        }
-      : entrySource === "points"
-        ? {
-            eyebrow: "Opened from Points & Recognition",
-            body:
-              entryEventId
-                ? "This profile stays inside the student shell so you can review your TEST identity, chapter standing, and exact event context without breaking the points-to-profile member loop."
-                : "This profile stays inside the student shell so you can review your TEST identity and chapter standing without breaking the points-to-profile member loop.",
-            href: buildProfilePointsHref("points", entryEventId, entryCampaign, null, null),
-            cta: "Back to Points",
-          }
-        : entrySource === "stories"
-          ? {
-              eyebrow: "Opened from the TEST stories feed",
-              body:
-                entryEventId
-                  ? "This profile stays inside the student shell so you can check your TEST identity without losing the stories-to-event-to-profile handoff or dropping out of the mobile member loop."
-                  : "This profile stays inside the student shell so you can check your TEST identity without losing the stories-to-profile handoff or dropping out of the mobile member loop.",
-              href: buildProfileStoriesHref(entryStoryFilter, entryStoryId),
-              cta: "Back to Stories",
-            }
-          : entrySource === "events"
-            ? {
-                eyebrow: "Opened from the TEST events lane",
-                body:
-                  entryEventId
-                    ? "This profile stays inside the student shell so you can review your TEST identity and chapter standing without breaking the event-to-profile member loop."
-                    : "This profile stays inside the student shell so you can review your TEST identity and chapter standing without breaking the member event loop.",
-                href: launchLaneEventsHref,
-                cta: entryEventId ? "Back to TEST event detail" : "Back to Events",
-              }
-        : null;
+  const continuityCard = getProfileContinuityCard({
+    entrySource,
+    entryEventId,
+    entryCampaign,
+    entryStoryFilter,
+    entryStoryId,
+    launchLaneEventsHref,
+  });
 
   return (
     <section className="bg-white pb-5">
@@ -373,6 +342,62 @@ export function MemberProfilePanel({
   );
 }
 
+function getProfileContinuityCard({
+  entrySource,
+  entryEventId,
+  entryCampaign,
+  entryStoryFilter,
+  entryStoryId,
+  launchLaneEventsHref,
+}: {
+  entrySource: "events" | "home" | "points" | "stories" | null;
+  entryEventId: string | null;
+  entryCampaign: string | null;
+  entryStoryFilter: string | null;
+  entryStoryId: string | null;
+  launchLaneEventsHref: string;
+}) {
+  switch (entrySource) {
+    case "home":
+      return {
+        eyebrow: "Opened from the TEST home walkthrough",
+        body:
+          "This profile stays inside the student shell so you can review your TEST identity, points, and next event context without falling out of the member app.",
+        href: "/app",
+        cta: "Back to Home",
+      };
+    case "points":
+      return {
+        eyebrow: "Opened from Points & Recognition",
+        body: entryEventId
+          ? "This profile stays inside the student shell so you can review your TEST identity, chapter standing, and exact event context without breaking the points-to-profile member loop."
+          : "This profile stays inside the student shell so you can review your TEST identity and chapter standing without breaking the points-to-profile member loop.",
+        href: buildProfilePointsHref("points", entryEventId, entryCampaign, null, null),
+        cta: "Back to Points",
+      };
+    case "stories":
+      return {
+        eyebrow: "Opened from the TEST stories feed",
+        body: entryEventId
+          ? "This profile stays inside the student shell so you can check your TEST identity without losing the stories-to-event-to-profile handoff or dropping out of the mobile member loop."
+          : "This profile stays inside the student shell so you can check your TEST identity without losing the stories-to-profile handoff or dropping out of the mobile member loop.",
+        href: buildProfileStoriesHref(entryStoryFilter, entryStoryId),
+        cta: "Back to Stories",
+      };
+    case "events":
+      return {
+        eyebrow: "Opened from the TEST events lane",
+        body: entryEventId
+          ? "This profile stays inside the student shell so you can review your TEST identity and chapter standing without breaking the event-to-profile member loop."
+          : "This profile stays inside the student shell so you can review your TEST identity and chapter standing without breaking the member event loop.",
+        href: launchLaneEventsHref,
+        cta: entryEventId ? "Back to TEST event detail" : "Back to Events",
+      };
+    default:
+      return null;
+  }
+}
+
 function buildProfilePointsHref(
   entrySource: "events" | "home" | "points" | "stories" | null,
   entryEventId: string | null,
@@ -497,12 +522,7 @@ function getProfileBadges(recognition: MemberRecognitionSummary): ProfileBadge[]
   const rank = selectedMember?.rank ?? Number.POSITIVE_INFINITY;
   const earnedBadges = recognition.badges.slice(0, 4).map((badge) => {
     const label = ensureVisibleTestLabel(badge.label);
-    const earned =
-      /starter/i.test(badge.label) ? completedActions >= 1 :
-      /connector/i.test(badge.label) ? totalPoints >= 50 :
-      /evidence/i.test(badge.label) ? completedActions >= 3 :
-      /mvp/i.test(badge.label) ? rank <= 3 :
-      false;
+    const earned = isProfileBadgeEarned(badge.label, completedActions, totalPoints, rank);
 
     return {
       ...badge,
@@ -516,6 +536,19 @@ function getProfileBadges(recognition: MemberRecognitionSummary): ProfileBadge[]
   ];
 
   return [...earnedBadges, ...lockedBadges].slice(0, 6);
+}
+
+function isProfileBadgeEarned(
+  label: string,
+  completedActions: number,
+  totalPoints: number,
+  rank: number,
+) {
+  if (/starter/i.test(label)) return completedActions >= 1;
+  if (/connector/i.test(label)) return totalPoints >= 50;
+  if (/evidence/i.test(label)) return completedActions >= 3;
+  if (/mvp/i.test(label)) return rank <= 3;
+  return false;
 }
 
 function ProfileSettingRow({
