@@ -2,7 +2,62 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(20);
+select plan(23);
+
+select is(
+  (
+    select count(*)::int
+    from pg_proc procedure
+    join pg_namespace namespace on namespace.oid = procedure.pronamespace
+    where namespace.nspname = 'app'
+      and procedure.proname = any (array[
+        'normalize_private_proof_filename',
+        'build_private_proof_storage_path',
+        'is_allowed_private_proof_mime_type',
+        'can_prepare_private_proof_upload',
+        'can_remove_private_proof_upload',
+        'prepare_proof_upload_intake',
+        'record_private_proof_upload',
+        'record_verified_private_proof_upload',
+        'record_private_proof_upload_removal'
+      ])
+      and has_function_privilege('anon', procedure.oid, 'EXECUTE')
+  ),
+  0,
+  'Anonymous users cannot execute private proof functions'
+);
+
+select is(
+  (
+    select count(*)::int
+    from pg_proc procedure
+    join pg_namespace namespace on namespace.oid = procedure.pronamespace
+    where namespace.nspname = 'app'
+      and procedure.proname = any (array[
+        'normalize_private_proof_filename',
+        'build_private_proof_storage_path',
+        'is_allowed_private_proof_mime_type',
+        'can_prepare_private_proof_upload',
+        'can_remove_private_proof_upload',
+        'prepare_proof_upload_intake',
+        'record_private_proof_upload',
+        'record_verified_private_proof_upload',
+        'record_private_proof_upload_removal'
+      ])
+      and has_function_privilege('public', procedure.oid, 'EXECUTE')
+  ),
+  0,
+  'PUBLIC cannot execute private proof functions'
+);
+
+select ok(
+  not has_function_privilege(
+    'authenticated',
+    'app.record_private_proof_upload(uuid,text,text,text,bigint,boolean,boolean)',
+    'EXECUTE'
+  ),
+  'Authenticated users cannot bypass verified upload finalization'
+);
 
 set local role authenticated;
 set local "request.jwt.claim.sub" = '00000000-0000-4000-8000-000000000002';
