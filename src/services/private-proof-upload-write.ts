@@ -274,7 +274,9 @@ export function buildPrivateProofUploadRow(params: {
     ["submitted", "in_hq_review"].includes(params.sharingStatus);
   const uploadEligible =
     params.assignmentId !== null &&
-    ["submitted", "changes_requested"].includes(params.assignmentStatus ?? "") &&
+    ["submitted", "changes_requested", "approved"].includes(
+      params.assignmentStatus ?? "",
+    ) &&
     evidenceIsManageable;
   const canUpload =
     signedInAsSelectedActor &&
@@ -621,7 +623,7 @@ function getPrivateProofUploadHelperText(params: {
 
   if (params.isSubmitter) {
     if (!params.uploadEligible) {
-      return "Finish or resubmit the related assignment before attaching its private proof file.";
+      return "Submit the related assignment before attaching its private proof file.";
     }
 
     return "This proof row is ready for one private upload. Public sharing stays off.";

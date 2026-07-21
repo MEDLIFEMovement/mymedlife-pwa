@@ -157,6 +157,37 @@ describe("private proof upload write", () => {
     expect(row.canRemove).toBe(false);
   });
 
+  it("lets the submitter reattach media while approved assignment evidence is still reviewable", () => {
+    const actor = getMockLocalActorContext(
+      "member.a@mymedlife.test",
+      "Signed in locally.",
+      "mock_fallback",
+      "local_auth_session",
+      "signed_in",
+    );
+    actor.user.id = "00000000-0000-4000-8000-000000000001";
+
+    const row = buildPrivateProofUploadRow({
+      actor,
+      assignmentId: "assignment-1",
+      assignmentStatus: "approved",
+      assignmentTitle: "Rush social follow-up",
+      chapterName: "UCLA MEDLIFE",
+      evidenceItemId: "evidence-1",
+      submittedBy: "Sofia Alvarez",
+      submittedByUserId: actor.user.id,
+      evidenceType: "event_photo",
+      summary: "Approved assignment media awaiting HQ review.",
+      status: "pending_review",
+      sharingStatus: "submitted",
+      storagePath: null,
+    });
+
+    expect(row.canUpload).toBe(true);
+    expect(row.canRemove).toBe(false);
+    expect(row.helperText).toContain("ready for one private upload");
+  });
+
   it("lets HQ cleanup roles remove an attached file without letting them upload it", () => {
     const actor = getMockLocalActorContext(
       "admin@mymedlife.test",
@@ -215,7 +246,7 @@ describe("private proof upload write", () => {
     });
 
     expect(row.canUpload).toBe(false);
-    expect(row.helperText).toContain("Finish or resubmit");
+    expect(row.helperText).toContain("Submit the related assignment");
   });
 
   it("maps upload success and removal success into stable result codes", () => {
