@@ -11,6 +11,13 @@ export type MemberStoryReactionReadback = {
   likedByActor: boolean;
 };
 
+export type MemberStoryReactionReadbackStatus = "ready" | "unavailable";
+
+export type MemberStoryReactionReadbackResult = {
+  status: MemberStoryReactionReadbackStatus;
+  rows: MemberStoryReactionReadback[];
+};
+
 export type MemberStoryReactionResult = {
   success: boolean;
   code:
@@ -81,12 +88,16 @@ export function createMemberStoryReactionClient(
   env: EnvSource = process.env,
 ): MemberStoryReactionClient | null {
   const config = getMemberStoryReactionConfig(env);
+  return config.enabled ? createMemberStoryReactionReadClient(env) : null;
+}
+
+export function createMemberStoryReactionReadClient(
+  env: EnvSource = process.env,
+): MemberStoryReactionClient | null {
   const url = env.SUPABASE_URL ?? env.NEXT_PUBLIC_SUPABASE_URL;
   const serviceRoleKey = env.SUPABASE_SERVICE_ROLE_KEY;
 
-  if (!config.enabled || !url || !serviceRoleKey) {
-    return null;
-  }
+  if (!url || !serviceRoleKey) return null;
 
   return createClient(url, serviceRoleKey, {
     auth: { autoRefreshToken: false, persistSession: false },
@@ -96,20 +107,30 @@ export function createMemberStoryReactionClient(
 export async function getMemberStoryReactionReadbacks(
   client: MemberStoryReactionClient,
   actorUserId: string,
-): Promise<MemberStoryReactionReadback[]> {
-  const response = await client.schema("app").rpc("get_member_story_reactions", {
-    actor_uuid: actorUserId,
-  });
+): Promise<MemberStoryReactionReadbackResult> {
+  try {
+    const response = await client.schema("app").rpc("get_member_story_reactions", {
+      actor_uuid: actorUserId,
+    });
 
-  if (response.error || !Array.isArray(response.data)) {
-    return [];
+    if (response.error || !Array.isArray(response.data)) {
+      return unavailableReadback();
+    }
+
+    const rows = response.data as StoryReactionReadbackRow[];
+    if (!rows.every(isValidReadbackRow)) return unavailableReadback();
+
+    return {
+      status: "ready",
+      rows: rows.map((row) => ({
+        evidenceItemId: row.evidence_item_id,
+        reactionCount: row.reaction_count,
+        likedByActor: row.liked_by_actor,
+      })),
+    };
+  } catch {
+    return unavailableReadback();
   }
-
-  return (response.data as StoryReactionReadbackRow[]).map((row) => ({
-    evidenceItemId: row.evidence_item_id,
-    reactionCount: row.reaction_count,
-    likedByActor: row.liked_by_actor,
-  }));
 }
 
 export async function toggleMemberStoryLike(
@@ -204,4 +225,19 @@ function mapWriteError(message: string | undefined, evidenceItemId: string) {
 
 function capitalize(value: string) {
   return `${value[0]?.toUpperCase() ?? ""}${value.slice(1)}`;
+}
+
+function isValidReadbackRow(row: StoryReactionReadbackRow) {
+  return Boolean(
+    row &&
+      typeof row.evidence_item_id === "string" &&
+      row.evidence_item_id.length > 0 &&
+      Number.isInteger(row.reaction_count) &&
+      row.reaction_count >= 0 &&
+      typeof row.liked_by_actor === "boolean",
+  );
+}
+
+function unavailableReadback(): MemberStoryReactionReadbackResult {
+  return { status: "unavailable", rows: [] };
 }

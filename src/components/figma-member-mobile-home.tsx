@@ -7,7 +7,7 @@ import React, { useState } from "react";
 import { ChromeDesktopPaintShell } from "@/components/chrome-desktop-paint-shell";
 import { MemberBottomNav, type MemberBottomNavTab } from "@/components/member-bottom-nav";
 import {
-  getMemberStoryReactionSurfaceCopy,
+  getMemberStoryReactionCountLabel, getMemberStoryReactionSurfaceCopy,
   MemberStoryReactionForm,
   MemberStoryReactionResultBanner,
 } from "@/components/member-story-reaction-controls";
@@ -21,6 +21,7 @@ import type {
 } from "@/services/member-mobile-event-context";
 import type { LaunchLaneMemberPointsReadback } from "@/services/launch-lane-points-readback";
 import type { MemberStory } from "@/services/member-stories-read-model";
+import type { MemberStoryReactionReadbackStatus } from "@/services/member-story-reactions";
 import {
   Home, BarChart2, CalendarDays, Trophy, User, Users,
   ChevronRight, ChevronLeft, CheckCircle2, Clock, Circle,
@@ -3046,7 +3047,7 @@ interface Story {
   isVideo?: boolean; embedUrl?: string; duration?: string; quote?: string; body?: string; filters: StoryFilter[];
   eventRouteId?: string;
   persisted?: boolean;
-  mediaStatus?: MemberStory["mediaStatus"];
+  reactionStatus?: MemberStoryReactionReadbackStatus; mediaStatus?: MemberStory["mediaStatus"];
 }
 
 function stripTestPrefix(value: string) {
@@ -3593,16 +3594,17 @@ function StoryCard({ story, liked, onToggleLike, onClick, featured }: {
 function StoryModal({
   story,
   reactionsEnabled,
+  reactionReadbackStatus,
   closeHref,
   activeFilter,
 }: {
   story: Story;
-  reactionsEnabled: boolean;
+  reactionsEnabled: boolean; reactionReadbackStatus: MemberStoryReactionReadbackStatus;
   closeHref: string;
   activeFilter: StoryFilter;
 }) {
   const cfg = sourceConfig[story.source];
-  const reactionCopy = getMemberStoryReactionSurfaceCopy(reactionsEnabled);
+  const reactionCopy = getMemberStoryReactionSurfaceCopy(reactionsEnabled, reactionReadbackStatus);
   const loopEventsHref = buildEventsHref({
     source: "stories",
     storyFilter: activeFilter,
@@ -3728,7 +3730,7 @@ function StoryModal({
         </div>
         <div className="flex-shrink-0 px-5 py-4 border-t border-border flex items-center justify-between gap-3 bg-card">
           <div className="flex items-center gap-3">
-            {story.persisted && reactionsEnabled ? (
+            {story.persisted && reactionsEnabled && story.reactionStatus === "ready" ? (
               <MemberStoryReactionForm storyId={story.id} liked={story.liked ?? false} reactionCount={story.likes} filter={activeFilter} openStory showCount />
             ) : (
               <button
@@ -3741,9 +3743,7 @@ function StoryModal({
               >
                 <Heart size={20} className="text-black" />
                 <span className="text-sm font-semibold text-foreground">
-                  {story.persisted
-                    ? `${story.likes.toLocaleString()} reactions`
-                    : `${story.likes.toLocaleString()} preview likes`}
+                  {getMemberStoryReactionCountLabel(story)}
                 </span>
               </button>
             )}
@@ -3793,18 +3793,19 @@ function StoriesScreen({
   initialReactionResult,
   memberStories,
   reactionsEnabled,
+  reactionReadbackStatus,
 }: {
   initialFilter?: string | null;
   initialStoryId?: string | null;
   initialReactionResult?: string | null;
   memberStories?: MemberStory[];
-  reactionsEnabled: boolean;
+  reactionsEnabled: boolean; reactionReadbackStatus: MemberStoryReactionReadbackStatus;
 }) {
   const availableStories: Story[] = memberStories ?? stories;
   const isPersistedFeed = memberStories !== undefined;
   const activeFilter = resolveStoryFilter(initialFilter);
   const selectedStory = getStoryByIdForFilter(initialStoryId, activeFilter, availableStories);
-  const reactionCopy = getMemberStoryReactionSurfaceCopy(reactionsEnabled);
+  const reactionCopy = getMemberStoryReactionSurfaceCopy(reactionsEnabled, reactionReadbackStatus);
 
   const filtered = availableStories.filter((s) => s.filters.includes(activeFilter));
   const closeHref = buildStoriesHref({ filter: activeFilter });
@@ -3912,7 +3913,7 @@ function StoriesScreen({
                   <div className="px-3 pt-2">
                     <div className="flex items-center">
                       <div className="flex items-center gap-4 flex-1">
-                        {story.persisted && reactionsEnabled ? (
+                        {story.persisted && reactionsEnabled && story.reactionStatus === "ready" ? (
                           <MemberStoryReactionForm storyId={story.id} liked={story.liked ?? false} reactionCount={story.likes} filter={activeFilter} />
                         ) : (
                           <button
@@ -3956,9 +3957,7 @@ function StoriesScreen({
                     </div>
 
                     <p className="text-[13px] font-semibold text-black mt-1.5 mb-1">
-                      {story.persisted
-                        ? `${story.likes.toLocaleString()} reactions`
-                        : `${story.likes.toLocaleString()} preview likes`}
+                      {getMemberStoryReactionCountLabel(story)}
                     </p>
 
                     <p className="text-[13px] text-black leading-snug">
@@ -3996,6 +3995,7 @@ function StoriesScreen({
         <StoryModal
           story={selectedStory}
           reactionsEnabled={reactionsEnabled}
+          reactionReadbackStatus={reactionReadbackStatus}
           closeHref={closeHref}
           activeFilter={activeFilter}
         />
@@ -4015,6 +4015,7 @@ export function FigmaMemberMobileHome({
   initialStoryId = null,
   initialStoryReactionResult = null,
   memberStoryReactionsEnabled = false,
+  memberStoryReactionReadbackStatus = "unavailable",
   initialEventsCampaign = null,
   pointsSource = "points",
   pointsReturnEventId = null,
@@ -4036,7 +4037,7 @@ export function FigmaMemberMobileHome({
   initialStoriesFilter?: string | null;
   initialStoryId?: string | null;
   initialStoryReactionResult?: string | null;
-  memberStoryReactionsEnabled?: boolean;
+  memberStoryReactionsEnabled?: boolean; memberStoryReactionReadbackStatus?: MemberStoryReactionReadbackStatus;
   initialEventsCampaign?: string | null;
   pointsSource?: MemberLoopSource;
   pointsReturnEventId?: string | null;
@@ -4153,6 +4154,7 @@ export function FigmaMemberMobileHome({
             initialReactionResult={initialStoryReactionResult}
             memberStories={memberStories}
             reactionsEnabled={memberStoryReactionsEnabled}
+            reactionReadbackStatus={memberStoryReactionReadbackStatus}
           />
         );
       case "leader": return <LeadershipDashboard navigate={navigate} />;

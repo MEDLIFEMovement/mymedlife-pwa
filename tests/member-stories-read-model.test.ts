@@ -262,7 +262,8 @@ describe("member stories read model", () => {
     );
 
     expect(html).toContain("Approved myMEDLIFE story metadata");
-    expect(html).toContain("Live read-only");
+    expect(html).toContain("Counts unavailable");
+    expect(html).toContain("Reaction count unavailable");
     expect(html).toContain("TEST approved member story.");
     expect(html).toContain("Media not published");
     expect(html).not.toContain("Students in Lima joined a Mobile Clinic");
@@ -321,6 +322,7 @@ describe("member stories read model", () => {
         initialStoriesFilter: "For You",
         memberStories,
         memberStoryReactionsEnabled: true,
+        memberStoryReactionReadbackStatus: "ready",
         initialStoryReactionResult: "story_liked",
       }),
     );
@@ -331,6 +333,36 @@ describe("member stories read model", () => {
     expect(html).toContain('aria-pressed="true"');
     expect(html).toContain("1 reaction");
     expect(html).toContain("shares and saves remain disabled");
+  });
+
+  it("renders persisted reaction counts honestly when writes remain disabled", () => {
+    const memberStories = buildMemberStoriesReadModel({
+      evidenceRows: [evidenceRow({ id: "persisted-story" })],
+      chapters: [chapterRow],
+      chapterEvents: [eventRow],
+      profiles: [profileRow],
+      reactionReadbacks: [{
+        evidenceItemId: "persisted-story",
+        reactionCount: 2,
+        likedByActor: true,
+      }],
+      reactionReadbackStatus: "ready",
+    });
+
+    const html = renderToStaticMarkup(
+      React.createElement(FigmaMemberMobileHome, {
+        initialScreen: "stories",
+        initialStoriesFilter: "For You",
+        memberStories,
+        memberStoryReactionsEnabled: false,
+        memberStoryReactionReadbackStatus: "ready",
+      }),
+    );
+
+    expect(html).toContain("Live counts - read-only");
+    expect(html).toContain("2 reactions");
+    expect(html).toContain("persisted reaction counts are live");
+    expect(html).not.toContain('aria-label="Remove reaction"');
   });
 });
 
