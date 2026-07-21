@@ -3,6 +3,7 @@ import { describe, expect, it, vi, afterEach } from "vitest";
 import {
   getAdminUserCreationConfig,
   parseAdminUserCreationRole,
+  requiresAdminUserCreationChapter,
 } from "@/services/admin-user-creation";
 import { submitAdminUserCreationForSupabase } from "@/app/admin/users/create-actions";
 
@@ -20,6 +21,9 @@ describe("admin user creation", () => {
     expect(parseAdminUserCreationRole("ds_admin")).toBe("ds_admin");
     expect(parseAdminUserCreationRole("e_board_member")).toBe("e_board_member");
     expect(parseAdminUserCreationRole("owner")).toBeNull();
+    expect(requiresAdminUserCreationChapter("general_member")).toBe(true);
+    expect(requiresAdminUserCreationChapter("e_board_member")).toBe(true);
+    expect(requiresAdminUserCreationChapter("coach")).toBe(false);
   });
 
   it("rejects malformed creation requests before any Supabase client is used", async () => {
@@ -42,6 +46,32 @@ describe("admin user creation", () => {
     });
 
     expect(result).toMatchObject({ success: false, code: "validation_error" });
+    expect(createServiceClient).not.toHaveBeenCalled();
+  });
+
+  it("rejects a General Member without an approved chapter before creating Auth", async () => {
+    vi.stubEnv("MYMEDLIFE_ENABLE_ADMIN_USER_CREATION", "true");
+    vi.stubEnv("MYMEDLIFE_AUTH_MODE", "local_supabase");
+    vi.stubEnv("MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES", "true");
+    vi.stubEnv("SUPABASE_SERVICE_ROLE_KEY", "local-service-role-key");
+    vi.stubEnv("SUPABASE_URL", "http://127.0.0.1:54321");
+
+    const formData = buildValidForm();
+    formData.delete("chapterId");
+    const createSessionClient = vi.fn();
+    const createServiceClient = vi.fn();
+
+    const result = await submitAdminUserCreationForSupabase(formData, {
+      createSessionClient,
+      createServiceClient,
+    });
+
+    expect(result).toMatchObject({
+      success: false,
+      code: "validation_error",
+      plainEnglishMessage: expect.stringContaining("member or E-Board"),
+    });
+    expect(createSessionClient).not.toHaveBeenCalled();
     expect(createServiceClient).not.toHaveBeenCalled();
   });
 
@@ -82,14 +112,18 @@ describe("admin user creation", () => {
       data: { user: { id: "00000000-0000-4000-8000-000000000099", email: "new.user@example.com" } },
       error: null,
     });
-    const insert = vi.fn((row: Record<string, unknown>) => ({
-      select: vi.fn(() => ({
-        single: vi.fn().mockResolvedValue({
-          data: { id: row.id ?? "90000000-0000-4000-8000-000000000099" },
-          error: null,
-        }),
-      })),
-    }));
+    const insertedRows: Array<{ table: string; row: Record<string, unknown> }> = [];
+    const insert = vi.fn((table: string, row: Record<string, unknown>) => {
+      insertedRows.push({ table, row });
+      return {
+        select: vi.fn(() => ({
+          single: vi.fn().mockResolvedValue({
+            data: { id: row.id ?? "90000000-0000-4000-8000-000000000099" },
+            error: null,
+          }),
+        })),
+      };
+    });
     const serviceClient = {
       auth: { admin: { createUser, deleteUser: vi.fn() } },
       schema: vi.fn(() => ({
@@ -102,7 +136,7 @@ describe("admin user creation", () => {
               }),
             })),
           })),
-          insert,
+          insert: (row: Record<string, unknown>) => insert(table, row),
         })),
       })),
     } as never;
@@ -131,9 +165,20 @@ describe("admin user creation", () => {
       email: "new.user@example.com",
       email_confirm: true,
     }));
-    expect(insert).toHaveBeenCalledWith(expect.objectContaining({
-      id: "00000000-0000-4000-8000-000000000099",
-    }));
+    expect(insertedRows).toContainEqual({
+      table: "profiles",
+      row: expect.objectContaining({
+        id: "00000000-0000-4000-8000-000000000099",
+      }),
+    });
+    expect(insertedRows).toContainEqual({
+      table: "memberships",
+      row: expect.objectContaining({
+        chapter_id: "10000000-0000-4000-8000-000000000001",
+        role_key: "general_member",
+        status: "approved",
+      }),
+    });
     expect(result).toMatchObject({
       success: true,
       code: "user_created",
@@ -229,6 +274,7 @@ function buildValidForm() {
   formData.set("displayName", "New User");
   formData.set("temporaryPassword", "long-temporary-password");
   formData.set("role", "general_member");
+  formData.set("chapterId", "10000000-0000-4000-8000-000000000001");
   formData.set("auditReason", "Approved onboarding for new site user");
   return formData;
 }

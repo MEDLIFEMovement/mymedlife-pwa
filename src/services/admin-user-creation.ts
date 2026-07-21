@@ -172,7 +172,7 @@ export function normalizeAdminUserCreationChapterId(value: FormDataEntryValue | 
 }
 
 export function requiresAdminUserCreationChapter(role: AdminUserCreationRole): boolean {
-  return role === "e_board_member";
+  return role === "general_member" || role === "e_board_member";
 }
 
 export function isValidAdminUserCreationChapterId(chapterId: string): boolean {
