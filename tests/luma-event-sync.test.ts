@@ -205,6 +205,24 @@ describe("Luma event read sync", () => {
     expect(lumaClient.readEvents).not.toHaveBeenCalled();
   });
 
+  it("returns a server error when administrator role lookup fails", async () => {
+    const appClient = createFakeAppClient((query) =>
+      query.table === "staff_role_assignments"
+        ? failed("role database unavailable")
+        : ok([]),
+    );
+
+    await expect(runLumaEventSync("admin-1", "reconcile", {
+      env: enabledEnv,
+      appClient: appClient as never,
+      lumaClient: { readEvents: vi.fn() },
+    })).resolves.toMatchObject({
+      success: false,
+      code: "server_error",
+      plainEnglishMessage: "Could not verify the Luma sync administrator role.",
+    });
+  });
+
   it("requires an actor for manual work and replay lineage for replays", async () => {
     await expect(runLumaEventSync(null, "backfill", { env: enabledEnv })).resolves.toMatchObject({
       success: false,
@@ -335,6 +353,20 @@ describe("Luma event read sync", () => {
         code: "sync_already_running",
       },
       {
+        name: "checkpoint lookup failure",
+        handler: (query: FakeQuery) => {
+          if (query.table === "staff_role_assignments") return ok([{ role_key: "ds_admin" }]);
+          if (query.table === "chapters") return ok([{ id: enabledEnv.MYMEDLIFE_LUMA_CHAPTER_ID }]);
+          if (query.table === "luma_sync_runs" && query.operation === "select") {
+            return query.filters.some((filter) => filter.column === "status" && filter.value === "succeeded")
+              ? failed("checkpoint failed")
+              : ok([]);
+          }
+          return ok([]);
+        },
+        code: "server_error",
+      },
+      {
         name: "run insert failure",
         handler: (query: FakeQuery) => {
           if (query.table === "staff_role_assignments") return ok([{ role_key: "ds_admin" }]);
@@ -387,6 +419,98 @@ describe("Luma event read sync", () => {
 
     expect(result).toMatchObject({ success: true, code: "luma_sync_partial" });
     if (result.success) expect(result.counts.failures).toBeGreaterThan(0);
+  });
+
+  it("does not report replay success when prior failures cannot be resolved", async () => {
+    const appClient = createFakeAppClient((query) => {
+      if (query.table === "staff_role_assignments") return ok([{ role_key: "ds_admin" }]);
+      if (query.table === "chapters") return ok([{ id: enabledEnv.MYMEDLIFE_LUMA_CHAPTER_ID }]);
+      if (query.table === "luma_sync_runs" && query.operation === "select") return ok([]);
+      if (query.table === "luma_sync_runs" && query.operation === "insert") return ok({ id: "replay-run" });
+      if (
+        query.table === "luma_sync_failures" &&
+        query.operation === "update" &&
+        query.filters.some((filter) => filter.column === "run_id" && filter.value === "failed-run")
+      ) {
+        return failed("failure resolution unavailable");
+      }
+      return ok([]);
+    });
+
+    const result = await runLumaEventSync("admin-1", "reconcile", {
+      env: enabledEnv,
+      appClient: appClient as never,
+      lumaClient: { readEvents: async () => [] },
+      triggerSource: "replay",
+      retryOfRunId: "failed-run",
+      now: () => new Date("2026-07-20T08:00:00.000Z"),
+    });
+
+    expect(result).toMatchObject({
+      success: false,
+      code: "server_error",
+      runId: "replay-run",
+    });
+  });
+
+  it("surfaces failure-ledger and failed-run finalization outages", async () => {
+    const queries: FakeQuery[] = [];
+    const appClient = createFakeAppClient((query) => {
+      queries.push(query);
+      if (query.table === "staff_role_assignments") return ok([{ role_key: "ds_admin" }]);
+      if (query.table === "chapters") return ok([{ id: enabledEnv.MYMEDLIFE_LUMA_CHAPTER_ID }]);
+      if (query.table === "luma_sync_runs" && query.operation === "select") return ok([]);
+      if (query.table === "luma_sync_runs" && query.operation === "insert") return ok({ id: "failed-run" });
+      if (query.table === "luma_sync_failures" && query.operation === "insert") {
+        return failed("failure ledger unavailable");
+      }
+      return ok([]);
+    });
+
+    const result = await runLumaEventSync("admin-1", "reconcile", {
+      env: enabledEnv,
+      appClient: appClient as never,
+      lumaClient: { readEvents: async () => { throw new Error("provider unavailable"); } },
+      now: () => new Date("2026-07-20T09:00:00.000Z"),
+    });
+
+    expect(result).toMatchObject({
+      success: false,
+      code: "server_error",
+      runId: "failed-run",
+    });
+    expect(result.plainEnglishMessage).toContain(
+      "The Luma sync failure register could not be updated.",
+    );
+
+    const finalizationClient = createFakeAppClient((query) => {
+      if (query.table === "staff_role_assignments") return ok([{ role_key: "ds_admin" }]);
+      if (query.table === "chapters") return ok([{ id: enabledEnv.MYMEDLIFE_LUMA_CHAPTER_ID }]);
+      if (query.table === "luma_sync_runs" && query.operation === "select") return ok([]);
+      if (query.table === "luma_sync_runs" && query.operation === "insert") return ok({ id: "unfinalized-run" });
+      if (query.table === "luma_sync_runs" && query.operation === "update") {
+        return query.filters.some((filter) => filter.column === "id" && filter.value === "unfinalized-run")
+          ? failed("run finalization unavailable")
+          : ok([]);
+      }
+      return ok([]);
+    });
+
+    const unfinalized = await runLumaEventSync("admin-1", "reconcile", {
+      env: enabledEnv,
+      appClient: finalizationClient as never,
+      lumaClient: { readEvents: async () => { throw new Error("provider unavailable"); } },
+      now: () => new Date("2026-07-20T10:00:00.000Z"),
+    });
+
+    expect(unfinalized).toMatchObject({
+      success: false,
+      code: "server_error",
+      runId: "unfinalized-run",
+    });
+    expect(unfinalized.plainEnglishMessage).toContain(
+      "failed run status could not be recorded",
+    );
   });
 
   it("keeps mappings, snapshots, locks, failures, and admin-only RLS in the migration", () => {
