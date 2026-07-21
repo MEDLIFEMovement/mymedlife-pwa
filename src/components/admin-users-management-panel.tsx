@@ -221,13 +221,10 @@ export function AdminUsersManagementPanel({
     chapterId,
     status,
   });
+  const selectedUserId =
+    getSingleParam(searchParams.targetUserId) || getSingleParam(searchParams.userId);
   const selectedUser =
-    users.find(
-      (user) =>
-        user.id ===
-        (getSingleParam(searchParams.targetUserId) ??
-          getSingleParam(searchParams.userId)),
-    ) ??
+    users.find((user) => user.id === selectedUserId) ??
     filteredUsers[0] ??
     users[0] ??
     managedUserFixtures[0];

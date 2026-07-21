@@ -365,6 +365,47 @@ describe("admin management pages", () => {
     expect(html).not.toContain("mock-only, so the admin RPC cannot run");
   });
 
+  it("selects the requested user detail when only userId is present", () => {
+    const actor = getSignedInActor("test.super.admin@mymedlife.test");
+    const firstUserId = "22222222-2222-4222-8222-222222222222";
+    const requestedUserId = "33333333-3333-4333-8333-333333333333";
+    const html = renderToStaticMarkup(
+      <AdminUsersManagementPanel
+        actor={actor}
+        searchParams={{ userId: requestedUserId }}
+        users={[
+          {
+            id: firstUserId,
+            name: "TEST First Table User",
+            email: "test.first.table.user@mymedlife.test",
+            status: "active",
+            chapterMemberships: [],
+            staffRoles: [],
+            portfolioChapterIds: [],
+            inviteStatus: "accepted",
+          },
+          {
+            id: requestedUserId,
+            name: "TEST Requested Detail User",
+            email: "test.requested.detail.user@mymedlife.test",
+            status: "active",
+            chapterMemberships: [],
+            staffRoles: [],
+            portfolioChapterIds: [],
+            inviteStatus: "accepted",
+          },
+        ]}
+      />,
+    );
+    const detailPanel = html.slice(html.indexOf("User Detail"));
+
+    expect(detailPanel).toContain("TEST Requested Detail User");
+    expect(detailPanel).toContain("test.requested.detail.user@mymedlife.test");
+    expect(detailPanel).toContain(`name="targetUserId" value="${requestedUserId}"`);
+    expect(detailPanel).not.toContain("TEST First Table User");
+    expect(detailPanel).not.toContain(`name="targetUserId" value="${firstUserId}"`);
+  });
+
   it("keeps chapter management button labels clean when server-backed chapter writes are enabled", () => {
     const actor = getSignedInActor("super.admin@mymedlife.test");
     const html = renderToStaticMarkup(
