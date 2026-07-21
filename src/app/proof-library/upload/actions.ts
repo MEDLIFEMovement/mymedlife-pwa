@@ -167,6 +167,14 @@ export async function recordPrivateProofUploadForSupabase(
   ticket: PreparedPrivateProofUploadTicket,
 ): Promise<PrivateProofUploadServerResult> {
   const config = getPrivateProofUploadWriteConfig();
+  if (ticket.input.evidenceItemId !== ticket.evidenceItemId) {
+    return failureResult(
+      ticket.evidenceItemId,
+      "permission_denied",
+      "The private upload ticket did not match its proof record, so nothing was finalized.",
+    );
+  }
+
   const validationCode = validatePrivateProofUploadMetadata({
     evidenceItemId: ticket.evidenceItemId,
     fileName: ticket.input.fileName,
@@ -200,9 +208,25 @@ export async function recordPrivateProofUploadForSupabase(
     );
   }
 
+  const uploadedObject = await verifyPrivateProofStorageObject({
+    client,
+    bucket: config.bucket,
+    storagePath: ticket.storagePath,
+    expectedMimeType: ticket.input.mimeType,
+    expectedByteSize: ticket.input.byteSize,
+  });
+
+  if (!uploadedObject.verified) {
+    return failureResult(
+      ticket.evidenceItemId,
+      uploadedObject.missing ? "upload_not_present" : "server_error",
+      uploadedObject.message,
+    );
+  }
+
   const { data: recordData, error: recordError } = await client
     .schema("app")
-    .rpc("record_private_proof_upload", {
+    .rpc("record_verified_private_proof_upload", {
       evidence_uuid: ticket.evidenceItemId,
       storage_path_input: ticket.storagePath,
       original_file_name_input: ticket.input.fileName,
@@ -230,6 +254,120 @@ export async function recordPrivateProofUploadForSupabase(
   }
 
   return mapPrivateProofUploadRpcSuccess(ticket.evidenceItemId, recordRow);
+}
+
+async function verifyPrivateProofStorageObject(params: {
+  client: Awaited<ReturnType<typeof createLocalSupabaseServerClient>>["client"];
+  bucket: string;
+  storagePath: string;
+  expectedMimeType: string;
+  expectedByteSize: number;
+}): Promise<
+  | { verified: true }
+  | { verified: false; missing: boolean; message: string }
+> {
+  if (!params.client) {
+    return {
+      verified: false,
+      missing: false,
+      message: "The app could not verify the private Storage object.",
+    };
+  }
+
+  const segments = params.storagePath.split("/");
+  const fileName = segments.pop();
+  const folder = segments.join("/");
+
+  if (!fileName || !folder || params.storagePath.includes("..")) {
+    return {
+      verified: false,
+      missing: false,
+      message: "The private upload path was invalid, so nothing was finalized.",
+    };
+  }
+
+  const { data, error } = await params.client.storage
+    .from(params.bucket)
+    .list(folder, { limit: 2, search: fileName });
+
+  if (error || !Array.isArray(data)) {
+    return {
+      verified: false,
+      missing: false,
+      message:
+        "The app could not verify the private Storage object, so no upload metadata or audit success was recorded.",
+    };
+  }
+
+  const object = data.find((candidate) => candidate.id && candidate.name === fileName);
+
+  if (!object) {
+    return {
+      verified: false,
+      missing: true,
+      message:
+        "The uploaded private file was not found at its approved Storage path, so no upload metadata or audit success was recorded.",
+    };
+  }
+
+  const metadata = object.metadata as Record<string, unknown> | null;
+  const storedSize = getStorageMetadataNumber(metadata, "size", "contentLength");
+  const storedMimeType = getStorageMetadataString(metadata, "mimetype", "contentType");
+
+  if (storedSize === null || storedSize !== params.expectedByteSize) {
+    return {
+      verified: false,
+      missing: false,
+      message:
+        "The uploaded private file size did not match its approved ticket, so nothing was finalized.",
+    };
+  }
+
+  if (
+    storedMimeType === null ||
+    storedMimeType.toLowerCase() !== params.expectedMimeType.toLowerCase()
+  ) {
+    return {
+      verified: false,
+      missing: false,
+      message:
+        "The uploaded private file type did not match its approved ticket, so nothing was finalized.",
+    };
+  }
+
+  return { verified: true };
+}
+
+function getStorageMetadataNumber(
+  metadata: Record<string, unknown> | null,
+  ...keys: string[]
+) {
+  if (!metadata) return null;
+
+  for (const key of keys) {
+    const value = metadata[key];
+    if (typeof value === "number" && Number.isFinite(value)) return value;
+    if (typeof value === "string" && value.trim()) {
+      const parsed = Number(value);
+      if (Number.isFinite(parsed)) return parsed;
+    }
+  }
+
+  return null;
+}
+
+function getStorageMetadataString(
+  metadata: Record<string, unknown> | null,
+  ...keys: string[]
+) {
+  if (!metadata) return null;
+
+  for (const key of keys) {
+    const value = metadata[key];
+    if (typeof value === "string" && value.trim()) return value;
+  }
+
+  return null;
 }
 
 export async function discardPreparedPrivateProofUploadForSupabase(

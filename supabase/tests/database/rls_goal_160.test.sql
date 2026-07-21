@@ -185,7 +185,7 @@ select ok(
 );
 
 select lives_ok(
-  $$ select * from app.record_private_proof_upload(
+  $$ select * from app.record_verified_private_proof_upload(
     'd9600000-0000-4000-8000-000000000001',
     'chapters/10000000-0000-4000-8000-000000000001/evidence/d9600000-0000-4000-8000-000000000001/rush-social-bridge-video.mov',
     'Rush Social Bridge Video.MOV',
@@ -237,7 +237,7 @@ set local "request.jwt.claim.sub" = '00000000-0000-4000-8000-000000000001';
 set local "request.jwt.claim.role" = 'authenticated';
 
 select throws_ok(
-  $$ select * from app.record_private_proof_upload(
+  $$ select * from app.record_verified_private_proof_upload(
     'd9600000-0000-4000-8000-000000000001',
     'chapters/10000000-0000-4000-8000-000000000001/evidence/d9600000-0000-4000-8000-000000000001/rush-social-bridge-video.mov',
     'Rush Social Bridge Video.MOV',
@@ -349,8 +349,28 @@ select is(
   'Removal clears the storage path and returns the proof row to metadata-only submitted state'
 );
 
+delete from storage.objects
+where bucket_id = 'proof-submissions-private'
+  and name = 'chapters/10000000-0000-4000-8000-000000000001/evidence/d9600000-0000-4000-8000-000000000001/rush-social-bridge-video.mov';
+
+insert into storage.objects (
+  bucket_id,
+  name,
+  owner,
+  owner_id,
+  metadata,
+  user_metadata
+) values (
+  'proof-submissions-private',
+  'chapters/10000000-0000-4000-8000-000000000001/evidence/d9600000-0000-4000-8000-000000000001/corrected-rush-social-bridge-video.mov',
+  auth.uid(),
+  auth.uid()::text,
+  jsonb_build_object('mimetype', 'video/quicktime', 'size', 12000000),
+  jsonb_build_object('source', 'rls_goal_160_corrected')
+);
+
 select lives_ok(
-  $$ select * from app.record_private_proof_upload(
+  $$ select * from app.record_verified_private_proof_upload(
     'd9600000-0000-4000-8000-000000000001',
     'chapters/10000000-0000-4000-8000-000000000001/evidence/d9600000-0000-4000-8000-000000000001/corrected-rush-social-bridge-video.mov',
     'Corrected Rush Social Bridge Video.MOV',
