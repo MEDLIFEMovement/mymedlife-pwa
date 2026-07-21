@@ -7,6 +7,11 @@ import {
   type ProofStorageBucket,
 } from "@/services/proof-storage-readiness";
 import type { PrivateProofUploadResultCode } from "@/services/private-proof-upload-result-states";
+import type {
+  ContentSharingStatus,
+  EvidenceStatus,
+  EvidenceType,
+} from "@/shared/types/persistence";
 
 type EnvSource = Record<string, string | undefined>;
 
@@ -73,10 +78,10 @@ export type PrivateProofUploadQueueRow = {
   chapterName: string;
   submittedBy: string;
   submittedByUserId: string;
-  evidenceType: string;
+  evidenceType: EvidenceType;
   summary: string;
-  status: string;
-  sharingStatus: string;
+  status: EvidenceStatus;
+  sharingStatus: ContentSharingStatus;
   storagePath: string | null;
   canUpload: boolean;
   canRemove: boolean;
@@ -252,10 +257,10 @@ export function buildPrivateProofUploadRow(params: {
   evidenceItemId: string;
   submittedBy: string;
   submittedByUserId: string;
-  evidenceType: string;
+  evidenceType: EvidenceType;
   summary: string;
-  status: string;
-  sharingStatus: string;
+  status: EvidenceStatus;
+  sharingStatus: ContentSharingStatus;
   storagePath: string | null;
 }): PrivateProofUploadQueueRow {
   const signedInAsSelectedActor =

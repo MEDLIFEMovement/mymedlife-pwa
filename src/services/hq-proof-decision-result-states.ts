@@ -49,11 +49,11 @@ export type HqProofDecisionResultPreview = {
 const hqProofDecisionResultStates = [
   {
     code: "sharing_approved",
-    title: "Approved for future sharing review",
+    title: "Approved for the member story feed",
     plainEnglishMessage:
-      "HQ marked this proof as useful to share later, but the app still should not publish it automatically.",
+      "HQ approved this proof for the authenticated member story feed. The raw upload stays private, and the app does not publish it to the public web or syndicate it externally.",
     nextStep:
-      "Record the HQ decision, keep public sharing off, and wait for an approved publishing workflow.",
+      "Confirm the story appears for a signed-in member, then keep public publishing and external sends disabled.",
     tone: "success",
     success: true,
     retryAllowed: false,
@@ -94,7 +94,7 @@ const hqProofDecisionResultStates = [
     plainEnglishMessage:
       "This review queue is safe to preview, but the app is not allowed to save HQ proof-sharing decisions from the browser yet.",
     nextStep:
-      "Keep using the mock preview until Nick approves live auth and browser-facing writes.",
+      "Enable the dedicated write approval only after authenticated browser and database readback proof are ready.",
     tone: "info",
     success: false,
     retryAllowed: false,
@@ -108,7 +108,7 @@ const hqProofDecisionResultStates = [
     plainEnglishMessage:
       "Even an approved HQ decision must not publish proof or syndicate it externally until a later approved sharing workflow exists.",
     nextStep:
-      "Record only the future intent; keep public proof library publishing and external sends disabled.",
+      "Keep public proof-library publishing and external sends disabled; authenticated member-feed approval is a separate, narrower action.",
     tone: "info",
     success: false,
     retryAllowed: false,
@@ -147,7 +147,7 @@ const hqProofDecisionResultStates = [
     title: "Sign-in is required",
     plainEnglishMessage:
       "The app must know which HQ user is signed in before it can save proof-sharing decisions.",
-    nextStep: "After live auth is approved, send HQ staff through the sign-in flow.",
+    nextStep: "Send the reviewer through the signed-in HQ account flow and retry.",
     tone: "warning",
     success: false,
     retryAllowed: true,

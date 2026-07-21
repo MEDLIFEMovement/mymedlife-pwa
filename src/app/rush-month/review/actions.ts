@@ -262,7 +262,7 @@ function normalizeReturnTo(value: FormDataEntryValue | null) {
   const trimmed = value.trim();
 
   if (
-    trimmed !== "/rush-month/review" ||
+    (trimmed !== "/rush-month/review" && trimmed !== "/admin/hq-proof-write") ||
     trimmed.startsWith("//") ||
     trimmed.includes("\n") ||
     trimmed.includes("\r")

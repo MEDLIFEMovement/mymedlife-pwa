@@ -43,6 +43,35 @@ describe("HQ proof decision write readiness", () => {
     });
   });
 
+  it("requires a separate production approval before enabling HQ decisions", () => {
+    expect(
+      getHqProofDecisionWriteConfig({
+        MYMEDLIFE_AUTH_MODE: "production_supabase",
+        MYMEDLIFE_ENABLE_HQ_PROOF_DECISION_WRITE: "true",
+      }),
+    ).toMatchObject({
+      enabled: false,
+      environment: "production",
+      isLocalOnly: false,
+      reason:
+        "Production HQ proof decisions require the separate production approval flag.",
+    });
+
+    expect(
+      getHqProofDecisionWriteConfig({
+        MYMEDLIFE_AUTH_MODE: "production_supabase",
+        MYMEDLIFE_ENABLE_HQ_PROOF_DECISION_WRITE: "true",
+        MYMEDLIFE_ALLOW_PRODUCTION_HQ_PROOF_DECISION_WRITE: "true",
+      }),
+    ).toMatchObject({
+      enabled: true,
+      environment: "production",
+      isLocalOnly: false,
+      externalWritesEnabled: false,
+      publishesProof: false,
+    });
+  });
+
   it("keeps the write locked without auth-derived actor context", () => {
     const actor = getMockLocalActorContext("admin@mymedlife.test");
     const readiness = getHqProofDecisionWriteReadiness(
@@ -79,6 +108,30 @@ describe("HQ proof decision write readiness", () => {
       {
         MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES: "true",
         MYMEDLIFE_ENABLE_HQ_PROOF_DECISION_WRITE: "true",
+      },
+    );
+
+    expect(readiness.canSubmit).toBe(true);
+    expect(readiness.resultCodeIfSubmitted).toBe("sharing_approved");
+    expect(readiness.checks.every((check) => check.passed)).toBe(true);
+  });
+
+  it("allows a signed-in production admin only after both production flags pass", () => {
+    const actor = getMockLocalActorContext(
+      "admin@mymedlife.test",
+      "Signed in to production Supabase.",
+      "supabase_ready",
+      "local_auth_session",
+      "signed_in",
+    );
+    const readiness = getHqProofDecisionWriteReadiness(
+      actor,
+      makePendingEvidence(),
+      makeDecisionInput(),
+      {
+        MYMEDLIFE_AUTH_MODE: "production_supabase",
+        MYMEDLIFE_ENABLE_HQ_PROOF_DECISION_WRITE: "true",
+        MYMEDLIFE_ALLOW_PRODUCTION_HQ_PROOF_DECISION_WRITE: "true",
       },
     );
 
@@ -167,7 +220,7 @@ describe("HQ proof decision write readiness", () => {
     expect(mapHqDecisionToDatabaseDecision("rejected")).toBe("not_shared");
   });
 
-  it("maps local RPC success and errors into HQ decision result states", () => {
+  it("maps RPC success and errors into HQ decision result states", () => {
     expect(
       mapHqProofDecisionRpcSuccess(
         "00000000-0000-4000-8000-000000000101",
@@ -186,6 +239,9 @@ describe("HQ proof decision write readiness", () => {
       code: "sharing_approved",
       approvalId: "00000000-0000-4000-8000-000000000201",
       outboxId: "00000000-0000-4000-8000-000000000501",
+      plainEnglishMessage: expect.stringContaining(
+        "approved for the authenticated member story feed",
+      ),
     });
 
     expect(
@@ -219,7 +275,7 @@ describe("HQ proof decision write readiness", () => {
     });
   });
 
-  it("confirms local readback for approval and changes-requested decisions", () => {
+  it("confirms readback for approval and changes-requested decisions", () => {
     expect(
       getHqProofDecisionReadbackState(
         {
@@ -230,6 +286,7 @@ describe("HQ proof decision write readiness", () => {
     ).toMatchObject({
       confirmsDecision: true,
       tone: "success",
+      message: expect.stringContaining("authenticated member story feed"),
     });
 
     expect(
