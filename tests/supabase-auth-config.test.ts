@@ -263,6 +263,23 @@ describe("Supabase auth config", () => {
     });
   });
 
+  it("keeps hosted production auth available for the separately gated HQ proof decision lane", () => {
+    expect(
+      getSupabaseAuthConfig({
+        MYMEDLIFE_AUTH_MODE: "production_supabase",
+        NEXT_PUBLIC_SUPABASE_URL: "https://fnlhontvvprwgooevzdl.supabase.co",
+        NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: "production-publishable-key",
+        NEXT_PUBLIC_SITE_URL: "https://www.mymedlife.org",
+        MYMEDLIFE_ENABLE_HQ_PROOF_DECISION_WRITE: "true",
+        MYMEDLIFE_ALLOW_PRODUCTION_HQ_PROOF_DECISION_WRITE: "true",
+      }),
+    ).toMatchObject({
+      enabled: true,
+      mode: "production_supabase",
+      environment: "production",
+    });
+  });
+
   it("recognizes local Supabase URL forms", () => {
     expect(isLocalSupabaseUrl("http://127.0.0.1:54321")).toBe(true);
     expect(isLocalSupabaseUrl("http://localhost:54321")).toBe(true);
