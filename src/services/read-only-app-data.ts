@@ -1744,6 +1744,7 @@ function toDomainEvidenceItem(row: EvidenceItemRow): EvidenceItem {
     evidenceType: row.evidence_type,
     summary: row.summary,
     status: row.status,
+    storagePath: row.storage_path,
   };
 }
 

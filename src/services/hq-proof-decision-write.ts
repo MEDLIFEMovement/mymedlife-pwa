@@ -14,14 +14,16 @@ type EnvSource = Record<string, string | undefined>;
 export type HqProofDecisionWriteConfig =
   | {
       enabled: true;
-      isLocalOnly: true;
+      environment: "local" | "production";
+      isLocalOnly: boolean;
       externalWritesEnabled: false;
       publishesProof: false;
       reason: string;
     }
   | {
       enabled: false;
-      isLocalOnly: true;
+      environment: "local" | "staging" | "production";
+      isLocalOnly: boolean;
       externalWritesEnabled: false;
       publishesProof: false;
       reason: string;
@@ -93,35 +95,85 @@ export type HqProofDecisionReadbackState = {
 export function getHqProofDecisionWriteConfig(
   env: EnvSource = process.env,
 ): HqProofDecisionWriteConfig {
-  if (env.MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES !== "true") {
+  const environment = getHqProofDecisionEnvironment(env);
+
+  if (environment === "production") {
+    if (env.MYMEDLIFE_ENABLE_HQ_PROOF_DECISION_WRITE !== "true") {
+      return disabledConfig(
+        environment,
+        "HQ proof decisions stay locked until the dedicated write flag is enabled.",
+      );
+    }
+
+    if (env.MYMEDLIFE_ALLOW_PRODUCTION_HQ_PROOF_DECISION_WRITE !== "true") {
+      return disabledConfig(
+        environment,
+        "Production HQ proof decisions require the separate production approval flag.",
+      );
+    }
+
     return {
-      enabled: false,
-      isLocalOnly: true,
+      enabled: true,
+      environment,
+      isLocalOnly: false,
       externalWritesEnabled: false,
       publishesProof: false,
       reason:
-        "Local Supabase writes are disabled. Set MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES=true only for local write testing.",
+        "Production HQ proof decisions are enabled for authenticated Admin and Super Admin reviewers. Approved items can appear inside the signed-in member story feed; public publishing and external sends remain off.",
     };
   }
 
+  if (environment === "staging") {
+    return disabledConfig(
+      environment,
+      "Hosted staging HQ proof decisions remain disabled until a dedicated staging approval is configured.",
+    );
+  }
+
+  if (env.MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES !== "true") {
+    return disabledConfig(
+      environment,
+      "Local Supabase writes are disabled. Set MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES=true only for local write testing.",
+    );
+  }
+
   if (env.MYMEDLIFE_ENABLE_HQ_PROOF_DECISION_WRITE !== "true") {
-    return {
-      enabled: false,
-      isLocalOnly: true,
-      externalWritesEnabled: false,
-      publishesProof: false,
-      reason:
-        "HQ proof decision browser-facing writes remain disabled. Set MYMEDLIFE_ENABLE_HQ_PROOF_DECISION_WRITE=true only after local auth and RLS are ready.",
-    };
+    return disabledConfig(
+      environment,
+      "HQ proof decision browser-facing writes remain disabled. Set MYMEDLIFE_ENABLE_HQ_PROOF_DECISION_WRITE=true only after local auth and RLS are ready.",
+    );
   }
 
   return {
     enabled: true,
+    environment,
     isLocalOnly: true,
     externalWritesEnabled: false,
     publishesProof: false,
     reason:
       "Local HQ proof decision writes are enabled for localhost Supabase only. Raw files stay private, public proof sharing stays disabled, and external sends remain off.",
+  };
+}
+
+function getHqProofDecisionEnvironment(
+  env: EnvSource,
+): "local" | "staging" | "production" {
+  if (env.MYMEDLIFE_AUTH_MODE === "production_supabase") return "production";
+  if (env.MYMEDLIFE_AUTH_MODE === "staging_supabase") return "staging";
+  return "local";
+}
+
+function disabledConfig(
+  environment: "local" | "staging" | "production",
+  reason: string,
+): HqProofDecisionWriteConfig {
+  return {
+    enabled: false,
+    environment,
+    isLocalOnly: environment === "local",
+    externalWritesEnabled: false,
+    publishesProof: false,
+    reason,
   };
 }
 
@@ -132,10 +184,12 @@ export function getHqProofDecisionWriteReadiness(
   env: EnvSource = process.env,
 ): HqProofDecisionWriteReadiness {
   const config = getHqProofDecisionWriteConfig(env);
-  const localWritesRequested = env.MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES === "true";
+  const writeEnvironmentApproved = config.environment === "production"
+    ? env.MYMEDLIFE_ALLOW_PRODUCTION_HQ_PROOF_DECISION_WRITE === "true"
+    : env.MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES === "true";
   const hqDecisionWriteApproved =
     env.MYMEDLIFE_ENABLE_HQ_PROOF_DECISION_WRITE === "true";
-  const hasLocalAuthSession =
+  const hasSupabaseAuthSession =
     actor.identitySource === "local_auth_session" &&
     actor.authSessionStatus === "signed_in";
   const evidenceUuid = isUuid(evidenceItem.id);
@@ -150,8 +204,11 @@ export function getHqProofDecisionWriteReadiness(
   const checks: HqProofDecisionWriteReadiness["checks"] = [
     {
       key: "local_writes_requested",
-      label: "Local write switch is on",
-      passed: localWritesRequested,
+      label:
+        config.environment === "production"
+          ? "Production HQ decision approval is on"
+          : "Local write switch is on",
+      passed: writeEnvironmentApproved,
     },
     {
       key: "hq_decision_write_approved",
@@ -160,8 +217,8 @@ export function getHqProofDecisionWriteReadiness(
     },
     {
       key: "local_auth_session",
-      label: "Signed-in local Supabase Auth session",
-      passed: hasLocalAuthSession,
+      label: "Signed-in Supabase Auth session",
+      passed: hasSupabaseAuthSession,
     },
     {
       key: "evidence_uuid",
@@ -235,7 +292,7 @@ export function getHqProofDecisionReadbackState(
       confirmsDecision: false,
       tone: "info",
       message:
-        "No local proof review status change is expected for this result. The page is still reading the current proof state safely.",
+        "No proof review status change is expected for this result. The page is still reading the current proof state safely.",
     };
   }
 
@@ -248,7 +305,9 @@ export function getHqProofDecisionReadbackState(
       confirmsDecision: true,
       tone: "success",
       message:
-        "Local readback confirms the HQ proof decision was recorded without publishing proof or exposing private uploads.",
+        resultCode === "sharing_approved"
+          ? "Readback confirms the HQ decision was recorded for the authenticated member story feed. The raw upload remains private, with no public publishing or external send."
+          : "Readback confirms the HQ proof decision was recorded. The raw upload remains private, with no public publishing or external send.",
     };
   }
 
@@ -291,7 +350,9 @@ export function mapHqProofDecisionRpcSuccess(
     outboxId: row.outbox_id,
     auditLogId: row.audit_log_id,
     plainEnglishMessage:
-      "HQ proof decision saved locally. The app recorded the approval decision, event, integration event, disabled outbox row, and audit log. No public sharing, raw-file exposure, or external automation ran.",
+      decision === "approved"
+        ? "HQ proof decision saved. The item is approved for the authenticated member story feed; the app also recorded the decision, event, integration event, disabled outbox row, and audit log. No public publishing, raw-file exposure, or external automation ran."
+        : "HQ proof decision saved. The app recorded the decision, event, integration event, disabled outbox row, and audit log. No public publishing, raw-file exposure, or external automation ran.",
   };
 }
 
@@ -305,7 +366,7 @@ export function mapHqProofDecisionRpcError(
     return failureResult(
       evidenceItemId,
       "evidence_not_found",
-      "The proof item was not found in local Supabase, so no HQ decision was saved.",
+      "The proof item was not found in Supabase, so no HQ decision was saved.",
     );
   }
 
@@ -313,7 +374,7 @@ export function mapHqProofDecisionRpcError(
     return failureResult(
       evidenceItemId,
       "missing_auth",
-      "Sign in with a local Supabase HQ seed user before saving this decision.",
+      "Sign in with an authorized Supabase HQ account before saving this decision.",
     );
   }
 
@@ -321,7 +382,7 @@ export function mapHqProofDecisionRpcError(
     return failureResult(
       evidenceItemId,
       "permission_denied",
-      "This signed-in local role cannot make HQ proof-sharing decisions.",
+      "This signed-in role cannot make HQ proof-sharing decisions.",
     );
   }
 

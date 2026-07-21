@@ -97,7 +97,7 @@ describe("static route metadata", () => {
       title: "Proof Metadata Packet",
     });
     expect(getStaticRouteMetadata("adminHqProofWrite")).toMatchObject({
-      title: "HQ Proof Decision Packet",
+      title: "HQ Story Review",
     });
     expect(getStaticRouteMetadata("adminAssignmentWrite")).toMatchObject({
       title: "Leader Assignment Packet",

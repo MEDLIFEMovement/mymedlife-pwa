@@ -91,6 +91,7 @@ describe("read-only app data service", () => {
         id: "evidence-1",
         assignmentId: "assignment-1",
         status: "pending_review",
+        storagePath: "chapters/chapter-1/evidence/evidence-1/story.jpg",
       }),
     ]);
     expect(data.chapterEventRows).toEqual([
@@ -473,7 +474,7 @@ const fakeRows: Record<string, unknown[]> = {
       evidence_type: "testimonial_text",
       summary: "This local testimonial explains why the invite push mattered.",
       url: null,
-      storage_path: null,
+      storage_path: "chapters/chapter-1/evidence/evidence-1/story.jpg",
       target_audiences: ["student"],
       proof_categories: ["rush_month"],
       messenger_type: "student",

@@ -94,6 +94,18 @@ without deleting append-only history. This exception does not permit anonymous
 uploads, overwrite, public proof publishing, provider or warehouse sends,
 automatic approval, or treating TEST/private review media as rollout proof.
 
+An authenticated Admin or Super Admin may record one HQ moderation decision for
+an eligible app-owned evidence item when both dedicated production HQ proof
+decision flags are enabled. This exception was explicitly authorized by the
+product owner on 2026-07-21 to complete the launch-critical private proof to
+member-story workflow. The decision must use the audited Supabase RPC, enforce
+role and RLS boundaries, retain the approval, internal event, integration event,
+disabled outbox row, and audit log, and leave the raw upload private. Approval
+may expose the item only in the authenticated member story feed. This exception
+does not permit public proof publishing, external syndication or sends,
+automatic approval, anonymous moderation, destructive history deletion, or
+treating TEST/private review media as rollout proof.
+
 When in doubt about whether something is a gate change, treat it as MUST BLOCK
 and escalate. Escalating is cheap; an unsafe merge is not.
 

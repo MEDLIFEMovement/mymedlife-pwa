@@ -413,9 +413,9 @@ const routeMetadata: Record<StaticRouteMetadataKey, Metadata> = {
       "Staff-only local proof/testimonial metadata packet with uploads and external sends disabled.",
   },
   adminHqProofWrite: {
-    title: "HQ Proof Decision Packet",
+    title: "HQ Story Review",
     description:
-      "Staff-only local HQ proof-sharing decision packet with public sharing and external sends disabled.",
+      "Staff-only proof moderation queue with authenticated member-feed approval and public publishing disabled.",
   },
   adminPointsWrite: {
     title: "Points And KPI Packet",
