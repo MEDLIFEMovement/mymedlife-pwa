@@ -44,6 +44,8 @@ export type MemberStory = {
   mediaStatus:
     | "public_media_ready"
     | "approved_media_ready"
+    | "approved_media_missing"
+    | "approved_media_unavailable"
     | "private_media_protected"
     | "metadata_only";
 };
@@ -83,13 +85,7 @@ export function buildMemberStoriesReadModel(input: {
       const publicImage = getPublicImageUrl(row.url);
       const approvedMedia = media.get(row.id);
       const resolvedImage = approvedMedia?.thumbnailUrl ?? publicImage;
-      const mediaStatus = approvedMedia?.thumbnailUrl || approvedMedia?.mediaUrl
-        ? "approved_media_ready"
-        : publicImage
-        ? "public_media_ready"
-        : row.storage_path
-          ? "private_media_protected"
-          : "metadata_only";
+      const mediaStatus = getMediaStatus(row, approvedMedia, publicImage);
       const rawChapterLabel = chapter?.name ?? "MEDLIFE chapter";
       const summary = row.summary.trim();
       const testEvidence = isTestEvidence(row, rawChapterLabel);
@@ -126,6 +122,23 @@ export function buildMemberStoriesReadModel(input: {
         mediaStatus,
       };
     });
+}
+
+function getMediaStatus(
+  row: EvidenceItemRow,
+  approvedMedia: MemberStoryMediaReadback | undefined,
+  publicImage: string | null,
+): MemberStory["mediaStatus"] {
+  if (approvedMedia?.thumbnailUrl || approvedMedia?.mediaUrl) {
+    return "approved_media_ready";
+  }
+  if (approvedMedia?.availability === "missing") return "approved_media_missing";
+  if (approvedMedia?.availability === "unavailable") {
+    return "approved_media_unavailable";
+  }
+  if (publicImage) return "public_media_ready";
+  if (row.storage_path) return "private_media_protected";
+  return "metadata_only";
 }
 
 function isTestEvidence(row: EvidenceItemRow, chapterLabel: string) {

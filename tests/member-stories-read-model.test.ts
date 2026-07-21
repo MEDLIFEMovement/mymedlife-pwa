@@ -106,11 +106,13 @@ describe("member stories read model", () => {
           evidenceItemId: "photo-1",
           thumbnailUrl: "https://storage.example.test/signed-thumbnail",
           mediaUrl: null,
+          availability: "ready",
         },
         {
           evidenceItemId: "video-1",
           thumbnailUrl: null,
           mediaUrl: "https://storage.example.test/signed-video",
+          availability: "ready",
         },
       ],
     });
@@ -248,6 +250,40 @@ describe("member stories read model", () => {
     expect(html).toContain("TEST approved member story.");
     expect(html).toContain("Media not published");
     expect(html).not.toContain("Students in Lima joined a Mobile Clinic");
+  });
+
+  it("renders an honest missing-media state for an orphaned approved storage path", () => {
+    const memberStories = buildMemberStoriesReadModel({
+      evidenceRows: [evidenceRow({
+        id: "orphaned-story",
+        evidence_type: "event_photo",
+        storage_path: "chapters/chapter-1/evidence/orphaned-story/media.jpg",
+      })],
+      chapters: [chapterRow],
+      chapterEvents: [eventRow],
+      profiles: [profileRow],
+      mediaReadbacks: [{
+        evidenceItemId: "orphaned-story",
+        thumbnailUrl: null,
+        mediaUrl: null,
+        availability: "missing",
+      }],
+    });
+
+    expect(memberStories[0]?.mediaStatus).toBe("approved_media_missing");
+
+    const html = renderToStaticMarkup(
+      React.createElement(FigmaMemberMobileHome, {
+        initialScreen: "stories",
+        initialStoriesFilter: "For You",
+        initialStoryId: "orphaned-story",
+        memberStories,
+      }),
+    );
+
+    expect(html).toContain("Media unavailable");
+    expect(html).toContain("referenced media object is missing from storage");
+    expect(html).not.toContain("private original remains protected");
   });
 
   it("renders a real reaction control when the server write gate is enabled", () => {
