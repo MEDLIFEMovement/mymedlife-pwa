@@ -31,9 +31,13 @@ describe("member story media", () => {
       data: { signedUrl: `https://storage.example.test/${path}` },
       error: null,
     }));
+    const list = vi.fn(async (_path: string, options: { search: string }) => ({
+      data: [{ id: "object-1", name: options.search }],
+      error: null,
+    }));
     const client = {
       storage: {
-        from: vi.fn(() => ({ createSignedUrl })),
+        from: vi.fn(() => ({ createSignedUrl, list })),
       },
     } as unknown as MemberStoryMediaClient;
 
@@ -56,14 +60,21 @@ describe("member story media", () => {
         evidenceItemId: "photo-1",
         thumbnailUrl: expect.stringContaining("photo-1"),
         mediaUrl: null,
+        availability: "ready",
       },
       {
         evidenceItemId: "video-1",
         thumbnailUrl: null,
         mediaUrl: expect.stringContaining("video-1"),
+        availability: "ready",
       },
     ]);
     expect(client.storage.from).toHaveBeenCalledWith("proof-submissions-private");
+    expect(list).toHaveBeenNthCalledWith(
+      1,
+      "chapters/chapter-1/evidence/photo-1",
+      { limit: 2, search: "media.jpg" },
+    );
     expect(createSignedUrl).toHaveBeenNthCalledWith(
       1,
       "chapters/chapter-1/evidence/photo-1/media.jpg",
@@ -84,6 +95,10 @@ describe("member story media", () => {
     const client = {
       storage: {
         from: () => ({
+          list: async (_path: string, options: { search: string }) => ({
+            data: [{ id: "object-1", name: options.search }],
+            error: null,
+          }),
           createSignedUrl: async () => ({ data: null, error: { message: "denied" } }),
         }),
       },
@@ -94,8 +109,39 @@ describe("member story media", () => {
         evidenceRow({ id: "photo-1", evidence_type: "event_photo" }),
       ]),
     ).resolves.toEqual([
-      { evidenceItemId: "photo-1", thumbnailUrl: null, mediaUrl: null },
+      {
+        evidenceItemId: "photo-1",
+        thumbnailUrl: null,
+        mediaUrl: null,
+        availability: "unavailable",
+      },
     ]);
+  });
+
+  it("does not sign a missing approved object", async () => {
+    const createSignedUrl = vi.fn();
+    const client = {
+      storage: {
+        from: () => ({
+          list: async () => ({ data: [], error: null }),
+          createSignedUrl,
+        }),
+      },
+    } as unknown as MemberStoryMediaClient;
+
+    await expect(
+      getMemberStoryMediaReadbacks(client, [
+        evidenceRow({ id: "photo-1", evidence_type: "event_photo" }),
+      ]),
+    ).resolves.toEqual([
+      {
+        evidenceItemId: "photo-1",
+        thumbnailUrl: null,
+        mediaUrl: null,
+        availability: "missing",
+      },
+    ]);
+    expect(createSignedUrl).not.toHaveBeenCalled();
   });
 
   it("rejects traversal and mismatched storage paths", () => {

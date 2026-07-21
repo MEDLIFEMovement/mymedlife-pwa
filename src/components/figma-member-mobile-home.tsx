@@ -11,6 +11,7 @@ import {
   MemberStoryReactionForm,
   MemberStoryReactionResultBanner,
 } from "@/components/member-story-reaction-controls";
+import { getMemberStoryMediaSurfaceCopy } from "@/components/member-story-media-state";
 import { MemberStoryVideo } from "@/components/member-story-video";
 import { getVisibleMemberLeaderboardRows } from "@/services/member-mobile-identity-context";
 import type {
@@ -3045,7 +3046,7 @@ interface Story {
   isVideo?: boolean; embedUrl?: string; duration?: string; quote?: string; body?: string; filters: StoryFilter[];
   eventRouteId?: string;
   persisted?: boolean;
-  mediaStatus?: "public_media_ready" | "approved_media_ready" | "private_media_protected" | "metadata_only";
+  mediaStatus?: MemberStory["mediaStatus"];
 }
 
 function stripTestPrefix(value: string) {
@@ -3245,20 +3246,17 @@ function StoryImage({ story, className }: { story: Story; className: string }) {
     return <img src={story.image} alt={story.title} className={className} />;
   }
 
-  const detail =
-    story.mediaStatus === "private_media_protected"
-      ? "Approved story metadata is live. The private original remains protected."
-      : "Approved story metadata is live. No publishable thumbnail is available.";
+  const mediaCopy = getMemberStoryMediaSurfaceCopy(story.mediaStatus);
 
   return (
     <div
       className={`flex flex-col items-center justify-center bg-[#e9eff8] px-8 text-center text-[#1b4b8e] ${className}`}
       role="img"
-      aria-label={`${story.title}. ${detail}`}
+      aria-label={`${story.title}. ${mediaCopy.detail}`}
     >
       <Camera size={34} aria-hidden="true" />
-      <p className="mt-3 text-sm font-bold">Media not published</p>
-      <p className="mt-1 max-w-xs text-xs leading-5 text-[#4c668b]">{detail}</p>
+      <p className="mt-3 text-sm font-bold">{mediaCopy.title}</p>
+      <p className="mt-1 max-w-xs text-xs leading-5 text-[#4c668b]">{mediaCopy.detail}</p>
     </div>
   );
 }
