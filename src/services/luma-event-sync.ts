@@ -215,8 +215,11 @@ export async function runLumaEventSync(
   }
 
   if (actorUserId) {
-    const roles = await readActorRoles(appClient, actorUserId);
-    if (!roles.some((role) => role === "ds_admin" || role === "super_admin")) {
+    const actorRoleResult = await readActorRoles(appClient, actorUserId);
+    if (actorRoleResult.error) {
+      return failure("server_error", "Could not verify the Luma sync administrator role.");
+    }
+    if (!actorRoleResult.roles.some((role) => role === "ds_admin" || role === "super_admin")) {
       return failure("permission_denied", "Only a DS Admin or Super Admin can run Luma event sync.");
     }
   }
@@ -249,7 +252,11 @@ export async function runLumaEventSync(
     return failure("sync_already_running", "A Luma sync is already running. Review that run before retrying.");
   }
 
-  const checkpointBefore = await readLastCheckpoint(appClient, config.chapterId);
+  const checkpointResult = await readLastCheckpoint(appClient, config.chapterId);
+  if (checkpointResult.error) {
+    return failure("server_error", `Could not read the Luma sync checkpoint: ${checkpointResult.error}`);
+  }
+  const checkpointBefore = checkpointResult.checkpoint;
   const created = await appClient.schema("app").from("luma_sync_runs").insert({
     mode,
     status: "running",
@@ -285,13 +292,16 @@ export async function runLumaEventSync(
 
     const completedAt = now().toISOString();
     const status = counts.failures > 0 || counts.conflicts > 0 ? "partial" : "succeeded";
-    const finishError = await finishRun(appClient, runId, status, completedAt, counts);
-    if (finishError) {
-      return failure("server_error", `Luma event sync could not finalize safely: ${finishError}`, runId);
-    }
     if (status === "succeeded" && triggerSource === "replay" && retryOfRunId) {
-      await appClient.schema("app").from("luma_sync_failures").update({ resolved_at: completedAt })
-        .eq("run_id", retryOfRunId).is("resolved_at", null);
+      await resolveReplayedFailures(appClient, retryOfRunId, completedAt);
+    }
+    const finalized = await finishRun(appClient, runId, status, completedAt, counts);
+    if (!finalized) {
+      return failure(
+        "server_error",
+        "Luma source data was processed, but the final sync status could not be recorded. The run remains incomplete and must not be treated as successful.",
+        runId,
+      );
     }
     return {
       success: true,
@@ -305,9 +315,34 @@ export async function runLumaEventSync(
   } catch (error) {
     counts.failures += 1;
     const message = safeErrorMessage(error);
-    await recordFailure(appClient, runId, "run", null, "luma_read_failed", message, {});
-    await finishRun(appClient, runId, "failed", now().toISOString(), counts, message);
-    return failure("server_error", `Luma event sync failed safely: ${message}`, runId);
+    const failureDetailsRecorded = await tryRecordFailure(
+      appClient,
+      runId,
+      "run",
+      null,
+      "luma_read_failed",
+      message,
+      {},
+    );
+    const errorSummary = failureDetailsRecorded
+      ? message
+      : `${message} The Luma sync failure register could not be updated.`;
+    const finalized = await finishRun(
+      appClient,
+      runId,
+      "failed",
+      now().toISOString(),
+      counts,
+      errorSummary,
+    );
+    if (!finalized) {
+      return failure(
+        "server_error",
+        `Luma event sync failed safely, but the failed run status could not be recorded: ${errorSummary}`,
+        runId,
+      );
+    }
+    return failure("server_error", `Luma event sync failed safely: ${errorSummary}`, runId);
   }
 }
 
@@ -519,17 +554,33 @@ function createLumaSyncAppClient(env: Record<string, string | undefined>): AppCl
   return createClient(url, key, { auth: { autoRefreshToken: false, persistSession: false } }) as AppClient;
 }
 
-async function readActorRoles(client: AppClient, actorUserId: string): Promise<string[]> {
+async function readActorRoles(
+  client: AppClient,
+  actorUserId: string,
+): Promise<{ roles: string[]; error: string | null }> {
   const result = await client.schema("app").from("staff_role_assignments")
     .select("role_key").eq("user_id", actorUserId).eq("status", "active");
-  return result.error ? [] : (result.data ?? []).map((row) => String(row.role_key));
+  if (result.error) return { roles: [], error: result.error.message };
+  return {
+    roles: (result.data ?? []).map((row) => String(row.role_key)),
+    error: null,
+  };
 }
 
-async function readLastCheckpoint(client: AppClient, chapterId: string): Promise<string | null> {
+async function readLastCheckpoint(
+  client: AppClient,
+  chapterId: string,
+): Promise<{ checkpoint: string | null; error: string | null }> {
   const result = await client.schema("app").from("luma_sync_runs")
     .select("checkpoint_after").eq("chapter_id", chapterId).eq("status", "succeeded")
     .order("completed_at", { ascending: false }).limit(1);
-  return result.error ? null : validDate(result.data?.[0]?.checkpoint_after);
+  if (result.error) {
+    return { checkpoint: null, error: result.error.message };
+  }
+  return {
+    checkpoint: validDate(result.data?.[0]?.checkpoint_after),
+    error: null,
+  };
 }
 
 async function markImport(
@@ -559,7 +610,7 @@ async function recordFailure(
   errorMessage: string,
   sourcePayload: Record<string, unknown>,
 ) {
-  await client.schema("app").from("luma_sync_failures").insert({
+  const result = await client.schema("app").from("luma_sync_failures").insert({
     run_id: runId,
     object_type: objectType,
     external_id: externalId,
@@ -567,6 +618,34 @@ async function recordFailure(
     error_message: errorMessage.slice(0, 500),
     source_payload: sourcePayload,
   });
+  if (result.error) {
+    throw new Error("The Luma sync failure register could not be updated.");
+  }
+}
+
+async function tryRecordFailure(
+  client: AppClient,
+  runId: string,
+  objectType: "event" | "run",
+  externalId: string | null,
+  errorCode: string,
+  errorMessage: string,
+  sourcePayload: Record<string, unknown>,
+): Promise<boolean> {
+  try {
+    await recordFailure(
+      client,
+      runId,
+      objectType,
+      externalId,
+      errorCode,
+      errorMessage,
+      sourcePayload,
+    );
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 async function finishRun(
@@ -576,7 +655,7 @@ async function finishRun(
   completedAt: string,
   counts: LumaSyncCounts,
   errorSummary: string | null = null,
-) {
+): Promise<boolean> {
   const result = await client.schema("app").from("luma_sync_runs").update({
     status,
     completed_at: completedAt,
@@ -590,13 +669,26 @@ async function finishRun(
     failure_count: counts.failures,
     error_summary: errorSummary,
   }).eq("id", runId);
-  return result.error?.message ?? null;
+  return !result.error;
 }
 
 async function heartbeatRun(client: AppClient, runId: string, heartbeatAt: string) {
   const result = await client.schema("app").from("luma_sync_runs").update({ heartbeat_at: heartbeatAt })
     .eq("id", runId).eq("status", "running");
   if (result.error) throw new Error(`Luma sync heartbeat failed: ${result.error.message}`);
+}
+
+async function resolveReplayedFailures(
+  client: AppClient,
+  retryOfRunId: string,
+  resolvedAt: string,
+) {
+  const result = await client.schema("app").from("luma_sync_failures").update({
+    resolved_at: resolvedAt,
+  }).eq("run_id", retryOfRunId).is("resolved_at", null);
+  if (result.error) {
+    throw new Error("The replayed Luma failures could not be marked resolved.");
+  }
 }
 
 function getEnvironment(env: Record<string, string | undefined>): LumaEventSyncConfig["environment"] {
