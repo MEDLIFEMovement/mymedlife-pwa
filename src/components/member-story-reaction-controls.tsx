@@ -3,9 +3,22 @@
 import { Heart } from "lucide-react";
 
 import { submitMemberStoryReactionAction } from "@/app/app/stories/actions";
+import type { MemberStoryReactionReadbackStatus } from "@/services/member-story-reactions";
 
-export function getMemberStoryReactionSurfaceCopy(enabled: boolean) {
-  return enabled
+export function getMemberStoryReactionSurfaceCopy(
+  writeEnabled: boolean,
+  readbackStatus: MemberStoryReactionReadbackStatus,
+) {
+  if (readbackStatus === "unavailable") {
+    return {
+      subtitle: "Approved myMEDLIFE stories - reaction readback unavailable",
+      status: "Counts unavailable",
+      feedNote: "Approved myMEDLIFE metadata - reaction counts could not be verified, so reacting, shares, and saves remain disabled.",
+      readerNote: "Approved myMEDLIFE story metadata. Reaction counts could not be verified; reacting, saves, and external source opening remain disabled.",
+    };
+  }
+
+  return writeEnabled
     ? {
         subtitle: "Approved myMEDLIFE stories with live reactions",
         status: "Live reactions",
@@ -13,11 +26,23 @@ export function getMemberStoryReactionSurfaceCopy(enabled: boolean) {
         readerNote: "Approved myMEDLIFE story metadata. Reactions are live and auditable; saves and external source opening remain disabled.",
       }
     : {
-        subtitle: "Approved myMEDLIFE story metadata",
-        status: "Live read-only",
-        feedNote: "Approved myMEDLIFE metadata - reactions, shares, and saves are not enabled.",
-        readerNote: "Approved myMEDLIFE story metadata. Reactions, saves, and external source opening are not enabled.",
+        subtitle: "Approved myMEDLIFE stories with live reaction counts",
+        status: "Live counts - read-only",
+        feedNote: "Approved myMEDLIFE metadata - persisted reaction counts are live; reacting, shares, and saves remain disabled.",
+        readerNote: "Approved myMEDLIFE story metadata. Persisted reaction counts are live and auditable; reacting, saves, and external source opening remain disabled.",
       };
+}
+
+export function getMemberStoryReactionCountLabel(story: {
+  persisted?: boolean;
+  reactionStatus?: MemberStoryReactionReadbackStatus;
+  likes: number;
+}) {
+  if (story.persisted && story.reactionStatus === "unavailable") {
+    return "Reaction count unavailable";
+  }
+  if (!story.persisted) return `${story.likes.toLocaleString()} preview likes`;
+  return `${story.likes.toLocaleString()} ${story.likes === 1 ? "reaction" : "reactions"}`;
 }
 
 export function MemberStoryReactionForm({

@@ -1,6 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
 
 import {
+  createMemberStoryReactionClient,
+  createMemberStoryReactionReadClient,
   getMemberStoryReactionConfig,
   getMemberStoryReactionReadbacks,
   toggleMemberStoryLike,
@@ -8,6 +10,17 @@ import {
 } from "@/services/member-story-reactions";
 
 describe("member story reactions", () => {
+  it("keeps persisted reaction readback available when the write gate is closed", () => {
+    const env = {
+      MYMEDLIFE_AUTH_MODE: "production_supabase",
+      SUPABASE_URL: "https://example.supabase.co",
+      SUPABASE_SERVICE_ROLE_KEY: "server-secret",
+    };
+
+    expect(createMemberStoryReactionClient(env)).toBeNull();
+    expect(createMemberStoryReactionReadClient(env)).not.toBeNull();
+  });
+
   it("keeps production writes closed without both enablement flags", () => {
     const base = {
       MYMEDLIFE_AUTH_MODE: "production_supabase",
@@ -74,27 +87,41 @@ describe("member story reactions", () => {
 
     await expect(
       getMemberStoryReactionReadbacks(clientWithRpc(rpc), "member-1"),
-    ).resolves.toEqual([
-      { evidenceItemId: "story-1", reactionCount: 3, likedByActor: true },
-    ]);
+    ).resolves.toEqual({
+      status: "ready",
+      rows: [
+        { evidenceItemId: "story-1", reactionCount: 3, likedByActor: true },
+      ],
+    });
     expect(rpc).toHaveBeenCalledWith("get_member_story_reactions", {
       actor_uuid: "member-1",
     });
   });
 
-  it("returns no readbacks when the aggregate transaction fails or is malformed", async () => {
+  it("marks reaction readback unavailable when the aggregate transaction fails or is malformed", async () => {
     const failed = vi.fn().mockResolvedValue({
       data: null,
       error: { message: "read failed" },
     });
     const malformed = vi.fn().mockResolvedValue({ data: {}, error: null });
+    const invalidRow = vi.fn().mockResolvedValue({
+      data: [{ evidence_item_id: "story-1", reaction_count: -1, liked_by_actor: true }],
+      error: null,
+    });
+    const thrown = vi.fn().mockRejectedValue(new Error("database unavailable"));
 
     await expect(
       getMemberStoryReactionReadbacks(clientWithRpc(failed), "member-1"),
-    ).resolves.toEqual([]);
+    ).resolves.toEqual({ status: "unavailable", rows: [] });
     await expect(
       getMemberStoryReactionReadbacks(clientWithRpc(malformed), "member-1"),
-    ).resolves.toEqual([]);
+    ).resolves.toEqual({ status: "unavailable", rows: [] });
+    await expect(
+      getMemberStoryReactionReadbacks(clientWithRpc(invalidRow), "member-1"),
+    ).resolves.toEqual({ status: "unavailable", rows: [] });
+    await expect(
+      getMemberStoryReactionReadbacks(clientWithRpc(thrown), "member-1"),
+    ).resolves.toEqual({ status: "unavailable", rows: [] });
   });
 
   it.each([

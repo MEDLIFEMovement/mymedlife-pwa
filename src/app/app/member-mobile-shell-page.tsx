@@ -18,6 +18,7 @@ import {
   type MemberStoryMediaClient,
 } from "@/services/member-story-media";
 import {
+  createMemberStoryReactionReadClient,
   createMemberStoryReactionClient,
   getMemberStoryReactionConfig,
   getMemberStoryReactionReadbacks,
@@ -107,12 +108,15 @@ export async function renderMemberMobileShellPage({
     ? buildMemberMobileEventContext(data)
     : null;
   const storyReactionConfig = getMemberStoryReactionConfig();
-  const storyReactionClient = data.source.mode === "supabase"
+  const storyReactionWriteClient = data.source.mode === "supabase"
     ? createMemberStoryReactionClient()
     : null;
-  const storyReactionReadbacks = storyReactionClient
-    ? await getMemberStoryReactionReadbacks(storyReactionClient, actor.user.id)
-    : [];
+  const storyReactionReadClient = data.source.mode === "supabase"
+    ? createMemberStoryReactionReadClient()
+    : null;
+  const storyReactionReadback = storyReactionReadClient
+    ? await getMemberStoryReactionReadbacks(storyReactionReadClient, actor.user.id)
+    : { status: "unavailable" as const, rows: [] };
   const { client: storyMediaClient } = data.source.mode === "supabase"
     ? await createLocalSupabaseServerClient()
     : { client: null };
@@ -129,7 +133,8 @@ export async function renderMemberMobileShellPage({
         chapterEvents: data.allChapterEventRows,
         profiles: data.profiles,
         accessibleEventIds: data.chapterEventRows.map((row) => row.id),
-        reactionReadbacks: storyReactionReadbacks,
+        reactionReadbacks: storyReactionReadback.rows,
+        reactionReadbackStatus: storyReactionReadback.status,
         mediaReadbacks: storyMediaReadbacks,
       })
     : undefined;
@@ -157,7 +162,12 @@ export async function renderMemberMobileShellPage({
         initialStoriesFilter={initialStoriesFilter}
         initialStoryId={initialStoryId}
         initialStoryReactionResult={initialStoryReactionResult}
-        memberStoryReactionsEnabled={storyReactionConfig.enabled}
+        memberStoryReactionsEnabled={
+          storyReactionConfig.enabled &&
+          Boolean(storyReactionWriteClient) &&
+          storyReactionReadback.status === "ready"
+        }
+        memberStoryReactionReadbackStatus={storyReactionReadback.status}
         initialEventsCampaign={initialEventsCampaign}
         pointsSource={pointsSource}
         pointsReturnEventId={pointsReturnEventId}

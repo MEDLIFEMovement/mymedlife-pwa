@@ -4,7 +4,10 @@ import type {
   EvidenceItemRow,
   ProfileRow,
 } from "@/shared/types/persistence";
-import type { MemberStoryReactionReadback } from "@/services/member-story-reactions";
+import type {
+  MemberStoryReactionReadback,
+  MemberStoryReactionReadbackStatus,
+} from "@/services/member-story-reactions";
 import type { MemberStoryMediaReadback } from "@/services/member-story-media";
 
 export type MemberStorySource = "field";
@@ -41,6 +44,7 @@ export type MemberStory = {
   filters: MemberStoryFilter[];
   eventRouteId?: string;
   persisted: true;
+  reactionStatus: MemberStoryReactionReadbackStatus;
   mediaStatus:
     | "public_media_ready"
     | "approved_media_ready"
@@ -57,6 +61,7 @@ export function buildMemberStoriesReadModel(input: {
   profiles: ProfileRow[];
   accessibleEventIds?: Iterable<string>;
   reactionReadbacks?: MemberStoryReactionReadback[];
+  reactionReadbackStatus?: MemberStoryReactionReadbackStatus;
   mediaReadbacks?: MemberStoryMediaReadback[];
 }): MemberStory[] {
   const chapters = new Map(input.chapters.map((row) => [row.id, row]));
@@ -68,6 +73,8 @@ export function buildMemberStoriesReadModel(input: {
   const reactions = new Map(
     (input.reactionReadbacks ?? []).map((row) => [row.evidenceItemId, row]),
   );
+  const reactionStatus = input.reactionReadbackStatus ??
+    (input.reactionReadbacks ? "ready" : "unavailable");
   const media = new Map(
     (input.mediaReadbacks ?? []).map((row) => [row.evidenceItemId, row]),
   );
@@ -119,6 +126,7 @@ export function buildMemberStoriesReadModel(input: {
             ? event.id
             : undefined,
         persisted: true as const,
+        reactionStatus,
         mediaStatus,
       };
     });
