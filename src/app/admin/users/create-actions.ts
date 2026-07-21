@@ -16,8 +16,16 @@ import {
   requiresAdminUserCreationChapter,
   type AdminUserCreationClient,
   type AdminUserCreationResult,
-  type AdminUserCreationRole,
 } from "@/services/admin-user-creation";
+
+type CreationInput = {
+  auditReason: string;
+  chapterId: string;
+  displayName: string;
+  email: string;
+  password: string;
+  role: NonNullable<ReturnType<typeof parseAdminUserCreationRole>>;
+};
 
 type CreationActionDeps = {
   createSessionClient?: () => Promise<{
@@ -49,33 +57,8 @@ export async function submitAdminUserCreationForSupabase(
     return failure("creation_disabled", config.reason);
   }
 
-  const email = normalizeAdminUserCreationEmail(formData.get("email"));
-  const displayName = normalizeAdminUserCreationDisplayName(formData.get("displayName"));
-  const password = getString(formData.get("temporaryPassword"));
-  const role = parseAdminUserCreationRole(formData.get("role"));
-  const chapterId = normalizeAdminUserCreationChapterId(formData.get("chapterId"));
-  const auditReason = getString(formData.get("auditReason"));
-
-  if (!email.includes("@") || !displayName || password.length < 12 || !role) {
-    return failure(
-      "validation_error",
-      "Enter a valid email, display name, role, and a temporary password of at least 12 characters.",
-    );
-  }
-
-  if (requiresAdminUserCreationChapter(role) && !isValidAdminUserCreationChapterId(chapterId)) {
-    return failure(
-      "validation_error",
-      "Choose a real Supabase chapter before creating a member or E-Board user.",
-    );
-  }
-
-  if (auditReason.length < 12) {
-    return failure(
-      "validation_error",
-      "Add a clear audit reason of at least 12 characters before creating the account.",
-    );
-  }
+  const parsed = parseCreationInput(formData);
+  if (!parsed.success) return parsed.result;
 
   const createSessionClient = deps.createSessionClient ?? createSessionSupabaseClient;
   const { client, config: authConfig } = await createSessionClient();
@@ -110,6 +93,60 @@ export async function submitAdminUserCreationForSupabase(
     return failure("permission_denied", "Only a DS Admin or Super Admin can create users.");
   }
 
+  return createUserRecords(serviceClient, actorUser.id, parsed.input);
+}
+
+function parseCreationInput(
+  formData: FormData,
+): { success: true; input: CreationInput } | { success: false; result: AdminUserCreationResult } {
+  const input = {
+    email: normalizeAdminUserCreationEmail(formData.get("email")),
+    displayName: normalizeAdminUserCreationDisplayName(formData.get("displayName")),
+    password: getString(formData.get("temporaryPassword")),
+    role: parseAdminUserCreationRole(formData.get("role")),
+    chapterId: normalizeAdminUserCreationChapterId(formData.get("chapterId")),
+    auditReason: getString(formData.get("auditReason")),
+  };
+
+  if (!input.email.includes("@") || !input.displayName || input.password.length < 12 || !input.role) {
+    return {
+      success: false,
+      result: failure(
+        "validation_error",
+        "Enter a valid email, display name, role, and a temporary password of at least 12 characters.",
+      ),
+    };
+  }
+
+  if (requiresAdminUserCreationChapter(input.role) && !isValidAdminUserCreationChapterId(input.chapterId)) {
+    return {
+      success: false,
+      result: failure(
+        "validation_error",
+        "Choose a real Supabase chapter before creating a member or E-Board user.",
+      ),
+    };
+  }
+
+  if (input.auditReason.length < 12) {
+    return {
+      success: false,
+      result: failure(
+        "validation_error",
+        "Add a clear audit reason of at least 12 characters before creating the account.",
+      ),
+    };
+  }
+
+  return { success: true, input: input as CreationInput };
+}
+
+async function createUserRecords(
+  serviceClient: AdminUserCreationClient,
+  actorUserId: string,
+  input: CreationInput,
+): Promise<AdminUserCreationResult> {
+  const { email, displayName, password, role, chapterId, auditReason } = input;
   const { data: created, error: createError } = await serviceClient.auth.admin.createUser({
     email,
     password,
@@ -149,7 +186,7 @@ export async function submitAdminUserCreationForSupabase(
       role_key: role,
       status: "approved",
       approved_at: new Date().toISOString(),
-      approved_by: actorUser.id,
+      approved_by: actorUserId,
     }).select("id").single();
 
     if (membershipInsert.error) {
@@ -161,7 +198,7 @@ export async function submitAdminUserCreationForSupabase(
       user_id: userId,
       role_key: role,
       status: "active",
-      assigned_by: actorUser.id,
+      assigned_by: actorUserId,
     }).select("id").single();
 
     if (roleInsert.error) {
@@ -171,7 +208,7 @@ export async function submitAdminUserCreationForSupabase(
   }
 
   const audit = await serviceClient.schema("app").from("audit_logs").insert({
-    actor_user_id: actorUser.id,
+    actor_user_id: actorUserId,
     action: "admin_user_created",
     target_table: "auth.users",
     target_id: userId,
