@@ -349,10 +349,6 @@ select is(
   'Removal clears the storage path and returns the proof row to metadata-only submitted state'
 );
 
-delete from storage.objects
-where bucket_id = 'proof-submissions-private'
-  and name = 'chapters/10000000-0000-4000-8000-000000000001/evidence/d9600000-0000-4000-8000-000000000001/rush-social-bridge-video.mov';
-
 insert into storage.objects (
   bucket_id,
   name,
