@@ -124,6 +124,9 @@ describe("admin management pages", () => {
     expect(html).toContain("Create a site user");
     expect(html).toContain("Create user");
     expect(html).toContain("Temporary password");
+    expect(html).toContain("Chapter (required for members and E-Board)");
+    expect(html).toContain("Select a chapter for member or E-Board");
+    expect(html).not.toContain("Required only for E-Board");
     expect(html).toContain("Onboard approved staff member for chapter support");
     expect(html).toContain("Creation locked:");
     expect(html).toContain("Search name or email");
