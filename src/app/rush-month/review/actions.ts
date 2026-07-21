@@ -21,10 +21,11 @@ import {
   type LeaderProofDecisionRpcRow,
   type LeaderProofDecisionServerResult,
 } from "@/services/leader-proof-decision-write";
+import { normalizeProofDecisionReturnTo } from "@/services/proof-decision-return-route";
 
 export async function submitHqProofDecisionAction(formData: FormData) {
   const evidenceItemId = String(formData.get("evidenceItemId") ?? "").trim();
-  const returnTo = normalizeReturnTo(formData.get("returnTo"));
+  const returnTo = normalizeProofDecisionReturnTo(formData.get("returnTo"));
   const result = await submitHqProofDecisionForLocalSupabase(formData);
   const search = new URLSearchParams({
     hqDecisionResult: result.code,
@@ -37,7 +38,7 @@ export async function submitHqProofDecisionAction(formData: FormData) {
 export async function submitLeaderProofDecisionAction(formData: FormData) {
   const evidenceItemId = String(formData.get("evidenceItemId") ?? "").trim();
   const assignmentId = String(formData.get("assignmentId") ?? "").trim();
-  const returnTo = normalizeReturnTo(formData.get("returnTo"));
+  const returnTo = normalizeProofDecisionReturnTo(formData.get("returnTo"));
   const result = await submitLeaderProofDecisionForLocalSupabase(formData);
   const search = new URLSearchParams({
     leaderProofDecisionResult: result.code,
@@ -252,23 +253,4 @@ export async function submitHqProofDecisionForLocalSupabase(
   }
 
   return mapHqProofDecisionRpcSuccess(evidenceItemId, decision, firstRow);
-}
-
-function normalizeReturnTo(value: FormDataEntryValue | null) {
-  if (typeof value !== "string") {
-    return "/rush-month/review";
-  }
-
-  const trimmed = value.trim();
-
-  if (
-    (trimmed !== "/rush-month/review" && trimmed !== "/admin/hq-proof-write") ||
-    trimmed.startsWith("//") ||
-    trimmed.includes("\n") ||
-    trimmed.includes("\r")
-  ) {
-    return "/rush-month/review";
-  }
-
-  return trimmed;
 }

@@ -37,7 +37,7 @@ export function HqProofDecisionServerActionPanel({
       </p>
       <h2 className="mt-2 text-2xl font-semibold text-white">
         {readiness.canSubmit
-          ? "HQ can record this local proof decision."
+          ? "HQ can record this proof decision."
           : "HQ proof decisions are still safely gated."}
       </h2>
       <p className="mt-2 text-sm leading-6 text-white/68">{readiness.reason}</p>
@@ -72,7 +72,7 @@ export function HqProofDecisionServerActionPanel({
                 : "border-white/10 bg-black/18 text-white/68",
           ].join(" ")}
         >
-          <p className="font-semibold">Local readback</p>
+          <p className="font-semibold">Saved-state readback</p>
           <p className="mt-1">{readbackState.message}</p>
           <p className="mt-1 text-xs uppercase tracking-[0.16em] opacity-75">
             Current proof status: {readbackState.evidenceStatus}

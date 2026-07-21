@@ -47,6 +47,16 @@ describe("HQ proof decision write readiness", () => {
     expect(
       getHqProofDecisionWriteConfig({
         MYMEDLIFE_AUTH_MODE: "production_supabase",
+      }),
+    ).toMatchObject({
+      enabled: false,
+      environment: "production",
+      reason: "HQ proof decisions stay locked until the dedicated write flag is enabled.",
+    });
+
+    expect(
+      getHqProofDecisionWriteConfig({
+        MYMEDLIFE_AUTH_MODE: "production_supabase",
         MYMEDLIFE_ENABLE_HQ_PROOF_DECISION_WRITE: "true",
       }),
     ).toMatchObject({
@@ -69,6 +79,21 @@ describe("HQ proof decision write readiness", () => {
       isLocalOnly: false,
       externalWritesEnabled: false,
       publishesProof: false,
+    });
+  });
+
+  it("keeps hosted staging decisions locked", () => {
+    expect(
+      getHqProofDecisionWriteConfig({
+        MYMEDLIFE_AUTH_MODE: "staging_supabase",
+        MYMEDLIFE_ENABLE_HQ_PROOF_DECISION_WRITE: "true",
+      }),
+    ).toMatchObject({
+      enabled: false,
+      environment: "staging",
+      isLocalOnly: false,
+      reason:
+        "Hosted staging HQ proof decisions remain disabled until a dedicated staging approval is configured.",
     });
   });
 
@@ -245,6 +270,27 @@ describe("HQ proof decision write readiness", () => {
     });
 
     expect(
+      mapHqProofDecisionRpcSuccess(
+        "00000000-0000-4000-8000-000000000101",
+        "changes_requested",
+        {
+          evidence_item_id: "00000000-0000-4000-8000-000000000101",
+          approval_id: "00000000-0000-4000-8000-000000000201",
+          event_id: "00000000-0000-4000-8000-000000000301",
+          integration_event_id: "00000000-0000-4000-8000-000000000401",
+          outbox_id: "00000000-0000-4000-8000-000000000501",
+          audit_log_id: "00000000-0000-4000-8000-000000000601",
+        },
+      ),
+    ).toMatchObject({
+      success: true,
+      code: "changes_requested",
+      plainEnglishMessage: expect.not.stringContaining(
+        "authenticated member story feed",
+      ),
+    });
+
+    expect(
       mapHqProofDecisionRpcError("missing", {
         code: "P0002",
         message: "evidence item not found",
@@ -278,6 +324,17 @@ describe("HQ proof decision write readiness", () => {
   it("confirms readback for approval and changes-requested decisions", () => {
     expect(
       getHqProofDecisionReadbackState(
+        { status: "pending_review" },
+        "permission_denied",
+      ),
+    ).toMatchObject({
+      confirmsDecision: false,
+      tone: "info",
+      message: expect.stringContaining("No proof review status change"),
+    });
+
+    expect(
+      getHqProofDecisionReadbackState(
         {
           status: "approved",
         },
@@ -299,6 +356,7 @@ describe("HQ proof decision write readiness", () => {
     ).toMatchObject({
       confirmsDecision: true,
       tone: "success",
+      message: expect.not.stringContaining("authenticated member story feed"),
     });
   });
 
