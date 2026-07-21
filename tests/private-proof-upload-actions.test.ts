@@ -203,9 +203,95 @@ describe("private proof upload server actions", () => {
     expect(mocks.createLocalSupabaseServerClient).not.toHaveBeenCalled();
   });
 
+  it("rejects a finalization ticket whose nested proof record does not match", async () => {
+    await expect(
+      recordPrivateProofUploadForSupabase({
+        ...ticket,
+        input: { ...input, evidenceItemId: "70000000-0000-4000-8000-000000000007" },
+      }),
+    ).resolves.toMatchObject({ success: false, code: "permission_denied" });
+    expect(mocks.createLocalSupabaseServerClient).not.toHaveBeenCalled();
+  });
+
+  it("refuses to finalize when the exact Storage object is missing or unverifiable", async () => {
+    const harness = createClientHarness();
+    enableClient(harness.client);
+
+    harness.list.mockResolvedValueOnce({ data: [], error: null });
+    await expect(recordPrivateProofUploadForSupabase(ticket)).resolves.toMatchObject({
+      success: false,
+      code: "upload_not_present",
+      plainEnglishMessage: expect.stringContaining("not found"),
+    });
+    expect(harness.rpc).not.toHaveBeenCalled();
+
+    harness.list.mockResolvedValueOnce({
+      data: null,
+      error: { message: "storage unavailable" },
+    });
+    await expect(recordPrivateProofUploadForSupabase(ticket)).resolves.toMatchObject({
+      success: false,
+      code: "server_error",
+      plainEnglishMessage: expect.stringContaining("could not verify"),
+    });
+    expect(harness.rpc).not.toHaveBeenCalled();
+  });
+
+  it("refuses to finalize when Storage metadata disagrees with the upload ticket", async () => {
+    const harness = createClientHarness();
+    enableClient(harness.client);
+
+    harness.list.mockResolvedValueOnce({
+      data: [{ id: "object-1", name: "TEST-proof.png", metadata: null }],
+      error: null,
+    });
+    await expect(recordPrivateProofUploadForSupabase(ticket)).resolves.toMatchObject({
+      success: false,
+      code: "server_error",
+      plainEnglishMessage: expect.stringContaining("size"),
+    });
+
+    harness.list.mockResolvedValueOnce({
+      data: [{ id: "object-1", name: "TEST-proof.png", metadata: { size: 99 } }],
+      error: null,
+    });
+    await expect(recordPrivateProofUploadForSupabase(ticket)).resolves.toMatchObject({
+      success: false,
+      code: "server_error",
+      plainEnglishMessage: expect.stringContaining("size"),
+    });
+
+    harness.list.mockResolvedValueOnce({
+      data: [
+        {
+          id: "object-1",
+          name: "TEST-proof.png",
+          metadata: { size: input.byteSize, mimetype: "application/pdf" },
+        },
+      ],
+      error: null,
+    });
+    await expect(recordPrivateProofUploadForSupabase(ticket)).resolves.toMatchObject({
+      success: false,
+      code: "server_error",
+      plainEnglishMessage: expect.stringContaining("type"),
+    });
+    expect(harness.rpc).not.toHaveBeenCalled();
+  });
+
   it("cleans Storage when finalization RPC fails or returns no row", async () => {
     const harness = createClientHarness();
     enableClient(harness.client);
+    harness.list.mockResolvedValue({
+      data: [
+        {
+          id: "object-1",
+          name: "TEST-proof.png",
+          metadata: { size: input.byteSize, mimetype: input.mimeType },
+        },
+      ],
+      error: null,
+    });
     harness.rpc.mockResolvedValueOnce({ data: null, error: { code: "42501" } });
     await expect(recordPrivateProofUploadForSupabase(ticket)).resolves.toMatchObject({
       code: "permission_denied",
@@ -222,12 +308,26 @@ describe("private proof upload server actions", () => {
   it("returns the audited finalization result", async () => {
     const harness = createClientHarness();
     enableClient(harness.client);
+    harness.list.mockResolvedValue({
+      data: [
+        {
+          id: "object-1",
+          name: "TEST-proof.png",
+          metadata: { size: String(input.byteSize), contentType: input.mimeType },
+        },
+      ],
+      error: null,
+    });
     harness.rpc.mockResolvedValue({ data: [{ storage_path: storagePath }], error: null });
 
     await expect(recordPrivateProofUploadForSupabase(ticket)).resolves.toMatchObject({
       success: true,
       code: "proof_uploaded",
     });
+    expect(harness.rpc).toHaveBeenCalledWith(
+      "record_verified_private_proof_upload",
+      expect.objectContaining({ evidence_uuid: evidenceItemId }),
+    );
   });
 
   it("verifies the canonical path before orphan cleanup", async () => {
@@ -365,6 +465,7 @@ function createClientHarness() {
   const rpc = vi.fn();
   const createSignedUploadUrl = vi.fn();
   const remove = vi.fn();
+  const list = vi.fn();
   const maybeSingle = vi.fn();
   const query = {
     select: vi.fn(),
@@ -377,13 +478,14 @@ function createClientHarness() {
     rpc,
     from: vi.fn(() => query),
   }));
-  const storageFrom = vi.fn(() => ({ createSignedUploadUrl, remove }));
+  const storageFrom = vi.fn(() => ({ createSignedUploadUrl, remove, list }));
 
   return {
     client: { schema, storage: { from: storageFrom } },
     rpc,
     createSignedUploadUrl,
     remove,
+    list,
     maybeSingle,
   };
 }
