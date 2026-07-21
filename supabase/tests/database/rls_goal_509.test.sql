@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(18);
+select plan(21);
 
 set local role authenticated;
 set local "request.jwt.claim.role" = 'authenticated';
@@ -235,6 +235,39 @@ select is(
   ),
   1,
   'Deactivation records one audit row'
+);
+
+select lives_ok(
+  $$ select * from app.admin_change_user_access(
+    '00000000-0000-4000-8000-000000000001',
+    'deactivate_user',
+    null,
+    null,
+    'Deactivate member with an app-created chapter membership.'
+  ) $$,
+  'Super Admin can deactivate a member whose membership has no HubSpot association key'
+);
+
+select is(
+  (
+    select count(*)::int
+    from app.memberships
+    where user_id = '00000000-0000-4000-8000-000000000001'
+      and status <> 'inactive'
+  ),
+  0,
+  'Deactivation closes every chapter membership, including app-created rows'
+);
+
+select is(
+  (
+    select count(*)::int
+    from app.audit_logs
+    where action = 'admin_user_access.deactivate_user'
+      and target_id = '00000000-0000-4000-8000-000000000001'
+  ),
+  1,
+  'App-created membership deactivation records one transactional audit row'
 );
 
 select * from finish();
