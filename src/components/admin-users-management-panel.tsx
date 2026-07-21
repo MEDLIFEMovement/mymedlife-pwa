@@ -665,14 +665,14 @@ function AdminUserCreationForm({
           </select>
         </label>
         <label className="space-y-1 text-xs text-slate-400">
-          Chapter for E-Board
+          Chapter (required for members and E-Board)
           <select
             className="w-full rounded border border-white/10 bg-[#0d1117] px-3 py-2 text-sm text-slate-100"
             defaultValue=""
             disabled={!config.enabled}
             name="chapterId"
           >
-            <option value="">Required only for E-Board</option>
+            <option value="">Select a chapter for member or E-Board</option>
             {chapters.map((chapter) => (
               <option key={chapter.id} value={chapter.id}>
                 {chapter.name}
