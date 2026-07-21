@@ -548,7 +548,7 @@ describe("admin management pages", () => {
     expect(html).not.toContain("LUMA_API_KEY");
   });
 
-  it("blocks general staff from Luma provider setup", async () => {
+  it("redirects general staff away from Luma provider setup", async () => {
     const actorModule = await import("@/services/local-actor-context");
     vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
       getSignedInActor("general.staff@mymedlife.test"),
@@ -557,10 +557,29 @@ describe("admin management pages", () => {
     const { default: AdminLumaIntegrationPage } = await import(
       "@/app/admin/integrations/luma/page"
     );
-    const html = renderToStaticMarkup(await AdminLumaIntegrationPage());
+    await expect(AdminLumaIntegrationPage()).rejects.toThrow(
+      "NEXT_REDIRECT:/staff",
+    );
+  });
 
-    expect(html).toContain("Luma integration hidden for this role");
-    expect(html).toContain("Only DS Admin and Super Admin");
+  it("redirects signed-out admin actors to login before loading Luma data", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getMockLocalActorContext(
+        "ds.admin@mymedlife.test",
+        "Signed-out test actor.",
+        "mock_fallback",
+        "local_actor_email",
+        "signed_out",
+      ),
+    );
+
+    const { default: AdminLumaIntegrationPage } = await import(
+      "@/app/admin/integrations/luma/page"
+    );
+    await expect(AdminLumaIntegrationPage()).rejects.toThrow(
+      "NEXT_REDIRECT:/login?redirectTo=%2Fadmin%2Fintegrations%2Fluma",
+    );
   });
 
   it("renders the HubSpot source-sync status and confirmed read-only controls", async () => {

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 
 import { AppShell } from "@/components/app-shell";
 import { DataSourceNotice } from "@/components/data-source-notice";
@@ -9,8 +10,14 @@ import {
   type AdminLumaTestStatus,
 } from "@/services/admin-luma-integration-status";
 import { getAdminLumaSyncWorkspace } from "@/services/admin-luma-sync-workspace";
+import { getLandingRouteForActor } from "@/services/landing-route";
+import {
+  buildLoginRedirectHref,
+  shouldRedirectActorToLogin,
+} from "@/services/login-route";
 import { getLocalActorContext } from "@/services/local-actor-context";
 import { getReadOnlyAppData } from "@/services/read-only-app-data";
+import { canAccessAdminWorkspace } from "@/services/role-visibility";
 import { getStaticRouteMetadata } from "@/services/static-route-metadata";
 import {
   submitLumaEventSyncAction,
@@ -21,8 +28,15 @@ export const metadata = getStaticRouteMetadata("adminIntegrationProvider");
 export const dynamic = "force-dynamic";
 
 export default async function AdminLumaIntegrationPage() {
-  const [actor, data, syncWorkspace] = await Promise.all([
-    getLocalActorContext(),
+  const actor = await getLocalActorContext();
+  if (shouldRedirectActorToLogin(actor)) {
+    redirect(buildLoginRedirectHref("/admin/integrations/luma"));
+  }
+  if (!canAccessAdminWorkspace(actor)) {
+    redirect(getLandingRouteForActor(actor));
+  }
+
+  const [data, syncWorkspace] = await Promise.all([
     getReadOnlyAppData(),
     getAdminLumaSyncWorkspace(),
   ]);
