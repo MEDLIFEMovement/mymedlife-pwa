@@ -621,7 +621,7 @@ function AdminUserCreationForm({
         </p>
         <h2 className="mt-1 text-lg font-semibold text-white">Create a site user</h2>
         <p className="mt-1 text-sm leading-6 text-slate-400">
-          Creates the Auth account, app profile, optional staff role, and audit record together.
+          Creates the Auth account, app profile, required chapter or staff access, and audit record together.
           The server rolls the Auth account back if any required row or audit write fails.
         </p>
         <p className={`mt-2 text-xs ${config.enabled ? "text-emerald-300" : "text-amber-200"}`}>
@@ -668,14 +668,14 @@ function AdminUserCreationForm({
           </select>
         </label>
         <label className="space-y-1 text-xs text-slate-400">
-          Chapter for E-Board
+          Chapter for member / E-Board
           <select
             className="w-full rounded border border-white/10 bg-[#0d1117] px-3 py-2 text-sm text-slate-100"
             defaultValue=""
             disabled={!config.enabled}
             name="chapterId"
           >
-            <option value="">Required only for E-Board</option>
+            <option value="">Required for member and E-Board</option>
             {chapters.map((chapter) => (
               <option key={chapter.id} value={chapter.id}>
                 {chapter.name}

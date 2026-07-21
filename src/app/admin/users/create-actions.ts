@@ -66,7 +66,7 @@ export async function submitAdminUserCreationForSupabase(
   if (requiresAdminUserCreationChapter(role) && !isValidAdminUserCreationChapterId(chapterId)) {
     return failure(
       "validation_error",
-      "Choose a real Supabase chapter before creating an E-Board user.",
+      "Choose a real Supabase chapter before creating a member or E-Board user.",
     );
   }
 
@@ -142,7 +142,7 @@ export async function submitAdminUserCreationForSupabase(
     return failure("server_error", "The profile row could not be created, so the auth account was rolled back.");
   }
 
-  if (role === "e_board_member") {
+  if (requiresAdminUserCreationChapter(role)) {
     const membershipInsert = await serviceClient.schema("app").from("memberships").insert({
       user_id: userId,
       chapter_id: chapterId,
@@ -154,7 +154,7 @@ export async function submitAdminUserCreationForSupabase(
 
     if (membershipInsert.error) {
       await serviceClient.auth.admin.deleteUser(userId);
-      return failure("server_error", "The E-Board membership row could not be created, so the auth account was rolled back.");
+      return failure("server_error", "The chapter membership row could not be created, so the auth account was rolled back.");
     }
   } else if (role !== "general_member") {
     const roleInsert = await serviceClient.schema("app").from("staff_role_assignments").insert({
@@ -175,7 +175,12 @@ export async function submitAdminUserCreationForSupabase(
     action: "admin_user_created",
     target_table: "auth.users",
     target_id: userId,
-    after_value: { email, display_name: displayName, role },
+    after_value: {
+      email,
+      display_name: displayName,
+      role,
+      chapter_id: requiresAdminUserCreationChapter(role) ? chapterId : null,
+    },
     reason: auditReason,
   }).select("id").single();
 
@@ -191,7 +196,7 @@ export async function submitAdminUserCreationForSupabase(
     email,
     role,
     auditLogId: audit.data.id,
-    plainEnglishMessage: "User created with a profile, optional staff role, and audit record. No email or external provider was called.",
+    plainEnglishMessage: "User created with a profile, required chapter or staff access, and audit record. No email or external provider was called.",
   };
 }
 
