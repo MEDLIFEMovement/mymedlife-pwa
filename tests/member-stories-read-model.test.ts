@@ -3,6 +3,7 @@ import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 
 import { FigmaMemberMobileHome } from "@/components/figma-member-mobile-home";
+import { getMemberStoryMediaSurfaceCopy } from "@/components/member-story-media-state";
 import { buildMemberStoriesReadModel } from "@/services/member-stories-read-model";
 import type {
   ChapterEventRow,
@@ -12,6 +13,21 @@ import type {
 } from "@/shared/types/persistence";
 
 describe("member stories read model", () => {
+  it("keeps every non-ready story media state visibly honest", () => {
+    expect(getMemberStoryMediaSurfaceCopy("approved_media_unavailable")).toEqual({
+      title: "Media temporarily unavailable",
+      detail: expect.stringContaining("could not verify or sign"),
+    });
+    expect(getMemberStoryMediaSurfaceCopy("private_media_protected")).toEqual({
+      title: "Media not published",
+      detail: expect.stringContaining("private original remains protected"),
+    });
+    expect(getMemberStoryMediaSurfaceCopy("metadata_only")).toEqual({
+      title: "Media not published",
+      detail: expect.stringContaining("No publishable thumbnail"),
+    });
+  });
+
   it("shows only persisted evidence that passed content and sharing approval", () => {
     const stories = buildMemberStoriesReadModel({
       evidenceRows: [

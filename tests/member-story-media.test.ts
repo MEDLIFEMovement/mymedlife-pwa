@@ -144,6 +144,32 @@ describe("member story media", () => {
     expect(createSignedUrl).not.toHaveBeenCalled();
   });
 
+  it("does not sign media when the storage listing cannot be verified", async () => {
+    const createSignedUrl = vi.fn();
+    const client = {
+      storage: {
+        from: () => ({
+          list: async () => ({ data: null, error: { message: "storage unavailable" } }),
+          createSignedUrl,
+        }),
+      },
+    } as unknown as MemberStoryMediaClient;
+
+    await expect(
+      getMemberStoryMediaReadbacks(client, [
+        evidenceRow({ id: "photo-1", evidence_type: "event_photo" }),
+      ]),
+    ).resolves.toEqual([
+      {
+        evidenceItemId: "photo-1",
+        thumbnailUrl: null,
+        mediaUrl: null,
+        availability: "unavailable",
+      },
+    ]);
+    expect(createSignedUrl).not.toHaveBeenCalled();
+  });
+
   it("rejects traversal and mismatched storage paths", () => {
     expect(isApprovedStoredStory(evidenceRow({ id: "photo-1" }))).toBe(true);
     expect(
