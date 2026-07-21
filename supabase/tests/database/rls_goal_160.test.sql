@@ -404,6 +404,10 @@ select is(
   'Removal clears the storage path and returns the proof row to metadata-only submitted state'
 );
 
+update app.assignments
+set status = 'approved'
+where id = 'd9500000-0000-4000-8000-000000000001';
+
 insert into storage.objects (
   bucket_id,
   name,
@@ -430,7 +434,7 @@ select lives_ok(
     true,
     false
   ) $$,
-  'Submitter can record a corrected private upload after audited removal'
+  'Submitter can record a corrected private upload for reviewable evidence after assignment approval'
 );
 
 select lives_ok(
