@@ -8,21 +8,28 @@ export function ensureVisibleTestLabel(value: string) {
   return normalized ? `TEST ${normalized}` : "TEST";
 }
 
-export function getVisibleMemberGreetingName(displayName: string) {
+export function getVisibleMemberGreetingName(
+  displayName: string,
+  testPreview = true,
+) {
   const trimmedDisplayName = displayName.trim();
 
   if (!trimmedDisplayName) {
-    return "TEST Member";
+    return testPreview ? "TEST Member" : "Member";
   }
 
+  const hasTestLabel = /^test\b/iu.test(trimmedDisplayName);
+  const hasTitleCaseTestPrefix = /^Test\b/u.test(trimmedDisplayName);
   const labelStrippedName = trimmedDisplayName
     .replace(/^(?:test\b[\s:.-]*)+/iu, "")
     .trim();
-  const nameForGreeting = /^Test\b/u.test(trimmedDisplayName)
+  const nameForGreeting = hasTitleCaseTestPrefix
     ? labelStrippedName
     : getFirstName(labelStrippedName);
 
-  return ensureVisibleTestLabel(nameForGreeting);
+  return testPreview || hasTestLabel
+    ? ensureVisibleTestLabel(nameForGreeting)
+    : nameForGreeting;
 }
 
 export function buildMemberIdentityContext(
@@ -30,13 +37,20 @@ export function buildMemberIdentityContext(
   studentHome: MvpMemberHome,
   recognition: MemberRecognitionSummary,
   campusName: string,
+  options: { testPreview: boolean },
 ): MemberMobileIdentityContext {
+  const getVisibleIdentityLabel = (value: string, fallback: string) => {
+    const normalized = value.trim() || fallback;
+    return options.testPreview || /^test\b/iu.test(normalized)
+      ? ensureVisibleTestLabel(normalized)
+      : normalized;
+  };
   const selectedMember = recognition.selectedMember;
   const selectedName = selectedMember?.displayName ?? actor.user.displayName;
   const weeklyStat = recognition.topStats.find((stat) => stat.label === "This Week");
   const rows = recognition.leaderboard.map((row, index) => ({
     rank: index + 1,
-    name: ensureVisibleTestLabel(row.displayName),
+    name: getVisibleIdentityLabel(row.displayName, "Member"),
     role: row.roleLabel,
     pts: row.points,
     me: row.displayName.toLowerCase() === selectedName.toLowerCase(),
@@ -45,7 +59,7 @@ export function buildMemberIdentityContext(
   if (!rows.some((row) => row.me)) {
     rows.push({
       rank: selectedMember?.rank ?? rows.length + 1,
-      name: ensureVisibleTestLabel(selectedName),
+      name: getVisibleIdentityLabel(selectedName, "Member"),
       role: actor.chapterRoles[0] ?? "General Member",
       pts: selectedMember?.points ?? studentHome.pointsTotal,
       me: true,
@@ -53,10 +67,10 @@ export function buildMemberIdentityContext(
   }
 
   return {
-    displayName: ensureVisibleTestLabel(actor.user.displayName),
-    firstName: getVisibleMemberGreetingName(actor.user.displayName),
-    chapterName: ensureVisibleTestLabel(studentHome.chapterName),
-    campusName: ensureVisibleTestLabel(campusName),
+    displayName: getVisibleIdentityLabel(actor.user.displayName, "Member"),
+    firstName: getVisibleMemberGreetingName(actor.user.displayName, options.testPreview),
+    chapterName: getVisibleIdentityLabel(studentHome.chapterName, "Chapter"),
+    campusName: getVisibleIdentityLabel(campusName, "Campus"),
     pointsTotal: studentHome.pointsTotal,
     pointsWeeklyLabel: weeklyStat?.value ?? "+0",
     pointsRankLabel: studentHome.pointsRankLabel,
