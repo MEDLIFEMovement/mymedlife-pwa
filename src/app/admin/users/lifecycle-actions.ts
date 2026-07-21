@@ -15,11 +15,35 @@ import {
 
 type LifecycleActionDeps = {
   createSessionClient?: () => Promise<{
-    client: Parameters<typeof getAuthSessionState>[0] | null;
+    client: AdminUserLifecycleSessionClient | null;
     config: { reason: string };
   }>;
   createServiceClient?: () => AdminUserLifecycleClient | null;
-  getSessionState?: (client: Parameters<typeof getAuthSessionState>[0]) => Promise<AuthSessionState>;
+  getSessionState?: (client: AdminUserLifecycleSessionClient) => Promise<AuthSessionState>;
+};
+
+type AdminUserLifecycleRpcParams = {
+  target_user_uuid: string;
+  operation_input: "deactivate_user";
+  chapter_uuid: null;
+  role_key_input: null;
+  audit_reason_input: string;
+};
+
+type AdminUserLifecycleSessionClient = Parameters<typeof getAuthSessionState>[0] & {
+  schema: (schemaName: "app") => {
+    rpc: (
+      functionName: "admin_change_user_access",
+      params: AdminUserLifecycleRpcParams,
+    ) => Promise<{
+      data: unknown;
+      error: { code?: string; message?: string } | null;
+    }>;
+  };
+};
+
+type AdminUserLifecycleRpcRow = {
+  audit_log_id?: string | null;
 };
 
 const confirmations: Record<AdminUserLifecycleOperation, string> = {
@@ -71,30 +95,43 @@ export async function submitAdminUserLifecycleForSupabase(
   const authorizationFailure = authorizeLifecycleTarget(operation, actorRoles, targetRoles);
   if (authorizationFailure) return authorizationFailure;
 
-  const now = new Date().toISOString();
   if (operation === "deactivate_user") {
-    const profile = await serviceClient.schema("app").from("profiles")
-      .update({ status: "inactive", updated_at: now })
-      .eq("id", targetUserId)
-      .select("id");
-    if (profile.error || !profile.data?.length) {
-      return failure("target_not_found", "The target profile was not found, so no lifecycle change was made.");
-    }
-
     const ban = await serviceClient.auth.admin.updateUserById(targetUserId, {
       ban_duration: "876000h",
     });
     if (ban.error) {
-      return failure("server_error", `The account profile was not fully suspended: ${ban.error.message ?? "Supabase Auth rejected the change."}`);
+      return failure("server_error", `Supabase Auth could not suspend the account: ${ban.error.message ?? "Supabase Auth rejected the change."}`);
     }
 
-    await serviceClient.schema("app").from("memberships").update({ status: "inactive", updated_at: now }).eq("user_id", targetUserId).select("id");
-    await serviceClient.schema("app").from("staff_role_assignments").update({ status: "inactive", ended_at: now, updated_at: now }).eq("user_id", targetUserId).select("id");
-    await serviceClient.schema("app").from("coach_chapter_assignments").update({ status: "ended", ends_at: now.slice(0, 10), updated_at: now, handoff_reason: auditReason }).eq("coach_user_id", targetUserId).select("id");
+    const rpcResult = await client.schema("app").rpc("admin_change_user_access", {
+      target_user_uuid: targetUserId,
+      operation_input: "deactivate_user",
+      chapter_uuid: null,
+      role_key_input: null,
+      audit_reason_input: auditReason,
+    });
+    const rpcRow = Array.isArray(rpcResult.data)
+      ? (rpcResult.data[0] as AdminUserLifecycleRpcRow | undefined)
+      : undefined;
 
-    return finishDeactivation(serviceClient, actorId, targetUserId, auditReason, now);
+    if (rpcResult.error || !rpcRow?.audit_log_id) {
+      return rollbackAuthBanAfterRpcFailure(
+        serviceClient,
+        targetUserId,
+        rpcResult.error?.message ?? "Supabase did not return the required audit record.",
+      );
+    }
+
+    return {
+      success: true,
+      code: "user_deactivated",
+      userId: targetUserId,
+      auditLogId: rpcRow.audit_log_id,
+      plainEnglishMessage: "User access was suspended in Auth, all app assignments were marked inactive, and the change was audited.",
+    };
   }
 
+  const now = new Date().toISOString();
   const auditLogId = await writeAudit(serviceClient, actorId, targetUserId, "admin_user_deleted", auditReason, now);
   if (!auditLogId) {
     return failure("server_error", "The deletion was blocked because the audit record could not be written.");
@@ -148,21 +185,34 @@ function authorizeLifecycleTarget(
   return null;
 }
 
-async function finishDeactivation(
+async function rollbackAuthBanAfterRpcFailure(
   client: AdminUserLifecycleClient,
-  actorId: string,
   targetUserId: string,
-  auditReason: string,
-  now: string,
+  rpcErrorMessage: string,
 ): Promise<AdminUserLifecycleResult> {
-  const auditLogId = await writeAudit(client, actorId, targetUserId, "admin_user_deactivated", auditReason, now);
-  if (!auditLogId) return failure("server_error", "The account was suspended, but the audit record could not be confirmed.");
-  return { success: true, code: "user_deactivated", userId: targetUserId, auditLogId, plainEnglishMessage: "User access was suspended in Auth, marked inactive, and audited." };
+  const rollback = await client.auth.admin.updateUserById(targetUserId, {
+    ban_duration: "none",
+  });
+
+  if (rollback.error) {
+    return failure(
+      "server_error",
+      `The app access transaction failed (${rpcErrorMessage}), and Auth rollback also failed: ${rollback.error.message ?? "unknown Auth rollback error"}`,
+    );
+  }
+
+  return failure(
+    "server_error",
+    `The app access transaction failed (${rpcErrorMessage}), so the Auth suspension was rolled back and no completed deactivation was reported.`,
+  );
 }
 
 async function createSessionSupabaseClient() {
   const result = await createLocalSupabaseServerClient();
-  return { client: result.client, config: result.config };
+  return {
+    client: result.client as AdminUserLifecycleSessionClient | null,
+    config: result.config,
+  };
 }
 
 async function readActiveRoles(client: AdminUserLifecycleClient, userId: string) {
