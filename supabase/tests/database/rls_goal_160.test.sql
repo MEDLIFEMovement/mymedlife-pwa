@@ -404,9 +404,15 @@ select is(
   'Removal clears the storage path and returns the proof row to metadata-only submitted state'
 );
 
+reset role;
+
 update app.assignments
 set status = 'approved'
 where id = 'd9500000-0000-4000-8000-000000000001';
+
+set local role authenticated;
+set local "request.jwt.claim.sub" = '00000000-0000-4000-8000-000000000001';
+set local "request.jwt.claim.role" = 'authenticated';
 
 insert into storage.objects (
   bucket_id,
