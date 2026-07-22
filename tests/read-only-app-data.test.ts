@@ -117,6 +117,7 @@ describe("read-only app data service", () => {
     expect(data.allChapterEventRows).toHaveLength(1);
     expect(data.allLumaEventLinkRows).toHaveLength(1);
     expect(data.allPointsEventRows).toHaveLength(1);
+    expect(data.allAuditLogs).toEqual(fakeRows.audit_logs);
     expect(data.pointsEventRows).toHaveLength(1);
     expect(data.kpiEventRows).toHaveLength(1);
     expect(data.integrationEventRows).toHaveLength(1);
