@@ -1,9 +1,17 @@
 # Production Capability Gap Register
 
-Date: 2026-07-19
+Date: 2026-07-22
 
-Status: Phase 0 audit complete; Phase 1 auth lifecycle production-proven;
-Phase 2 integration and materialization work active
+Status: Historical phase-by-phase baseline. The current authoritative launch
+gate is `docs/phase-7-launch-readiness-gate.md`.
+
+The product-owned paths have advanced materially since this register's initial
+evidence baseline. Phases 0, 1, 4, 5, and 6 now pass their scoped functional and
+production-proof gates. Phases 2 and 3 remain externally blocked by real
+HubSpot and Luma activation, and Phase 7 remains blocked by those integrations,
+a clean staging proof boundary, and approved rollout execution. The current
+Phase 7 gate supersedes the older counts and active-work descriptions below;
+they remain here as an auditable record of the implementation sequence.
 
 This register separates rendered surfaces from real product capability. A route,
 TEST record, preview control, green unit test, or READY deployment is not proof
