@@ -117,6 +117,55 @@ describe("admin audit log review", () => {
     expect(review.nextStep).toContain("read-only");
   });
 
+  it("uses the unscoped RLS-protected audit collection for persisted admin readback", () => {
+    const actor = getMockLocalActorContext("super.admin@mymedlife.test");
+    const data = dataWithAuditLogs([]);
+    data.source = {
+      mode: "supabase",
+      status: "supabase_ready",
+      message: "Reading authenticated Supabase data.",
+    };
+    data.allAuditLogs = [{
+      id: "audit-global-1",
+      actor_user_id: "super-admin-1",
+      chapter_id: null,
+      action: "admin_user_access.deactivate_user",
+      target_table: "auth.users",
+      target_id: "target-user-1",
+      before_value: { status: "active" },
+      after_value: { status: "deactivated" },
+      reason: "Suspend the TEST lifecycle account.",
+      created_at: "2026-07-22T00:00:00Z",
+    }];
+
+    const review = getAdminAuditLogReview(actor, data);
+
+    expect(review.posture).toBe("persisted_readback_visible");
+    expect(review.counts.visibleRows).toBe(1);
+    expect(review.rows[0]).toMatchObject({
+      id: "audit-global-1",
+      action: "admin_user_access.deactivate_user",
+      target: "auth.users:target-user-1",
+    });
+  });
+
+  it("does not call an empty authenticated Supabase read mock fallback", () => {
+    const actor = getMockLocalActorContext("super.admin@mymedlife.test");
+    const data = dataWithAuditLogs([]);
+    data.source = {
+      mode: "supabase",
+      status: "supabase_ready",
+      message: "Reading authenticated Supabase data.",
+    };
+    data.allAuditLogs = [];
+
+    const review = getAdminAuditLogReview(actor, data);
+
+    expect(review.posture).toBe("persisted_readback_empty");
+    expect(review.summary).not.toContain("Mock fallback");
+    expect(review.nextStep).toContain("audit RLS");
+  });
+
   it("lets DS Admin see posture while hiding row-level audit truth", () => {
     const actor = getMockLocalActorContext("ds.admin@mymedlife.test");
     const review = getAdminAuditLogReview(

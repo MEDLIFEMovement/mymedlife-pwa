@@ -110,6 +110,7 @@ export type ReadOnlyAppData = {
   integrationEventRows: IntegrationEventRow[];
   automationOutboxRows: AutomationOutboxRow[];
   auditLogs: AuditLogRow[];
+  allAuditLogs: AuditLogRow[];
 };
 
 export type ReadOnlyAppDataScope = {
@@ -240,6 +241,7 @@ export async function getSupabaseReadOnlyAppData(
     integrationEventRows: scoped.integrationEventRows,
     automationOutboxRows: scoped.automationOutboxRows,
     auditLogs: scoped.auditLogs,
+    allAuditLogs: snapshot.auditLogs,
   };
 }
 
@@ -1511,6 +1513,7 @@ export function getMockReadOnlyAppData(
     integrationEventRows: mockIntegrationEventRows,
     automationOutboxRows: mockAutomationOutboxRows,
     auditLogs: mockAuditLogs,
+    allAuditLogs: mockAuditLogs,
   };
 }
 
@@ -1576,6 +1579,7 @@ export function getUnavailableReadOnlyAppData(message: string): ReadOnlyAppData 
     integrationEventRows: [],
     automationOutboxRows: [],
     auditLogs: [],
+    allAuditLogs: [],
   };
 }
 

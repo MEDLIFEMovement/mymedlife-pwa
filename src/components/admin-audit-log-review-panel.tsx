@@ -117,9 +117,9 @@ export function AdminAuditLogReviewPanel({
                 No persisted audit rows visible yet.
               </p>
               <p className="mt-2 text-sm leading-6 text-white/60">
-                Mock review mode can prove audit intent, but production readiness
-                needs readback from actual `audit_logs` rows after guarded local
-                write drills run.
+                {review.posture === "mock_intent_only"
+                  ? "Mock review mode can prove audit intent, but production readiness needs readback from actual audit_logs rows after guarded local write drills run."
+                  : "The authenticated data source returned no visible audit rows. Verify audit RLS and the approved write path before treating audit coverage as complete."}
               </p>
             </div>
           )}
@@ -257,6 +257,8 @@ function StatusPill({ posture }: { posture: AdminAuditLogPosture }) {
   const className =
     posture === "persisted_readback_visible"
       ? "border-emerald-300/30 bg-emerald-300/15 text-emerald-100"
+      : posture === "persisted_readback_empty"
+        ? "border-amber-300/30 bg-amber-300/15 text-amber-100"
       : posture === "mock_intent_only"
         ? "border-sky-300/30 bg-sky-300/15 text-sky-100"
         : "border-amber-300/30 bg-amber-300/15 text-amber-100";
