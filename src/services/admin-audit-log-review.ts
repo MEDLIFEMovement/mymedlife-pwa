@@ -121,6 +121,25 @@ export function getAdminAuditLogReview(
   const rows = auditLogs.map(toReviewRow);
   const hasRows = rows.length > 0;
   const hasPersistedSource = data.source.mode === "supabase";
+  let posture: AdminAuditLogPosture = "mock_intent_only";
+  let summary =
+    "Mock fallback can show audit intent in this read-only review surface, but no persisted audit rows are visible yet.";
+  let nextStep =
+    "Run localhost Supabase write/readback drills before treating audit coverage as production-ready; this surface remains read-only.";
+
+  if (hasRows) {
+    posture = "persisted_readback_visible";
+    summary =
+      "Persisted audit rows are visible in this read-only admin review surface.";
+    nextStep =
+      "Before production launch, confirm each approved write path creates an audit row with actor, target, before/after value, reason, and readback evidence; this surface remains read-only.";
+  } else if (hasPersistedSource) {
+    posture = "persisted_readback_empty";
+    summary =
+      "The authenticated Supabase read completed, but no audit rows are currently visible to this role.";
+    nextStep =
+      "Verify audit RLS and the approved write path before treating audit coverage as complete; this surface remains read-only.";
+  }
 
   return {
     canReadReview: true,
@@ -129,16 +148,8 @@ export function getAdminAuditLogReview(
       actor.audience === "super_admin"
         ? "Super Admin audit readback"
         : "Admin audit readback",
-    posture: hasRows
-      ? "persisted_readback_visible"
-      : hasPersistedSource
-        ? "persisted_readback_empty"
-        : "mock_intent_only",
-    summary: hasRows
-      ? "Persisted audit rows are visible in this read-only admin review surface."
-      : hasPersistedSource
-        ? "The authenticated Supabase read completed, but no audit rows are currently visible to this role."
-        : "Mock fallback can show audit intent in this read-only review surface, but no persisted audit rows are visible yet.",
+    posture,
+    summary,
     sourceLabel: data.source.mode,
     rows,
     auditPreflight: buildAuditPreflightChecklist({
@@ -153,11 +164,7 @@ export function getAdminAuditLogReview(
       externalWritesEnabled: 0,
       secretsShown: 0,
     },
-    nextStep: hasRows
-      ? "Before production launch, confirm each approved write path creates an audit row with actor, target, before/after value, reason, and readback evidence; this surface remains read-only."
-      : hasPersistedSource
-        ? "Verify audit RLS and the approved write path before treating audit coverage as complete; this surface remains read-only."
-        : "Run localhost Supabase write/readback drills before treating audit coverage as production-ready; this surface remains read-only.",
+    nextStep,
   };
 }
 
