@@ -8,6 +8,8 @@ export type AdminUserLifecycleConfig = {
   enabled: boolean;
   environment: "local" | "staging" | "production";
   reason: string;
+  permanentDeletionEnabled: boolean;
+  permanentDeletionReason: string;
 };
 
 export type AdminUserLifecycleResult =
@@ -109,7 +111,13 @@ export function getAdminUserLifecycleConfig(
   return {
     enabled: true,
     environment,
-    reason: `Server-side user lifecycle writes are enabled for ${environment}. Deactivation is reversible; deletion is Super Admin-only and audited.`,
+    reason: `Server-side user suspension is enabled for ${environment}. Deactivation is reversible and audited.`,
+    permanentDeletionEnabled:
+      env.MYMEDLIFE_ENABLE_ADMIN_PERMANENT_DELETION === "true",
+    permanentDeletionReason:
+      env.MYMEDLIFE_ENABLE_ADMIN_PERMANENT_DELETION === "true"
+        ? `Permanent deletion is explicitly approved for ${environment}.`
+        : "Permanent deletion remains review-only because irreversible Auth deletion is not approved. Use deactivation to preserve history.",
   };
 }
 
@@ -162,5 +170,11 @@ function disabled(
   environment: AdminUserLifecycleConfig["environment"],
   reason: string,
 ): AdminUserLifecycleConfig {
-  return { enabled: false, environment, reason };
+  return {
+    enabled: false,
+    environment,
+    reason,
+    permanentDeletionEnabled: false,
+    permanentDeletionReason: reason,
+  };
 }

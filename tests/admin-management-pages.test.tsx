@@ -152,7 +152,7 @@ describe("admin management pages", () => {
     expect(html).toContain("Assign coach portfolio (blocked)");
     expect(html).toContain("Admin writes locked");
     expect(html).toContain(
-      "This review shell keeps every write verb visibly blocked until the audited local write path is available.",
+      "Each write stays visibly blocked until its audited server path is approved for the current environment.",
     );
     expect(html).toContain(
       "This admin access change is blocked until audited Supabase writes are approved for this environment.",
@@ -384,6 +384,8 @@ describe("admin management pages", () => {
           enabled: true,
           environment: "production",
           reason: "Production lifecycle writes enabled.",
+          permanentDeletionEnabled: false,
+          permanentDeletionReason: "Permanent deletion remains review-only.",
         }}
         passwordResetConfig={{
           enabled: true,
@@ -409,8 +411,8 @@ describe("admin management pages", () => {
     expect(html).toContain("Send password reset email (blocked)");
     expect(html).toContain("Lifecycle locked: The selected account is already inactive.");
     expect(html).toContain("Suspend / deactivate user (blocked)");
-    expect(html).toContain("Permanently delete user");
-    expect(html).not.toContain("Permanently delete user (blocked)");
+    expect(html).toContain("Permanent deletion remains review-only.");
+    expect(html).toContain("Permanently delete user (blocked)");
   });
 
   it("selects the requested user detail when only userId is present", () => {

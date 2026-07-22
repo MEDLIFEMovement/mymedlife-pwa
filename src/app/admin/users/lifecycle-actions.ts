@@ -71,6 +71,10 @@ export async function submitAdminUserLifecycleForSupabase(
   if (!request.success) return request.result;
   const { operation, targetUserId, auditReason } = request;
 
+  if (operation === "delete_user" && !config.permanentDeletionEnabled) {
+    return failure("lifecycle_disabled", config.permanentDeletionReason);
+  }
+
   const createSessionClient = deps.createSessionClient ?? createSessionSupabaseClient;
   const { client, config: authConfig } = await createSessionClient();
   if (!client) {

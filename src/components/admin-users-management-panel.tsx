@@ -194,6 +194,8 @@ export function AdminUsersManagementPanel({
     enabled: false,
     environment: "local",
     reason: "User lifecycle writes are disabled for this review.",
+    permanentDeletionEnabled: false,
+    permanentDeletionReason: "Permanent deletion is disabled for this review.",
   },
   passwordResetConfig = {
     enabled: false,
@@ -734,11 +736,11 @@ function AdminAccessServerForms({
         </h3>
         <p className="mt-1 text-xs leading-5 text-slate-500">
           These forms submit to the audited `admin_change_user_access` RPC. They stay locked
-          for mock IDs or when local Supabase write flags are off.
+          for mock IDs or when the current environment has not approved Supabase writes.
         </p>
         <p className="mt-2 text-xs leading-5 text-sky-200/80">
-          This review shell keeps every write verb visibly blocked until the audited local
-          write path is available.
+          Each write stays visibly blocked until its audited server path is approved for the
+          current environment.
         </p>
       </div>
 
@@ -846,12 +848,17 @@ function AdminUserLifecycleForm({
   selectedUser: ManagedUser;
 }>) {
   const targetAlreadyInactive = ["disabled", "deactivated", "deleted"].includes(selectedUser.status);
-  const enabled = config.enabled
+  const operationEnabled = operation === "delete_user"
+    ? config.permanentDeletionEnabled
+    : config.enabled;
+  const enabled = operationEnabled
     && hasAdminAccessSupabaseIds({ targetUserId: selectedUser.id })
     && (operation === "delete_user" || !targetAlreadyInactive);
   const lockedReason = targetAlreadyInactive && operation === "deactivate_user"
     ? "The selected account is already inactive."
-    : config.reason;
+    : operation === "delete_user"
+      ? config.permanentDeletionReason
+      : config.reason;
 
   return (
     <form action={submitAdminUserLifecycleAction} className="rounded border border-white/10 bg-[#0d1117] p-3">
@@ -883,7 +890,11 @@ function AdminUserLifecycleForm({
           />
         </label>
         <p className={`text-xs ${enabled ? "text-emerald-300" : "text-amber-200"}`}>
-          {enabled ? `Lifecycle enabled for ${config.environment}.` : `Lifecycle locked: ${lockedReason}`}
+          {enabled
+            ? operation === "delete_user"
+              ? `Permanent deletion explicitly enabled for ${config.environment}.`
+              : `Lifecycle enabled for ${config.environment}.`
+            : `Lifecycle locked: ${lockedReason}`}
         </p>
         <button
           className={`rounded px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:bg-white/10 disabled:text-slate-500 ${danger ? "bg-rose-600 hover:bg-rose-500" : "bg-sky-500 hover:bg-sky-400"}`}
