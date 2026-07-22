@@ -95,9 +95,9 @@ function getChapterWritePostureCopy(writeConfig: AdminAccessWriteConfig) {
   return {
     status: "write_disabled",
     rpcBoundary:
-      "These forms submit to the audited admin_manage_chapter RPC only after an environment-specific production approval enables the server write gate.",
+      "Production chapter mutations are disabled. The server rejects these writes before the admin_manage_chapter RPC runs; any future production write path requires separate implementation, approval, and proof.",
     reviewBoundary:
-      "Production chapter mutations are review-only. The server rejects these writes before any RPC runs, while live chapter readback remains available.",
+      "Production chapter management is review-only while live chapter readback remains available.",
   };
 }
 
