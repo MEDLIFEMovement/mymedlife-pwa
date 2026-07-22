@@ -611,7 +611,10 @@ describe("admin management pages", () => {
     );
 
     expect(html).toContain(
-      "Production chapter mutations are review-only. The server rejects these writes before any RPC runs, while live chapter readback remains available.",
+      "Production chapter mutations are disabled. The server rejects these writes before the admin_manage_chapter RPC runs; any future production write path requires separate implementation, approval, and proof.",
+    );
+    expect(html).toContain(
+      "Production chapter management is review-only while live chapter readback remains available.",
     );
     expect(html).toContain(
       "This chapter-management change is blocked until an audited write path is approved for this environment.",
@@ -619,6 +622,59 @@ describe("admin management pages", () => {
     expect(html).toContain("write_disabled");
     expect(html).not.toContain("local Supabase writes");
     expect(html).not.toContain("later chapter-type migration");
+  });
+
+  it.each([
+    {
+      name: "disabled local",
+      writeConfig: {
+        enabled: false as const,
+        isLocalOnly: true,
+        isHostedStaging: false,
+        externalWritesEnabled: false as const,
+        reason: "Local writes disabled for test.",
+      },
+      expected:
+        "This local review keeps chapter mutation verbs visibly blocked until the audited local write path is approved.",
+      status: "write_disabled",
+    },
+    {
+      name: "disabled staging",
+      writeConfig: {
+        enabled: false as const,
+        isLocalOnly: false,
+        isHostedStaging: true,
+        externalWritesEnabled: false as const,
+        reason: "Staging writes disabled for test.",
+      },
+      expected:
+        "Hosted staging chapter mutations remain visibly blocked until the audited staging write path is approved.",
+      status: "write_disabled",
+    },
+    {
+      name: "enabled staging",
+      writeConfig: {
+        enabled: true as const,
+        isLocalOnly: false,
+        isHostedStaging: true,
+        externalWritesEnabled: false as const,
+        reason: "Staging writes enabled for test.",
+      },
+      expected:
+        "Hosted staging chapter mutation rehearsal is enabled. Production chapter writes remain disabled.",
+      status: "writes-staging-only",
+    },
+  ])("renders the $name chapter-write posture honestly", ({ writeConfig, expected, status }) => {
+    const html = renderToStaticMarkup(
+      <AdminChaptersManagementPanel
+        actor={getSignedInActor("super.admin@mymedlife.test")}
+        chapterAction={writeConfig.enabled ? () => undefined : undefined}
+        writeConfig={writeConfig}
+      />,
+    );
+
+    expect(html).toContain(expected);
+    expect(html).toContain(status);
   });
 
   it("renders the access matrix with managed users and audit posture", async () => {
