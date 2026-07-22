@@ -70,12 +70,12 @@ function createReadySnapshots(): ProductionCoreRouteSnapshot[] {
     {
       path: "/leader",
       status: 307,
-      location: "/login?redirectTo=%2Fleader%3Fview%3Doverview",
+      location: "/login?redirectTo=%2Fleader",
     },
     {
       path: "/staff",
       status: 307,
-      location: "/login?redirectTo=%2Fstaff%3Fview%3Dchapters",
+      location: "/login?redirectTo=%2Fstaff",
     },
     {
       path: "/admin",

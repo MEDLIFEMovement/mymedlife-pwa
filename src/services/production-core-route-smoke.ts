@@ -24,12 +24,12 @@ const expectedWorkspaceRedirects = [
   },
   {
     path: "/leader",
-    location: "/login?redirectTo=%2Fleader%3Fview%3Doverview",
+    location: "/login?redirectTo=%2Fleader",
     label: "Student command center redirects unauthenticated users to login",
   },
   {
     path: "/staff",
-    location: "/login?redirectTo=%2Fstaff%3Fview%3Dchapters",
+    location: "/login?redirectTo=%2Fstaff",
     label: "Staff command center redirects unauthenticated users to login",
   },
   {
