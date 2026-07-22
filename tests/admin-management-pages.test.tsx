@@ -344,11 +344,17 @@ describe("admin management pages", () => {
           redirectTo: "http://127.0.0.1:3100/auth/callback/recovery/L2FkbWluL3VzZXJz",
         }}
         searchParams={{
+          adminUserCreationResult: "user_created",
+          adminUserLifecycleResult: "target_inactive",
           adminUserPasswordResetResult: "password_reset_sent",
         }}
       />,
     );
 
+    expect(html).toContain("Admin user creation: user created");
+    expect(html).toContain("User created with an audited profile and role.");
+    expect(html).toContain("Admin user lifecycle: target inactive");
+    expect(html).toContain("The selected account is already inactive");
     expect(html).toContain("Admin password reset: password reset sent");
     expect(html).toContain("Password reset email was sent through Supabase Auth");
     expect(html).toContain("Password reset enabled for local.");
