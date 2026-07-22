@@ -27,19 +27,52 @@ describe("admin user lifecycle production gates", () => {
   });
 
   it("enables the server path only with both explicit production flags", () => {
+    const config = getAdminUserLifecycleConfig({
+      MYMEDLIFE_AUTH_MODE: "production_supabase",
+      SUPABASE_SERVICE_ROLE_KEY: "server-only",
+      MYMEDLIFE_ENABLE_ADMIN_USER_LIFECYCLE: "true",
+      MYMEDLIFE_ALLOW_PRODUCTION_ADMIN_USER_LIFECYCLE: "true",
+    });
+
+    expect(config).toMatchObject({
+      enabled: true,
+      environment: "production",
+      permanentDeletionEnabled: false,
+    });
+    expect(config.permanentDeletionReason).toContain("review-only");
+  });
+
+  it("requires a separate explicit flag for irreversible deletion", () => {
     expect(getAdminUserLifecycleConfig({
       MYMEDLIFE_AUTH_MODE: "production_supabase",
       SUPABASE_SERVICE_ROLE_KEY: "server-only",
       MYMEDLIFE_ENABLE_ADMIN_USER_LIFECYCLE: "true",
       MYMEDLIFE_ALLOW_PRODUCTION_ADMIN_USER_LIFECYCLE: "true",
+      MYMEDLIFE_ENABLE_ADMIN_PERMANENT_DELETION: "true",
     })).toMatchObject({
       enabled: true,
       environment: "production",
+      permanentDeletionEnabled: true,
     });
   });
 });
 
 describe("admin user lifecycle deactivation", () => {
+  it("keeps irreversible deletion review-only without its separate approval flag", async () => {
+    enableLifecycleWrites();
+
+    const result = await submitAdminUserLifecycleForSupabase(
+      buildLifecycleForm("delete_user"),
+    );
+
+    expect(result).toEqual({
+      success: false,
+      code: "lifecycle_disabled",
+      plainEnglishMessage:
+        "Permanent deletion remains review-only because irreversible Auth deletion is not approved. Use deactivation to preserve history.",
+    });
+  });
+
   it("suspends Auth and transactionally deactivates every app assignment", async () => {
     enableLifecycleWrites();
     const rpc = vi.fn().mockResolvedValue({
@@ -207,11 +240,11 @@ type LifecycleServiceClient = NonNullable<
   ReturnType<NonNullable<LifecycleDeps["createServiceClient"]>>
 >;
 
-function buildLifecycleForm() {
+function buildLifecycleForm(operation: "deactivate_user" | "delete_user" = "deactivate_user") {
   const formData = new FormData();
-  formData.set("operation", "deactivate_user");
+  formData.set("operation", operation);
   formData.set("targetUserId", targetUserId);
-  formData.set("confirmation", "DEACTIVATE USER");
+  formData.set("confirmation", operation === "delete_user" ? "DELETE USER" : "DEACTIVATE USER");
   formData.set("auditReason", auditReason);
   return formData;
 }
