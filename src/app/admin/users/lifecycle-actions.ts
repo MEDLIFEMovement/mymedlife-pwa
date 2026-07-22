@@ -97,52 +97,7 @@ export async function submitAdminUserLifecycleForSupabase(
   if (authorizationFailure) return authorizationFailure;
 
   if (operation === "deactivate_user") {
-    const target = await serviceClient.auth.admin.getUserById(targetUserId);
-    if (target.error || !target.data.user?.id) {
-      return failure("target_not_found", "The selected Auth user was not found, so no lifecycle write ran.");
-    }
-    if (isAdminAuthUserSuspended(target.data.user)) {
-      return failure(
-        "target_inactive",
-        "The selected account is already inactive. No additional lifecycle write ran.",
-      );
-    }
-  }
-
-  if (operation === "deactivate_user") {
-    const ban = await serviceClient.auth.admin.updateUserById(targetUserId, {
-      ban_duration: "876000h",
-    });
-    if (ban.error) {
-      return failure("server_error", `Supabase Auth could not suspend the account: ${ban.error.message ?? "Supabase Auth rejected the change."}`);
-    }
-
-    const rpcResult = await client.schema("app").rpc("admin_change_user_access", {
-      target_user_uuid: targetUserId,
-      operation_input: "deactivate_user",
-      chapter_uuid: null,
-      role_key_input: null,
-      audit_reason_input: auditReason,
-    });
-    const rpcRow = Array.isArray(rpcResult.data)
-      ? (rpcResult.data[0] as AdminUserLifecycleRpcRow | undefined)
-      : undefined;
-
-    if (rpcResult.error || !rpcRow?.audit_log_id) {
-      return rollbackAuthBanAfterRpcFailure(
-        serviceClient,
-        targetUserId,
-        rpcResult.error?.message ?? "Supabase did not return the required audit record.",
-      );
-    }
-
-    return {
-      success: true,
-      code: "user_deactivated",
-      userId: targetUserId,
-      auditLogId: rpcRow.audit_log_id,
-      plainEnglishMessage: "User access was suspended in Auth, all app assignments were marked inactive, and the change was audited.",
-    };
+    return deactivateUser(client, serviceClient, targetUserId, auditReason);
   }
 
   const now = new Date().toISOString();
@@ -161,6 +116,58 @@ export async function submitAdminUserLifecycleForSupabase(
     userId: targetUserId,
     auditLogId,
     plainEnglishMessage: "User was permanently deleted from Auth and the deletion was audited.",
+  };
+}
+
+async function deactivateUser(
+  sessionClient: AdminUserLifecycleSessionClient,
+  serviceClient: AdminUserLifecycleClient,
+  targetUserId: string,
+  auditReason: string,
+): Promise<AdminUserLifecycleResult> {
+  const target = await serviceClient.auth.admin.getUserById(targetUserId);
+  if (target.error || !target.data.user?.id) {
+    return failure("target_not_found", "The selected Auth user was not found, so no lifecycle write ran.");
+  }
+  if (isAdminAuthUserSuspended(target.data.user)) {
+    return failure(
+      "target_inactive",
+      "The selected account is already inactive. No additional lifecycle write ran.",
+    );
+  }
+
+  const ban = await serviceClient.auth.admin.updateUserById(targetUserId, {
+    ban_duration: "876000h",
+  });
+  if (ban.error) {
+    return failure("server_error", `Supabase Auth could not suspend the account: ${ban.error.message ?? "Supabase Auth rejected the change."}`);
+  }
+
+  const rpcResult = await sessionClient.schema("app").rpc("admin_change_user_access", {
+    target_user_uuid: targetUserId,
+    operation_input: "deactivate_user",
+    chapter_uuid: null,
+    role_key_input: null,
+    audit_reason_input: auditReason,
+  });
+  const rpcRow = Array.isArray(rpcResult.data)
+    ? (rpcResult.data[0] as AdminUserLifecycleRpcRow | undefined)
+    : undefined;
+
+  if (rpcResult.error || !rpcRow?.audit_log_id) {
+    return rollbackAuthBanAfterRpcFailure(
+      serviceClient,
+      targetUserId,
+      rpcResult.error?.message ?? "Supabase did not return the required audit record.",
+    );
+  }
+
+  return {
+    success: true,
+    code: "user_deactivated",
+    userId: targetUserId,
+    auditLogId: rpcRow.audit_log_id,
+    plainEnglishMessage: "User access was suspended in Auth, all app assignments were marked inactive, and the change was audited.",
   };
 }
 
