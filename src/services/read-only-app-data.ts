@@ -121,6 +121,10 @@ type SupabaseReadOnlyAppDataOptions = {
   allowMockFallbackWhenEmpty?: boolean;
 };
 
+const defaultSupabaseReadOnlyAppDataOptions: SupabaseReadOnlyAppDataOptions = {
+  allowMockFallbackWhenEmpty: true,
+};
+
 export async function getReadOnlyAppData(
   scope: ReadOnlyAppDataScope = {},
 ): Promise<ReadOnlyAppData> {
@@ -160,9 +164,7 @@ export async function getSupabaseReadOnlyAppData(
   client: SupabaseReadonlyClient,
   message = "Reading local Supabase data in read-only mode.",
   scope: ReadOnlyAppDataScope = {},
-  options: SupabaseReadOnlyAppDataOptions = {
-    allowMockFallbackWhenEmpty: true,
-  },
+  options: SupabaseReadOnlyAppDataOptions = defaultSupabaseReadOnlyAppDataOptions,
 ): Promise<ReadOnlyAppData> {
   const snapshot = await readLocalDataSnapshot(client);
   const chapter = selectChapterForActor(snapshot, scope.actorUserId);

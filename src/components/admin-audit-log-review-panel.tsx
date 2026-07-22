@@ -254,14 +254,13 @@ function AuditPreflightStatusPill({
 }
 
 function StatusPill({ posture }: { posture: AdminAuditLogPosture }) {
-  const className =
-    posture === "persisted_readback_visible"
-      ? "border-emerald-300/30 bg-emerald-300/15 text-emerald-100"
-      : posture === "persisted_readback_empty"
-        ? "border-amber-300/30 bg-amber-300/15 text-amber-100"
-      : posture === "mock_intent_only"
-        ? "border-sky-300/30 bg-sky-300/15 text-sky-100"
-        : "border-amber-300/30 bg-amber-300/15 text-amber-100";
+  let className = "border-amber-300/30 bg-amber-300/15 text-amber-100";
+
+  if (posture === "persisted_readback_visible") {
+    className = "border-emerald-300/30 bg-emerald-300/15 text-emerald-100";
+  } else if (posture === "mock_intent_only") {
+    className = "border-sky-300/30 bg-sky-300/15 text-sky-100";
+  }
 
   return (
     <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${className}`}>
