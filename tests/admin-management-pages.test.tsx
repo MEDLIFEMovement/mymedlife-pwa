@@ -284,11 +284,9 @@ describe("admin management pages", () => {
     expect(html).toContain("Assign student leader (blocked)");
     expect(html).toContain("write_disabled");
     expect(html).toContain(
-      "This review shell keeps chapter mutation verbs visibly blocked until the audited local write path is approved.",
+      "This chapter-management change is blocked until an audited write path is approved for this environment.",
     );
-    expect(html).toContain(
-      "This chapter-management change is blocked until audited local Supabase writes are approved.",
-    );
+    expect(html).not.toContain("later chapter-type migration");
     expect(html).toContain("Historical events, attendance, and points records must be preserved.");
   });
 
@@ -589,9 +587,38 @@ describe("admin management pages", () => {
     expect(html).not.toContain("Create chapter (blocked)");
     expect(html).not.toContain("Archive chapter (blocked)");
     expect(html).toContain(
-      "This chapter-management change is blocked until audited local Supabase writes are approved.",
+      "Local chapter mutation rehearsal is enabled. Hosted and production chapter writes remain disabled.",
+    );
+    expect(html).toContain(
+      "This chapter-management change is blocked until an audited write path is approved for this environment.",
     );
     expect(html).toContain("writes-local-only");
+  });
+
+  it("keeps production chapter mutations visibly review-only without local-write claims", () => {
+    const actor = getSignedInActor("super.admin@mymedlife.test");
+    const html = renderToStaticMarkup(
+      <AdminChaptersManagementPanel
+        actor={actor}
+        writeConfig={{
+          enabled: false,
+          isLocalOnly: false,
+          isHostedStaging: false,
+          externalWritesEnabled: false,
+          reason: "Production admin access writes are disabled.",
+        }}
+      />,
+    );
+
+    expect(html).toContain(
+      "Production chapter mutations are review-only. The server rejects these writes before any RPC runs, while live chapter readback remains available.",
+    );
+    expect(html).toContain(
+      "This chapter-management change is blocked until an audited write path is approved for this environment.",
+    );
+    expect(html).toContain("write_disabled");
+    expect(html).not.toContain("local Supabase writes");
+    expect(html).not.toContain("later chapter-type migration");
   });
 
   it("renders the access matrix with managed users and audit posture", async () => {

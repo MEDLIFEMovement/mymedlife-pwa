@@ -69,6 +69,38 @@ const statusOptions: Array<ManagedChapterStatus | "all"> = [
   "deleted",
 ];
 
+function getChapterWritePostureCopy(writeConfig: AdminAccessWriteConfig) {
+  if (writeConfig.isLocalOnly) {
+    return {
+      status: writeConfig.enabled ? "writes-local-only" : "write_disabled",
+      rpcBoundary:
+        "These forms submit to the audited admin_manage_chapter RPC only when local Supabase writes and the admin access write gate are explicitly enabled.",
+      reviewBoundary: writeConfig.enabled
+        ? "Local chapter mutation rehearsal is enabled. Hosted and production chapter writes remain disabled."
+        : "This local review keeps chapter mutation verbs visibly blocked until the audited local write path is approved.",
+    };
+  }
+
+  if (writeConfig.isHostedStaging) {
+    return {
+      status: writeConfig.enabled ? "writes-staging-only" : "write_disabled",
+      rpcBoundary:
+        "These forms submit to the audited admin_manage_chapter RPC only when the hosted staging and admin access write gates are explicitly enabled.",
+      reviewBoundary: writeConfig.enabled
+        ? "Hosted staging chapter mutation rehearsal is enabled. Production chapter writes remain disabled."
+        : "Hosted staging chapter mutations remain visibly blocked until the audited staging write path is approved.",
+    };
+  }
+
+  return {
+    status: "write_disabled",
+    rpcBoundary:
+      "These forms submit to the audited admin_manage_chapter RPC only after an environment-specific production approval enables the server write gate.",
+    reviewBoundary:
+      "Production chapter mutations are review-only. The server rejects these writes before any RPC runs, while live chapter readback remains available.",
+  };
+}
+
 export function AdminChaptersManagementPanel({
   actor,
   chapterAction,
@@ -123,6 +155,7 @@ export function AdminChaptersManagementPanel({
   const chapterResult = getSingleParam(searchParams.adminChapterResult);
   const resultOperation = getSingleParam(searchParams.operation);
   const formsEnabled = Boolean(writeConfig.enabled && chapterAction);
+  const writePostureCopy = getChapterWritePostureCopy(writeConfig);
   const selectedChapterReturnTo = `/admin/chapters?chapterId=${selectedChapter.id}`;
   const Container = embeddedInFigmaShell ? "div" : "main";
 
@@ -370,11 +403,9 @@ export function AdminChaptersManagementPanel({
                   Server-backed chapter changes
                 </h3>
                 <p className="mt-2 text-xs leading-5 text-slate-500">
-                  These forms submit to the audited `admin_manage_chapter` RPC.
-                  They stay locked unless local Supabase writes and admin access
-                  writes are explicitly enabled. Chapter type classification is
-                  shown here for review; hosted persistence needs the later
-                  chapter-type migration/RPC update.
+                  {writePostureCopy.rpcBoundary} Chapter type classification is
+                  shown here for readback and review; changing it stays subject
+                  to the same environment-specific write boundary.
                 </p>
                 <p className="mt-2 text-xs leading-5 text-slate-500">
                   HubSpot company/contact IDs are stored as app-side references
@@ -382,11 +413,10 @@ export function AdminChaptersManagementPanel({
                   updates yet.
                 </p>
                 <p className="mt-2 text-xs leading-5 text-sky-200/80">
-                  This review shell keeps chapter mutation verbs visibly blocked until the
-                  audited local write path is approved.
+                  {writePostureCopy.reviewBoundary}
                 </p>
               </div>
-              <StatusPill value={formsEnabled ? "writes-local-only" : "write_disabled"} />
+              <StatusPill value={writePostureCopy.status} />
               <p className="text-xs leading-5 text-slate-500">{writeConfig.reason}</p>
               {chapterResult ? (
                 <div className="rounded border border-sky-400/20 bg-sky-400/10 p-3 text-xs leading-5 text-sky-100">
@@ -970,7 +1000,7 @@ function AdminChapterForm({
         disabled={disabled}
         title={
           disabled
-            ? "This chapter-management change is blocked until audited local Supabase writes are approved."
+            ? "This chapter-management change is blocked until an audited write path is approved for this environment."
             : undefined
         }
       >
