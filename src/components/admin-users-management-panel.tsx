@@ -348,7 +348,7 @@ export function AdminUsersManagementPanel({
                 ))}
               </select>
             </label>
-            <button className="self-end rounded bg-sky-500 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-400">
+            <button className="self-end rounded bg-sky-500 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-400" type="submit">
               Apply preview filters
             </button>
           </div>
@@ -507,63 +507,60 @@ function AdminAccessResultBanner({ code }: { code: AdminAccessResultCode }) {
   );
 }
 
-function AdminUserCreationResultBanner({ code }: { code: string }) {
+function AdminUserCreationResultBanner({ code }: Readonly<{ code: string }>) {
   const isSuccess = code === "user_created";
   const message = adminUserCreationMessages[code]
     ?? "User creation failed safely; no partial account should remain.";
 
   return (
-    <div
+    <output
       className={`rounded-lg border px-4 py-3 text-sm ${
         isSuccess
           ? "border-emerald-300/30 bg-emerald-300/10 text-emerald-100"
           : "border-rose-300/30 bg-rose-300/10 text-rose-100"
       }`}
-      role="status"
     >
       <p className="font-semibold">Admin user creation: {code.replaceAll("_", " ")}</p>
       <p className="mt-1">{message}</p>
-    </div>
+    </output>
   );
 }
 
-function AdminUserLifecycleResultBanner({ code }: { code: string }) {
+function AdminUserLifecycleResultBanner({ code }: Readonly<{ code: string }>) {
   const success = code === "user_deactivated" || code === "user_deleted";
   const message = adminUserLifecycleMessages[code]
     ?? "The lifecycle action failed safely; review the audit trail before retrying.";
 
   return (
-    <div
+    <output
       className={`rounded-lg border px-4 py-3 text-sm ${
         success
           ? "border-emerald-300/30 bg-emerald-300/10 text-emerald-100"
           : "border-rose-300/30 bg-rose-300/10 text-rose-100"
       }`}
-      role="status"
     >
       <p className="font-semibold">Admin user lifecycle: {code.replaceAll("_", " ")}</p>
       <p className="mt-1">{message}</p>
-    </div>
+    </output>
   );
 }
 
-function AdminUserPasswordResetResultBanner({ code }: { code: string }) {
+function AdminUserPasswordResetResultBanner({ code }: Readonly<{ code: string }>) {
   const success = code === "password_reset_sent";
   const message = adminUserPasswordResetMessages[code]
     ?? "The password reset request failed safely; review the audit trail before retrying.";
 
   return (
-    <div
+    <output
       className={`rounded-lg border px-4 py-3 text-sm ${
         success
           ? "border-emerald-300/30 bg-emerald-300/10 text-emerald-100"
           : "border-rose-300/30 bg-rose-300/10 text-rose-100"
       }`}
-      role="status"
     >
       <p className="font-semibold">Admin password reset: {code.replaceAll("_", " ")}</p>
       <p className="mt-1">{message}</p>
-    </div>
+    </output>
   );
 }
 
@@ -599,10 +596,10 @@ const adminUserPasswordResetMessages: Record<string, string> = {
 function AdminUserCreationForm({
   chapters,
   config,
-}: {
+}: Readonly<{
   chapters: ManagedChapter[];
   config: AdminUserCreationConfig;
-}) {
+}>) {
   return (
     <section className="rounded-lg border border-sky-300/20 bg-sky-300/5 p-5">
       <div className="max-w-3xl">
@@ -620,7 +617,7 @@ function AdminUserCreationForm({
       </div>
       <form action={submitAdminUserCreationAction} className="mt-4 grid gap-3 md:grid-cols-2">
         <label className="space-y-1 text-xs text-slate-400">
-          Display name
+          <span>Display name</span>
           <input
             className="w-full rounded border border-white/10 bg-[#0d1117] px-3 py-2 text-sm text-slate-100"
             name="displayName"
@@ -630,7 +627,7 @@ function AdminUserCreationForm({
           />
         </label>
         <label className="space-y-1 text-xs text-slate-400">
-          Email
+          <span>Email</span>
           <input
             className="w-full rounded border border-white/10 bg-[#0d1117] px-3 py-2 text-sm text-slate-100"
             name="email"
@@ -641,7 +638,7 @@ function AdminUserCreationForm({
           />
         </label>
         <label className="space-y-1 text-xs text-slate-400">
-          Initial role
+          <span>Initial role</span>
           <select
             className="w-full rounded border border-white/10 bg-[#0d1117] px-3 py-2 text-sm text-slate-100"
             defaultValue="general_member"
@@ -658,7 +655,7 @@ function AdminUserCreationForm({
           </select>
         </label>
         <label className="space-y-1 text-xs text-slate-400">
-          Chapter (required for members and E-Board)
+          <span>Chapter (required for members and E-Board)</span>
           <select
             className="w-full rounded border border-white/10 bg-[#0d1117] px-3 py-2 text-sm text-slate-100"
             defaultValue=""
@@ -674,7 +671,7 @@ function AdminUserCreationForm({
           </select>
         </label>
         <label className="space-y-1 text-xs text-slate-400">
-          Temporary password
+          <span>Temporary password</span>
           <input
             className="w-full rounded border border-white/10 bg-[#0d1117] px-3 py-2 text-sm text-slate-100"
             minLength={12}
@@ -686,7 +683,7 @@ function AdminUserCreationForm({
           />
         </label>
         <label className="space-y-1 text-xs text-slate-400 md:col-span-2">
-          Audit reason
+          <span>Audit reason</span>
           <input
             className="w-full rounded border border-white/10 bg-[#0d1117] px-3 py-2 text-sm text-slate-100"
             minLength={12}
@@ -839,7 +836,7 @@ function AdminUserLifecycleForm({
   operation,
   returnTo,
   selectedUser,
-}: {
+}: Readonly<{
   buttonLabel: string;
   confirmation: string;
   config: AdminUserLifecycleConfig;
@@ -847,7 +844,7 @@ function AdminUserLifecycleForm({
   operation: "deactivate_user" | "delete_user";
   returnTo: string;
   selectedUser: ManagedUser;
-}) {
+}>) {
   const targetAlreadyInactive = ["disabled", "deactivated", "deleted"].includes(selectedUser.status);
   const enabled = config.enabled
     && hasAdminAccessSupabaseIds({ targetUserId: selectedUser.id })
@@ -868,7 +865,7 @@ function AdminUserLifecycleForm({
             : "Suspension disables Auth access, marks the profile inactive, and closes active chapter/staff assignments."}
         </p>
         <label className="space-y-1 text-xs text-slate-400">
-          Confirmation
+          <span>Confirmation</span>
           <input
             className="w-full rounded border border-white/10 bg-[#161b22] px-3 py-2 text-sm text-slate-100 disabled:cursor-not-allowed disabled:text-slate-500"
             disabled={!enabled}
@@ -877,7 +874,7 @@ function AdminUserLifecycleForm({
           />
         </label>
         <label className="space-y-1 text-xs text-slate-400">
-          Audit reason
+          <span>Audit reason</span>
           <textarea
             className="min-h-20 w-full rounded border border-white/10 bg-[#161b22] px-3 py-2 text-sm text-slate-100 disabled:cursor-not-allowed disabled:text-slate-500"
             defaultValue={`MED-509 production lifecycle action for ${selectedUser.email}.`}
@@ -904,11 +901,11 @@ function AdminUserPasswordResetForm({
   config,
   returnTo,
   selectedUser,
-}: {
+}: Readonly<{
   config: AdminUserPasswordResetConfig;
   returnTo: string;
   selectedUser: ManagedUser;
-}) {
+}>) {
   const targetInactive = ["disabled", "deactivated", "deleted"].includes(selectedUser.status);
   const enabled = config.enabled
     && hasAdminAccessSupabaseIds({ targetUserId: selectedUser.id })
@@ -928,7 +925,7 @@ function AdminUserPasswordResetForm({
           leaves the server.
         </p>
         <label className="space-y-1 text-xs text-slate-400">
-          Confirmation
+          <span>Confirmation</span>
           <input
             className="w-full rounded border border-white/10 bg-[#161b22] px-3 py-2 text-sm text-slate-100 disabled:cursor-not-allowed disabled:text-slate-500"
             disabled={!enabled}
@@ -937,7 +934,7 @@ function AdminUserPasswordResetForm({
           />
         </label>
         <label className="space-y-1 text-xs text-slate-400">
-          Audit reason
+          <span>Audit reason</span>
           <textarea
             className="min-h-20 w-full rounded border border-white/10 bg-[#161b22] px-3 py-2 text-sm text-slate-100 disabled:cursor-not-allowed disabled:text-slate-500"
             defaultValue={`Password reset requested for ${selectedUser.email}.`}

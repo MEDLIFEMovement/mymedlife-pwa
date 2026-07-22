@@ -172,6 +172,28 @@ describe("admin user lifecycle deactivation", () => {
     expect(updateUserById).not.toHaveBeenCalled();
     expect(rpc).not.toHaveBeenCalled();
   });
+
+  it("blocks deactivation when the Auth user no longer exists", async () => {
+    enableLifecycleWrites();
+    const rpc = vi.fn();
+    const updateUserById = vi.fn();
+    const { client: serviceClient } = buildServiceClient(updateUserById, {
+      targetMissing: true,
+    });
+
+    const result = await submitAdminUserLifecycleForSupabase(
+      buildLifecycleForm(),
+      buildLifecycleDeps({ rpc, serviceClient }),
+    );
+
+    expect(result).toEqual({
+      success: false,
+      code: "target_not_found",
+      plainEnglishMessage: "The selected Auth user was not found, so no lifecycle write ran.",
+    });
+    expect(updateUserById).not.toHaveBeenCalled();
+    expect(rpc).not.toHaveBeenCalled();
+  });
 });
 
 const actorUserId = "00000000-0000-4000-8000-000000000006";
@@ -230,7 +252,7 @@ function buildLifecycleDeps(input: {
 
 function buildServiceClient(
   updateUserById: ReturnType<typeof vi.fn>,
-  options: { bannedUntil?: string | null } = {},
+  options: { bannedUntil?: string | null; targetMissing?: boolean } = {},
 ) {
   const from = vi.fn(() => ({
     select: vi.fn(() => ({
@@ -247,12 +269,14 @@ function buildServiceClient(
       admin: {
         getUserById: vi.fn().mockResolvedValue({
           data: {
-            user: {
-              id: targetUserId,
-              banned_until: options.bannedUntil ?? null,
-            },
+            user: options.targetMissing
+              ? null
+              : {
+                  id: targetUserId,
+                  banned_until: options.bannedUntil ?? null,
+                },
           },
-          error: null,
+          error: options.targetMissing ? { message: "User not found" } : null,
         }),
         updateUserById,
         deleteUser: vi.fn(),
