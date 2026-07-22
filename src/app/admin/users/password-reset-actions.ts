@@ -7,6 +7,7 @@ import { getAuthSessionState, type AuthSessionState } from "@/services/auth-sess
 import {
   createAdminUserPasswordResetClient,
   getAdminUserPasswordResetConfig,
+  isAdminAuthUserSuspended,
   isAuthenticatedPasswordResetSession,
   type AdminUserPasswordResetClient,
   type AdminUserPasswordResetResult,
@@ -85,6 +86,12 @@ export async function submitAdminUserPasswordResetForSupabase(
   const email = target.data.user?.email?.trim().toLowerCase();
   if (target.error || !target.data.user?.id || !email) {
     return failure("target_not_found", "The selected Auth user was not found, so no password reset email was sent.");
+  }
+  if (isAdminAuthUserSuspended(target.data.user)) {
+    return failure(
+      "target_inactive",
+      "The selected account is inactive. Reactivate it through an approved lifecycle workflow before sending a password reset email.",
+    );
   }
 
   const auditLogId = await writeAudit(

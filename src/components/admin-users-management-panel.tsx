@@ -554,6 +554,8 @@ function AdminUserLifecycleResultBanner({ code }: { code: string }) {
               ? "A clear audit reason is required."
               : code === "permission_denied"
                 ? "This signed-in role cannot perform that lifecycle action."
+                : code === "target_inactive"
+                  ? "The selected account is already inactive. No additional lifecycle write ran."
                 : "The lifecycle action failed safely; review the audit trail before retrying.";
 
   return (
@@ -586,6 +588,8 @@ function AdminUserPasswordResetResultBanner({ code }: { code: string }) {
               ? "This signed-in role cannot send a password reset email for the selected user."
               : code === "target_not_found"
                 ? "The selected Auth user was not found, so no password reset email was sent."
+                : code === "target_inactive"
+                  ? "The selected account is inactive, so no password reset email was sent."
                 : "The password reset request failed safely; review the audit trail before retrying.";
 
   return (
@@ -855,7 +859,13 @@ function AdminUserLifecycleForm({
   returnTo: string;
   selectedUser: ManagedUser;
 }) {
-  const enabled = config.enabled && hasAdminAccessSupabaseIds({ targetUserId: selectedUser.id });
+  const targetAlreadyInactive = ["disabled", "deactivated", "deleted"].includes(selectedUser.status);
+  const enabled = config.enabled
+    && hasAdminAccessSupabaseIds({ targetUserId: selectedUser.id })
+    && (operation === "delete_user" || !targetAlreadyInactive);
+  const lockedReason = targetAlreadyInactive && operation === "deactivate_user"
+    ? "The selected account is already inactive."
+    : config.reason;
 
   return (
     <form action={submitAdminUserLifecycleAction} className="rounded border border-white/10 bg-[#0d1117] p-3">
@@ -887,14 +897,14 @@ function AdminUserLifecycleForm({
           />
         </label>
         <p className={`text-xs ${enabled ? "text-emerald-300" : "text-amber-200"}`}>
-          {enabled ? `Lifecycle enabled for ${config.environment}.` : `Lifecycle locked: ${config.reason}`}
+          {enabled ? `Lifecycle enabled for ${config.environment}.` : `Lifecycle locked: ${lockedReason}`}
         </p>
         <button
           className={`rounded px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:bg-white/10 disabled:text-slate-500 ${danger ? "bg-rose-600 hover:bg-rose-500" : "bg-sky-500 hover:bg-sky-400"}`}
           disabled={!enabled}
           type="submit"
         >
-          {buttonLabel}
+          {enabled ? buttonLabel : `${buttonLabel} (blocked)`}
         </button>
       </div>
     </form>
@@ -910,7 +920,13 @@ function AdminUserPasswordResetForm({
   returnTo: string;
   selectedUser: ManagedUser;
 }) {
-  const enabled = config.enabled && hasAdminAccessSupabaseIds({ targetUserId: selectedUser.id });
+  const targetInactive = ["disabled", "deactivated", "deleted"].includes(selectedUser.status);
+  const enabled = config.enabled
+    && hasAdminAccessSupabaseIds({ targetUserId: selectedUser.id })
+    && !targetInactive;
+  const lockedReason = targetInactive
+    ? "The selected account is inactive. Reactivate it through an approved lifecycle workflow first."
+    : config.reason;
 
   return (
     <form action={submitAdminUserPasswordResetAction} className="rounded border border-white/10 bg-[#0d1117] p-3">
@@ -941,7 +957,7 @@ function AdminUserPasswordResetForm({
           />
         </label>
         <p className={`text-xs ${enabled ? "text-emerald-300" : "text-amber-200"}`}>
-          {enabled ? `Password reset enabled for ${config.environment}.` : `Password reset locked: ${config.reason}`}
+          {enabled ? `Password reset enabled for ${config.environment}.` : `Password reset locked: ${lockedReason}`}
         </p>
         <button
           className="rounded bg-sky-500 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-400 disabled:cursor-not-allowed disabled:bg-white/10 disabled:text-slate-500"
@@ -1006,7 +1022,7 @@ function AdminAccessFormShell({
           disabled={disabled}
           title={
             disabled
-              ? "This admin access change is blocked until audited local Supabase writes are approved."
+              ? "This admin access change is blocked until audited Supabase writes are approved for this environment."
               : undefined
           }
           type="submit"

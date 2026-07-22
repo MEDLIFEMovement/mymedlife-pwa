@@ -7,6 +7,7 @@ import { getAuthSessionState, type AuthSessionState } from "@/services/auth-sess
 import {
   createAdminUserLifecycleClient,
   getAdminUserLifecycleConfig,
+  isAdminAuthUserSuspended,
   isPrivilegedLifecycleSession,
   type AdminUserLifecycleClient,
   type AdminUserLifecycleOperation,
@@ -94,6 +95,19 @@ export async function submitAdminUserLifecycleForSupabase(
   const targetRoles = await readActiveRoles(serviceClient, targetUserId);
   const authorizationFailure = authorizeLifecycleTarget(operation, actorRoles, targetRoles);
   if (authorizationFailure) return authorizationFailure;
+
+  if (operation === "deactivate_user") {
+    const target = await serviceClient.auth.admin.getUserById(targetUserId);
+    if (target.error || !target.data.user?.id) {
+      return failure("target_not_found", "The selected Auth user was not found, so no lifecycle write ran.");
+    }
+    if (isAdminAuthUserSuspended(target.data.user)) {
+      return failure(
+        "target_inactive",
+        "The selected account is already inactive. No additional lifecycle write ran.",
+      );
+    }
+  }
 
   if (operation === "deactivate_user") {
     const ban = await serviceClient.auth.admin.updateUserById(targetUserId, {

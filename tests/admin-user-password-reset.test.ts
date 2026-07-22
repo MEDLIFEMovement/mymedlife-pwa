@@ -342,6 +342,38 @@ describe("admin user password reset", () => {
     expect(resetPasswordForEmail).not.toHaveBeenCalled();
   });
 
+  it("blocks recovery email for a suspended account before auditing or sending", async () => {
+    enableLocalResetEnv();
+    const resetPasswordForEmail = vi.fn();
+    const insert = vi.fn();
+
+    const result = await submitAdminUserPasswordResetForSupabase(buildValidForm(), {
+      ...signedInSessionDeps(),
+      createServiceClient: () => buildServiceClient({
+        getUserResult: {
+          data: {
+            user: {
+              id: "00000000-0000-4000-8000-000000000099",
+              email: "member@example.com",
+              banned_until: "2126-06-28T02:00:13.2677+00:00",
+            },
+          },
+          error: null,
+        },
+        insert,
+        resetPasswordForEmail,
+      }) as never,
+    });
+
+    expect(result).toEqual({
+      success: false,
+      code: "target_inactive",
+      plainEnglishMessage: "The selected account is inactive. Reactivate it through an approved lifecycle workflow before sending a password reset email.",
+    });
+    expect(insert).not.toHaveBeenCalled();
+    expect(resetPasswordForEmail).not.toHaveBeenCalled();
+  });
+
   it("blocks the reset email if the audit record cannot be written", async () => {
     enableLocalResetEnv();
     const resetPasswordForEmail = vi.fn();
@@ -419,7 +451,13 @@ function buildServiceClient(options: {
   actorRoles?: string[];
   auditError?: { message?: string } | null;
   getUserResult?: {
-    data: { user: { id: string; email?: string | null } | null };
+    data: {
+      user: {
+        id: string;
+        email?: string | null;
+        banned_until?: string | null;
+      } | null;
+    };
     error: { message?: string } | null;
   };
   insert?: ReturnType<typeof vi.fn>;
