@@ -164,6 +164,28 @@ describe("admin audit log review", () => {
     expect(review.posture).toBe("persisted_readback_empty");
     expect(review.summary).not.toContain("Mock fallback");
     expect(review.nextStep).toContain("audit RLS");
+
+    const html = renderToStaticMarkup(
+      React.createElement(AdminAuditLogReviewPanel, { review }),
+    );
+
+    expect(html).toContain("persisted readback empty");
+    expect(html).toContain(
+      "The authenticated data source returned no visible audit rows.",
+    );
+    expect(html).not.toContain("Mock review mode can prove audit intent");
+  });
+
+  it("renders the mock-only empty-state explanation", () => {
+    const actor = getMockLocalActorContext("admin@mymedlife.test");
+    const review = getAdminAuditLogReview(actor, dataWithAuditLogs([]));
+
+    const html = renderToStaticMarkup(
+      React.createElement(AdminAuditLogReviewPanel, { review }),
+    );
+
+    expect(html).toContain("mock intent only");
+    expect(html).toContain("Mock review mode can prove audit intent");
   });
 
   it("lets DS Admin see posture while hiding row-level audit truth", () => {
@@ -221,6 +243,11 @@ describe("admin audit log review", () => {
 
     expect(coachReview.canReadReview).toBe(false);
     expect(coachReview.auditPreflight.items).toEqual([]);
+    expect(
+      renderToStaticMarkup(
+        React.createElement(AdminAuditLogReviewPanel, { review: coachReview }),
+      ),
+    ).toBe("");
   });
 
   it("renders blocked preview controls in the audit log panel", () => {

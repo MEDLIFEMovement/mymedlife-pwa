@@ -13,6 +13,7 @@ describe("read-only app data service", () => {
     expect(data.source.status).toBe("mock_fallback");
     expect(data.chapter.name).toContain("UCLA");
     expect(data.assignments.length).toBeGreaterThan(0);
+    expect(data.allAuditLogs).toBe(data.auditLogs);
   });
 
   it("does not assign the first active chapter when an actor has no approved membership", async () => {
@@ -31,6 +32,7 @@ describe("read-only app data service", () => {
     expect(data.chapterRows).toEqual([]);
     expect(data.profiles).toEqual([]);
     expect(data.memberships).toEqual([]);
+    expect(data.allAuditLogs).toEqual([]);
   });
 
   it("reads every Goal 8 table in the local data snapshot", async () => {
