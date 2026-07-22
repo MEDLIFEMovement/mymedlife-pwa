@@ -36,6 +36,25 @@ describe("admin Luma integration status", () => {
     expect(status.counts.browserSecretsShown).toBe(0);
   });
 
+  it("keeps Supabase-backed production visibly disabled instead of calling it staging-ready", () => {
+    const actor = getMockLocalActorContext("super.admin@mymedlife.test");
+    const data = getMockReadOnlyAppData("Testing production Luma posture.");
+    data.source = {
+      mode: "supabase",
+      status: "supabase_ready",
+      message: "Reading hosted production Supabase data.",
+    };
+    const status = getAdminLumaIntegrationStatus(actor, data, {
+      VERCEL_ENV: "production",
+    });
+
+    expect(status.environment).toBe("disabled");
+    expect(status.environmentLabel).toBe("Production");
+    expect(status.providerStatus).toBe("disabled");
+    expect(status.testConnection.status).toBe("blocked");
+    expect(status.testConnection.label).toBe("Connection disabled");
+  });
+
   it("blocks non-DS staff from provider setup", () => {
     const actor = getMockLocalActorContext("general.staff@mymedlife.test");
     const data = getMockReadOnlyAppData("Testing blocked Luma setup route.");

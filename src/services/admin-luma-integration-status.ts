@@ -85,6 +85,7 @@ export function getAdminLumaIntegrationStatus(
 
   const environment = resolveLumaEnvironment(data, env);
   const providerStatus = getProviderStatus(environment, data);
+  const environmentLabel = getEnvironmentLabel(environment, env);
   const readModel = getPilotEventLoopReadModel({
     mode: environment,
     data: {
@@ -114,7 +115,7 @@ export function getAdminLumaIntegrationStatus(
       "DS Admin can inspect Luma calendar mapping, event link posture, test-readiness, outbox safety, and blocked live-send controls without exposing keys or enabling production writes.",
     providerStatus,
     environment,
-    environmentLabel: getEnvironmentLabel(environment),
+    environmentLabel,
     testConnection: getTestConnection(environment, data),
     lastTestTime,
     lastSync,
@@ -131,7 +132,7 @@ export function getAdminLumaIntegrationStatus(
     setupChecks: [
       {
         label: "Provider mode",
-        value: getEnvironmentLabel(environment),
+        value: environmentLabel,
         status: environment === "disabled" ? "blocked" : "pass",
         detail:
           environment === "disabled"
@@ -234,6 +235,10 @@ function resolveLumaEnvironment(
     return "live_ready_not_enabled";
   }
 
+  if (env.VERCEL_ENV === "production") {
+    return "disabled";
+  }
+
   if (data.source.mode === "supabase") {
     return "staging";
   }
@@ -268,7 +273,14 @@ function getProviderStatus(
   return "mock_ready";
 }
 
-function getEnvironmentLabel(environment: EventLoopMode): string {
+function getEnvironmentLabel(
+  environment: EventLoopMode,
+  env: LumaStatusEnv = process.env,
+): string {
+  if (env.VERCEL_ENV === "production") {
+    return "Production";
+  }
+
   switch (environment) {
     case "mock":
       return "Mock";
