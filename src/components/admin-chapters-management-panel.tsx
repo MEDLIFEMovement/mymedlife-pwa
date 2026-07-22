@@ -264,7 +264,10 @@ export function AdminChaptersManagementPanel({
                 ))}
               </select>
             </label>
-            <button className="self-end rounded bg-sky-500 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-400">
+            <button
+              className="self-end rounded bg-sky-500 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-400"
+              type="submit"
+            >
               Apply preview filters
             </button>
           </div>
@@ -537,12 +540,12 @@ function ChapterEditForm({
   chapter,
   disabled,
   returnTo,
-}: {
+}: Readonly<{
   action?: (formData: FormData) => Promise<void> | void;
   chapter: ManagedChapter;
   disabled: boolean;
   returnTo: string;
-}) {
+}>) {
   return (
     <AdminChapterForm
       action={action}
@@ -735,12 +738,12 @@ function ChapterArchiveForm({
   chapter,
   disabled,
   returnTo,
-}: {
+}: Readonly<{
   action?: (formData: FormData) => Promise<void> | void;
   chapter: ManagedChapter;
   disabled: boolean;
   returnTo: string;
-}) {
+}>) {
   return (
     <AdminChapterForm
       action={action}
@@ -760,12 +763,12 @@ function ChapterDeleteForm({
   chapter,
   disabled,
   returnTo,
-}: {
+}: Readonly<{
   action?: (formData: FormData) => Promise<void> | void;
   chapter: ManagedChapter;
   disabled: boolean;
   returnTo: string;
-}) {
+}>) {
   return (
     <AdminChapterForm
       action={action}
@@ -790,12 +793,12 @@ function ChapterLifecycleForm({
   chapter,
   disabled,
   returnTo,
-}: {
+}: Readonly<{
   action?: (formData: FormData) => Promise<void> | void;
   chapter: ManagedChapter;
   disabled: boolean;
   returnTo: string;
-}) {
+}>) {
   const isActive = chapter.status === "active";
 
   return (
@@ -822,12 +825,12 @@ function ChapterTestMarkerForm({
   chapter,
   disabled,
   returnTo,
-}: {
+}: Readonly<{
   action?: (formData: FormData) => Promise<void> | void;
   chapter: ManagedChapter;
   disabled: boolean;
   returnTo: string;
-}) {
+}>) {
   const nextValue = !chapter.isTest;
 
   return (
@@ -852,10 +855,10 @@ function ChapterTestMarkerForm({
 function ChapterRoleHistory({
   chapter,
   users,
-}: {
+}: Readonly<{
   chapter: ManagedChapter;
   users: ManagedUser[];
-}) {
+}>) {
   const coachAssignments = chapter.coachAssignments ?? [];
   const currentCoaches = coachAssignments.filter(
     (assignment) => assignment.status === "active",
@@ -935,11 +938,11 @@ function HistorySection({
   empty,
   label,
   rows,
-}: {
+}: Readonly<{
   empty: string;
   label: string;
   rows: string[];
-}) {
+}>) {
   return (
     <div className="rounded border border-white/10 bg-[#161b22] p-3">
       <div className="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500">
@@ -1003,6 +1006,7 @@ function AdminChapterForm({
             ? "This chapter-management change is blocked until an audited write path is approved for this environment."
             : undefined
         }
+        type="submit"
       >
         {renderedButtonLabel}
       </button>
@@ -1328,11 +1332,12 @@ function formatRoleAssignment(
   assignment: NonNullable<ManagedChapter["studentLeaderAssignments"]>[number],
   users: ManagedUser[],
 ) {
-  const label = assignment.roleTermLabel
-    ? assignment.roleTermLabel
-    : assignment.roleTermStartYear && assignment.roleTermEndYear
-      ? `${assignment.roleKey} for ${assignment.roleTermStartYear}-${assignment.roleTermEndYear}`
-      : assignment.roleKey;
+  let label = assignment.roleKey;
+  if (assignment.roleTermLabel) {
+    label = assignment.roleTermLabel;
+  } else if (assignment.roleTermStartYear && assignment.roleTermEndYear) {
+    label = `${assignment.roleKey} for ${assignment.roleTermStartYear}-${assignment.roleTermEndYear}`;
+  }
 
   return [
     getUserName(users, assignment.userId),
