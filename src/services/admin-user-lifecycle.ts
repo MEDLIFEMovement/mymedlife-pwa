@@ -27,6 +27,7 @@ export type AdminUserLifecycleResult =
         | "confirmation_required"
         | "reason_required"
         | "target_not_found"
+        | "target_inactive"
         | "server_error";
       plainEnglishMessage: string;
     };
@@ -34,6 +35,15 @@ export type AdminUserLifecycleResult =
 export type AdminUserLifecycleClient = {
   auth: {
     admin: {
+      getUserById: (userId: string) => Promise<{
+        data: {
+          user: {
+            id: string;
+            banned_until?: string | null;
+          } | null;
+        };
+        error: { message?: string } | null;
+      }>;
       updateUserById: (
         userId: string,
         attributes: { ban_duration: string },
@@ -130,6 +140,14 @@ export function createAdminUserLifecycleClient(
 
 export function isPrivilegedLifecycleSession(session: AuthSessionState): boolean {
   return session.status === "signed_in" && Boolean(session.user?.id);
+}
+
+export function isAdminAuthUserSuspended(
+  user: { banned_until?: string | null },
+  now = Date.now(),
+): boolean {
+  const bannedUntil = user.banned_until ? Date.parse(user.banned_until) : Number.NaN;
+  return Number.isFinite(bannedUntil) && bannedUntil > now;
 }
 
 function getEnvironment(

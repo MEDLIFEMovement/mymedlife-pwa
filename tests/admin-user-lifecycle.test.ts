@@ -150,6 +150,28 @@ describe("admin user lifecycle deactivation", () => {
       plainEnglishMessage: expect.stringContaining("Auth write rejected"),
     });
   });
+
+  it("blocks repeat deactivation when Auth already reports the target as suspended", async () => {
+    enableLifecycleWrites();
+    const rpc = vi.fn();
+    const updateUserById = vi.fn();
+    const { client: serviceClient } = buildServiceClient(updateUserById, {
+      bannedUntil: "2126-06-28T02:00:13.2677+00:00",
+    });
+
+    const result = await submitAdminUserLifecycleForSupabase(
+      buildLifecycleForm(),
+      buildLifecycleDeps({ rpc, serviceClient }),
+    );
+
+    expect(result).toEqual({
+      success: false,
+      code: "target_inactive",
+      plainEnglishMessage: "The selected account is already inactive. No additional lifecycle write ran.",
+    });
+    expect(updateUserById).not.toHaveBeenCalled();
+    expect(rpc).not.toHaveBeenCalled();
+  });
 });
 
 const actorUserId = "00000000-0000-4000-8000-000000000006";
@@ -206,7 +228,10 @@ function buildLifecycleDeps(input: {
   } as LifecycleDeps;
 }
 
-function buildServiceClient(updateUserById: ReturnType<typeof vi.fn>) {
+function buildServiceClient(
+  updateUserById: ReturnType<typeof vi.fn>,
+  options: { bannedUntil?: string | null } = {},
+) {
   const from = vi.fn(() => ({
     select: vi.fn(() => ({
       eq: vi.fn((_column: string, userId: string) => ({
@@ -220,6 +245,15 @@ function buildServiceClient(updateUserById: ReturnType<typeof vi.fn>) {
   const client = {
     auth: {
       admin: {
+        getUserById: vi.fn().mockResolvedValue({
+          data: {
+            user: {
+              id: targetUserId,
+              banned_until: options.bannedUntil ?? null,
+            },
+          },
+          error: null,
+        }),
         updateUserById,
         deleteUser: vi.fn(),
       },

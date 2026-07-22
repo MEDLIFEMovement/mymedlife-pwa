@@ -2,7 +2,10 @@ import { createClient } from "@supabase/supabase-js";
 
 import type { AuthSessionState } from "@/services/auth-session";
 import { getAuthRecoveryRedirectUrl } from "@/services/auth-recovery";
-import { getAdminUserLifecycleConfig } from "@/services/admin-user-lifecycle";
+import {
+  getAdminUserLifecycleConfig,
+  isAdminAuthUserSuspended,
+} from "@/services/admin-user-lifecycle";
 
 export type AdminUserPasswordResetConfig = {
   enabled: boolean;
@@ -29,6 +32,7 @@ export type AdminUserPasswordResetResult =
         | "confirmation_required"
         | "reason_required"
         | "target_not_found"
+        | "target_inactive"
         | "server_error";
       plainEnglishMessage: string;
     };
@@ -37,7 +41,13 @@ export type AdminUserPasswordResetClient = {
   auth: {
     admin: {
       getUserById: (userId: string) => Promise<{
-        data: { user: { id: string; email?: string | null } | null };
+        data: {
+          user: {
+            id: string;
+            email?: string | null;
+            banned_until?: string | null;
+          } | null;
+        };
         error: { message?: string } | null;
       }>;
     };
@@ -136,6 +146,8 @@ export function isAuthenticatedPasswordResetSession(
 ): boolean {
   return session.status === "signed_in" && Boolean(session.user?.id);
 }
+
+export { isAdminAuthUserSuspended };
 
 function getPasswordResetRedirectUrl(
   env: Record<string, string | undefined>,

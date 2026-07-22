@@ -155,7 +155,7 @@ describe("admin management pages", () => {
       "This review shell keeps every write verb visibly blocked until the audited local write path is available.",
     );
     expect(html).toContain(
-      "This admin access change is blocked until audited local Supabase writes are approved.",
+      "This admin access change is blocked until audited Supabase writes are approved for this environment.",
     );
     expect(html).toContain("Historical event, attendance, and points records remain preserved.");
   });
@@ -366,6 +366,45 @@ describe("admin management pages", () => {
       "This admin access change is blocked until audited local Supabase writes are approved.",
     );
     expect(html).not.toContain("mock-only, so the admin RPC cannot run");
+  });
+
+  it("blocks password reset and repeat deactivation for an inactive account", () => {
+    const actor = getSignedInActor("test.super.admin@mymedlife.test");
+    const userId = "22222222-2222-4222-8222-222222222222";
+    const html = renderToStaticMarkup(
+      <AdminUsersManagementPanel
+        actor={actor}
+        lifecycleConfig={{
+          enabled: true,
+          environment: "production",
+          reason: "Production lifecycle writes enabled.",
+        }}
+        passwordResetConfig={{
+          enabled: true,
+          environment: "production",
+          reason: "Production password reset enabled.",
+          redirectTo: "https://mymedlife.org/auth/callback/recovery/L2FkbWluL3VzZXJz",
+        }}
+        searchParams={{ userId }}
+        users={[{
+          id: userId,
+          name: "TEST Inactive Member",
+          email: "test.inactive.member@mymedlife.test",
+          status: "deactivated",
+          chapterMemberships: [],
+          staffRoles: [],
+          portfolioChapterIds: [],
+          inviteStatus: "accepted",
+        }]}
+      />,
+    );
+
+    expect(html).toContain("Password reset locked: The selected account is inactive.");
+    expect(html).toContain("Send password reset email (blocked)");
+    expect(html).toContain("Lifecycle locked: The selected account is already inactive.");
+    expect(html).toContain("Suspend / deactivate user (blocked)");
+    expect(html).toContain("Permanently delete user");
+    expect(html).not.toContain("Permanently delete user (blocked)");
   });
 
   it("selects the requested user detail when only userId is present", () => {
