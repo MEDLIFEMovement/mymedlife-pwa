@@ -272,11 +272,14 @@ export function buildPrivateProofUploadRow(params: {
   const evidenceIsManageable =
     ["pending_review", "changes_requested"].includes(params.status) &&
     ["submitted", "in_hq_review"].includes(params.sharingStatus);
+  const assignmentAllowsUpload =
+    params.assignmentStatus === null ||
+    ["submitted", "changes_requested", "approved"].includes(
+      params.assignmentStatus,
+    );
   const uploadEligible =
     params.assignmentId !== null &&
-    ["submitted", "changes_requested", "approved"].includes(
-      params.assignmentStatus ?? "",
-    ) &&
+    assignmentAllowsUpload &&
     evidenceIsManageable;
   const canUpload =
     signedInAsSelectedActor &&
