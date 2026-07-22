@@ -3,6 +3,10 @@ import { describe, expect, it, vi } from "vitest";
 
 import { AdminChaptersManagementPanel } from "@/components/admin-chapters-management-panel";
 import { AdminUsersManagementPanel } from "@/components/admin-users-management-panel";
+import {
+  managedChapterFixtures,
+  managedUserFixtures,
+} from "@/services/admin-management-fixtures";
 import { getMockLocalActorContext } from "@/services/local-actor-context";
 
 vi.mock("next/navigation", () => ({
@@ -593,6 +597,55 @@ describe("admin management pages", () => {
       "This chapter-management change is blocked until an audited write path is approved for this environment.",
     );
     expect(html).toContain("writes-local-only");
+  });
+
+  it("renders explicit and fallback chapter role-term labels", () => {
+    const chapter = {
+      ...managedChapterFixtures[0],
+      studentLeaderIds: ["user-casey", "user-sofia", "user-priya"],
+      studentLeaderAssignments: [
+        {
+          id: "role-complete-term",
+          userId: "user-casey",
+          roleKey: "Action Committee Chair",
+          status: "approved",
+          roleTermLabel: null,
+          roleTermStartYear: 2024,
+          roleTermEndYear: 2025,
+        },
+        {
+          id: "role-missing-end",
+          userId: "user-sofia",
+          roleKey: "E-Board Member",
+          status: "inactive",
+          roleTermLabel: null,
+          roleTermStartYear: 2023,
+          roleTermEndYear: null,
+        },
+        {
+          id: "role-missing-start",
+          userId: "user-priya",
+          roleKey: "President / VP",
+          status: "inactive",
+          roleTermLabel: null,
+          roleTermStartYear: null,
+          roleTermEndYear: 2022,
+        },
+      ],
+    };
+    const html = renderToStaticMarkup(
+      <AdminChaptersManagementPanel
+        actor={getSignedInActor("super.admin@mymedlife.test")}
+        chapters={[chapter]}
+        users={managedUserFixtures}
+      />,
+    );
+
+    expect(html).toContain(
+      "TEST Casey Chair - Action Committee Chair for 2024-2025 - status: approved",
+    );
+    expect(html).toContain("TEST Sofia Alvarez - E-Board Member - status: inactive");
+    expect(html).toContain("TEST Priya President - President / VP - status: inactive");
   });
 
   it("keeps production chapter mutations visibly review-only without local-write claims", () => {
