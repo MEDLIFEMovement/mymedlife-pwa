@@ -2,10 +2,7 @@ import { createClient } from "@supabase/supabase-js";
 
 import type { AuthSessionState } from "@/services/auth-session";
 import { getAuthRecoveryRedirectUrl } from "@/services/auth-recovery";
-import {
-  getAdminUserLifecycleConfig,
-  isAdminAuthUserSuspended,
-} from "@/services/admin-user-lifecycle";
+import { getAdminUserLifecycleConfig } from "@/services/admin-user-lifecycle";
 
 export type AdminUserPasswordResetConfig = {
   enabled: boolean;
@@ -146,8 +143,6 @@ export function isAuthenticatedPasswordResetSession(
 ): boolean {
   return session.status === "signed_in" && Boolean(session.user?.id);
 }
-
-export { isAdminAuthUserSuspended };
 
 function getPasswordResetRedirectUrl(
   env: Record<string, string | undefined>,

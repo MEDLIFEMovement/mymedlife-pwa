@@ -509,20 +509,8 @@ function AdminAccessResultBanner({ code }: { code: AdminAccessResultCode }) {
 
 function AdminUserCreationResultBanner({ code }: { code: string }) {
   const isSuccess = code === "user_created";
-  const message =
-    code === "duplicate_email"
-      ? "An account with that email already exists."
-      : code === "creation_disabled"
-        ? "User creation is disabled for this environment."
-        : code === "permission_denied"
-          ? "Only a DS Admin or Super Admin can create users."
-          : code === "missing_auth"
-            ? "Sign in with a DS Admin or Super Admin account before creating a user."
-            : code === "validation_error"
-              ? "Check the email, display name, password, role, and audit reason."
-              : isSuccess
-                ? "User created with an audited profile and role."
-                : "User creation failed safely; no partial account should remain.";
+  const message = adminUserCreationMessages[code]
+    ?? "User creation failed safely; no partial account should remain.";
 
   return (
     <div
@@ -541,22 +529,8 @@ function AdminUserCreationResultBanner({ code }: { code: string }) {
 
 function AdminUserLifecycleResultBanner({ code }: { code: string }) {
   const success = code === "user_deactivated" || code === "user_deleted";
-  const message =
-    code === "user_deactivated"
-      ? "User access was suspended and the lifecycle change was audited."
-      : code === "user_deleted"
-        ? "User was permanently deleted from Auth and the deletion was audited."
-        : code === "lifecycle_disabled"
-          ? "User lifecycle writes are disabled for this environment."
-          : code === "confirmation_required"
-            ? "The required confirmation text was missing or did not match."
-            : code === "reason_required"
-              ? "A clear audit reason is required."
-              : code === "permission_denied"
-                ? "This signed-in role cannot perform that lifecycle action."
-                : code === "target_inactive"
-                  ? "The selected account is already inactive. No additional lifecycle write ran."
-                : "The lifecycle action failed safely; review the audit trail before retrying.";
+  const message = adminUserLifecycleMessages[code]
+    ?? "The lifecycle action failed safely; review the audit trail before retrying.";
 
   return (
     <div
@@ -575,22 +549,8 @@ function AdminUserLifecycleResultBanner({ code }: { code: string }) {
 
 function AdminUserPasswordResetResultBanner({ code }: { code: string }) {
   const success = code === "password_reset_sent";
-  const message =
-    code === "password_reset_sent"
-      ? "Password reset email was sent through Supabase Auth and the request was audited."
-      : code === "reset_disabled"
-        ? "Password reset emails are disabled for this environment."
-        : code === "confirmation_required"
-          ? "The required RESET PASSWORD confirmation text was missing or did not match."
-          : code === "reason_required"
-            ? "A clear audit reason is required."
-            : code === "permission_denied"
-              ? "This signed-in role cannot send a password reset email for the selected user."
-              : code === "target_not_found"
-                ? "The selected Auth user was not found, so no password reset email was sent."
-                : code === "target_inactive"
-                  ? "The selected account is inactive, so no password reset email was sent."
-                : "The password reset request failed safely; review the audit trail before retrying.";
+  const message = adminUserPasswordResetMessages[code]
+    ?? "The password reset request failed safely; review the audit trail before retrying.";
 
   return (
     <div
@@ -606,6 +566,35 @@ function AdminUserPasswordResetResultBanner({ code }: { code: string }) {
     </div>
   );
 }
+
+const adminUserCreationMessages: Record<string, string> = {
+  duplicate_email: "An account with that email already exists.",
+  creation_disabled: "User creation is disabled for this environment.",
+  permission_denied: "Only a DS Admin or Super Admin can create users.",
+  missing_auth: "Sign in with a DS Admin or Super Admin account before creating a user.",
+  validation_error: "Check the email, display name, password, role, and audit reason.",
+  user_created: "User created with an audited profile and role.",
+};
+
+const adminUserLifecycleMessages: Record<string, string> = {
+  user_deactivated: "User access was suspended and the lifecycle change was audited.",
+  user_deleted: "User was permanently deleted from Auth and the deletion was audited.",
+  lifecycle_disabled: "User lifecycle writes are disabled for this environment.",
+  confirmation_required: "The required confirmation text was missing or did not match.",
+  reason_required: "A clear audit reason is required.",
+  permission_denied: "This signed-in role cannot perform that lifecycle action.",
+  target_inactive: "The selected account is already inactive. No additional lifecycle write ran.",
+};
+
+const adminUserPasswordResetMessages: Record<string, string> = {
+  password_reset_sent: "Password reset email was sent through Supabase Auth and the request was audited.",
+  reset_disabled: "Password reset emails are disabled for this environment.",
+  confirmation_required: "The required RESET PASSWORD confirmation text was missing or did not match.",
+  reason_required: "A clear audit reason is required.",
+  permission_denied: "This signed-in role cannot send a password reset email for the selected user.",
+  target_not_found: "The selected Auth user was not found, so no password reset email was sent.",
+  target_inactive: "The selected account is inactive, so no password reset email was sent.",
+};
 
 function AdminUserCreationForm({
   chapters,

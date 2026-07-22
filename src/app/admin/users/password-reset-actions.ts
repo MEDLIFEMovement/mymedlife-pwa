@@ -4,10 +4,10 @@ import { redirect } from "next/navigation";
 
 import { createLocalSupabaseServerClient } from "@/lib/supabase-server";
 import { getAuthSessionState, type AuthSessionState } from "@/services/auth-session";
+import { isAdminAuthUserSuspended } from "@/services/admin-user-lifecycle";
 import {
   createAdminUserPasswordResetClient,
   getAdminUserPasswordResetConfig,
-  isAdminAuthUserSuspended,
   isAuthenticatedPasswordResetSession,
   type AdminUserPasswordResetClient,
   type AdminUserPasswordResetResult,
