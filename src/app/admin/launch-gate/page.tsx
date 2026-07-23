@@ -79,13 +79,13 @@ export default async function AdminLaunchGatePage() {
 function getNextStep(actor: LocalActorContext) {
   if (actor.audience === "ds_admin") {
     return {
-      label: "Open integration outbox",
+      label: "Open integration outbox review",
       href: "/admin/integration-outbox",
     };
   }
 
   return {
-    label: "Open system health",
+    label: "Open system health review",
     href: "/admin/system-health",
   };
 }
