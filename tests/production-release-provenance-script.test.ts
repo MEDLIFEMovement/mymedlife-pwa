@@ -4,6 +4,14 @@ import { promisify } from "node:util";
 
 import { afterEach, describe, expect, it } from "vitest";
 
+import {
+  normalizeSha,
+  normalizeUrl,
+  readPayload,
+  runReleaseProvenanceCheck,
+  usage,
+} from "../scripts/check-production-release-provenance.mjs";
+
 const execFileAsync = promisify(execFile);
 const releaseSha = "9798e2be63f277480122d6ccc48126df84a38065";
 const servers: ReturnType<typeof createServer>[] = [];
@@ -66,5 +74,105 @@ describe("production release provenance script", () => {
     expect(mismatch?.stdout).toContain(
       "FAIL Deployed commit matches the approved commit",
     );
+  });
+
+  it("covers the in-process success and mismatch contracts", async () => {
+    const lines: string[] = [];
+    const fetchImpl = async () => new Response(JSON.stringify({
+      service: "mymedlife-pwa",
+      releaseSha,
+      ready: true,
+    }), {
+      status: 200,
+      headers: {
+        "content-type": "application/json",
+        "x-mymedlife-release": releaseSha,
+      },
+    });
+
+    await expect(runReleaseProvenanceCheck({
+      args: ["https://mymedlife.org/path", releaseSha.toUpperCase()],
+      fetchImpl,
+      log: (line: string) => lines.push(line),
+    })).resolves.toBe(0);
+    expect(lines).toContain("Production release provenance: READY");
+    expect(lines).toContain("Base URL: https://mymedlife.org");
+
+    lines.length = 0;
+    await expect(runReleaseProvenanceCheck({
+      args: ["https://mymedlife.org", "1".repeat(40)],
+      fetchImpl,
+      log: (line: string) => lines.push(line),
+    })).resolves.toBe(1);
+    expect(lines.some((line) => line.startsWith(
+      "FAIL Deployed commit matches the approved commit",
+    ))).toBe(true);
+  });
+
+  it("fails closed for malformed metadata and unreachable release contracts", async () => {
+    const errors: string[] = [];
+    await expect(runReleaseProvenanceCheck({
+      args: ["http://example.com", releaseSha],
+      fetchImpl: async () => {
+        throw new Error("fetch should not run");
+      },
+      logError: (line: string) => errors.push(line),
+    })).resolves.toBe(1);
+    expect(errors).toContain("The release URL must use HTTPS.");
+
+    errors.length = 0;
+    await expect(runReleaseProvenanceCheck({
+      args: ["https://mymedlife.org"],
+      env: { NODE_ENV: "test" },
+      fetchImpl: async () => {
+        throw new Error("fetch should not run");
+      },
+      logError: (line: string) => errors.push(line),
+    })).resolves.toBe(1);
+    expect(errors).toContain(
+      "An exact 40-character expected commit SHA is required.",
+    );
+
+    const lines: string[] = [];
+    await expect(runReleaseProvenanceCheck({
+      args: ["https://mymedlife.org", releaseSha],
+      fetchImpl: async () => new Response("not-json", { status: 503 }),
+      log: (line: string) => lines.push(line),
+    })).resolves.toBe(1);
+    expect(lines.some((line) => line.startsWith(
+      "FAIL Release payload contains a valid commit SHA",
+    ))).toBe(true);
+  });
+
+  it("supports help, environment fallback, and defensive payload parsing", async () => {
+    const lines: string[] = [];
+    await expect(runReleaseProvenanceCheck({
+      args: ["--help"],
+      log: (line: string) => lines.push(line),
+    })).resolves.toBe(0);
+    expect(lines).toEqual([usage]);
+
+    lines.length = 0;
+    await expect(runReleaseProvenanceCheck({
+      args: ["https://mymedlife.org"],
+      env: {
+        NODE_ENV: "test",
+        EXPECTED_RELEASE_SHA: releaseSha,
+      },
+      fetchImpl: async () => new Response(JSON.stringify({
+        service: "mymedlife-pwa",
+        releaseSha,
+      }), {
+        status: 200,
+        headers: { "x-mymedlife-release": releaseSha },
+      }),
+      log: (line: string) => lines.push(line),
+    })).resolves.toBe(0);
+
+    await expect(readPayload(new Response("[]"))).resolves.toEqual({});
+    expect(normalizeUrl("http://localhost:3217/path")).toBe(
+      "http://localhost:3217",
+    );
+    expect(normalizeSha(null)).toBeNull();
   });
 });
