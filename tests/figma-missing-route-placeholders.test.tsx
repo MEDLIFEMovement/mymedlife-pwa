@@ -38,6 +38,10 @@ vi.mock("@/services/read-only-app-data", async (importOriginal) => {
   };
 });
 
+vi.mock("@/services/admin-management-data", () => ({
+  getAdminManagementDirectory: vi.fn().mockResolvedValue(undefined),
+}));
+
 function getSignedInActor(email: string) {
   return getMockLocalActorContext(
     email,
@@ -55,7 +59,7 @@ describe("Figma missing route placeholders", () => {
     vi.clearAllMocks();
   });
 
-  it("renders the Figma admin backend shell with its vertical DS Admin menu", async () => {
+  it("renders the route-backed admin overview with its vertical DS Admin menu", async () => {
     const actorModule = await import("@/services/local-actor-context");
     const dataModule = await import("@/services/read-only-app-data");
 
@@ -82,8 +86,12 @@ describe("Figma missing route placeholders", () => {
     expect(html).toContain("API Keys");
     expect(html).toContain("MCP Connections");
     expect(html).toContain("Settings");
-    expect(html).toContain("MCP Analytics");
-    expect(html).toContain("Launch Mode Active");
+    expect(html).toContain("Route-backed workspaces");
+    expect(html).toContain("Operational counts");
+    expect(html).toContain("TEST review data");
+    expect(html).toContain("Readback is not rollout proof");
+    expect(html).not.toContain("TOTAL USERS");
+    expect(html).not.toContain("Launch Mode Active");
     expect(html).not.toContain("Chapter Dashboard · Jun 2025");
     expect(html).not.toContain("Figma page missing - implementation blocked");
   });
