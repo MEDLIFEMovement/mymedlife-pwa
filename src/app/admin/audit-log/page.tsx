@@ -75,13 +75,13 @@ export default async function AdminAuditLogPage() {
 function getNextStep(actor: LocalActorContext) {
   if (actor.audience === "ds_admin") {
     return {
-      label: "Open integration outbox",
+      label: "Open integration outbox review",
       href: "/admin/integration-outbox",
     };
   }
 
   return {
-    label: "Review write sequence",
+    label: "Open write sequence review",
     href: "/admin/write-sequence",
   };
 }
