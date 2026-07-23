@@ -2,15 +2,28 @@ begin;
 
 select plan(14);
 
-select has_table('app', 'warehouse_export_runs');
-select has_table('app', 'warehouse_export_failures');
+select has_table(
+  'app',
+  'warehouse_export_runs',
+  'warehouse export runs table exists'
+);
+select has_table(
+  'app',
+  'warehouse_export_failures',
+  'warehouse export failures table exists'
+);
 select has_function(
   'app',
   'get_databricks_event_metrics_export',
   array['timestamp with time zone']
 );
 
-select col_is_pk('app', 'warehouse_export_runs', 'id');
+select col_is_pk(
+  'app',
+  'warehouse_export_runs',
+  'id',
+  'warehouse export run id is the primary key'
+);
 select ok(
   exists (
     select 1
@@ -61,7 +74,7 @@ select is(
 
 select is(
   (
-    select array_agg(policyname order by policyname)
+    select array_agg(policyname::text order by policyname)
     from pg_policies
     where schemaname = 'app'
       and tablename = 'warehouse_export_runs'
@@ -71,7 +84,7 @@ select is(
 );
 select is(
   (
-    select array_agg(policyname order by policyname)
+    select array_agg(policyname::text order by policyname)
     from pg_policies
     where schemaname = 'app'
       and tablename = 'warehouse_export_failures'
