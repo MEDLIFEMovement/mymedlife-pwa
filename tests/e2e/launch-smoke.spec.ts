@@ -311,13 +311,13 @@ test.describe("myMEDLIFE launch route smoke", () => {
     const adminItems = [
       { label: "Overview", heading: "Overview", url: /\/admin(?:\?view=overview)?$/ },
       { label: "Users", heading: "User Access Management", url: /\/admin\/users$/ },
-      { label: "Chapters", heading: "Chapters", url: /\/admin\?view=chapters$/ },
+      { label: "Chapters", heading: "Chapter Management", url: /\/admin\/chapters$/ },
       { label: "Modules", heading: "Modules & Feature Flags", url: /\/admin\?view=modules$/ },
-      { label: "Luma Events", heading: "Luma Events", url: /\/admin\?view=luma$/ },
+      { label: "Luma Events", heading: "Luma integration status", url: /\/admin\/integrations\/luma$/ },
       { label: "Points", heading: "Points", url: /\/admin\?view=points$/ },
       { label: "Integrations", heading: "Integrations", url: /\/admin\?view=integrations$/ },
-      { label: "Audit Logs", heading: "Audit Logs", url: /\/admin\?view=audit$/ },
-      { label: "System Health", heading: "System Health", url: /\/admin\?view=health$/ },
+      { label: "Audit Logs", heading: "DS Admin audit posture", url: /\/admin\/audit-log$/ },
+      { label: "System Health", heading: "DS Admin system health and integration review", url: /\/admin\/system-health$/ },
       { label: "API Keys", heading: "API Keys", url: /\/admin\?view=apikeys$/ },
       { label: "MCP Connections", heading: "MCP Connections", url: /\/admin\?view=mcp$/ },
       { label: "Settings", heading: "Settings", url: /\/admin\?view=settings$/ },
@@ -349,7 +349,7 @@ test.describe("myMEDLIFE launch route smoke", () => {
 
     await page.locator("aside").getByRole("button", { name: "Audit Logs", exact: true }).click();
     await expect(
-      page.getByText("This audit log is preview-only. Review seeded admin and system readback here, then use the audited evidence surfaces for live production proof or incident review."),
+      page.getByText("DS Admin can confirm audit-readback posture from this read-only review surface, but row-level chapter/member audit details stay with Admin and Super Admin."),
     ).toBeVisible();
 
     await page.locator("aside").getByRole("button", { name: "API Keys", exact: true }).click();
