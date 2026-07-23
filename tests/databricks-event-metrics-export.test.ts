@@ -1211,6 +1211,12 @@ describe("Databricks event metrics export", () => {
     expect(sql).toContain("enable row level security");
     expect(sql).toContain("grant execute on function app.get_databricks_event_metrics_export");
     expect(sql).toContain("to service_role");
+    expect(sql).toContain(
+      "grant select, insert, update on app.warehouse_export_runs to service_role",
+    );
+    expect(sql).toContain(
+      "grant select, insert, update on app.warehouse_export_failures to service_role",
+    );
     expect(sql).not.toMatch(/display_name|email|storage_path|submitted_by_user_id/i);
     expect(sql).not.toContain("DATABRICKS_TOKEN");
   });

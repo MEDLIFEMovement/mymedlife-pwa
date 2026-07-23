@@ -1,6 +1,6 @@
 begin;
 
-select plan(14);
+select plan(16);
 
 select has_table(
   'app',
@@ -114,6 +114,19 @@ select ok(
     'EXECUTE'
   ),
   'authenticated users cannot execute the aggregate export function'
+);
+
+select ok(
+  has_table_privilege('service_role', 'app.warehouse_export_runs', 'SELECT')
+    and has_table_privilege('service_role', 'app.warehouse_export_runs', 'INSERT')
+    and has_table_privilege('service_role', 'app.warehouse_export_runs', 'UPDATE'),
+  'service role can read and maintain warehouse export runs'
+);
+select ok(
+  has_table_privilege('service_role', 'app.warehouse_export_failures', 'SELECT')
+    and has_table_privilege('service_role', 'app.warehouse_export_failures', 'INSERT')
+    and has_table_privilege('service_role', 'app.warehouse_export_failures', 'UPDATE'),
+  'service role can read and maintain warehouse export failures'
 );
 
 select ok(

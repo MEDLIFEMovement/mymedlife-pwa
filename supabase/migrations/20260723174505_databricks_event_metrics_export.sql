@@ -207,3 +207,5 @@ to service_role;
 
 grant select on app.warehouse_export_runs to authenticated;
 grant select on app.warehouse_export_failures to authenticated;
+grant select, insert, update on app.warehouse_export_runs to service_role;
+grant select, insert, update on app.warehouse_export_failures to service_role;
