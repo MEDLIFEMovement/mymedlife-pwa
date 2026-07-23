@@ -9,6 +9,10 @@ import { MovingMountainsCampaignPanel } from "@/components/moving-mountains-camp
 import { PlanningGoalSettingCampaignPanel } from "@/components/planning-goal-setting-campaign-panel";
 import { SltPromotionCampaignPanel } from "@/components/slt-promotion-campaign-panel";
 import { StartAChapterCampaignPanel } from "@/components/start-a-chapter-campaign-panel";
+import {
+  getAppOwnedCampaignReadback,
+  type AppOwnedCampaignReadback,
+} from "@/services/campaign-readback";
 import { getCampaignCloseoutReadiness } from "@/services/campaign-closeout-readiness";
 import { getCampaignShellBySlug } from "@/services/campaign-ops-service";
 import { getLandingRouteForActor } from "@/services/landing-route";
@@ -18,7 +22,6 @@ import { getGrowTheMovementCampaignPlan } from "@/services/grow-the-movement-cam
 import { getLocalActorContext } from "@/services/local-actor-context";
 import { getLeadershipTransitionCampaignPlan } from "@/services/leadership-transition-campaign";
 import { getMovingMountainsCampaignPlan } from "@/services/moving-mountains-campaign";
-import { getCampaignsRouteRedirectHref } from "@/services/owned-route-redirect";
 import { getPlanningGoalSettingCampaignPlan } from "@/services/planning-goal-setting-campaign";
 import { getReadOnlyAppData } from "@/services/read-only-app-data";
 import { getActorSurfaceFamily } from "@/services/role-visibility";
@@ -48,7 +51,21 @@ export default async function CampaignPage({ params }: CampaignPageProps) {
 
   const surfaceFamily = getActorSurfaceFamily(actor);
 
-  if (surfaceFamily === "member") {
+  if (surfaceFamily === "ds_admin") {
+    redirect(getLandingRouteForActor(actor));
+  }
+
+  const data = await getReadOnlyAppData(
+    surfaceFamily === "member" || surfaceFamily === "leader"
+      ? { actorUserId: actor.user.id }
+      : {},
+  );
+  const readback =
+    data.source.mode === "supabase"
+      ? getAppOwnedCampaignReadback(data)
+      : null;
+
+  if (surfaceFamily === "member" && !readback) {
     if (campaignSlug === "rush-month") {
       redirect("/rush-month");
     }
@@ -56,18 +73,15 @@ export default async function CampaignPage({ params }: CampaignPageProps) {
     redirect("/campaigns");
   }
 
-  if (surfaceFamily === "ds_admin") {
-    redirect(getLandingRouteForActor(actor));
-  }
-
-  const shell = getCampaignShellBySlug(campaignSlug);
+  const shell =
+    readback?.campaigns.find((campaign) => campaign.slug === campaignSlug) ??
+    (readback ? undefined : getCampaignShellBySlug(campaignSlug));
 
   if (!shell) {
     notFound();
   }
 
   if (campaignSlug === "rush-month") {
-    const data = await getReadOnlyAppData({ actorUserId: actor.user.id });
     const closeout = getCampaignCloseoutReadiness(actor, data, campaignSlug);
 
     return (
@@ -75,7 +89,11 @@ export default async function CampaignPage({ params }: CampaignPageProps) {
         campaign={shell}
         backHref="/campaigns"
         eyebrow="Rush Month review"
-        summary="This page keeps the Rush Month shell visible while event, proof, coach, and points handoffs stay preview-safe."
+        summary={
+          readback
+            ? "This page reads the current Rush Month campaign, phase, assignments, events, proof, and points posture from app-owned records."
+            : "This page keeps the TEST Rush Month shell visible while event, proof, coach, and points handoffs stay preview-safe."
+        }
         actionLinks={[
           {
             href: "/rush-month/events",
@@ -109,6 +127,19 @@ export default async function CampaignPage({ params }: CampaignPageProps) {
     );
   }
 
+  if (readback) {
+    return (
+      <CampaignDetailShell
+        campaign={shell}
+        backHref="/campaigns"
+        eyebrow="App-owned campaign"
+        summary="This campaign detail comes from the signed-in chapter's app-owned operational records. Provider writes and external publishing remain separately gated."
+      >
+        <AppOwnedCampaignReadbackPanel readback={readback} />
+      </CampaignDetailShell>
+    );
+  }
+
   const detailPanel = getCampaignDetailPanel(campaignSlug, actor);
 
   return (
@@ -120,6 +151,45 @@ export default async function CampaignPage({ params }: CampaignPageProps) {
     >
       {detailPanel ?? <CampaignPreviewOnlyNotice campaign={shell} />}
     </CampaignDetailShell>
+  );
+}
+
+function AppOwnedCampaignReadbackPanel({
+  readback,
+}: {
+  readback: AppOwnedCampaignReadback;
+}) {
+  return (
+    <section className="rounded-[2rem] border border-emerald-300/20 bg-emerald-300/10 p-5">
+      <p className="text-xs font-semibold uppercase tracking-[0.24em] text-emerald-100/80">
+        App-owned operating readback
+      </p>
+      <h2 className="mt-2 text-2xl font-semibold text-white">
+        {readback.currentPhaseLabel}
+      </h2>
+      <p className="mt-3 max-w-3xl text-sm leading-6 text-white/64">
+        {readback.currentPhaseDetail}
+      </p>
+      <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <InfoCard title="Progress" body={readback.progressLabel} />
+        <InfoCard
+          title="Assignments"
+          body={`${readback.actionGroups.length} role ${readback.actionGroups.length === 1 ? "group" : "groups"} visible`}
+        />
+        <InfoCard
+          title="Events"
+          body={
+            readback.nextEvent
+              ? `${readback.nextEvent.title} · ${readback.nextEvent.statusLabel}`
+              : "No app-owned event is attached."
+          }
+        />
+        <InfoCard
+          title="Proof queue"
+          body={`${readback.summary.hqProofItems} records need review or changes`}
+        />
+      </div>
+    </section>
   );
 }
 
