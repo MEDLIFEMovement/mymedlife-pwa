@@ -36,6 +36,32 @@ describe("admin Luma integration status", () => {
     expect(status.counts.browserSecretsShown).toBe(0);
   });
 
+  it("reports approved server-only reads without implying provider writes", () => {
+    const actor = getMockLocalActorContext("super.admin@mymedlife.test");
+    const data = getMockReadOnlyAppData("Testing enabled Luma read sync posture.");
+    const status = getAdminLumaIntegrationStatus(actor, data, {
+      MYMEDLIFE_AUTH_MODE: "staging_supabase",
+      MYMEDLIFE_ENABLE_LUMA_READ_SYNC: "true",
+      MYMEDLIFE_ALLOW_STAGING_LUMA_READ_SYNC: "true",
+      MYMEDLIFE_LUMA_CHAPTER_ID: "chapter-test",
+      LUMA_API_KEY: "server-only-secret",
+      LUMA_CALENDAR_ID: "calendar-test",
+      SUPABASE_SERVICE_ROLE_KEY: "service-role-secret",
+      NEXT_PUBLIC_SUPABASE_URL: "https://example.supabase.co",
+    });
+
+    expect(status.readSyncEnabled).toBe(true);
+    expect(status.providerStatus).toBe("live_read_enabled");
+    expect(status.environmentLabel).toBe("Staging read sync enabled");
+    expect(status.testConnection.label).toBe("Provider read sync active");
+    expect(status.counts.externalReadsEnabled).toBe(1);
+    expect(status.counts.externalWritesEnabled).toBe(0);
+    expect(status.safetyNotes.join(" ")).toContain("server-only Luma event reads");
+    expect(status.safetyNotes.join(" ")).toContain("does not create, update, or delete provider-side Luma events");
+    expect(JSON.stringify(status)).not.toContain("server-only-secret");
+    expect(JSON.stringify(status)).not.toContain("service-role-secret");
+  });
+
   it("keeps Supabase-backed production visibly disabled instead of calling it staging-ready", () => {
     const actor = getMockLocalActorContext("super.admin@mymedlife.test");
     const data = getMockReadOnlyAppData("Testing production Luma posture.");

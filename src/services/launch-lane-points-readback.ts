@@ -129,6 +129,18 @@ export type LaunchLaneStaffChapterReadback = {
   risk: LaunchLaneStaffRisk;
 };
 
+export type LaunchLaneStaffEventReadback = {
+  id: string;
+  chapterName: string;
+  title: string;
+  timing: string;
+  location: string;
+  rsvps: number;
+  attendance: number;
+  points: number;
+  risk: LaunchLaneStaffRisk;
+};
+
 export type LaunchLaneOrgLeaderboardRow = {
   chapterName: string;
   points: number;
@@ -398,6 +410,7 @@ export function getLaunchLaneMemberHistory(
 
 export function getLaunchLaneLeaderEventReadback(
   data: ReadOnlyAppData,
+  options: { testPreview?: boolean } = {},
 ): LaunchLaneLeaderEventReadback[] {
   const eventSnapshots = getLaunchLaneEventSnapshots(data);
 
@@ -413,7 +426,9 @@ export function getLaunchLaneLeaderEventReadback(
       return {
         id: row.id,
         chapterName: row.chapterName,
-        title: row.title,
+        title: options.testPreview
+          ? ensureVisibleTestLabel(row.title)
+          : getVisibleLaunchLaneEventTitle(row.title),
         timing: row.timing,
         location: row.lumaEventUrl
           ? "Luma-linked chapter event"
@@ -630,6 +645,45 @@ export function getLaunchLaneStaffChapterReadback(
       ),
     };
   });
+}
+
+export function getLaunchLaneStaffEventReadback(
+  data: ReadOnlyAppData,
+  eventId: string | null | undefined,
+  options: { testPreview?: boolean } = {},
+): LaunchLaneStaffEventReadback | null {
+  if (!eventId) {
+    return null;
+  }
+
+  const event = getLaunchLaneEventSnapshotById(data, eventId, {
+    chapterEvents: data.allChapterEventRows,
+    lumaEventLinks: data.allLumaEventLinkRows,
+  });
+
+  if (!event) {
+    return null;
+  }
+
+  return {
+    id: event.id,
+    chapterName: event.chapterName,
+    title: options.testPreview
+      ? ensureVisibleTestLabel(event.title)
+      : getVisibleLaunchLaneEventTitle(event.title),
+    timing: event.timing,
+    location: event.lumaEventUrl
+      ? "Luma-linked chapter event"
+      : `${event.chapterName} campus event`,
+    rsvps: event.rsvpCount,
+    attendance: event.attendanceCount,
+    points: event.pointsAwarded,
+    risk: toStaffRiskLabel(
+      { status: event.status },
+      event.rsvpCount,
+      event.attendanceCount,
+    ),
+  };
 }
 
 export function getLaunchLaneOrgLeaderboardRows(

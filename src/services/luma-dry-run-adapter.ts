@@ -177,6 +177,7 @@ function hiddenPacket(): LumaDryRunAdapterPacket {
       title: "Luma integration hidden for this role",
       summary: "Hidden for this role.",
       providerStatus: "disabled",
+      readSyncEnabled: false,
       environment: "disabled",
       environmentLabel: "Disabled",
       testConnection: {
@@ -194,6 +195,7 @@ function hiddenPacket(): LumaDryRunAdapterPacket {
         lumaOutboxRows: 0,
         liveSendRows: 0,
         browserSecretsShown: 0,
+        externalReadsEnabled: 0,
         externalWritesEnabled: 0,
       },
       setupChecks: [],

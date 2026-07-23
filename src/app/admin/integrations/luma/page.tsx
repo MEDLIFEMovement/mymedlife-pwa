@@ -230,6 +230,10 @@ export default async function AdminLumaIntegrationPage() {
                   label="Secrets in browser"
                   value={`${workspace.counts.browserSecretsShown}`}
                 />
+                <Detail
+                  label="Provider reads"
+                  value={workspace.readSyncEnabled ? "Enabled" : "Disabled"}
+                />
               </dl>
             </article>
 
