@@ -51,8 +51,11 @@ const coachNavigation: NavigationItem[] = [
 
 const staffNavigation: NavigationItem[] = [
   { href: "/staff?view=chapters", label: "Chapters" },
-  { href: "/staff?view=events", label: "Events" },
-  { href: "/staff?view=leaderboard", label: "Leaderboard" },
+  { href: "/staff?view=campaigns", label: "Campaigns" },
+  { href: "/staff?view=proof_ugc", label: "Proof / UGC" },
+  { href: "/staff?view=best_practices", label: "Best Practices" },
+  { href: "/staff?view=sops", label: "Campaign SOPs" },
+  { href: "/staff?view=admin", label: "Admin" },
 ];
 
 const fullAdminBackendNavigation: NavigationItem[] = [

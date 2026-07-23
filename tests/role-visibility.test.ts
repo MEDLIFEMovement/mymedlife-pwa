@@ -142,8 +142,11 @@ describe("role visibility service", () => {
     ]);
     expect(getNavigationForActor(admin).map((item) => item.label)).toEqual([
       "Chapters",
-      "Events",
-      "Leaderboard",
+      "Campaigns",
+      "Proof / UGC",
+      "Best Practices",
+      "Campaign SOPs",
+      "Admin",
     ]);
     expect(getNavigationForActor(superAdmin).map((item) => item.label)).toEqual([
       "Admin Home",
@@ -209,8 +212,11 @@ describe("role visibility service", () => {
     expect(getActorSurfaceFamily(actor)).toBe("staff");
     expect(getNavigationForActor(actor).map((item) => item.label)).toEqual([
       "Chapters",
-      "Events",
-      "Leaderboard",
+      "Campaigns",
+      "Proof / UGC",
+      "Best Practices",
+      "Campaign SOPs",
+      "Admin",
     ]);
     expect(canAccessMemberWorkspace(actor)).toBe(true);
     expect(canAccessLeaderWorkspace(actor)).toBe(true);
