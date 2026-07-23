@@ -2,6 +2,10 @@ import "server-only";
 
 import { createLocalSupabaseServerClient } from "@/lib/supabase-server";
 import { getHubSpotReadSyncConfig } from "@/services/hubspot-read-sync";
+import {
+  getProviderSyncHealth,
+  type ProviderSyncHealth,
+} from "@/services/provider-sync-health";
 
 export type AdminHubSpotSyncWorkspace = {
   canRead: boolean;
@@ -44,12 +48,14 @@ export type AdminHubSpotSyncWorkspace = {
     retryCount: number;
     createdAt: string;
   }>;
+  health: ProviderSyncHealth;
   message: string;
 };
 
 type AdminHubSpotSyncWorkspaceDeps = {
   createServerClient?: typeof createLocalSupabaseServerClient;
   getSyncConfig?: typeof getHubSpotReadSyncConfig;
+  now?: () => Date;
 };
 
 export async function getAdminHubSpotSyncWorkspace(
@@ -80,27 +86,30 @@ export async function getAdminHubSpotSyncWorkspace(
   }
 
   const run = runs.data?.[0];
+  const lastRun = run ? {
+    id: String(run.id),
+    mode: String(run.mode),
+    status: String(run.status),
+    triggerSource: String(run.trigger_source ?? "manual"),
+    retryOfRunId: run.retry_of_run_id ? String(run.retry_of_run_id) : null,
+    startedAt: String(run.started_at),
+    completedAt: run.completed_at ? String(run.completed_at) : null,
+    heartbeatAt: String(run.heartbeat_at ?? run.started_at),
+    sourceCompanies: Number(run.source_company_count ?? 0),
+    sourceContacts: Number(run.source_contact_count ?? 0),
+    membershipDeactivations: Number(run.membership_deactivation_count ?? 0),
+    chapterDeactivations: Number(run.chapter_deactivation_count ?? 0),
+    materializedChapters: Number(run.materialized_chapter_count ?? 0),
+    matchedProfiles: Number(run.matched_profile_count ?? 0),
+    conflicts: Number(run.conflict_count ?? 0),
+    failures: Number(run.failure_count ?? 0),
+  } : null;
+  const openFailureCount = failures.count ?? 0;
+
   return {
     canRead: true,
     config,
-    lastRun: run ? {
-      id: String(run.id),
-      mode: String(run.mode),
-      status: String(run.status),
-      triggerSource: String(run.trigger_source ?? "manual"),
-      retryOfRunId: run.retry_of_run_id ? String(run.retry_of_run_id) : null,
-      startedAt: String(run.started_at),
-      completedAt: run.completed_at ? String(run.completed_at) : null,
-      heartbeatAt: String(run.heartbeat_at ?? run.started_at),
-      sourceCompanies: Number(run.source_company_count ?? 0),
-      sourceContacts: Number(run.source_contact_count ?? 0),
-      membershipDeactivations: Number(run.membership_deactivation_count ?? 0),
-      chapterDeactivations: Number(run.chapter_deactivation_count ?? 0),
-      materializedChapters: Number(run.materialized_chapter_count ?? 0),
-      matchedProfiles: Number(run.matched_profile_count ?? 0),
-      conflicts: Number(run.conflict_count ?? 0),
-      failures: Number(run.failure_count ?? 0),
-    } : null,
+    lastRun,
     counts: {
       companies: companies.count ?? 0,
       contacts: contacts.count ?? 0,
@@ -110,7 +119,7 @@ export async function getAdminHubSpotSyncWorkspace(
       pendingMemberships: pendingMemberships.count ?? 0,
       materializedMemberships: materializedMemberships.count ?? 0,
       ignoredMemberships: ignoredMemberships.count ?? 0,
-      openFailures: failures.count ?? 0,
+      openFailures: openFailureCount,
     },
     failures: (failures.data ?? []).map((failure: Record<string, unknown>) => ({
       id: String(failure.id),
@@ -121,6 +130,12 @@ export async function getAdminHubSpotSyncWorkspace(
       retryCount: Number(failure.retry_count ?? 0),
       createdAt: String(failure.created_at),
     })),
+    health: getProviderSyncHealth({
+      enabled: config.enabled,
+      lastRun,
+      openFailures: openFailureCount,
+      now: deps.now?.(),
+    }),
     message: config.enabled
       ? "HubSpot reads and app-owned reconciliation writes are enabled. HubSpot writes and invitations remain off."
       : config.reason,
@@ -147,6 +162,11 @@ function emptyWorkspace(
       openFailures: 0,
     },
     failures: [],
+    health: getProviderSyncHealth({
+      enabled: config.enabled,
+      lastRun: null,
+      openFailures: 0,
+    }),
     message,
   };
 }

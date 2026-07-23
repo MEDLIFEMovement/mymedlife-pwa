@@ -71,6 +71,14 @@ hubspotWorkspaceMock.mockResolvedValue({
       retryCount: 0,
       createdAt: "2026-07-19T20:04:00.000Z",
     }],
+    health: {
+      status: "degraded",
+      label: "Needs attention",
+      detail: "1 unresolved sync failure requires review.",
+      expectedCadenceMinutes: 60,
+      staleAfterMinutes: 120,
+      lastObservedAt: "2026-07-19T20:05:00.000Z",
+    },
     message: "HubSpot reads and app-owned reconciliation writes are enabled. HubSpot writes and invitations remain off.",
 });
 
@@ -833,6 +841,8 @@ describe("admin management pages", () => {
     expect(html).toContain("SYNC HUBSPOT");
     expect(html).toContain("HubSpot writes and invitations remain off");
     expect(html).toContain("TEST reconciliation failure");
+    expect(html).toContain("Needs attention");
+    expect(html).toContain("Hourly incremental cadence");
     expect(html).not.toContain("server-only-token");
   });
 
@@ -857,6 +867,14 @@ describe("admin management pages", () => {
         openFailures: 0,
       },
       failures: [],
+      health: {
+        status: "disabled",
+        label: "Disabled",
+        detail: "Scheduled provider reads are disabled by configuration.",
+        expectedCadenceMinutes: 60,
+        staleAfterMinutes: 120,
+        lastObservedAt: null,
+      },
       message: "Disabled for test.",
     });
 
@@ -871,6 +889,7 @@ describe("admin management pages", () => {
     expect(html).toContain("confirmation required");
     expect(html).toContain("No sync run has completed yet");
     expect(html).toContain("No unresolved failures");
+    expect(html).toContain("Scheduled provider reads are disabled by configuration");
   });
 
   it("renders an explicit restricted state when HubSpot readback is unavailable", async () => {

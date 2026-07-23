@@ -1719,6 +1719,7 @@ describe("HubSpot read sync foundation", () => {
       lastRun: { status: "partial", sourceCompanies: 345, matchedProfiles: 110 },
       counts: { companies: 10, pendingCompanies: 4, openFailures: 1 },
       failures: [{ code: "profile_link_failed", message: "Needs review" }],
+      health: { status: "degraded", label: "Needs attention" },
     });
 
     const unavailable = await getAdminHubSpotSyncWorkspace({
@@ -1757,6 +1758,7 @@ describe("HubSpot read sync foundation", () => {
       lastRun: null,
       counts: { companies: 0, contacts: 0, memberships: 0, openFailures: 0 },
       failures: [],
+      health: { status: "disabled", label: "Disabled" },
       message: "Sync disabled.",
     });
   });

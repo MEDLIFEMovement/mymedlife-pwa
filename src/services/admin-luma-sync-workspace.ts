@@ -2,6 +2,10 @@ import "server-only";
 
 import { createLocalSupabaseServerClient } from "@/lib/supabase-server";
 import { getLumaEventSyncConfig } from "@/services/luma-event-sync";
+import {
+  getProviderSyncHealth,
+  type ProviderSyncHealth,
+} from "@/services/provider-sync-health";
 
 export type AdminLumaSyncWorkspace = {
   canRead: boolean;
@@ -39,12 +43,14 @@ export type AdminLumaSyncWorkspace = {
     retryCount: number;
     createdAt: string;
   }>;
+  health: ProviderSyncHealth;
   message: string;
 };
 
 type AdminLumaSyncWorkspaceDeps = {
   createServerClient?: typeof createLocalSupabaseServerClient;
   getSyncConfig?: typeof getLumaEventSyncConfig;
+  now?: () => Date;
 };
 
 export async function getAdminLumaSyncWorkspace(
@@ -76,6 +82,7 @@ export async function getAdminLumaSyncWorkspace(
   const openFailures = Array.isArray(failures.data)
     ? failures.data.map((row: unknown) => normalizeFailure(row as Record<string, unknown>))
     : [];
+  const openFailureCount = failures.count ?? 0;
   return {
     canRead: true,
     config,
@@ -85,9 +92,15 @@ export async function getAdminLumaSyncWorkspace(
       importedEvents: imports.count ?? 0,
       materializedEvents: materialized.count ?? 0,
       conflicts: conflicts.count ?? 0,
-      openFailures: failures.count ?? 0,
+      openFailures: openFailureCount,
     },
     failures: openFailures,
+    health: getProviderSyncHealth({
+      enabled: config.enabled,
+      lastRun,
+      openFailures: openFailureCount,
+      now: deps.now?.(),
+    }),
     message: config.enabled
       ? "Luma event reads and app-owned reconciliation writes are enabled. Luma provider writes remain off."
       : config.reason,
@@ -141,6 +154,11 @@ function emptyWorkspace(
     lastRun: null,
     counts: { calendars: 0, importedEvents: 0, materializedEvents: 0, conflicts: 0, openFailures: 0 },
     failures: [],
+    health: getProviderSyncHealth({
+      enabled: config.enabled,
+      lastRun: null,
+      openFailures: 0,
+    }),
     message,
   };
 }

@@ -63,11 +63,19 @@ export default async function AdminHubSpotIntegrationPage({ searchParams }: Page
           <section className="mt-4 grid gap-4 lg:grid-cols-3">
             <article className="rounded-lg border border-white/10 bg-white/[0.04] p-5">
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-sky-200">Latest run</p>
+              <div className="mt-4 rounded-md border border-white/10 bg-black/20 p-3">
+                <p className="text-sm font-semibold text-white">{workspace.health.label}</p>
+                <p className="mt-1 text-sm leading-6 text-white/60">{workspace.health.detail}</p>
+                <p className="mt-2 text-xs text-white/45">
+                  Hourly incremental cadence · stale after {workspace.health.staleAfterMinutes} minutes
+                </p>
+              </div>
               {workspace.lastRun ? (
                 <dl className="mt-4 grid gap-3 sm:grid-cols-2">
                   <Detail label="Status" value={workspace.lastRun.status} />
                   <Detail label="Mode" value={workspace.lastRun.mode} />
                   <Detail label="Trigger" value={workspace.lastRun.triggerSource} />
+                  <Detail label="Completed" value={workspace.lastRun.completedAt ?? "Still running"} />
                   <Detail label="Heartbeat" value={workspace.lastRun.heartbeatAt} />
                   <Detail label="Source companies" value={workspace.lastRun.sourceCompanies} />
                   <Detail label="Source contacts" value={workspace.lastRun.sourceContacts} />
