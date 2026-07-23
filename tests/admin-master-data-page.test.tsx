@@ -12,6 +12,9 @@ const mockData = getMockReadOnlyAppData("Testing admin master data.");
 
 vi.mock("next/navigation", () => ({
   usePathname: () => "/admin/master-data",
+  useRouter: () => ({
+    replace: vi.fn(),
+  }),
   useSearchParams: () => new URLSearchParams(),
   redirect: vi.fn((href: string) => {
     throw new Error(`NEXT_REDIRECT:${href}`);
@@ -140,6 +143,40 @@ describe("admin master data page", () => {
     expect(html).not.toContain("TEST Morgan Member");
     expect(html).not.toContain("TEST Rush Month");
     expect(html).not.toContain("TEST Northview MEDLIFE");
+  });
+
+  it("renders the hosted admin overview from app-owned data without invented production totals", async () => {
+    const directoryModule = await import("@/services/admin-management-data");
+    const actorModule = await import("@/services/local-actor-context");
+    const dataModule = await import("@/services/read-only-app-data");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getMockLocalActorContext(
+        "super.admin@mymedlife.test",
+        "Using Super Admin test actor.",
+        "supabase_ready",
+        "local_auth_session",
+        "signed_in",
+      ),
+    );
+    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(getAppOwnedData());
+    vi.mocked(directoryModule.getAdminManagementDirectory).mockResolvedValue(
+      getAppOwnedDirectory(),
+    );
+
+    const { default: AdminPage } = await import("@/app/admin/page");
+    const html = renderToStaticMarkup(await AdminPage({}));
+
+    expect(html).toContain("App-owned operational readback");
+    expect(html).toContain("Operational counts");
+    expect(html).toContain("Route-backed workspaces");
+    expect(html).toContain("Users and access");
+    expect(html).toContain("Integration outbox");
+    expect(html).toContain("Readback is not rollout proof");
+    expect(html).not.toContain("TEST review data");
+    expect(html).not.toContain("1,284");
+    expect(html).not.toContain("18,340 mock pts");
+    expect(html).not.toContain("Launch Mode Active");
   });
 });
 
