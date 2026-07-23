@@ -608,11 +608,21 @@ function Header({
         ) : null}
       </div>
       <div className="flex items-center gap-3">
-        <div className="flex items-center gap-1.5 bg-emerald-500/8 border border-emerald-500/15 rounded px-2.5 py-1">
-          <HealthDot status="healthy" />
-          <span className="text-[10px] text-emerald-400 font-mono tracking-wider">SYSTEMS OK</span>
+        <div
+          className="flex items-center gap-1.5 rounded border border-white/[0.08] bg-white/[0.03] px-2.5 py-1"
+          title="This shell shows operational readback. Open System Health for verified runtime and integration status."
+        >
+          <HealthDot status="unknown" />
+          <span className="text-[10px] font-mono tracking-wider text-slate-400">
+            READBACK MODE
+          </span>
         </div>
-        <button disabled title="Admin notifications are blocked in this preview" className="relative p-1.5 text-slate-600 hover:text-slate-300 transition-colors">
+        <button
+          aria-label="Admin notifications"
+          disabled
+          title="Admin notifications are blocked in this preview"
+          className="relative p-1.5 text-slate-600 hover:text-slate-300 transition-colors"
+        >
           <Bell size={15} />
           <span className="absolute top-1 right-1 size-1.5 bg-red-400 rounded-full" />
         </button>
