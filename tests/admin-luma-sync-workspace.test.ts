@@ -71,6 +71,7 @@ describe("admin Luma sync workspace", () => {
       },
       counts: { calendars: 1, importedEvents: 10, materializedEvents: 8, conflicts: 1, openFailures: 1 },
       failures: [{ code: "calendar_mismatch", message: "Needs review" }],
+      health: { status: "degraded", label: "Needs attention" },
     });
   });
 
@@ -120,6 +121,7 @@ describe("admin Luma sync workspace", () => {
       lastRun: null,
       counts: { calendars: 0, importedEvents: 0, materializedEvents: 0, conflicts: 0, openFailures: 0 },
       failures: [],
+      health: { status: "disabled", label: "Disabled" },
       message: "Sync disabled.",
     });
   });

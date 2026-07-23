@@ -121,7 +121,8 @@ export default async function AdminLumaIntegrationPage() {
               </span>
             </div>
 
-            <dl className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+            <dl className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-6">
+              <Detail label="Sync health" value={syncWorkspace.health.label} />
               <Detail label="Calendar maps" value={`${syncWorkspace.counts.calendars}`} />
               <Detail label="Imported events" value={`${syncWorkspace.counts.importedEvents}`} />
               <Detail label="Materialized" value={`${syncWorkspace.counts.materializedEvents}`} />
@@ -140,6 +141,7 @@ export default async function AdminLumaIntegrationPage() {
                       {syncWorkspace.lastRun.status} · {syncWorkspace.lastRun.mode} · {syncWorkspace.lastRun.triggerSource}
                     </p>
                     <p>Started {syncWorkspace.lastRun.startedAt}</p>
+                    <p>Completed {syncWorkspace.lastRun.completedAt ?? "Still running"}</p>
                     <p>Heartbeat {syncWorkspace.lastRun.heartbeatAt}</p>
                     <p>
                       {syncWorkspace.lastRun.sourceEvents} source · {syncWorkspace.lastRun.materializedEvents} new · {syncWorkspace.lastRun.updatedEvents} updated
@@ -148,6 +150,10 @@ export default async function AdminLumaIntegrationPage() {
                 ) : (
                   <p className="mt-2 text-sm text-white/58">No Luma sync run has completed yet.</p>
                 )}
+                <p className="mt-3 text-sm leading-6 text-white/58">{syncWorkspace.health.detail}</p>
+                <p className="mt-1 text-xs text-white/40">
+                  Hourly reconciliation cadence · stale after {syncWorkspace.health.staleAfterMinutes} minutes
+                </p>
               </div>
 
               <div className="grid gap-4 sm:grid-cols-2">
