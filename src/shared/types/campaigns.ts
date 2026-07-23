@@ -1,6 +1,11 @@
 import type { AssignmentLane, ChapterRole, IntegrationEvent } from "@/shared/types/domain";
 
-export type CampaignShellStatus = "active" | "planned" | "template";
+export type CampaignShellStatus =
+  | "active"
+  | "planned"
+  | "template"
+  | "complete"
+  | "archived";
 
 export type CampaignWorkflowSnapshot = {
   sourceKind: "builder_definition" | "template_version";

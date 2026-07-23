@@ -4,6 +4,7 @@ import type { LocalActorContext, LocalActorOption } from "@/services/local-actor
 import { localActorOptions } from "@/services/local-actor-context";
 import type { ReadOnlyAppData } from "@/services/read-only-app-data";
 import type { ActorAudience } from "@/services/local-actor-context";
+import type { CampaignShellStatus } from "@/shared/types/campaigns";
 import type {
   DatabaseRoleKey,
   JsonValue,
@@ -45,7 +46,7 @@ export type AdminChapterInventoryItem = {
 export type AdminCampaignTemplateInventoryItem = {
   slug: string;
   name: string;
-  status: TemplateStatus | "planned" | "template";
+  status: TemplateStatus | CampaignShellStatus;
   primaryKpis: readonly string[];
   actionCommitteeLanes: readonly string[];
   integrationPosture: string;

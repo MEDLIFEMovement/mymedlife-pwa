@@ -1,5 +1,5 @@
 import { renderToStaticMarkup } from "react-dom/server";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { getMockLocalActorContext, type LocalActorContext } from "@/services/local-actor-context";
 import { getMockReadOnlyAppData } from "@/services/read-only-app-data";
@@ -42,6 +42,13 @@ function getSignedInActor(email: string): LocalActorContext {
 }
 
 describe("campaign route pages", () => {
+  beforeEach(async () => {
+    const dataModule = await import("@/services/read-only-app-data");
+    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
+      getMockReadOnlyAppData("Using TEST campaign fixtures."),
+    );
+  });
+
   it("renders the campaign catalog and starter-shell checkpoint for leader reviewers", async () => {
     const actorModule = await import("@/services/local-actor-context");
 
@@ -120,5 +127,105 @@ describe("campaign route pages", () => {
         params: Promise.resolve({ campaignSlug: "planning-goal-setting" }),
       }),
     ).rejects.toThrow("NEXT_REDIRECT:/campaigns");
+  });
+
+  it("renders the hosted member campaign from app-owned records", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const dataModule = await import("@/services/read-only-app-data");
+    const data = getMockReadOnlyAppData("test");
+    const campaignRow = {
+      ...data.campaignRows[0],
+      id: data.campaign.id,
+      chapter_id: data.chapter.id,
+      name: "Fall Service Campaign",
+      slug: "fall-service-campaign",
+      objective: "Serve the local community through one chapter event.",
+      status: "active" as const,
+    };
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("member.a@mymedlife.test"),
+    );
+    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue({
+      ...data,
+      source: {
+        mode: "supabase",
+        status: "supabase_ready",
+        message: "App-owned campaign data loaded.",
+      },
+      campaign: {
+        ...data.campaign,
+        id: campaignRow.id,
+        name: campaignRow.name,
+        objective: campaignRow.objective,
+      },
+      campaignRows: [campaignRow],
+      assignments: [
+        {
+          ...data.assignments[0],
+          title: "Invite members to Community Health Night",
+          status: "approved",
+          kpi: "member_invites",
+        },
+      ],
+      phases: [
+        {
+          id: "phase-live-1",
+          chapter_id: data.chapter.id,
+          campaign_id: campaignRow.id,
+          phase_template_id: null,
+          title: "Community outreach",
+          objective: "Invite members and confirm attendance.",
+          starts_at: "2026-07-20T00:00:00Z",
+          ends_at: "2026-07-30T00:00:00Z",
+          status: "active",
+          readiness_status: "ready",
+          coach_validation_status: "not_required",
+          required_outputs: [],
+          entry_criteria: [],
+          exit_criteria: ["Attendance recorded"],
+          created_at: "2026-07-20T00:00:00Z",
+          updated_at: "2026-07-20T00:00:00Z",
+        },
+      ],
+      chapterEventRows: [
+        {
+          ...data.chapterEventRows[0],
+          id: "event-live-1",
+          chapter_id: data.chapter.id,
+          campaign_id: campaignRow.id,
+          title: "Community Health Night",
+          status: "published",
+        },
+      ],
+      lumaEventLinkRows: [],
+      evidenceItems: [],
+      pointsEventRows: [],
+    });
+
+    const { default: CampaignsPage } = await import("@/app/campaigns/page");
+    const html = renderToStaticMarkup(await CampaignsPage());
+
+    expect(html).toContain("Fall Service Campaign");
+    expect(html).toContain("active · App-owned");
+    expect(html).toContain("1/1 assignments approved");
+    expect(html).toContain("Community outreach");
+    expect(html).toContain("Invite members to Community Health Night");
+    expect(html).toContain("Community Health Night");
+    expect(html).not.toContain("67%");
+    expect(html).not.toContain("TEST Rush Month Info Night");
+
+    const { default: CampaignPage } = await import("@/app/campaigns/[campaignSlug]/page");
+    const detailHtml = renderToStaticMarkup(
+      await CampaignPage({
+        params: Promise.resolve({ campaignSlug: "fall-service-campaign" }),
+      }),
+    );
+
+    expect(detailHtml).toContain("App-owned campaign");
+    expect(detailHtml).toContain("App-owned operating readback");
+    expect(detailHtml).toContain("1/1 assignments approved");
+    expect(detailHtml).toContain("Community Health Night · published");
+    expect(detailHtml).not.toContain("Preview-only campaign shell");
   });
 });
