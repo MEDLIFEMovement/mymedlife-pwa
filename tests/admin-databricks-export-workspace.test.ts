@@ -66,6 +66,7 @@ describe("admin Databricks export workspace", () => {
         source_row_count: 12,
         exported_row_count: 12,
         statement_id: "statement-1",
+        statement_ids: ["statement-1"],
         started_at: "2026-07-23T18:00:00.000Z",
         completed_at: "2026-07-23T18:05:00.000Z",
         error_summary: "Audit checkpoint needs replay",
@@ -90,6 +91,7 @@ describe("admin Databricks export workspace", () => {
         openFailures: 1,
       },
       lastRun: {
+        statementIds: ["statement-1"],
         id: "run-1",
         mode: "backfill",
         status: "partial",

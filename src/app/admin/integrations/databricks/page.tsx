@@ -37,6 +37,9 @@ export default async function AdminDatabricksIntegrationPage({
   if (!canAccessAdminWorkspace(actor)) {
     redirect(getLandingRouteForActor(actor));
   }
+  if (actor.audience !== "ds_admin" && actor.audience !== "super_admin") {
+    redirect(getLandingRouteForActor(actor));
+  }
 
   const [workspace, result] = await Promise.all([
     getAdminDatabricksExportWorkspace(),
@@ -138,6 +141,10 @@ export default async function AdminDatabricksIntegrationPage({
                 <Detail
                   label="Statement"
                   value={workspace.lastRun.statementId ?? "No statement"}
+                />
+                <Detail
+                  label="Statements"
+                  value={`${workspace.lastRun.statementIds.length}`}
                 />
               </dl>
             ) : (

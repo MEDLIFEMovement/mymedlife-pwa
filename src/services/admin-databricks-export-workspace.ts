@@ -25,6 +25,7 @@ export type AdminDatabricksExportWorkspace = {
     sourceRows: number;
     exportedRows: number;
     statementId: string | null;
+    statementIds: string[];
     startedAt: string;
     completedAt: string | null;
     errorSummary: string | null;
@@ -60,7 +61,7 @@ export async function getAdminDatabricksExportWorkspace(
     app
       .from("warehouse_export_runs")
       .select(
-        "id,mode,status,trigger_source,retry_of_run_id,batch_key,checkpoint_before,checkpoint_after,source_row_count,exported_row_count,statement_id,started_at,completed_at,error_summary",
+        "id,mode,status,trigger_source,retry_of_run_id,batch_key,checkpoint_before,checkpoint_after,source_row_count,exported_row_count,statement_id,statement_ids,started_at,completed_at,error_summary",
       )
       .eq("destination", "databricks")
       .eq("dataset", "event_metrics")
@@ -143,6 +144,7 @@ function normalizeRun(
     sourceRows: count(row.source_row_count),
     exportedRows: count(row.exported_row_count),
     statementId: optionalText(row.statement_id),
+    statementIds: textArray(row.statement_ids),
     startedAt: text(row.started_at),
     completedAt: optionalText(row.completed_at),
     errorSummary: optionalText(row.error_summary),
@@ -210,6 +212,12 @@ function optionalText(value: unknown) {
 function count(value: unknown) {
   const parsed = Number(value ?? 0);
   return Number.isFinite(parsed) && parsed >= 0 ? parsed : 0;
+}
+
+function textArray(value: unknown) {
+  return Array.isArray(value)
+    ? value.filter((item): item is string => typeof item === "string")
+    : [];
 }
 
 function nestedMode(value: unknown): "backfill" | "incremental" {

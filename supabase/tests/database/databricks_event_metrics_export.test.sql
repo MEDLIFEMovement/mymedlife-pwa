@@ -15,7 +15,13 @@ select has_table(
 select has_function(
   'app',
   'get_databricks_event_metrics_export',
-  array['timestamp with time zone']
+  array[
+    'timestamp with time zone',
+    'timestamp with time zone',
+    'timestamp with time zone',
+    'uuid',
+    'integer'
+  ]
 );
 
 select col_is_pk(
@@ -96,7 +102,7 @@ select is(
 select ok(
   has_function_privilege(
     'service_role',
-    'app.get_databricks_event_metrics_export(timestamp with time zone)',
+    'app.get_databricks_event_metrics_export(timestamp with time zone, timestamp with time zone, timestamp with time zone, uuid, integer)',
     'EXECUTE'
   ),
   'service role can execute the aggregate export function'
@@ -104,7 +110,7 @@ select ok(
 select ok(
   not has_function_privilege(
     'authenticated',
-    'app.get_databricks_event_metrics_export(timestamp with time zone)',
+    'app.get_databricks_event_metrics_export(timestamp with time zone, timestamp with time zone, timestamp with time zone, uuid, integer)',
     'EXECUTE'
   ),
   'authenticated users cannot execute the aggregate export function'

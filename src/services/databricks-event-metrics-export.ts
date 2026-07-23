@@ -6,7 +6,7 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
 const DATABRICKS_STATEMENT_PATH = "/api/2.0/sql/statements";
 const EXPORT_DATASET = "event_metrics";
-const MAX_EXPORT_ROWS = 1_000;
+const EXPORT_PAGE_SIZE = 500;
 const POLL_ATTEMPTS = 30;
 const POLL_DELAY_MS = 1_000;
 
@@ -107,8 +107,7 @@ export function getDatabricksEventMetricsExportConfig(
   const warehouseId = optional(env.DATABRICKS_SQL_WAREHOUSE_ID);
   const catalog = safeIdentifier(env.DATABRICKS_CATALOG);
   const schema = safeIdentifier(env.DATABRICKS_SCHEMA);
-  const table = safeIdentifier(env.DATABRICKS_EVENT_METRICS_TABLE)
-    ?? "mymedlife_event_metrics";
+  const table = safeIdentifier(env.DATABRICKS_EVENT_METRICS_TABLE);
   const targetTable = catalog && schema && table
     ? `${catalog}.${schema}.${table}`
     : null;
@@ -303,6 +302,11 @@ export function createDatabricksEventMetricsClient(
 
   return {
     async upsertEventMetrics({ rows, batchKey, exportedAt }) {
+      if (rows.length > EXPORT_PAGE_SIZE) {
+        throw new Error(
+          `Databricks export batches cannot exceed ${EXPORT_PAGE_SIZE} rows.`,
+        );
+      }
       await executeStatement(
         `create table if not exists identifier(:target_table) (
           event_id string not null,
@@ -545,6 +549,8 @@ export async function runDatabricksEventMetricsExport(
       .from("warehouse_export_runs")
       .select("id,mode,status,attempt")
       .eq("id", retryOfRunId)
+      .eq("destination", "databricks")
+      .eq("dataset", EXPORT_DATASET)
       .limit(1);
     if (replayTarget.error) {
       return failure(
@@ -611,42 +617,84 @@ export async function runDatabricksEventMetricsExport(
   let exportedRowCount = 0;
   let payloadSha256: string | null = null;
   let statementId: string | null = null;
+  const statementIds: string[] = [];
   let externalWriteCommitted = false;
 
   try {
-    const sourceResult = await appClient.schema("app")
-      .rpc("get_databricks_event_metrics_export", {
-        checkpoint_before_input: checkpointResult.checkpoint,
+    const payloadHash = createHash("sha256");
+    payloadHash.update("[");
+    let hashNeedsComma = false;
+    let cursorUpdatedAt: string | null = null;
+    let cursorEventId: string | null = null;
+
+    while (true) {
+      const sourceResult = await appClient.schema("app")
+        .rpc("get_databricks_event_metrics_export", {
+          checkpoint_before_input: checkpointResult.checkpoint,
+          checkpoint_through_input: startedAt,
+          cursor_updated_at_input: cursorUpdatedAt,
+          cursor_event_id_input: cursorEventId,
+          page_size_input: EXPORT_PAGE_SIZE,
+        });
+      if (sourceResult.error) {
+        throw new Error(
+          `The app-owned event metrics snapshot could not be read: ${sourceResult.error.message}`,
+        );
+      }
+
+      const rows = normalizeExportRows(sourceResult.data);
+      if (rows.length > EXPORT_PAGE_SIZE) {
+        throw new Error(
+          `The app-owned event metrics page exceeded the ${EXPORT_PAGE_SIZE}-row governed batch limit.`,
+        );
+      }
+      for (const row of rows) {
+        if (hashNeedsComma) payloadHash.update(",");
+        payloadHash.update(JSON.stringify(row));
+        hashNeedsComma = true;
+      }
+      sourceRowCount += rows.length;
+      await heartbeatRun(appClient, runId, now().toISOString(), {
+        source_row_count: sourceRowCount,
+        exported_row_count: exportedRowCount,
       });
-    if (sourceResult.error) {
-      throw new Error(
-        `The app-owned event metrics snapshot could not be read: ${sourceResult.error.message}`,
-      );
+
+      if (rows.length > 0) {
+        const exported = await databricksClient.upsertEventMetrics({
+          rows,
+          batchKey,
+          exportedAt: startedAt,
+        });
+        statementId = exported.statementId;
+        statementIds.push(exported.statementId);
+        exportedRowCount += rows.length;
+        externalWriteCommitted = true;
+        await heartbeatRun(appClient, runId, now().toISOString(), {
+          source_row_count: sourceRowCount,
+          exported_row_count: exportedRowCount,
+          statement_id: statementId,
+          statement_ids: statementIds,
+        });
+      }
+
+      if (rows.length < EXPORT_PAGE_SIZE) break;
+      const lastRow = rows.at(-1);
+      if (!lastRow) {
+        throw new Error("The app-owned event metrics cursor could not advance.");
+      }
+      cursorUpdatedAt = lastRow.sourceUpdatedAt;
+      cursorEventId = lastRow.eventId;
     }
 
-    const rows = normalizeExportRows(sourceResult.data);
-    sourceRowCount = rows.length;
-    if (rows.length > MAX_EXPORT_ROWS) {
-      throw new Error(
-        `The event metrics snapshot contains ${rows.length} rows, above the ${MAX_EXPORT_ROWS}-row governed export limit.`,
-      );
-    }
-    payloadSha256 = hashPayload(rows);
+    payloadHash.update("]");
+    payloadSha256 = payloadHash.digest("hex");
     await heartbeatRun(appClient, runId, now().toISOString(), {
-      source_row_count: rows.length,
+      source_row_count: sourceRowCount,
+      exported_row_count: exportedRowCount,
       payload_sha256: payloadSha256,
+      statement_id: statementId,
+      statement_ids: statementIds,
     });
-
-    if (rows.length > 0) {
-      const exported = await databricksClient.upsertEventMetrics({
-        rows,
-        batchKey,
-        exportedAt: startedAt,
-      });
-      statementId = exported.statementId;
-      exportedRowCount = rows.length;
-      externalWriteCommitted = true;
-    }
 
     const audit = await appClient.schema("app").from("audit_logs").insert({
       actor_user_id: actorUserId,
@@ -658,10 +706,11 @@ export async function runDatabricksEventMetricsExport(
         batch_key: batchKey,
         destination: "databricks",
         dataset: EXPORT_DATASET,
-        source_row_count: rows.length,
-        exported_row_count: rows.length,
+        source_row_count: sourceRowCount,
+        exported_row_count: exportedRowCount,
         payload_sha256: payloadSha256,
         statement_id: statementId,
+        statement_ids: statementIds,
         checkpoint_before: checkpointResult.checkpoint,
         checkpoint_after: startedAt,
       },
@@ -674,17 +723,15 @@ export async function runDatabricksEventMetricsExport(
       );
     }
 
-    if (triggerSource === "replay" && retryOfRunId) {
-      await resolveReplayedFailures(appClient, retryOfRunId, now().toISOString());
-    }
     const finalized = await finishRun(appClient, runId, {
       status: "succeeded",
       completedAt: now().toISOString(),
       checkpointAfter: startedAt,
-      sourceRowCount: rows.length,
-      exportedRowCount: rows.length,
+      sourceRowCount,
+      exportedRowCount,
       payloadSha256,
       statementId,
+      statementIds,
       errorSummary: null,
     });
     if (!finalized) {
@@ -692,17 +739,41 @@ export async function runDatabricksEventMetricsExport(
         "Databricks export completed, but the app-owned run could not be finalized.",
       );
     }
+    let replayCleanupWarning = false;
+    if (triggerSource === "replay" && retryOfRunId) {
+      const replayFailuresResolved = await resolveReplayedFailures(
+        appClient,
+        retryOfRunId,
+        now().toISOString(),
+      );
+      if (!replayFailuresResolved) {
+        replayCleanupWarning = true;
+        await tryRecordFailure(
+          appClient,
+          runId,
+          "databricks_replay_cleanup_failed",
+          "The replay succeeded, but the prior failure rows remain unresolved.",
+          {
+            retry_of_run_id: retryOfRunId,
+            batch_key: batchKey,
+            statement_ids: statementIds,
+          },
+        );
+      }
+    }
 
     return {
       success: true,
       code: "databricks_export_succeeded",
       runId,
       batchKey,
-      sourceRows: rows.length,
-      exportedRows: rows.length,
-      plainEnglishMessage: rows.length > 0
-        ? "Aggregate event metrics were merged into the downstream Databricks read model."
-        : "No event metrics changed after the current checkpoint; no Databricks statement was needed.",
+      sourceRows: sourceRowCount,
+      exportedRows: exportedRowCount,
+      plainEnglishMessage: replayCleanupWarning
+        ? "The Databricks replay and checkpoint succeeded, but the prior failure rows still need operator cleanup."
+        : sourceRowCount > 0
+          ? "Aggregate event metrics were merged into the downstream Databricks read model."
+          : "No event metrics changed after the current checkpoint; no Databricks statement was needed.",
     };
   } catch (error) {
     const message = safeErrorMessage(error);
@@ -723,6 +794,7 @@ export async function runDatabricksEventMetricsExport(
         exported_row_count: exportedRowCount,
         payload_sha256: payloadSha256,
         statement_id: statementId,
+        statement_ids: statementIds,
       },
     );
     const errorSummary = failureRecorded
@@ -736,6 +808,7 @@ export async function runDatabricksEventMetricsExport(
       exportedRowCount,
       payloadSha256,
       statementId,
+      statementIds,
       errorSummary,
     });
     if (!finalized) {
@@ -827,6 +900,7 @@ async function finishRun(
     exportedRowCount: number;
     payloadSha256: string | null;
     statementId: string | null;
+    statementIds: string[];
     errorSummary: string | null;
   },
 ) {
@@ -841,6 +915,7 @@ async function finishRun(
       exported_row_count: input.exportedRowCount,
       payload_sha256: input.payloadSha256,
       statement_id: input.statementId,
+      statement_ids: input.statementIds,
       error_summary: input.errorSummary,
     })
     .eq("id", runId);
@@ -857,9 +932,7 @@ async function resolveReplayedFailures(
     .update({ resolved_at: resolvedAt })
     .eq("run_id", retryOfRunId)
     .is("resolved_at", null);
-  if (result.error) {
-    throw new Error("The replayed warehouse export failures could not be resolved.");
-  }
+  return !result.error;
 }
 
 async function tryRecordFailure(
@@ -943,10 +1016,6 @@ function normalizeExportRow(value: unknown, index: number): DatabricksEventMetri
     attendancePointsAwarded,
     sourceUpdatedAt,
   };
-}
-
-function hashPayload(rows: DatabricksEventMetric[]) {
-  return createHash("sha256").update(JSON.stringify(rows)).digest("hex");
 }
 
 function getEnvironment(

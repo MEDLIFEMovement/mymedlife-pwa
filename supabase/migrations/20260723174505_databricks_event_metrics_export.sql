@@ -18,6 +18,7 @@ create table app.warehouse_export_runs (
   exported_row_count integer not null default 0 check (exported_row_count >= 0),
   payload_sha256 text,
   statement_id text,
+  statement_ids text[] not null default '{}'::text[],
   started_at timestamptz not null default now(),
   heartbeat_at timestamptz not null default now(),
   completed_at timestamptz,
@@ -64,7 +65,11 @@ on app.warehouse_export_failures for select to authenticated
 using (app.is_ds_admin() or app.is_super_admin());
 
 create or replace function app.get_databricks_event_metrics_export(
-  checkpoint_before_input timestamptz default null
+  checkpoint_before_input timestamptz default null,
+  checkpoint_through_input timestamptz default now(),
+  cursor_updated_at_input timestamptz default null,
+  cursor_event_id_input uuid default null,
+  page_size_input integer default 500
 )
 returns table (
   event_id uuid,
@@ -169,14 +174,35 @@ as $$
   )
   select *
   from event_metrics
-  where checkpoint_before_input is null
-    or source_updated_at > checkpoint_before_input
-  order by source_updated_at, event_id;
+  where (
+      checkpoint_before_input is null
+      or source_updated_at > checkpoint_before_input
+    )
+    and source_updated_at <= checkpoint_through_input
+    and (
+      cursor_updated_at_input is null
+      or (source_updated_at, event_id) >
+        (cursor_updated_at_input, cursor_event_id_input)
+    )
+  order by source_updated_at, event_id
+  limit greatest(1, least(page_size_input, 500));
 $$;
 
-revoke all on function app.get_databricks_event_metrics_export(timestamptz)
+revoke all on function app.get_databricks_event_metrics_export(
+  timestamptz,
+  timestamptz,
+  timestamptz,
+  uuid,
+  integer
+)
 from public, anon, authenticated;
-grant execute on function app.get_databricks_event_metrics_export(timestamptz)
+grant execute on function app.get_databricks_event_metrics_export(
+  timestamptz,
+  timestamptz,
+  timestamptz,
+  uuid,
+  integer
+)
 to service_role;
 
 grant select on app.warehouse_export_runs to authenticated;

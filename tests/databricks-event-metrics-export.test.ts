@@ -49,6 +49,16 @@ describe("Databricks event metrics export", () => {
     });
     expect(getDatabricksEventMetricsExportConfig({
       ...enabledEnv,
+      DATABRICKS_EVENT_METRICS_TABLE: undefined,
+    })).toMatchObject({
+      enabled: false,
+      table: null,
+      targetTable: null,
+      reason:
+        "Databricks export is disabled until safe catalog, schema, and table identifiers are configured.",
+    });
+    expect(getDatabricksEventMetricsExportConfig({
+      ...enabledEnv,
       DATABRICKS_HOST: "https://example.com",
     })).toMatchObject({
       enabled: false,
@@ -138,6 +148,15 @@ describe("Databricks event metrics export", () => {
       },
       cache: "no-store",
     });
+
+    await expect(client?.upsertEventMetrics({
+      rows: Array.from({ length: 501 }, () => exportMetric()),
+      batchKey: "batch-too-large",
+      exportedAt: "2026-07-23T18:00:00.000Z",
+    })).rejects.toThrow(
+      "Databricks export batches cannot exceed 500 rows.",
+    );
+    expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 
   it("polls asynchronous statements and reports terminal provider failures without response-body leakage", async () => {
@@ -272,7 +291,13 @@ describe("Databricks event metrics export", () => {
     });
     expect(rpc).toHaveBeenCalledWith(
       "get_databricks_event_metrics_export",
-      { checkpoint_before_input: null },
+      {
+        checkpoint_before_input: null,
+        checkpoint_through_input: "2026-07-23T18:00:00.000Z",
+        cursor_updated_at_input: null,
+        cursor_event_id_input: null,
+        page_size_input: 500,
+      },
     );
     expect(upsertEventMetrics).toHaveBeenCalledWith({
       rows: [expect.objectContaining({
@@ -345,9 +370,96 @@ describe("Databricks event metrics export", () => {
     });
     expect(rpc).toHaveBeenCalledWith(
       "get_databricks_event_metrics_export",
-      { checkpoint_before_input: "2026-07-22T18:00:00.000Z" },
+      {
+        checkpoint_before_input: "2026-07-22T18:00:00.000Z",
+        checkpoint_through_input: "2026-07-23T18:00:00.000Z",
+        cursor_updated_at_input: null,
+        cursor_event_id_input: null,
+        page_size_input: 500,
+      },
     );
     expect(upsertEventMetrics).not.toHaveBeenCalled();
+  });
+
+  it("exports stable keyset pages instead of failing when more than 1,000 events are in scope", async () => {
+    const rows = Array.from({ length: 1_001 }, (_, index) =>
+      metricRow({
+        event_id:
+          `10000000-0000-4000-8000-${String(index + 1).padStart(12, "0")}`,
+        source_updated_at: new Date(
+          Date.UTC(2026, 6, 22, 0, 0, index),
+        ).toISOString(),
+      }));
+    const rpc = vi.fn()
+      .mockResolvedValueOnce({ data: rows.slice(0, 500), error: null })
+      .mockResolvedValueOnce({ data: rows.slice(500, 1_000), error: null })
+      .mockResolvedValueOnce({ data: rows.slice(1_000), error: null });
+    const appClient = createFakeAppClient((query) => {
+      if (query.table === "staff_role_assignments") {
+        return ok([{ role_key: "ds_admin" }]);
+      }
+      if (
+        query.table === "warehouse_export_runs" &&
+        query.operation === "select"
+      ) {
+        return ok([]);
+      }
+      if (
+        query.table === "warehouse_export_runs" &&
+        query.operation === "insert"
+      ) {
+        return ok({ id: "10000000-0000-4000-8000-000000000035" });
+      }
+      return ok([]);
+    }, rpc);
+    const upsertEventMetrics = vi.fn()
+      .mockResolvedValueOnce({
+        statementId: "10000000-0000-4000-8000-000000000071",
+      })
+      .mockResolvedValueOnce({
+        statementId: "10000000-0000-4000-8000-000000000072",
+      })
+      .mockResolvedValueOnce({
+        statementId: "10000000-0000-4000-8000-000000000073",
+      });
+
+    const result = await runDatabricksEventMetricsExport(
+      "10000000-0000-4000-8000-000000000054",
+      "backfill",
+      {
+        env: enabledEnv,
+        appClient: appClient as never,
+        databricksClient: { upsertEventMetrics },
+        batchKey: "batch-paged-backfill",
+        now: () => new Date("2026-07-23T18:00:00.000Z"),
+      },
+    );
+
+    expect(result).toMatchObject({
+      success: true,
+      sourceRows: 1_001,
+      exportedRows: 1_001,
+    });
+    expect(upsertEventMetrics).toHaveBeenCalledTimes(3);
+    expect(upsertEventMetrics.mock.calls.map(([input]) => input.rows.length))
+      .toEqual([500, 500, 1]);
+    expect(rpc).toHaveBeenNthCalledWith(
+      2,
+      "get_databricks_event_metrics_export",
+      expect.objectContaining({
+        cursor_updated_at_input: rows[499]?.source_updated_at,
+        cursor_event_id_input: rows[499]?.event_id,
+        checkpoint_through_input: "2026-07-23T18:00:00.000Z",
+      }),
+    );
+    expect(rpc).toHaveBeenNthCalledWith(
+      3,
+      "get_databricks_event_metrics_export",
+      expect.objectContaining({
+        cursor_updated_at_input: rows[999]?.source_updated_at,
+        cursor_event_id_input: rows[999]?.event_id,
+      }),
+    );
   });
 
   it("records a partial run with real exported counts when the app audit fails after Databricks accepts the batch", async () => {

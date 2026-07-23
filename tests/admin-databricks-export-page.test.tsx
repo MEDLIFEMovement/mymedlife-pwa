@@ -97,6 +97,11 @@ describe("admin Databricks export page", () => {
     await expect(AdminDatabricksIntegrationPage({
       searchParams: Promise.resolve({}),
     })).rejects.toThrow("NEXT_REDIRECT:/app");
+
+    mocks.getLocalActorContext.mockResolvedValue(signedIn("admin"));
+    await expect(AdminDatabricksIntegrationPage({
+      searchParams: Promise.resolve({}),
+    })).rejects.toThrow("NEXT_REDIRECT:/staff?view=chapters");
   });
 });
 
@@ -143,6 +148,7 @@ function workspace() {
       sourceRows: 5,
       exportedRows: 5,
       statementId: "statement-1",
+      statementIds: ["statement-1"],
       startedAt: "2026-07-23T18:00:00.000Z",
       completedAt: "2026-07-23T18:05:00.000Z",
       errorSummary: "Audit checkpoint needs replay",
