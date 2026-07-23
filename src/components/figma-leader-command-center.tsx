@@ -16,6 +16,7 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine
 } from "recharts";
 import { CreateEventForm } from "@/components/figma-leader-create-event-screen";
+import type { LeaderEventCreateInput, LeaderEventCreateResult } from "@/services/leader-event-create-write";
 import { TrainingScreen } from "@/components/figma-leader-training-screen";
 import { MedlifeStoriesScreen } from "@/components/figma-leader-stories-screen";
 import {
@@ -4386,11 +4387,14 @@ const LABELS: Record<Screen,string> = {
 type FigmaLeaderCommandCenterProps = {
   initialScreen?: Screen;
   liveEventReadback?: LeaderLiveEventReadback | null;
+  liveEventCreate?: { chapterId: string; chapterName: string; enabled: boolean; reason: string } | null;
+  submitEventCreateAction?: (input: LeaderEventCreateInput) => Promise<LeaderEventCreateResult>;
 };
-
 export function FigmaLeaderCommandCenter({
   initialScreen = "home",
   liveEventReadback = null,
+  liveEventCreate = null,
+  submitEventCreateAction,
 }: FigmaLeaderCommandCenterProps = {}) {
   const router = useRouter();
   const pathname = usePathname();
@@ -4402,7 +4406,6 @@ export function FigmaLeaderCommandCenter({
   const [showPromote, setShowPromote] = useState(false);
   const [assignActionMemberIds, setAssignActionMemberIds] = useState<number[]>([]);
   const [promoteInitialMemberId, setPromoteInitialMemberId] = useState<number | null>(null);
-
   useEffect(() => {
     setScreen(queryScreen);
   }, [queryScreen]);
@@ -4421,7 +4424,6 @@ export function FigmaLeaderCommandCenter({
   const handleCreateEvent = () => {
     navigateToScreen("create-event");
   };
-
   const openAssignActionPreview = (memberIds: number[] = []) => {
     setAssignActionMemberIds(memberIds);
     setShowAssignAction(true);
@@ -4441,7 +4443,6 @@ export function FigmaLeaderCommandCenter({
     setSelectedId(id);
     navigateToScreen("profile");
   };
-
   return (
     <div className="flex h-screen overflow-hidden bg-slate-100"
       style={{ fontFamily:"'Inter', system-ui, sans-serif" }}>
@@ -4532,6 +4533,11 @@ export function FigmaLeaderCommandCenter({
                 onOpenHome={() => navigateToScreen("home")}
                 onOpenCommittees={() => navigateToScreen("committees")}
                 onOpenEvents={() => navigateToScreen("events")}
+                chapterId={liveEventCreate?.chapterId}
+                chapterName={liveEventCreate?.chapterName}
+                creationEnabled={liveEventCreate?.enabled === true}
+                creationUnavailableReason={liveEventCreate?.reason}
+                onCreateEvent={submitEventCreateAction}
               />
             </div>
           )}

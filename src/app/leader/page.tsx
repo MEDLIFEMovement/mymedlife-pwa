@@ -26,6 +26,8 @@ import { getStaticRouteMetadata } from "@/services/static-route-metadata";
 import { isPreviewWorkspaceAccess } from "@/services/workspace-access";
 import { getLeaderLaunchLaneCanonicalHref } from "@/services/leader-launch-lane";
 import { resolveLeaderCommandCenterScreen } from "@/services/leader-command-center-routing";
+import { submitLeaderEventCreateAction } from "@/app/leader/actions";
+import { getLeaderEventCreateWriteConfig } from "@/services/leader-event-create-write";
 
 export const metadata = getStaticRouteMetadata("leader");
 export const dynamic = "force-dynamic";
@@ -196,6 +198,40 @@ export default async function LeaderPage({ searchParams }: LeaderPageProps) {
         <FigmaLeaderCommandCenter
           initialScreen={initialScreen}
           liveEventReadback={liveEventReadback}
+        />
+      </>
+    );
+  }
+
+  if (requestedView === "create_event") {
+    const data = await getReadOnlyAppData({ actorUserId: actor.user.id });
+    const createConfig = getLeaderEventCreateWriteConfig();
+    const creationEnabled =
+      createConfig.enabled &&
+      !shouldRenderFigmaLeaderPreview &&
+      data.source.mode === "supabase";
+
+    return (
+      <>
+        <WorkspaceAccountMenu actor={actor} currentWorkspace="leader_command_center" />
+        {shouldRenderFigmaLeaderPreview ? (
+          <WorkspacePreviewBanner workspaceLabel="the Student Command Center" />
+        ) : null}
+        <FigmaLeaderCommandCenter
+          initialScreen={initialScreen}
+          liveEventCreate={{
+            chapterId: data.chapter.id,
+            chapterName: data.chapter.name,
+            enabled: creationEnabled,
+            reason: creationEnabled
+              ? createConfig.reason
+              : shouldRenderFigmaLeaderPreview
+                ? "Event creation stays blocked while Staff/Admin is viewing the leader preview workspace."
+                : data.source.mode !== "supabase"
+                  ? "Event creation requires an app-owned Supabase chapter readback."
+                  : createConfig.reason,
+          }}
+          submitEventCreateAction={submitLeaderEventCreateAction}
         />
       </>
     );
