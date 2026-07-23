@@ -58,6 +58,11 @@ describe("provider sync health", () => {
       status: "degraded",
       label: "Timestamp unavailable",
     });
+    expect(healthFor("succeeded", "", 0)).toMatchObject({
+      status: "degraded",
+      label: "Timestamp unavailable",
+      lastObservedAt: null,
+    });
   });
 });
 
