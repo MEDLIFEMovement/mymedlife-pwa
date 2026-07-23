@@ -7,6 +7,7 @@ import {
   getDisabledAuthSessionState,
   normalizeLoginRedirect,
 } from "@/services/auth-session";
+import { getAuthCallbackFailureMessage } from "@/services/auth-callback";
 import { getStaticRouteMetadata } from "@/services/static-route-metadata";
 
 export const metadata = getStaticRouteMetadata("login");
@@ -14,6 +15,7 @@ export const dynamic = "force-dynamic";
 
 type LoginPageProps = {
   searchParams?: Promise<{
+    authError?: string;
     redirectTo?: string;
   }>;
 };
@@ -26,8 +28,15 @@ export default async function LoginPage(props: LoginPageProps) {
     ? await getAuthSessionState(client, config)
     : getDisabledAuthSessionState(config);
   const signInEnabled = Boolean(client);
-  const initialMessage =
-    session.status === "disabled"
+  const callbackFailureMessage = getAuthCallbackFailureMessage(query.authError);
+  const initialStatus = callbackFailureMessage
+    ? "error"
+    : session.status === "disabled"
+      ? "disabled"
+      : "idle";
+  const initialMessage = callbackFailureMessage
+    ? callbackFailureMessage
+    : session.status === "disabled"
       ? session.message
       : "Use one account. myMEDLIFE routes you into the right workspace after sign-in.";
 
@@ -39,7 +48,7 @@ export default async function LoginPage(props: LoginPageProps) {
         <LoginForm
           redirectTo={redirectTo}
           signInEnabled={signInEnabled}
-          initialStatus={session.status === "disabled" ? "disabled" : "idle"}
+          initialStatus={initialStatus}
           initialMessage={initialMessage}
         />
       )}
