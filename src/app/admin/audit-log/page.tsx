@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { AdminAuditLogReviewPanel } from "@/components/admin-audit-log-review-panel";
 import { AppShell } from "@/components/app-shell";
 import { DataSourceNotice } from "@/components/data-source-notice";
@@ -6,6 +7,7 @@ import { FigmaAdminShellFrame } from "@/components/figma-admin-panel";
 import { RestrictedState } from "@/components/restricted-state";
 import { WorkspaceAccountMenu } from "@/components/workspace-account-menu";
 import { getAdminAuditLogReview } from "@/services/admin-audit-log-review";
+import { getAdminShellRedirect } from "@/services/admin-shell-routing";
 import type { LocalActorContext } from "@/services/local-actor-context";
 import { getLocalActorContext } from "@/services/local-actor-context";
 import { getReadOnlyAppData } from "@/services/read-only-app-data";
@@ -14,7 +16,23 @@ import { getStaticRouteMetadata } from "@/services/static-route-metadata";
 export const metadata = getStaticRouteMetadata("adminAuditLog");
 export const dynamic = "force-dynamic";
 
-export default async function AdminAuditLogPage() {
+type AdminAuditLogPageProps = {
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+};
+
+export default async function AdminAuditLogPage({
+  searchParams,
+}: AdminAuditLogPageProps) {
+  const resolvedSearchParams = (await searchParams) ?? {};
+  const shellRedirect = getAdminShellRedirect(
+    resolvedSearchParams.view,
+    "audit",
+  );
+
+  if (shellRedirect) {
+    redirect(shellRedirect);
+  }
+
   const [actor, data] = await Promise.all([
     getLocalActorContext(),
     getReadOnlyAppData(),

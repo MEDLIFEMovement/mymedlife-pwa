@@ -1,10 +1,12 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { AdminSystemHealthReviewPanel } from "@/components/admin-system-health-review-panel";
 import { AppShell } from "@/components/app-shell";
 import { DataSourceNotice } from "@/components/data-source-notice";
 import { FigmaAdminShellFrame } from "@/components/figma-admin-panel";
 import { RestrictedState } from "@/components/restricted-state";
 import { WorkspaceAccountMenu } from "@/components/workspace-account-menu";
+import { getAdminShellRedirect } from "@/services/admin-shell-routing";
 import { getAdminSystemHealthReview } from "@/services/admin-system-health-review";
 import type { LocalActorContext } from "@/services/local-actor-context";
 import { getLocalActorContext } from "@/services/local-actor-context";
@@ -14,7 +16,23 @@ import { getStaticRouteMetadata } from "@/services/static-route-metadata";
 export const metadata = getStaticRouteMetadata("adminSystemHealth");
 export const dynamic = "force-dynamic";
 
-export default async function AdminSystemHealthPage() {
+type AdminSystemHealthPageProps = {
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+};
+
+export default async function AdminSystemHealthPage({
+  searchParams,
+}: AdminSystemHealthPageProps) {
+  const resolvedSearchParams = (await searchParams) ?? {};
+  const shellRedirect = getAdminShellRedirect(
+    resolvedSearchParams.view,
+    "health",
+  );
+
+  if (shellRedirect) {
+    redirect(shellRedirect);
+  }
+
   const [actor, data] = await Promise.all([
     getLocalActorContext(),
     getReadOnlyAppData(),

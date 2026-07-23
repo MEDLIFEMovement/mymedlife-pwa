@@ -35,6 +35,22 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
     redirect("/admin/users");
   }
 
+  if (requestedView === "chapters") {
+    redirect("/admin/chapters");
+  }
+
+  if (requestedView === "luma") {
+    redirect("/admin/integrations/luma");
+  }
+
+  if (requestedView === "audit") {
+    redirect("/admin/audit-log");
+  }
+
+  if (requestedView === "health") {
+    redirect("/admin/system-health");
+  }
+
   const actor = await getLocalActorContext();
 
   if (shouldRedirectActorToLogin(actor)) {
