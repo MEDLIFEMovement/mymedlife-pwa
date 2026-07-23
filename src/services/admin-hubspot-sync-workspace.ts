@@ -31,6 +31,8 @@ export type AdminHubSpotSyncWorkspace = {
     pendingCompanies: number;
     pendingContacts: number;
     pendingMemberships: number;
+    materializedMemberships: number;
+    ignoredMemberships: number;
     openFailures: number;
   };
   failures: Array<{
@@ -58,7 +60,7 @@ export async function getAdminHubSpotSyncWorkspace(
   if (!client) return emptyWorkspace(config, authConfig.reason);
 
   const app = client.schema("app");
-  const [runs, companies, contacts, memberships, pendingCompanies, pendingContacts, pendingMemberships, failures] = await Promise.all([
+  const [runs, companies, contacts, memberships, pendingCompanies, pendingContacts, pendingMemberships, materializedMemberships, ignoredMemberships, failures] = await Promise.all([
     app.from("hubspot_sync_runs").select("id,mode,status,trigger_source,retry_of_run_id,started_at,completed_at,heartbeat_at,source_company_count,source_contact_count,membership_deactivation_count,chapter_deactivation_count,materialized_chapter_count,matched_profile_count,conflict_count,failure_count").order("started_at", { ascending: false }).limit(1),
     app.from("hubspot_company_imports").select("hubspot_company_id", { count: "exact", head: true }),
     app.from("hubspot_contact_imports").select("hubspot_contact_id", { count: "exact", head: true }),
@@ -66,10 +68,12 @@ export async function getAdminHubSpotSyncWorkspace(
     app.from("hubspot_company_imports").select("hubspot_company_id", { count: "exact", head: true }).eq("reconciliation_status", "pending"),
     app.from("hubspot_contact_imports").select("hubspot_contact_id", { count: "exact", head: true }).eq("reconciliation_status", "pending"),
     app.from("hubspot_membership_imports").select("hubspot_contact_id", { count: "exact", head: true }).eq("reconciliation_status", "pending"),
+    app.from("hubspot_membership_imports").select("hubspot_contact_id", { count: "exact", head: true }).eq("reconciliation_status", "materialized"),
+    app.from("hubspot_membership_imports").select("hubspot_contact_id", { count: "exact", head: true }).eq("reconciliation_status", "ignored"),
     app.from("hubspot_sync_failures").select("id,object_type,external_id,error_code,error_message,retry_count,created_at", { count: "exact" }).is("resolved_at", null).order("created_at", { ascending: false }).limit(20),
   ]);
 
-  const queryError = [runs, companies, contacts, memberships, pendingCompanies, pendingContacts, pendingMemberships, failures]
+  const queryError = [runs, companies, contacts, memberships, pendingCompanies, pendingContacts, pendingMemberships, materializedMemberships, ignoredMemberships, failures]
     .find((result) => result.error)?.error;
   if (queryError) {
     return emptyWorkspace(config, `HubSpot sync readback is unavailable: ${queryError.message}`);
@@ -104,6 +108,8 @@ export async function getAdminHubSpotSyncWorkspace(
       pendingCompanies: pendingCompanies.count ?? 0,
       pendingContacts: pendingContacts.count ?? 0,
       pendingMemberships: pendingMemberships.count ?? 0,
+      materializedMemberships: materializedMemberships.count ?? 0,
+      ignoredMemberships: ignoredMemberships.count ?? 0,
       openFailures: failures.count ?? 0,
     },
     failures: (failures.data ?? []).map((failure: Record<string, unknown>) => ({
@@ -136,6 +142,8 @@ function emptyWorkspace(
       pendingCompanies: 0,
       pendingContacts: 0,
       pendingMemberships: 0,
+      materializedMemberships: 0,
+      ignoredMemberships: 0,
       openFailures: 0,
     },
     failures: [],
