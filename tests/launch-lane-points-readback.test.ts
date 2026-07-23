@@ -10,6 +10,7 @@ import {
   getLaunchLaneOrgPointsReadback,
   getLaunchLaneOrgLeaderboardRows,
   getLaunchLaneStaffChapterReadback,
+  getLaunchLaneStaffEventReadback,
 } from "@/services/launch-lane-points-readback";
 import { getMockLocalActorContext } from "@/services/local-actor-context";
 import {
@@ -237,6 +238,14 @@ describe("launch lane points readback", () => {
       points: 20,
       detail: "Leading this chapter right now",
     });
+  });
+
+  it("keeps leader preview event names visibly TEST-labeled", () => {
+    const data = getMockReadOnlyAppData("Testing leader preview labels.");
+
+    expect(getLaunchLaneLeaderEventReadback(data, { testPreview: true })[0]?.title).toBe(
+      "TEST Rush Month kickoff social",
+    );
   });
 
   it("does not substitute preview people when a live event has no attendance", () => {
@@ -488,6 +497,43 @@ describe("launch lane points readback", () => {
         }),
       ]),
     );
+  });
+
+  it("resolves a selected staff event from the full event set, not only the chapter summary event", () => {
+    const data = withAdditionalUclaEvent(
+      getMockReadOnlyAppData("Testing selected staff event readback."),
+      {
+        event: {
+          id: "chapter-event-ucla-selected-later",
+          title: "Provider-imported chapter follow-up",
+          starts_at: "2026-11-29T19:00:00Z",
+          ends_at: "2026-11-29T21:00:00Z",
+          status: "completed",
+          attendance_count: 12,
+          luma_event_link_id: "luma-link-ucla-selected-later",
+        },
+        link: {
+          id: "luma-link-ucla-selected-later",
+          luma_event_id: "provider-selected-later",
+          luma_event_url: "https://lu.ma/provider-selected-later",
+        },
+      },
+    );
+
+    expect(
+      getLaunchLaneStaffEventReadback(
+        data,
+        "chapter-event-ucla-selected-later",
+        { testPreview: true },
+      ),
+    ).toMatchObject({
+      id: "chapter-event-ucla-selected-later",
+      chapterName: "UCLA MEDLIFE",
+      title: "TEST Provider-imported chapter follow-up",
+      location: "Luma-linked chapter event",
+      attendance: 12,
+      points: 0,
+    });
   });
 });
 

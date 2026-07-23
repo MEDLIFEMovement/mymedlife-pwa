@@ -180,7 +180,9 @@ export default async function LeaderPage({ searchParams }: LeaderPageProps) {
     const liveEventReadback = {
       chapterName: data.chapter.name,
       selectedEventId: resolvedSearchParams?.event ?? null,
-      events: getLaunchLaneLeaderEventReadback(data),
+      events: getLaunchLaneLeaderEventReadback(data, {
+        testPreview: shouldRenderFigmaLeaderPreview,
+      }),
       attendance: getLaunchLaneLeaderAttendanceReadback(data),
       leaderboard: getLaunchLaneChapterLeaderboardReadback(data),
     };

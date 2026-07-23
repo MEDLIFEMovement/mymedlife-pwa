@@ -4,6 +4,19 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
 const ACTIVE_CHAPTER_LIFECYCLE_STAGES = ["23878512", "23925576", "23925577"];
 const HUBSPOT_API_ROOT = "https://api.hubapi.com";
+const HUBSPOT_CONTACT_PROPERTIES = [
+  "email",
+  "firstname",
+  "lastname",
+  "graduation_year__c",
+  "active_years",
+  "eboard__c",
+  "eboard_year",
+  "contact_position__c",
+  "type_of_involvement",
+  "qr_year",
+  "lastmodifieddate",
+] as const;
 
 export type HubSpotSyncMode = "backfill" | "incremental";
 export type HubSpotSyncTriggerSource = "manual" | "scheduled" | "replay";
@@ -11,6 +24,7 @@ export type HubSpotSyncTriggerSource = "manual" | "scheduled" | "replay";
 export type HubSpotReadSyncConfig = {
   enabled: boolean;
   environment: "local" | "staging" | "production";
+  activeMemberTerms: string[];
   reason: string;
 };
 
@@ -33,6 +47,12 @@ export type HubSpotContactRecord = {
   firstName: string | null;
   lastName: string | null;
   graduationYear: number | null;
+  activeYears: string[];
+  eboard: boolean;
+  eboardYears: string[];
+  eboardPosition: string | null;
+  involvementTypes: string[];
+  qrYears: string[];
   updatedAt: string | null;
   companyIds: string[];
   source: Record<string, unknown>;
@@ -40,7 +60,10 @@ export type HubSpotContactRecord = {
 
 export type HubSpotReadClient = {
   readActiveChapterCompanies: () => Promise<HubSpotCompanyRecord[]>;
-  readContactsWithCompanies: (modifiedAfter?: string | null) => Promise<HubSpotContactRecord[]>;
+  readContactsWithCompanies: (
+    modifiedAfter?: string | null,
+    activeCompanyIds?: string[],
+  ) => Promise<HubSpotContactRecord[]>;
 };
 
 export type HubSpotReadSyncResult =
@@ -88,6 +111,12 @@ type HubSpotReadSyncDeps = {
   retryOfRunId?: string | null;
 };
 
+type HubSpotMembershipQualification = {
+  roleKey: "general_member";
+  evidenceFields: string[];
+  evidenceTerms: string[];
+};
+
 type HubSpotObjectRow = {
   id?: string;
   properties?: Record<string, string | null | undefined>;
@@ -109,19 +138,38 @@ type HubSpotAssociationBatchPage = {
   }>;
 };
 
+type HubSpotObjectBatchPage = {
+  results?: HubSpotObjectRow[];
+};
+
 export function getHubSpotReadSyncConfig(
   env: Record<string, string | undefined> = process.env,
 ): HubSpotReadSyncConfig {
   const environment = getEnvironment(env);
+  const activeMemberTerms = parseDelimitedValues(
+    env.MYMEDLIFE_HUBSPOT_ACTIVE_MEMBER_TERMS,
+  );
 
   if (env.MYMEDLIFE_ENABLE_HUBSPOT_READ_SYNC !== "true") {
-    return disabled(environment, "HubSpot read sync is disabled by configuration.");
+    return disabled(
+      environment,
+      "HubSpot read sync is disabled by configuration.",
+      activeMemberTerms,
+    );
   }
   if (!env.HUBSPOT_ACCESS_TOKEN) {
-    return disabled(environment, "HubSpot read sync is disabled because the server-only access token is missing.");
+    return disabled(
+      environment,
+      "HubSpot read sync is disabled because the server-only access token is missing.",
+      activeMemberTerms,
+    );
   }
   if (!env.SUPABASE_SERVICE_ROLE_KEY || !(env.SUPABASE_URL ?? env.NEXT_PUBLIC_SUPABASE_URL)) {
-    return disabled(environment, "HubSpot read sync is disabled because the server-only Supabase client is incomplete.");
+    return disabled(
+      environment,
+      "HubSpot read sync is disabled because the server-only Supabase client is incomplete.",
+      activeMemberTerms,
+    );
   }
 
   const approvalFlag = environment === "production"
@@ -134,13 +182,22 @@ export function getHubSpotReadSyncConfig(
     return disabled(
       environment,
       `${capitalize(environment)} HubSpot read sync is disabled until its explicit environment approval flag is enabled.`,
+      activeMemberTerms,
+    );
+  }
+  if (activeMemberTerms.length === 0) {
+    return disabled(
+      environment,
+      "HubSpot read sync is disabled until an approved active-member term allowlist is configured.",
+      activeMemberTerms,
     );
   }
 
   return {
     enabled: true,
     environment,
-    reason: `Server-only HubSpot reads and app-owned reconciliation writes are enabled for ${environment}. HubSpot writes and account invitations remain disabled.`,
+    activeMemberTerms,
+    reason: `Server-only HubSpot reads and app-owned general-member reconciliation writes are enabled for ${environment}. HubSpot leader/admin role assignment, HubSpot writes, and account invitations remain disabled.`,
   };
 }
 
@@ -212,7 +269,7 @@ export function createHubSpotReadClient(
       return records;
     },
 
-    async readContactsWithCompanies(modifiedAfter) {
+    async readContactsWithCompanies(modifiedAfter, activeCompanyIds = []) {
       if (modifiedAfter) {
         const checkpoint = Date.parse(modifiedAfter);
         if (!Number.isFinite(checkpoint)) {
@@ -232,13 +289,7 @@ export function createHubSpotReadClient(
                   value: String(checkpoint),
                 }],
               }],
-              properties: [
-                "email",
-                "firstname",
-                "lastname",
-                "graduation_year__c",
-                "lastmodifieddate",
-              ],
+              properties: HUBSPOT_CONTACT_PROPERTIES,
               limit: 200,
               after,
               sorts: ["lastmodifieddate"],
@@ -259,29 +310,61 @@ export function createHubSpotReadClient(
         return records.filter((record) => changedAfter(record.updatedAt, modifiedAfter));
       }
 
+      if (activeCompanyIds.length === 0) return [];
+
+      const companyIdsByContact = await readCompanyContactAssociations(activeCompanyIds);
       const records: HubSpotContactRecord[] = [];
-      let after: string | number | undefined;
-      do {
-        const params = new URLSearchParams({
-          limit: "100",
-          archived: "false",
-          properties: [
-            "email",
-            "firstname",
-            "lastname",
-            "graduation_year__c",
-            "lastmodifieddate",
-          ].join(","),
-          associations: "companies",
-        });
-        if (after !== undefined) params.set("after", String(after));
-        const page = await request<HubSpotObjectPage>(`/crm/v3/objects/contacts?${params}`);
-        records.push(...(page.results ?? []).map(mapContact).filter(isPresent));
-        after = page.paging?.next?.after;
-      } while (after !== undefined);
+      for (const contactIds of chunk([...companyIdsByContact.keys()], 100)) {
+        const page = await request<HubSpotObjectBatchPage>(
+          "/crm/v3/objects/contacts/batch/read",
+          {
+            method: "POST",
+            body: JSON.stringify({
+              archived: false,
+              properties: HUBSPOT_CONTACT_PROPERTIES,
+              inputs: contactIds.map((id) => ({ id })),
+            }),
+          },
+        );
+        records.push(...(page.results ?? []).map((row) => mapContact({
+          ...row,
+          associations: {
+            companies: {
+              results: (companyIdsByContact.get(row.id ?? "") ?? []).map((id) => ({ id })),
+            },
+          },
+        })).filter(isPresent));
+      }
       return records;
     },
   };
+
+  async function readCompanyContactAssociations(
+    activeCompanyIds: string[],
+  ): Promise<Map<string, string[]>> {
+    const companyIdsByContact = new Map<string, string[]>();
+    for (const companyIds of chunk([...new Set(activeCompanyIds)], 100)) {
+      const associations = await request<HubSpotAssociationBatchPage>(
+        "/crm/v3/associations/companies/contacts/batch/read",
+        {
+          method: "POST",
+          body: JSON.stringify({ inputs: companyIds.map((id) => ({ id })) }),
+        },
+      );
+      for (const result of associations.results ?? []) {
+        const companyId = result.from?.id;
+        if (!companyId) continue;
+        for (const contact of result.to ?? []) {
+          if (!contact.id) continue;
+          const existingCompanyIds = companyIdsByContact.get(contact.id) ?? [];
+          if (!existingCompanyIds.includes(companyId)) {
+            companyIdsByContact.set(contact.id, [...existingCompanyIds, companyId]);
+          }
+        }
+      }
+    }
+    return companyIdsByContact;
+  }
 
   async function readContactCompanyAssociations(
     rows: HubSpotObjectRow[],
@@ -388,11 +471,12 @@ export async function runHubSpotReadSync(
 
   const counts = emptyCounts();
   try {
-    const [companies, allContacts] = await Promise.all([
-      hubspotClient.readActiveChapterCompanies(),
-      hubspotClient.readContactsWithCompanies(mode === "incremental" ? checkpointBefore : null),
-    ]);
+    const companies = await hubspotClient.readActiveChapterCompanies();
     const activeCompanyIds = new Set(companies.map((company) => company.id));
+    const allContacts = await hubspotClient.readContactsWithCompanies(
+      mode === "incremental" ? checkpointBefore : null,
+      [...activeCompanyIds],
+    );
     const contacts = allContacts
       .map((contact) => ({
         ...contact,
@@ -428,6 +512,7 @@ export async function runHubSpotReadSync(
     await heartbeatRun(appClient, runId, now().toISOString());
 
     for (const [index, contact] of contacts.entries()) {
+      const qualification = getHubSpotMembershipQualification(contact, config);
       for (const companyId of contact.companyIds) {
         await syncMembership(
           appClient,
@@ -437,6 +522,7 @@ export async function runHubSpotReadSync(
           companyId,
           profileIds.get(contact.id) ?? null,
           chapterIds.get(companyId) ?? null,
+          qualification,
           counts,
         );
       }
@@ -445,9 +531,10 @@ export async function runHubSpotReadSync(
 
     if (mode === "backfill") {
       const activeAssociationKeys = new Set(
-        contacts.flatMap((contact) => (
-          contact.companyIds.map((companyId) => `${contact.id}:${companyId}`)
-        )),
+        contacts.flatMap((contact) => {
+          if (!getHubSpotMembershipQualification(contact, config)) return [];
+          return contact.companyIds.map((companyId) => `${contact.id}:${companyId}`);
+        }),
       );
       await deactivateMissingHubSpotMemberships(
         appClient,
@@ -851,17 +938,31 @@ async function syncMembership(
   companyId: string,
   profileId: string | null,
   chapterId: string | null,
+  qualification: HubSpotMembershipQualification | null,
   counts: HubSpotSyncCounts,
 ) {
   const associationKey = `${contact.id}:${companyId}`;
   const staged = await client.schema("app").from("hubspot_membership_imports").upsert({
     hubspot_contact_id: contact.id,
     hubspot_company_id: companyId,
-    role_key: "general_member",
+    role_key: qualification?.roleKey ?? "general_member",
     source_updated_at: contact.updatedAt,
-    source_payload: { associationKey },
-    reconciliation_status: profileId && chapterId ? "pending" : "waiting_for_match",
-    reconciliation_note: profileId && chapterId ? null : "Waiting for both an app profile and app chapter match.",
+    source_payload: {
+      associationKey,
+      activeYears: contact.activeYears,
+      eboard: contact.eboard,
+      eboardYears: contact.eboardYears,
+      eboardPosition: contact.eboardPosition,
+      involvementTypes: contact.involvementTypes,
+      qrYears: contact.qrYears,
+      qualification,
+    },
+    reconciliation_status: qualification
+      ? profileId && chapterId ? "pending" : "waiting_for_match"
+      : "ignored",
+    reconciliation_note: qualification
+      ? profileId && chapterId ? null : "Waiting for both an app profile and app chapter match."
+      : "The contact-company association does not match the configured current member or leader terms, so it cannot grant app access.",
     last_seen_run_id: runId,
     last_imported_at: new Date().toISOString(),
   }, { onConflict: "hubspot_contact_id,hubspot_company_id" });
@@ -871,6 +972,17 @@ async function syncMembership(
     return;
   }
   counts.membershipUpserts += 1;
+  if (!qualification) {
+    await deactivateIneligibleHubSpotMembership(
+      client,
+      runId,
+      actorUserId,
+      associationKey,
+      companyId,
+      counts,
+    );
+    return;
+  }
   if (!profileId || !chapterId) return;
 
   const memberships = await client.schema("app").from("memberships")
@@ -906,6 +1018,8 @@ async function syncMembership(
     }
     const linked = await client.schema("app").from("memberships").update({
       hubspot_association_key: associationKey,
+      role_key: qualification.roleKey,
+      role_term_label: qualification.evidenceTerms.join(", "),
       status: "approved",
       approved_at: new Date().toISOString(),
       approved_by: actorUserId,
@@ -915,7 +1029,8 @@ async function syncMembership(
     const inserted = await client.schema("app").from("memberships").insert({
       user_id: profileId,
       chapter_id: chapterId,
-      role_key: "general_member",
+      role_key: qualification.roleKey,
+      role_term_label: qualification.evidenceTerms.join(", "),
       status: "approved",
       approved_at: new Date().toISOString(),
       approved_by: actorUserId,
@@ -932,8 +1047,86 @@ async function syncMembership(
   await markMembershipReconciliation(client, contact.id, companyId, "materialized", null, membershipId);
   await recordAudit(client, runId, actorUserId, chapterId, "hubspot_membership_materialized", "memberships", membershipId, {
     hubspot_association_key: associationKey,
+    role_key: qualification.roleKey,
+    source_terms: qualification.evidenceTerms,
     status: "approved",
   }, counts);
+}
+
+async function deactivateIneligibleHubSpotMembership(
+  client: AppClient,
+  runId: string,
+  actorUserId: string | null,
+  associationKey: string,
+  companyId: string,
+  counts: HubSpotSyncCounts,
+) {
+  const existing = await client.schema("app").from("memberships")
+    .select("id,chapter_id,status")
+    .eq("hubspot_association_key", associationKey)
+    .limit(2);
+  if (existing.error) {
+    counts.failures += 1;
+    await recordFailure(
+      client,
+      runId,
+      "membership",
+      associationKey,
+      "membership_eligibility_lookup_failed",
+      existing.error.message,
+      { associationKey },
+    );
+    return;
+  }
+  if ((existing.data ?? []).length > 1) {
+    counts.conflicts += 1;
+    await markMembershipReconciliation(
+      client,
+      associationKey.split(":", 1)[0] ?? "",
+      companyId,
+      "conflict",
+      "Multiple app memberships use this HubSpot association key.",
+      null,
+    );
+    return;
+  }
+  const membership = existing.data?.[0];
+  if (!membership?.id || membership.status === "inactive") return;
+
+  const membershipId = String(membership.id);
+  const deactivated = await client.schema("app").from("memberships").update({
+    status: "inactive",
+  }).eq("id", membershipId).eq("hubspot_association_key", associationKey);
+  if (deactivated.error) {
+    counts.failures += 1;
+    await recordFailure(
+      client,
+      runId,
+      "membership",
+      associationKey,
+      "membership_ineligible_deactivation_failed",
+      deactivated.error.message,
+      { associationKey, membershipId },
+    );
+    return;
+  }
+
+  counts.membershipDeactivations += 1;
+  await recordAudit(
+    client,
+    runId,
+    actorUserId,
+    membership.chapter_id ? String(membership.chapter_id) : null,
+    "hubspot_membership_deactivated",
+    "memberships",
+    membershipId,
+    {
+      hubspot_association_key: associationKey,
+      status: "inactive",
+      reason: "outside_configured_active_terms",
+    },
+    counts,
+  );
 }
 
 async function deactivateMissingHubSpotMemberships(
@@ -1165,6 +1358,24 @@ export function mapChapterType(schoolType: string | null): "high_school" | "coll
   return "needs_review";
 }
 
+export function getHubSpotMembershipQualification(
+  contact: HubSpotContactRecord,
+  config: Pick<HubSpotReadSyncConfig, "activeMemberTerms">,
+): HubSpotMembershipQualification | null {
+  const activeYearTerms = matchingTerms(contact.activeYears, config.activeMemberTerms);
+  const qrYearTerms = matchingTerms(contact.qrYears, config.activeMemberTerms);
+  const memberTerms = [...new Set([...activeYearTerms, ...qrYearTerms])];
+  if (memberTerms.length === 0) return null;
+  return {
+    roleKey: "general_member",
+    evidenceFields: [
+      ...(activeYearTerms.length > 0 ? ["active_years"] : []),
+      ...(qrYearTerms.length > 0 ? ["qr_year"] : []),
+    ],
+    evidenceTerms: memberTerms,
+  };
+}
+
 function mapCompany(row: HubSpotObjectRow): HubSpotCompanyRecord | null {
   const properties = row.properties ?? {};
   const name = properties.name?.trim();
@@ -1192,6 +1403,12 @@ function mapContact(row: HubSpotObjectRow): HubSpotContactRecord | null {
     firstName: optional(properties.firstname),
     lastName: optional(properties.lastname),
     graduationYear: parseGraduationYear(properties.graduation_year__c),
+    activeYears: parseDelimitedValues(properties.active_years),
+    eboard: properties.eboard__c === "true",
+    eboardYears: parseDelimitedValues(properties.eboard_year),
+    eboardPosition: optional(properties.contact_position__c),
+    involvementTypes: parseDelimitedValues(properties.type_of_involvement),
+    qrYears: parseDelimitedValues(properties.qr_year),
     updatedAt: optional(properties.lastmodifieddate)
       ?? optional(properties.hs_lastmodifieddate)
       ?? row.updatedAt
@@ -1218,6 +1435,18 @@ function optional(value: string | null | undefined): string | null {
   return normalized || null;
 }
 
+function parseDelimitedValues(value: string | null | undefined): string[] {
+  return [...new Set((value ?? "")
+    .split(/[;,]/)
+    .map((item) => item.trim())
+    .filter(Boolean))];
+}
+
+function matchingTerms(sourceTerms: string[], approvedTerms: string[]): string[] {
+  const approved = new Set(approvedTerms.map((term) => term.toLowerCase()));
+  return sourceTerms.filter((term) => approved.has(term.toLowerCase()));
+}
+
 function isPresent<T>(value: T | null): value is T {
   return value !== null;
 }
@@ -1236,8 +1465,12 @@ function getEnvironment(env: Record<string, string | undefined>): HubSpotReadSyn
   return "local";
 }
 
-function disabled(environment: HubSpotReadSyncConfig["environment"], reason: string): HubSpotReadSyncConfig {
-  return { enabled: false, environment, reason };
+function disabled(
+  environment: HubSpotReadSyncConfig["environment"],
+  reason: string,
+  activeMemberTerms: string[] = [],
+): HubSpotReadSyncConfig {
+  return { enabled: false, environment, activeMemberTerms, reason };
 }
 
 function capitalize(value: string) {
@@ -1274,6 +1507,14 @@ function emptyCounts(): HubSpotSyncCounts {
 
 function wait(milliseconds: number) {
   return new Promise((resolve) => setTimeout(resolve, milliseconds));
+}
+
+function chunk<T>(items: T[], size: number): T[][] {
+  const chunks: T[][] = [];
+  for (let index = 0; index < items.length; index += size) {
+    chunks.push(items.slice(index, index + size));
+  }
+  return chunks;
 }
 
 function failure(

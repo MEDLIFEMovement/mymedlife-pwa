@@ -32,7 +32,7 @@ vi.mock("@/services/admin-hubspot-sync-workspace", () => ({
 
 hubspotWorkspaceMock.mockResolvedValue({
     canRead: true,
-    config: { enabled: true, environment: "production", reason: "Enabled for test." },
+    config: { enabled: true, environment: "production", activeMemberTerms: ["2026-2027"], reason: "Enabled for test." },
     lastRun: {
       id: "run-1",
       mode: "backfill",
@@ -58,6 +58,8 @@ hubspotWorkspaceMock.mockResolvedValue({
       pendingCompanies: 6,
       pendingContacts: 562,
       pendingMemberships: 590,
+      materializedMemberships: 100,
+      ignoredMemberships: 10,
       openFailures: 1,
     },
     failures: [{
@@ -825,6 +827,9 @@ describe("admin management pages", () => {
     expect(html).toContain("Imported companies");
     expect(html).toContain("345");
     expect(html).toContain("Reconciliation queue");
+    expect(html).toContain("Current memberships materialized");
+    expect(html).toContain("Historical/out-of-term ignored");
+    expect(html).toContain("2026-2027");
     expect(html).toContain("BACKFILL HUBSPOT");
     expect(html).toContain("SYNC HUBSPOT");
     expect(html).toContain("HubSpot writes and invitations remain off");
@@ -839,7 +844,7 @@ describe("admin management pages", () => {
     );
     hubspotWorkspaceMock.mockResolvedValueOnce({
       canRead: true,
-      config: { enabled: false, environment: "production", reason: "Disabled for test." },
+      config: { enabled: false, environment: "production", activeMemberTerms: [], reason: "Disabled for test." },
       lastRun: null,
       counts: {
         companies: 0,
@@ -848,6 +853,8 @@ describe("admin management pages", () => {
         pendingCompanies: 0,
         pendingContacts: 0,
         pendingMemberships: 0,
+        materializedMemberships: 0,
+        ignoredMemberships: 0,
         openFailures: 0,
       },
       failures: [],
@@ -874,7 +881,7 @@ describe("admin management pages", () => {
     );
     hubspotWorkspaceMock.mockResolvedValueOnce({
       canRead: false,
-      config: { enabled: false, environment: "production", reason: "Unavailable." },
+      config: { enabled: false, environment: "production", activeMemberTerms: [], reason: "Unavailable." },
       lastRun: null,
       counts: {
         companies: 0,
@@ -883,6 +890,8 @@ describe("admin management pages", () => {
         pendingCompanies: 0,
         pendingContacts: 0,
         pendingMemberships: 0,
+        materializedMemberships: 0,
+        ignoredMemberships: 0,
         openFailures: 0,
       },
       failures: [],

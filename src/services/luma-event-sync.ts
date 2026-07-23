@@ -33,7 +33,14 @@ export type LumaEventRecord = {
   source: Record<string, unknown>;
 };
 
+export type LumaCalendarRecord = {
+  id: string;
+  name: string;
+  url: string;
+};
+
 export type LumaReadClient = {
+  readCalendar?: () => Promise<LumaCalendarRecord>;
   readEvents: (mode: LumaSyncMode, now: Date) => Promise<LumaEventRecord[]>;
 };
 
@@ -156,6 +163,13 @@ export function createLumaReadClient(
   };
 
   return {
+    async readCalendar() {
+      const calendar = mapLumaCalendar(await request<unknown>("/v1/calendars/get"));
+      if (!calendar) {
+        throw new Error("Luma returned a malformed calendar identity; reconciliation stopped before materialization.");
+      }
+      return calendar;
+    },
     async readEvents(mode, now) {
       const events: LumaEventRecord[] = [];
       let cursor: string | null = null;
@@ -280,6 +294,14 @@ export async function runLumaEventSync(
 
   const counts = emptyCounts();
   try {
+    if (lumaClient.readCalendar) {
+      const calendar = await lumaClient.readCalendar();
+      if (calendar.id !== config.calendarId) {
+        throw new Error(
+          `The configured Luma calendar ${config.calendarId} does not match the API key calendar ${calendar.id}.`,
+        );
+      }
+    }
     await upsertCalendarMapping(appClient, config, actorUserId, startedAt);
     const events = await lumaClient.readEvents(mode, now());
     counts.sourceEvents = events.length;
@@ -524,6 +546,15 @@ function mapLumaEvent(value: unknown): LumaEventRecord | null {
     createdAt: validDate(value.created_at),
     source: value,
   };
+}
+
+function mapLumaCalendar(value: unknown): LumaCalendarRecord | null {
+  if (!isRecord(value)) return null;
+  const id = optional(value.id);
+  const name = optional(value.name);
+  const url = optional(value.url);
+  if (!id || !name || !url) return null;
+  return { id, name, url };
 }
 
 async function upsertCalendarMapping(

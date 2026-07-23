@@ -12,6 +12,7 @@ import {
   getLaunchLaneOrgLeaderboardRows,
   getLaunchLaneOrgPointsReadback,
   getLaunchLaneStaffChapterReadback,
+  getLaunchLaneStaffEventReadback,
 } from "@/services/launch-lane-points-readback";
 import { getReadOnlyAppData } from "@/services/read-only-app-data";
 import { canAccessAdminWorkspace, canAccessStaffWorkspace } from "@/services/role-visibility";
@@ -60,6 +61,11 @@ export default async function StaffPage({ searchParams }: StaffPageProps) {
   const liveEventReadback = shouldLoadLiveEventReadback
       ? await getReadOnlyAppData({ actorUserId: actor.user.id }).then((data) => ({
         selectedEventId: resolvedSearchParams?.event ?? null,
+        selectedEvent: getLaunchLaneStaffEventReadback(
+          data,
+          resolvedSearchParams?.event,
+          { testPreview: process.env.MYMEDLIFE_AUTH_MODE !== "production_supabase" },
+        ),
         chapters: getLaunchLaneStaffChapterReadback(data),
         organization: getLaunchLaneOrgPointsReadback(data),
         leaderboard: getLaunchLaneOrgLeaderboardRows(data),

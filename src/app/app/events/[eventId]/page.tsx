@@ -307,9 +307,10 @@ function EventDetailView({
   const returnHref = getEventReturnHref(event.id, source, profileSource, campaign, storyFilter, storyId);
   const returnLabel = getEventReturnLabel(source);
   const sourceContext = getEventSourceContext(event.id, source, profileSource, campaign, storyFilter, storyId);
-  const visibleEventTitle = ensureVisibleTestLabel(event.title);
+  const testEvent = event.testPreview;
+  const visibleEventTitle = getVisibleEventValue(event.title, testEvent);
   const visibleChapterName = memberContext.chapterName;
-  const visibleLocationLabel = ensureVisibleTestLabel(snapshot.memberLocationLabel);
+  const visibleLocationLabel = getVisibleEventValue(snapshot.memberLocationLabel, testEvent);
   const pointsAvailable = event.memberActionsClosed
     ? event.pointsAwarded
     : memberEventLoopPointAward;
@@ -321,6 +322,15 @@ function EventDetailView({
     eventStatusLabel = event.memberLifecycleLabel ?? "Event closed";
     eventStatusVariant = "gray";
     primaryAction = <ClosedEventActionNotice label={event.memberLifecycleLabel} />;
+  } else if (event.memberCheckedIn) {
+    eventStatusLabel = "Checked in";
+    primaryAction = (
+      <PrimaryLink
+        href={pointsHref}
+        label="View attendance and points"
+        icon={<UserCheck size={20} />}
+      />
+    );
   } else if (event.memberRsvpState === "registered") {
     primaryAction = (
       <div className="space-y-3 rounded-2xl border border-emerald-300/40 bg-emerald-400/20 p-4">
@@ -331,7 +341,7 @@ function EventDetailView({
           <div>
             <p className="text-base font-extrabold text-white">You&apos;re RSVP&apos;d!</p>
             <p className="mt-0.5 text-sm text-emerald-200">
-              Check in at the chapter table to preview your points impact.
+              Check in at the chapter table to record attendance and points.
             </p>
           </div>
         </div>
@@ -518,7 +528,7 @@ function EventDetailView({
             <PointsCard
               label="Luma"
               value={event.memberLumaLabel ? "Linked" : "Off"}
-              detail={event.memberLumaLabel ? "preview link only" : "future sync disabled"}
+              detail={event.memberLumaLabel ? "source event linked" : "sync link unavailable"}
             />
           </div>
         </div>
@@ -530,7 +540,9 @@ function EventDetailView({
           <p className="mt-2 text-sm leading-6 text-slate-700">
             {event.memberActionsClosed
               ? "This event is closed. The route remains available for readback, but member RSVP, check-in, attendance, and points writes cannot run."
-              : "RSVP, check-in, attendance, and points can be recorded as internal myMEDLIFE TEST rows when the approved event-loop write gate is enabled. Luma and external provider writes stay off."}
+              : testEvent
+                ? "RSVP, cancellation, check-in, attendance, and points can be recorded as internal myMEDLIFE TEST rows when the approved write gate is enabled."
+                : "RSVP, cancellation, check-in, attendance, and points are recorded in myMEDLIFE when the event-loop write gate is enabled."}
           </p>
           <p className="mt-2 text-xs leading-5 text-slate-600">
             If the write gate is off, the app will show a blocked state and keep the page read-only
@@ -583,7 +595,8 @@ function EventRsvpConfirmView({
   storyId?: string;
   resultState: EventLoopResultState;
 }>) {
-  const visibleLocationLabel = ensureVisibleTestLabel(snapshot.memberLocationLabel);
+  const testEvent = event.testPreview;
+  const visibleLocationLabel = getVisibleEventValue(snapshot.memberLocationLabel, testEvent);
   const returnHref = getEventReturnHref(event.id, source, profileSource, campaign, storyFilter, storyId);
   const returnLabel = getEventReturnLabel(source);
   const rsvpConfirmed =
@@ -593,11 +606,15 @@ function EventRsvpConfirmView({
   let rsvpHeading = rsvpConfirmed ? "You're RSVP'd!" : "Record your RSVP";
   let rsvpDescription = rsvpConfirmed
     ? "We'll see you there. Don't forget to check in when you arrive to record your points impact."
-    : "Save your TEST RSVP in myMEDLIFE, then check in when you arrive to record attendance and points.";
+    : testEvent
+      ? "Save your TEST RSVP in myMEDLIFE, then check in when you arrive to record attendance and points."
+      : "Save your RSVP in myMEDLIFE, then check in when you arrive to record attendance and points.";
   let rsvpPointsDetail =
     "RSVP can be recorded in myMEDLIFE when the approved internal write gate is enabled. Luma and external provider writes stay off.";
   let rsvpSafetyDetail =
-    "This production-safe TEST flow records only internal myMEDLIFE rows after the write gate is approved. It does not write to Luma or any external provider.";
+    testEvent
+      ? "This TEST flow records internal myMEDLIFE rows after the write gate is approved. It does not write to Luma or another external provider."
+      : "This flow records the member event state in myMEDLIFE. External-provider writeback is separate and remains disabled until explicitly approved.";
   let rsvpPointsLabel = "Attend and check in to earn";
   let rsvpPointsValue = memberEventLoopPointAward;
   let rsvpAction: ReactNode;
@@ -611,6 +628,23 @@ function EventRsvpConfirmView({
     rsvpPointsLabel = "Points currently recorded";
     rsvpPointsValue = event.pointsAwarded;
     rsvpAction = <ClosedEventActionNotice label={event.memberLifecycleLabel} />;
+  } else if (event.memberCheckedIn) {
+    rsvpHeading = "Already checked in";
+    rsvpDescription =
+      "Attendance is recorded, so RSVP changes are locked for this event.";
+    rsvpPointsDetail =
+      "Open the event points readback to confirm the attendance award and chapter totals.";
+    rsvpSafetyDetail =
+      "Another RSVP or cancellation cannot change the durable attendance record.";
+    rsvpPointsLabel = "Attendance points recorded";
+    rsvpPointsValue = event.memberPointsAwarded;
+    rsvpAction = (
+      <PrimaryLink
+        href={buildEventStepHref(event.id, "points", source, profileSource, campaign, storyFilter, storyId)}
+        label="View attendance and points"
+        icon={<UserCheck size={16} />}
+      />
+    );
   } else if (rsvpConfirmed) {
     rsvpAction = (
       <RsvpCancelControl
@@ -689,7 +723,7 @@ function EventRsvpConfirmView({
 
         <div className="w-full space-y-2.5">
           {rsvpAction}
-          {!event.memberActionsClosed ? (
+          {!event.memberActionsClosed && !event.memberCheckedIn ? (
             <PrimaryLink
               href={buildEventStepHref(event.id, "checkin", source, profileSource, campaign, storyFilter, storyId)}
               label="Go to Check-In"
@@ -726,10 +760,11 @@ function EventCheckInView({
   storyId?: string;
   resultState: EventLoopResultState;
 }>) {
-  const visibleEventTitle = ensureVisibleTestLabel(event.title);
+  const testEvent = event.testPreview;
+  const visibleEventTitle = getVisibleEventValue(event.title, testEvent);
   const hasActiveRsvp = event.memberRsvpState === "registered";
   const checkInConfirmed =
-    event.memberPointsAwarded > 0 ||
+    event.memberCheckedIn ||
     resultState?.code === "checked_in" ||
     resultState?.code === "already_checked_in";
   let checkInStatusLabel = hasActiveRsvp ? "RSVP'd" : "RSVP not active";
@@ -748,7 +783,7 @@ function EventCheckInView({
     checkInStatusVariant = "green";
     checkInMessage = "Your attendance is already recorded in myMEDLIFE. Another check-in is not needed.";
     checkInPointsLabel = event.memberPointsAwarded > 0
-      ? `${event.memberPointsAwarded} points recorded`
+      ? `${event.memberPointsAwarded} attendance points recorded`
       : "Attendance recorded; points readback pending";
     checkInAction = (
       <PrimaryLink
@@ -759,7 +794,9 @@ function EventCheckInView({
     );
   } else {
     if (hasActiveRsvp) {
-      checkInMessage = "Confirm the TEST check-in to record attendance and award points once in myMEDLIFE.";
+      checkInMessage = testEvent
+        ? "Confirm the TEST check-in to record attendance and award points once in myMEDLIFE."
+        : "Confirm check-in to record attendance and award points once in myMEDLIFE.";
     }
     checkInAction = (
       <EventLoopActionForm
@@ -860,11 +897,12 @@ function EventPointsImpactView({
   storyId?: string;
   resultState: EventLoopResultState;
 }) {
+  const testEvent = event.testPreview;
   const visibleChapterName = memberContext.chapterName;
   const returnHref = getEventReturnHref(event.id, source, profileSource, campaign, storyFilter, storyId);
   const returnLabel = getEventReturnLabel(source);
   const checkInConfirmed =
-    event.memberPointsAwarded > 0 ||
+    event.memberCheckedIn ||
     resultState?.code === "checked_in" ||
     resultState?.code === "already_checked_in";
   const pointsDelta = checkInConfirmed
@@ -926,7 +964,9 @@ function EventPointsImpactView({
           </p>
           <p className="mt-2 text-sm leading-6 text-slate-700">
             {checkInConfirmed
-              ? "This route reflects confirmed internal TEST event-loop readback. Duplicate check-ins are blocked from awarding duplicate points, and Luma/external provider writes remain off."
+              ? testEvent
+                ? "This route reflects confirmed internal TEST event-loop readback. Duplicate check-ins are blocked from awarding duplicate points."
+                : "This route reflects confirmed myMEDLIFE attendance and points readback. Duplicate check-ins are blocked from awarding duplicate points."
               : "This route does not claim completion when the internal write is blocked or fails. No attendance, points, Luma, or external provider success is implied."}
           </p>
         </div>
@@ -1551,6 +1591,10 @@ function buildStoriesReturnHref(storyFilter?: string, storyId?: string) {
 
 function normalizeCampaign(campaign?: string) {
   return campaign && campaign !== "All" ? campaign : undefined;
+}
+
+function getVisibleEventValue(value: string, testEvent: boolean) {
+  return testEvent ? ensureVisibleTestLabel(value) : value;
 }
 
 function getDurationLabel(startsAt: string | null, endsAt: string | null) {

@@ -5,7 +5,9 @@ import {
   countLaunchLaneRsvpsForEvent,
   getLaunchLaneActorProfileId,
   getLaunchLaneEventSnapshots,
+  hasLaunchLaneRecordedAttendance,
   hasLaunchLaneRecordedRsvp,
+  sumLaunchLaneAttendancePointsForEvent,
 } from "@/services/launch-lane-event-snapshots";
 import { getMockReadOnlyAppData } from "@/services/read-only-app-data";
 
@@ -65,6 +67,57 @@ describe("launch lane event snapshots", () => {
         profileId,
       }),
     ).toBe(true);
+  });
+
+  it("distinguishes member attendance from aggregate event attendance", () => {
+    const actor = getMockLocalActorContext("member.a@mymedlife.test");
+    const data = getMockReadOnlyAppData("Testing member attendance matching.");
+    const profileId = getLaunchLaneActorProfileId(actor, data);
+    const memberAttendanceRow = {
+      ...data.allEventRows.find(
+        (row) => row.event_type === "event_attendance_recorded",
+      )!,
+      id: "member-attendance-1",
+      actor_user_id: profileId,
+      payload: { checkedInUserId: profileId, userEmail: actor.user.email },
+    };
+
+    expect(
+      hasLaunchLaneRecordedAttendance({
+        eventRows: data.allEventRows,
+        chapterEventId: "chapter-event-ucla-kickoff",
+        userEmail: actor.user.email,
+        profileId,
+      }),
+    ).toBe(false);
+    expect(
+      hasLaunchLaneRecordedAttendance({
+        eventRows: [...data.allEventRows, memberAttendanceRow],
+        chapterEventId: "chapter-event-ucla-kickoff",
+        userEmail: actor.user.email,
+        profileId,
+      }),
+    ).toBe(true);
+  });
+
+  it("counts attendance awards without treating unrelated event points as check-in", () => {
+    const data = getMockReadOnlyAppData("Testing attendance point classification.");
+    const unrelatedPoints = {
+      ...data.allPointsEventRows[0],
+      id: "event-bonus-1",
+      chapter_event_id: "chapter-event-ucla-kickoff",
+      awarded_to_user_id: "member-a",
+      points_delta: 100,
+      reason: "Event participation bonus",
+    };
+
+    expect(
+      sumLaunchLaneAttendancePointsForEvent(
+        [...data.allPointsEventRows, unrelatedPoints],
+        "chapter-event-ucla-kickoff",
+        "member-a",
+      ),
+    ).toBe(20);
   });
 
   it("treats the latest RSVP cancellation as an open member RSVP state", () => {
