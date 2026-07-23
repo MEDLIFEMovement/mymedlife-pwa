@@ -4,7 +4,10 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { getMockLocalActorContext } from "@/services/local-actor-context";
-import { ChapterDetailDrawer } from "@/components/figma-staff-command-center";
+import {
+  ChapterDetailDrawer,
+  FigmaStaffCommandCenter,
+} from "@/components/figma-staff-command-center";
 
 let mockPathname = "/staff";
 let mockSearchParams = new URLSearchParams();
@@ -117,9 +120,9 @@ describe("staff page", () => {
     expect(html).toContain("myMEDLIFE");
     expect(html).toContain("Staff Command Center");
     expect(html).toContain("Portfolio Overview");
-    expect(html).toContain("20 chapters");
+    expect(html).toContain("5 app-owned chapters");
     expect(html).toContain("Operational workspace");
-    expect(html).toContain("2 chapters need intervention");
+    expect(html).toContain("2 chapters need review");
 
     expect(html).toContain(">Chapters<");
     expect(html).toContain(">Campaigns<");
@@ -130,21 +133,18 @@ describe("staff page", () => {
     expect(html).not.toContain(">Events<");
     expect(html).not.toContain(">Leaderboard<");
 
-    expect(html).toContain("Avg Events / Month");
+    expect(html).toContain("Live chapter portfolio");
+    expect(html).toContain("Event-loop health by chapter");
+    expect(html).toContain("TEST / unavailable readback");
+    expect(html).toContain("Upcoming events");
+    expect(html).toContain("Org points");
     expect(html).toContain("RSVPs");
     expect(html).toContain("Attended");
-    expect(html).toContain("Lead→Event %");
-    expect(html).toContain("Points/Yr");
-    expect(html).toContain("TEST UC Berkeley");
-    expect(html).toContain("TEST Maria Santos");
-    expect(html).toContain('whitespace-nowrap">TEST Maria Santos</td>');
-    expect(html).not.toContain('whitespace-nowrap">TEST</td>');
-    expect(html).toContain("Search chapter or school");
-    expect(html).toContain(">Type<");
-    expect(html).toContain("High School");
-    expect(html).toContain("College / University Chapter");
-    expect(html).toContain("Needs Review");
-    expect(html).toContain("Export blocked");
+    expect(html).toContain("TEST UCLA MEDLIFE");
+    expect(html).toContain("TEST Rush Month kickoff social");
+    expect(html).toContain("Open event");
+    expect(html).not.toContain("20 chapters");
+    expect(html).not.toContain("Last updated 2 min ago");
     expect(html).toContain("pr-[4.5rem]");
     expect(html).toContain("sm:pr-[16rem]");
     expect(html).toContain("lg:pr-[19rem]");
@@ -183,6 +183,74 @@ describe("staff page", () => {
     expect(html).toContain(expectedEyebrow);
     expect(html).toContain(expectedTitle);
     expect(html).not.toContain("Figma page missing - implementation blocked");
+  });
+
+  it("renders an honest empty Supabase staff portfolio without substituting preview chapters", () => {
+    const html = renderToStaticMarkup(
+      <FigmaStaffCommandCenter
+        initialView="chapters"
+        liveEventReadback={{
+          source: {
+            mode: "supabase",
+            status: "supabase_ready",
+            message: "Reading current app-owned chapter rows.",
+          },
+          selectedEventId: null,
+          selectedEvent: null,
+          chapters: [],
+          organization: {
+            totalPoints: 0,
+            totalRsvps: 0,
+            totalAttendance: 0,
+            chaptersWithPoints: 0,
+            topChapterName: null,
+            topChapterPoints: 0,
+            featuredEventTitle: null,
+            featuredEventChapterName: null,
+            featuredEventAttendanceCount: 0,
+            featuredEventPointsAwarded: 0,
+          },
+          leaderboard: [],
+        }}
+      />,
+    );
+
+    expect(html).toContain("0 app-owned chapters");
+    expect(html).toContain("0 chapters need review");
+    expect(html).toContain("text-emerald-200");
+    expect(html).toContain("Supabase operational truth");
+    expect(html).toContain("No app-owned chapter rows are available.");
+    expect(html).toContain(
+      "The portfolio is intentionally empty instead of substituting preview chapters.",
+    );
+    expect(html).not.toContain("20 chapters");
+    expect(html).not.toContain("2 TEST chapters need intervention");
+  });
+
+  it.each([
+    ["events", "TEST / unavailable readback", "TEST UCLA MEDLIFE"],
+    ["leaderboard", "TEST / unavailable readback", "TEST UCLA MEDLIFE"],
+  ])("keeps the %s source posture visibly TEST-labeled in mock mode", async (
+    view,
+    sourceLabel,
+    chapterLabel,
+  ) => {
+    const actorModule = await import("@/services/local-actor-context");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("general.staff@mymedlife.test"),
+    );
+
+    const { default: StaffPage } = await import("@/app/staff/page");
+    const html = renderToStaticMarkup(
+      await StaffPage({
+        searchParams: Promise.resolve({ view }),
+      }),
+    );
+
+    expect(html).toContain(sourceLabel);
+    expect(html).toContain(chapterLabel);
+    expect(html).not.toContain("Supabase operational truth");
   });
 
   it("renders a visible selected-event state for the staff Open event route", async () => {
@@ -1099,11 +1167,10 @@ describe("staff page", () => {
     );
     const source = readFileSync("src/components/figma-staff-command-center.tsx", "utf8");
 
-    expect(html).toContain("2 chapters");
-    expect(html).toContain("filtered");
-    expect(html).toContain("TEST Stanford University");
-    expect(html).toContain("TEST UC Berkeley");
-    expect(html).not.toContain("TEST Yale University");
+    expect(html).toContain("5 app-owned chapters");
+    expect(html).toContain("Live chapter portfolio");
+    expect(html).toContain("TEST UCLA MEDLIFE");
+    expect(html).not.toContain("20 chapters");
     expect(source).toContain("searchParams.get(\"chapterSearch\") ?? initialSearch");
     expect(source).toContain("searchParams.get(\"chapterRegion\") ?? initialRegionFilter");
     expect(source).toContain("searchParams.get(\"chapterCoach\") ?? initialCoachFilter");
@@ -1239,10 +1306,9 @@ describe("staff page", () => {
       }),
     );
 
-    expect(html).toContain("2 chapters");
-    expect(html).toContain("filtered");
+    expect(html).toContain("5 app-owned chapters");
+    expect(html).toContain("Live chapter portfolio");
     expect(html).toContain("TEST Stanford University");
-    expect(html).toContain("TEST UC Berkeley");
     expect(html).toContain("Chapter Detail");
     expect(html).toContain("5 events this month");
     expect(html).toContain("80 RSVPs");
