@@ -164,6 +164,8 @@ select is(
   'The app-owned event stores the published operational fields'
 );
 
+set local role postgres;
+
 select is(
   (
     select count(*)::int
@@ -205,6 +207,10 @@ select is(
   0,
   'Event creation records no automation outbox row'
 );
+
+set local role authenticated;
+set local "request.jwt.claim.role" = 'authenticated';
+set local "request.jwt.claim.sub" = '00000000-0000-4000-8000-000000000002';
 
 create temp table duplicate_event_create_result as
 select * from app.create_chapter_event_for_leader(
