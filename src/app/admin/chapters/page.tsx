@@ -29,7 +29,6 @@ export default async function AdminChaptersPage({
 }: AdminChaptersPageProps) {
   const actor = await getLocalActorContext();
   const resolvedSearchParams = (await searchParams) ?? {};
-  const directory = await getAdminManagementDirectory();
 
   if (shouldRedirectActorToLogin(actor)) {
     redirect(buildLoginRedirectHref("/admin/chapters"));
@@ -38,6 +37,8 @@ export default async function AdminChaptersPage({
   if (!canAccessAdminWorkspace(actor)) {
     redirect(getLandingRouteForActor(actor));
   }
+
+  const directory = await getAdminManagementDirectory();
 
   return (
     <>
@@ -51,6 +52,7 @@ export default async function AdminChaptersPage({
           actor={actor}
           chapterAction={submitAdminChapterAction}
           embeddedInFigmaShell
+          source={directory.source}
           testAction={submitAdminChapterTestMarkerAction}
           chapters={directory.chapters}
           searchParams={resolvedSearchParams}

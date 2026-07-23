@@ -102,6 +102,48 @@ function getSignedInActor(email: string) {
 }
 
 describe("admin management pages", () => {
+  it("does not substitute fixture users when the hosted directory is unavailable", () => {
+    const html = renderToStaticMarkup(
+      <AdminUsersManagementPanel
+        actor={getSignedInActor("super.admin@mymedlife.test")}
+        chapters={[]}
+        source={{
+          mode: "supabase",
+          status: "supabase_error",
+          message: "Hosted directory read failed.",
+        }}
+        users={[]}
+      />,
+    );
+
+    expect(html).toContain("Live admin directory unavailable");
+    expect(html).toContain("No app-owned user records are available.");
+    expect(html).toContain("No TEST fixture has been substituted.");
+    expect(html).not.toContain("TEST Sofia Alvarez");
+    expect(html).not.toContain("Create user");
+  });
+
+  it("does not substitute fixture chapters when the hosted directory is unavailable", () => {
+    const html = renderToStaticMarkup(
+      <AdminChaptersManagementPanel
+        actor={getSignedInActor("super.admin@mymedlife.test")}
+        chapters={[]}
+        source={{
+          mode: "supabase",
+          status: "supabase_error",
+          message: "Hosted directory read failed.",
+        }}
+        users={[]}
+      />,
+    );
+
+    expect(html).toContain("Live admin directory unavailable");
+    expect(html).toContain("No app-owned chapter records are available.");
+    expect(html).toContain("No TEST fixture has been substituted.");
+    expect(html).not.toContain("TEST UCLA MEDLIFE");
+    expect(html).not.toContain("Create chapter");
+  });
+
   it("renders DS Admin user management with filters, access summary, safeguards, and audit previews", async () => {
     const actorModule = await import("@/services/local-actor-context");
     vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(

@@ -23,6 +23,7 @@ import {
 import { AdminReviewShellHeader } from "@/components/admin-review-shell-header";
 import type { AdminAccessWriteConfig } from "@/services/admin-management-write";
 import type { LocalActorContext } from "@/services/local-actor-context";
+import type { DataSourceMeta } from "@/services/read-only-app-data";
 import type { ChapterType } from "@/shared/types/persistence";
 import type { ReactNode } from "react";
 
@@ -41,6 +42,7 @@ type AdminChaptersManagementPanelProps = {
   actor: LocalActorContext;
   chapterAction?: (formData: FormData) => Promise<void> | void;
   embeddedInFigmaShell?: boolean;
+  source?: DataSourceMeta;
   testAction?: (formData: FormData) => Promise<void> | void;
   chapters?: ManagedChapter[];
   searchParams?: AdminChaptersSearchParams;
@@ -105,6 +107,11 @@ export function AdminChaptersManagementPanel({
   actor,
   chapterAction,
   embeddedInFigmaShell = false,
+  source = {
+    mode: "mock",
+    status: "mock_fallback",
+    message: "Using mock admin directory data.",
+  },
   testAction,
   chapters = managedChapterFixtures,
   searchParams = {},
@@ -139,8 +146,35 @@ export function AdminChaptersManagementPanel({
       (chapter) => chapter.id === getSingleParam(searchParams.chapterId),
     ) ??
     filteredChapters[0] ??
-    chapters[0] ??
-    managedChapterFixtures[0];
+    chapters[0];
+  const Container = embeddedInFigmaShell ? "div" : "main";
+
+  if (!selectedChapter) {
+    return (
+      <Container
+        className={`${embeddedInFigmaShell ? "px-6 py-6" : "min-h-screen px-6 py-8"} bg-[#0d1117] text-slate-100`}
+      >
+        <div className="mx-auto max-w-7xl space-y-6">
+          <section className="rounded-lg border border-rose-400/30 bg-rose-400/10 p-5">
+            <p className="text-xs font-semibold uppercase text-rose-200">
+              Live admin directory unavailable
+            </p>
+            <h2 className="mt-2 text-xl font-bold text-white">
+              No app-owned chapter records are available.
+            </h2>
+            <p className="mt-2 text-sm leading-6 text-rose-100">
+              {source.message}
+            </p>
+            <p className="mt-3 text-xs leading-5 text-slate-300">
+              Chapter controls are locked until the Supabase directory can be
+              read again. No TEST fixture has been substituted.
+            </p>
+          </section>
+        </div>
+      </Container>
+    );
+  }
+
   const previews = buildChapterActionPreviews(actor, selectedChapter);
   const regions = Array.from(
     new Set(chapters.map((chapter) => chapter.region)),
@@ -157,7 +191,6 @@ export function AdminChaptersManagementPanel({
   const formsEnabled = Boolean(writeConfig.enabled && chapterAction);
   const writePostureCopy = getChapterWritePostureCopy(writeConfig);
   const selectedChapterReturnTo = `/admin/chapters?chapterId=${selectedChapter.id}`;
-  const Container = embeddedInFigmaShell ? "div" : "main";
 
   return (
     <Container className={`${embeddedInFigmaShell ? "px-6 py-6" : "min-h-screen px-6 py-8"} bg-[#0d1117] text-slate-100`}>

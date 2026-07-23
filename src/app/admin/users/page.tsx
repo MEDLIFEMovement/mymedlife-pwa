@@ -28,7 +28,6 @@ export default async function AdminUsersPage({
 }: AdminUsersPageProps) {
   const actor = await getLocalActorContext();
   const resolvedSearchParams = (await searchParams) ?? {};
-  const directory = await getAdminManagementDirectory();
 
   if (shouldRedirectActorToLogin(actor)) {
     redirect(buildLoginRedirectHref("/admin/users"));
@@ -37,6 +36,8 @@ export default async function AdminUsersPage({
   if (!canAccessAdminWorkspace(actor)) {
     redirect(getLandingRouteForActor(actor));
   }
+
+  const directory = await getAdminManagementDirectory();
 
   return (
     <>
