@@ -91,6 +91,12 @@ describe("leader app-owned event create write", () => {
     expect(
       validateLeaderEventCreateInput({
         ...validInput,
+        chapterId: "not-a-uuid",
+      }),
+    ).toBe("Use a real chapter and a valid event creation request.");
+    expect(
+      validateLeaderEventCreateInput({
+        ...validInput,
         title: "No",
       }),
     ).toBe("Event name must be between 3 and 160 characters.");
@@ -112,6 +118,89 @@ describe("leader app-owned event create write", () => {
         auditReason: "Too short",
       }),
     ).toBe("Add a clear audit reason of at least 12 characters.");
+  });
+
+  it.each([
+    [
+      { eventType: "unsupported" },
+      "Choose a supported event type.",
+    ],
+    [
+      { startsAt: "not-a-date" },
+      "Add a valid event date and start time.",
+    ],
+    [
+      { endsAt: "not-a-date" },
+      "Add a valid event end time or leave it blank.",
+    ],
+    [
+      { locationType: "somewhere" },
+      "Choose in-person, virtual, or hybrid.",
+    ],
+    [
+      { locationType: "in_person", locationName: "" },
+      "Add the in-person location.",
+    ],
+    [
+      { virtualUrl: "not-a-url" },
+      "Add a valid HTTPS meeting link.",
+    ],
+    [
+      { capacity: 2.5 },
+      "Capacity must be a whole number greater than zero.",
+    ],
+    [
+      { rsvpDeadline: "not-a-date" },
+      "Add a valid RSVP deadline or leave it blank.",
+    ],
+    [
+      { rsvpDeadline: "2030-08-02T18:00:00.000Z" },
+      "RSVP deadline cannot be after the event starts.",
+    ],
+    [
+      { organizingGroup: "" },
+      "Choose the organizing action committee.",
+    ],
+  ])("rejects invalid input %j", (patch, expectedMessage) => {
+    expect(
+      validateLeaderEventCreateInput({
+        ...validInput,
+        ...patch,
+      } as LeaderEventCreateInput),
+    ).toBe(expectedMessage);
+  });
+
+  it("returns validation failure before opening a Supabase client", async () => {
+    enableLocalWriteEnv();
+    const createServerClient = vi.fn();
+
+    const result = await createLeaderEventForSupabase(
+      { ...validInput, title: "No" },
+      { createServerClient },
+    );
+
+    expect(result).toMatchObject({
+      success: false,
+      code: "validation_error",
+    });
+    expect(createServerClient).not.toHaveBeenCalled();
+  });
+
+  it("returns the auth configuration reason when the server client is unavailable", async () => {
+    enableLocalWriteEnv();
+
+    const result = await createLeaderEventForSupabase(validInput, {
+      createServerClient: async () => ({
+        client: null,
+        config: { reason: "Supabase client unavailable for this test." },
+      }),
+    });
+
+    expect(result).toMatchObject({
+      success: false,
+      code: "write_disabled",
+      plainEnglishMessage: "Supabase client unavailable for this test.",
+    });
   });
 
   it("requires an authenticated Supabase session", async () => {
@@ -222,7 +311,57 @@ describe("leader app-owned event create write", () => {
     expect(result.plainEnglishMessage).toContain("no duplicate event");
   });
 
+  it("maps RPC failures and malformed readback without claiming completion", async () => {
+    enableLocalWriteEnv();
+    const signedInDeps = {
+      getSessionState: async () => signedInSession(),
+    };
+
+    const permissionResult = await createLeaderEventForSupabase(validInput, {
+      ...signedInDeps,
+      createServerClient: async () => ({
+        client: buildRpcClient(
+          vi.fn().mockResolvedValue({
+            data: null,
+            error: {
+              code: "42501",
+              message: "actor cannot create chapter events",
+            },
+          }),
+        ),
+        config: { reason: "Test client available." },
+      }),
+    });
+    expect(permissionResult).toMatchObject({
+      success: false,
+      code: "permission_denied",
+    });
+
+    const malformedResult = await createLeaderEventForSupabase(validInput, {
+      ...signedInDeps,
+      createServerClient: async () => ({
+        client: buildRpcClient(
+          vi.fn().mockResolvedValue({
+            data: [{ chapter_event_id: "not-a-uuid" }],
+            error: null,
+          }),
+        ),
+        config: { reason: "Test client available." },
+      }),
+    });
+    expect(malformedResult).toMatchObject({
+      success: false,
+      code: "server_error",
+    });
+  });
+
   it("maps permission, chapter, validation, and unknown errors without claiming success", () => {
+    expect(
+      mapLeaderEventCreateRpcError({
+        code: "42501",
+        message: "authenticated user required",
+      }),
+    ).toMatchObject({ success: false, code: "missing_auth" });
     expect(
       mapLeaderEventCreateRpcError({
         code: "42501",
