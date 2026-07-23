@@ -78,6 +78,8 @@ export async function getAdminDatabricksExportWorkspace(
         { count: "exact" },
       )
       .is("resolved_at", null)
+      .eq("warehouse_export_runs.destination", "databricks")
+      .eq("warehouse_export_runs.dataset", "event_metrics")
       .order("created_at", { ascending: false })
       .limit(20),
   ]);

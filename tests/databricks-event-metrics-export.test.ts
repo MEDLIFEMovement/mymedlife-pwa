@@ -401,6 +401,19 @@ describe("Databricks event metrics export", () => {
     )).not.toMatch(
       /email|display_name|user_id/i,
     );
+    const abandonedRunRecovery = queries.find(
+      (query) =>
+        query.table === "warehouse_export_runs" &&
+        query.operation === "update" &&
+        (query.payload as { error_summary?: string }).error_summary?.startsWith(
+          "Recovered abandoned",
+        ),
+    );
+    expect(abandonedRunRecovery?.filters).toEqual(expect.arrayContaining([
+      { column: "status", value: "running" },
+      { column: "destination", value: "databricks" },
+      { column: "dataset", value: "event_metrics" },
+    ]));
   });
 
   it("uses the last successful checkpoint and skips Databricks when nothing changed", async () => {

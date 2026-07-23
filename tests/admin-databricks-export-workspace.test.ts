@@ -27,7 +27,9 @@ const exportConfig = {
 
 describe("admin Databricks export workspace", () => {
   it("returns database-backed counts, latest run, and unresolved failures", async () => {
+    const queries: FakeQuery[] = [];
     const client = createFakeAppClient((query) => {
+      queries.push(query);
       if (query.table === "warehouse_export_failures") {
         return result([{
           id: "failure-1",
@@ -104,6 +106,18 @@ describe("admin Databricks export workspace", () => {
         code: "databricks_export_partial",
       }],
     });
+    expect(queries.find(
+      (query) => query.table === "warehouse_export_failures",
+    )?.filters).toEqual(expect.arrayContaining([
+      {
+        column: "warehouse_export_runs.destination",
+        value: "databricks",
+      },
+      {
+        column: "warehouse_export_runs.dataset",
+        value: "event_metrics",
+      },
+    ]));
   });
 
   it("fails closed when auth or database readback is unavailable", async () => {

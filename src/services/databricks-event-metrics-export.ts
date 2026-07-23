@@ -521,6 +521,8 @@ export async function runDatabricksEventMetricsExport(
       error_summary: "Recovered abandoned warehouse export after its heartbeat expired.",
     })
     .eq("status", "running")
+    .eq("destination", "databricks")
+    .eq("dataset", EXPORT_DATASET)
     .lt("heartbeat_at", staleBefore);
   if (recovered.error) {
     return failure("server_error", "Could not recover abandoned warehouse exports.");
