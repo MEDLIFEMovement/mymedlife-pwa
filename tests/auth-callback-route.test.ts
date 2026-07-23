@@ -33,7 +33,7 @@ describe("auth callback route", () => {
     );
 
     expect(response.headers.get("location")).toBe(
-      "https://www.mymedlife.org/auth/set-password?redirectTo=%2Fadmin",
+      "https://www.mymedlife.org/login?redirectTo=%2Fadmin&authError=auth_unavailable",
     );
     expect(mockCreateServerClient).not.toHaveBeenCalled();
   });
@@ -116,7 +116,61 @@ describe("auth callback route", () => {
 
     expect(mockVerifyOtp).not.toHaveBeenCalled();
     expect(response.headers.get("location")).toBe(
-      "https://www.mymedlife.org/login?redirectTo=%2Fadmin",
+      "https://www.mymedlife.org/login?redirectTo=%2Fadmin&authError=callback_invalid_or_expired",
     );
+  });
+
+  it("fails closed when a recovery code cannot be exchanged", async () => {
+    mockGetSupabaseAuthConfig.mockReturnValueOnce({
+      enabled: true,
+      url: "https://fnlhontvvprwgooevzdl.supabase.co",
+      anonKey: "anon-key",
+    });
+    mockCreateServerClient.mockReturnValueOnce({
+      auth: {
+        exchangeCodeForSession: mockExchangeCodeForSession.mockResolvedValueOnce({
+          error: { message: "Code expired" },
+        }),
+        verifyOtp: mockVerifyOtp,
+      },
+    });
+
+    const { GET } = await import("@/app/auth/callback/route");
+    const response = await GET(
+      new NextRequest(
+        "https://www.mymedlife.org/auth/callback?code=expired-code&type=recovery&redirectTo=%2Fapp",
+      ),
+    );
+
+    expect(response.headers.get("location")).toBe(
+      "https://www.mymedlife.org/auth/forgot-password?redirectTo=%2Fapp&recoveryError=recovery_invalid_or_expired",
+    );
+  });
+
+  it("fails closed when callback credentials are missing", async () => {
+    mockGetSupabaseAuthConfig.mockReturnValueOnce({
+      enabled: true,
+      url: "https://fnlhontvvprwgooevzdl.supabase.co",
+      anonKey: "anon-key",
+    });
+    mockCreateServerClient.mockReturnValueOnce({
+      auth: {
+        exchangeCodeForSession: mockExchangeCodeForSession,
+        verifyOtp: mockVerifyOtp,
+      },
+    });
+
+    const { GET } = await import("@/app/auth/callback/route");
+    const response = await GET(
+      new NextRequest(
+        "https://www.mymedlife.org/auth/callback?type=invite&redirectTo=%2Fadmin",
+      ),
+    );
+
+    expect(response.headers.get("location")).toBe(
+      "https://www.mymedlife.org/login?redirectTo=%2Fadmin&authError=invite_invalid_or_expired",
+    );
+    expect(mockExchangeCodeForSession).not.toHaveBeenCalled();
+    expect(mockVerifyOtp).not.toHaveBeenCalled();
   });
 });
