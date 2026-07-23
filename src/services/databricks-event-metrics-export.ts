@@ -342,22 +342,7 @@ export function createDatabricksEventMetricsClient(
       }
       await ensureTargetTable();
 
-      const payload = JSON.stringify(rows.map((row) => ({
-        event_id: row.eventId,
-        chapter_id: row.chapterId,
-        campaign_id: row.campaignId,
-        title: row.title,
-        event_type: row.eventType,
-        status: row.status,
-        starts_at: row.startsAt,
-        ends_at: row.endsAt,
-        current_rsvp_count: row.currentRsvpCount,
-        attendance_count: row.attendanceCount,
-        eligible_member_count: row.eligibleMemberCount,
-        attendance_rate: row.attendanceRate,
-        attendance_points_awarded: row.attendancePointsAwarded,
-        source_updated_at: row.sourceUpdatedAt,
-      })));
+      const payload = JSON.stringify(rows.map(toDatabricksPayloadRow));
 
       return executeStatement(
         `merge into identifier(:target_table) as target
@@ -665,7 +650,7 @@ export async function runDatabricksEventMetricsExport(
       }
       for (const row of rows) {
         if (hashNeedsComma) payloadHash.update(",");
-        payloadHash.update(JSON.stringify(row));
+        payloadHash.update(JSON.stringify(toDatabricksPayloadRow(row)));
         hashNeedsComma = true;
       }
       sourceRowCount += rows.length;
@@ -973,6 +958,25 @@ function normalizeExportRows(value: unknown): DatabricksEventMetric[] {
     throw new Error("The event metrics export snapshot was malformed.");
   }
   return value.map((row, index) => normalizeExportRow(row, index));
+}
+
+function toDatabricksPayloadRow(row: DatabricksEventMetric) {
+  return {
+    event_id: row.eventId,
+    chapter_id: row.chapterId,
+    campaign_id: row.campaignId,
+    title: row.title,
+    event_type: row.eventType,
+    status: row.status,
+    starts_at: row.startsAt,
+    ends_at: row.endsAt,
+    current_rsvp_count: row.currentRsvpCount,
+    attendance_count: row.attendanceCount,
+    eligible_member_count: row.eligibleMemberCount,
+    attendance_rate: row.attendanceRate,
+    attendance_points_awarded: row.attendancePointsAwarded,
+    source_updated_at: row.sourceUpdatedAt,
+  };
 }
 
 function normalizeExportRow(value: unknown, index: number): DatabricksEventMetric {

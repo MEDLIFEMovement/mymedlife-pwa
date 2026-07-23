@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
@@ -407,14 +408,22 @@ describe("Databricks event metrics export", () => {
     const audit = queries.find(
       (query) => query.table === "audit_logs" && query.operation === "insert",
     );
+    const expectedPayloadHash = createHash("sha256")
+      .update(JSON.stringify([metricRow()]))
+      .digest("hex");
+    const oldCamelCaseHash = createHash("sha256")
+      .update(JSON.stringify([exportMetric()]))
+      .digest("hex");
     expect(audit?.payload).toMatchObject({
       action: "databricks_event_metrics_exported",
       after_value: expect.objectContaining({
         batch_key: "batch-backfill",
         destination: "databricks",
+        payload_sha256: expectedPayloadHash,
         source_row_count: 1,
       }),
     });
+    expect(expectedPayloadHash).not.toBe(oldCamelCaseHash);
     expect(JSON.stringify(
       (audit?.payload as { after_value?: unknown })?.after_value,
     )).not.toMatch(
