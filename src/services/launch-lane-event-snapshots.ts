@@ -404,6 +404,21 @@ export function getLaunchLaneMemberLocationLabel(
   event: ChapterEventRow,
   campus: string,
 ) {
+  const locationName = event.location_name?.trim();
+  const virtualUrl = event.virtual_url?.trim();
+
+  if (event.location_type === "hybrid" && locationName && virtualUrl) {
+    return `${locationName} + virtual`;
+  }
+
+  if (locationName) {
+    return locationName;
+  }
+
+  if (virtualUrl) {
+    return "Virtual event";
+  }
+
   switch (event.id) {
     case "chapter-event-ucla-kickoff":
       return "Bruin Plaza";
