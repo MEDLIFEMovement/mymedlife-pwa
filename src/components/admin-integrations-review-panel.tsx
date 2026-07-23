@@ -313,12 +313,16 @@ function buildProviderReviews({
       primaryHref: "/admin/integrations/hubspot",
       primaryLabel: "Open HubSpot sync",
     },
-    contractProviderReview({
-      key: "warehouse",
-      title: "Data warehouse",
-      item: contractByKey.get("warehouse_power_bi"),
-      outboxWorkspace,
-    }),
+    {
+      ...contractProviderReview({
+        key: "warehouse",
+        title: "Databricks",
+        item: contractByKey.get("warehouse_power_bi"),
+        outboxWorkspace,
+      }),
+      primaryHref: "/admin/integrations/databricks",
+      primaryLabel: "Open Databricks export",
+    },
   ];
 }
 
