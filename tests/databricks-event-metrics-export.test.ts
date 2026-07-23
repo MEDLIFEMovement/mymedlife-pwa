@@ -604,7 +604,7 @@ describe("Databricks event metrics export", () => {
     expect(sql).toContain("current_rsvp_count");
     expect(sql).toContain("attendance_points_awarded");
     expect(sql).toContain(
-      "Attendance confirmed through the production-safe TEST event loop.",
+      "attendance confirmed([[:space:]]|$)",
     );
     expect(sql).toContain("enable row level security");
     expect(sql).toContain("grant execute on function app.get_databricks_event_metrics_export");

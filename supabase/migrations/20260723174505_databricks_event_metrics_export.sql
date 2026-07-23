@@ -163,8 +163,8 @@ as $$
         max(point.created_at) as latest_at
       from app.points_events point
       where point.chapter_event_id = chapter_event.id
-        and point.reason =
-          'Attendance confirmed through the production-safe TEST event loop.'
+        and point.reason ~*
+          '^[[:space:]]*attendance confirmed([[:space:]]|$)'
     ) points on true
   )
   select *
