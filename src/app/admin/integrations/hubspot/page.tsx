@@ -95,11 +95,10 @@ export default async function AdminHubSpotIntegrationPage({ searchParams }: Page
             <article className="rounded-lg border border-emerald-300/20 bg-emerald-300/[0.05] p-5">
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-200">Access qualification</p>
               <p className="mt-3 text-sm leading-6 text-white/65">
-                A HubSpot company association alone never grants app access. Only contacts whose approved current-term fields match these allowlists can materialize a membership.
+                A HubSpot company association alone never grants app access. Only contacts whose approved current-term member fields match this allowlist can materialize a general-member membership. HubSpot does not assign leader, staff, or admin roles.
               </p>
               <dl className="mt-4 grid gap-3">
                 <Detail label="Member terms" value={workspace.config.activeMemberTerms.join(", ") || "Not configured"} />
-                <Detail label="Leader terms" value={workspace.config.activeLeaderTerms.join(", ") || "Not configured"} />
               </dl>
             </article>
           </section>

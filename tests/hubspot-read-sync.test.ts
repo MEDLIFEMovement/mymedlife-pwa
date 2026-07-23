@@ -17,7 +17,6 @@ const enabledEnv = {
   MYMEDLIFE_ENABLE_HUBSPOT_READ_SYNC: "true",
   MYMEDLIFE_ALLOW_PRODUCTION_HUBSPOT_READ_SYNC: "true",
   MYMEDLIFE_HUBSPOT_ACTIVE_MEMBER_TERMS: "2026-2027",
-  MYMEDLIFE_HUBSPOT_ACTIVE_LEADER_TERMS: "2026-2,2027-1",
   HUBSPOT_ACCESS_TOKEN: "server-only-token",
   SUPABASE_SERVICE_ROLE_KEY: "server-only-service-key",
   SUPABASE_URL: "https://example.supabase.co",
@@ -76,7 +75,7 @@ describe("HubSpot read sync foundation", () => {
       MYMEDLIFE_HUBSPOT_ACTIVE_MEMBER_TERMS: undefined,
     })).toMatchObject({
       enabled: false,
-      reason: "HubSpot read sync is disabled until approved active-member and active-leader term allowlists are configured.",
+      reason: "HubSpot read sync is disabled until an approved active-member term allowlist is configured.",
     });
   });
 
@@ -329,10 +328,9 @@ describe("HubSpot read sync foundation", () => {
     expect(mapChapterType("International Network")).toBe("needs_review");
   });
 
-  it("qualifies only configured current-term memberships and maps leader roles", () => {
+  it("qualifies only configured current-term general-member memberships", () => {
     const config = {
       activeMemberTerms: ["2026-2027"],
-      activeLeaderTerms: ["2026-2", "2027-1"],
     };
 
     expect(getHubSpotMembershipQualification(oneContact(), config)).toEqual({
@@ -346,18 +344,7 @@ describe("HubSpot read sync foundation", () => {
       eboard: true,
       eboardYears: ["2026-2", "2027-1"],
       eboardPosition: "President",
-    }, config)).toEqual({
-      roleKey: "president_vp",
-      evidenceFields: ["eboard__c", "eboard_year", "contact_position__c"],
-      evidenceTerms: ["2026-2", "2027-1"],
-    });
-    expect(getHubSpotMembershipQualification({
-      ...oneContact(),
-      activeYears: [],
-      eboard: true,
-      eboardYears: ["2026-2"],
-      eboardPosition: "Engagement Officer",
-    }, config)?.roleKey).toBe("e_board_member");
+    }, config)).toBeNull();
     expect(getHubSpotMembershipQualification({
       ...oneContact(),
       activeYears: ["2024-2025"],
@@ -1720,7 +1707,7 @@ describe("HubSpot read sync foundation", () => {
       return { data: [], count: pending ? 4 : 10, error: null };
     });
     const workspace = await getAdminHubSpotSyncWorkspace({
-      getSyncConfig: () => ({ enabled: true, environment: "production", activeMemberTerms: ["2026-2027"], activeLeaderTerms: ["2026-2", "2027-1"], reason: "Enabled." }),
+      getSyncConfig: () => ({ enabled: true, environment: "production", activeMemberTerms: ["2026-2027"], reason: "Enabled." }),
       createServerClient: async () => ({
         client: appClient as never,
         config: { enabled: true, mode: "production_supabase", environment: "production", url: "https://example.supabase.co", anonKey: "browser", isLocalOnly: false, isHostedStaging: false, reason: "Enabled." },
@@ -1735,7 +1722,7 @@ describe("HubSpot read sync foundation", () => {
     });
 
     const unavailable = await getAdminHubSpotSyncWorkspace({
-      getSyncConfig: () => ({ enabled: false, environment: "local", activeMemberTerms: [], activeLeaderTerms: [], reason: "Disabled." }),
+      getSyncConfig: () => ({ enabled: false, environment: "local", activeMemberTerms: [], reason: "Disabled." }),
       createServerClient: async () => ({ client: null, config: { enabled: false, mode: "disabled", environment: "local", isLocalOnly: true, isHostedStaging: false, reason: "Auth unavailable." } }),
     });
     expect(unavailable).toMatchObject({ canRead: false, message: "Auth unavailable." });
@@ -1746,7 +1733,7 @@ describe("HubSpot read sync foundation", () => {
         : ok([])
     ));
     const queryFailure = await getAdminHubSpotSyncWorkspace({
-      getSyncConfig: () => ({ enabled: true, environment: "production", activeMemberTerms: ["2026-2027"], activeLeaderTerms: ["2026-2", "2027-1"], reason: "Enabled." }),
+      getSyncConfig: () => ({ enabled: true, environment: "production", activeMemberTerms: ["2026-2027"], reason: "Enabled." }),
       createServerClient: async () => ({
         client: queryFailureClient as never,
         config: { enabled: true, mode: "production_supabase", environment: "production", url: "https://example.supabase.co", anonKey: "browser", isLocalOnly: false, isHostedStaging: false, reason: "Enabled." },
@@ -1759,7 +1746,7 @@ describe("HubSpot read sync foundation", () => {
 
     const emptyClient = createFakeAppClient(() => ({ data: null, count: null, error: null }));
     const empty = await getAdminHubSpotSyncWorkspace({
-      getSyncConfig: () => ({ enabled: false, environment: "production", activeMemberTerms: [], activeLeaderTerms: [], reason: "Sync disabled." }),
+      getSyncConfig: () => ({ enabled: false, environment: "production", activeMemberTerms: [], reason: "Sync disabled." }),
       createServerClient: async () => ({
         client: emptyClient as never,
         config: { enabled: true, mode: "production_supabase", environment: "production", url: "https://example.supabase.co", anonKey: "browser", isLocalOnly: false, isHostedStaging: false, reason: "Enabled." },

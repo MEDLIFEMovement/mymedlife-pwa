@@ -25,7 +25,6 @@ export type HubSpotReadSyncConfig = {
   enabled: boolean;
   environment: "local" | "staging" | "production";
   activeMemberTerms: string[];
-  activeLeaderTerms: string[];
   reason: string;
 };
 
@@ -113,7 +112,7 @@ type HubSpotReadSyncDeps = {
 };
 
 type HubSpotMembershipQualification = {
-  roleKey: "general_member" | "e_board_member" | "president_vp";
+  roleKey: "general_member";
   evidenceFields: string[];
   evidenceTerms: string[];
 };
@@ -150,16 +149,12 @@ export function getHubSpotReadSyncConfig(
   const activeMemberTerms = parseDelimitedValues(
     env.MYMEDLIFE_HUBSPOT_ACTIVE_MEMBER_TERMS,
   );
-  const activeLeaderTerms = parseDelimitedValues(
-    env.MYMEDLIFE_HUBSPOT_ACTIVE_LEADER_TERMS,
-  );
 
   if (env.MYMEDLIFE_ENABLE_HUBSPOT_READ_SYNC !== "true") {
     return disabled(
       environment,
       "HubSpot read sync is disabled by configuration.",
       activeMemberTerms,
-      activeLeaderTerms,
     );
   }
   if (!env.HUBSPOT_ACCESS_TOKEN) {
@@ -167,7 +162,6 @@ export function getHubSpotReadSyncConfig(
       environment,
       "HubSpot read sync is disabled because the server-only access token is missing.",
       activeMemberTerms,
-      activeLeaderTerms,
     );
   }
   if (!env.SUPABASE_SERVICE_ROLE_KEY || !(env.SUPABASE_URL ?? env.NEXT_PUBLIC_SUPABASE_URL)) {
@@ -175,7 +169,6 @@ export function getHubSpotReadSyncConfig(
       environment,
       "HubSpot read sync is disabled because the server-only Supabase client is incomplete.",
       activeMemberTerms,
-      activeLeaderTerms,
     );
   }
 
@@ -190,15 +183,13 @@ export function getHubSpotReadSyncConfig(
       environment,
       `${capitalize(environment)} HubSpot read sync is disabled until its explicit environment approval flag is enabled.`,
       activeMemberTerms,
-      activeLeaderTerms,
     );
   }
-  if (activeMemberTerms.length === 0 || activeLeaderTerms.length === 0) {
+  if (activeMemberTerms.length === 0) {
     return disabled(
       environment,
-      "HubSpot read sync is disabled until approved active-member and active-leader term allowlists are configured.",
+      "HubSpot read sync is disabled until an approved active-member term allowlist is configured.",
       activeMemberTerms,
-      activeLeaderTerms,
     );
   }
 
@@ -206,8 +197,7 @@ export function getHubSpotReadSyncConfig(
     enabled: true,
     environment,
     activeMemberTerms,
-    activeLeaderTerms,
-    reason: `Server-only HubSpot reads and app-owned reconciliation writes are enabled for ${environment}. HubSpot writes and account invitations remain disabled.`,
+    reason: `Server-only HubSpot reads and app-owned general-member reconciliation writes are enabled for ${environment}. HubSpot leader/admin role assignment, HubSpot writes, and account invitations remain disabled.`,
   };
 }
 
@@ -1370,20 +1360,8 @@ export function mapChapterType(schoolType: string | null): "high_school" | "coll
 
 export function getHubSpotMembershipQualification(
   contact: HubSpotContactRecord,
-  config: Pick<HubSpotReadSyncConfig, "activeMemberTerms" | "activeLeaderTerms">,
+  config: Pick<HubSpotReadSyncConfig, "activeMemberTerms">,
 ): HubSpotMembershipQualification | null {
-  const leaderTerms = matchingTerms(contact.eboardYears, config.activeLeaderTerms);
-  if (contact.eboard && leaderTerms.length > 0) {
-    const normalizedPosition = contact.eboardPosition?.trim().toLowerCase() ?? "";
-    return {
-      roleKey: normalizedPosition === "president" || normalizedPosition === "vice president"
-        ? "president_vp"
-        : "e_board_member",
-      evidenceFields: ["eboard__c", "eboard_year", "contact_position__c"],
-      evidenceTerms: leaderTerms,
-    };
-  }
-
   const activeYearTerms = matchingTerms(contact.activeYears, config.activeMemberTerms);
   const qrYearTerms = matchingTerms(contact.qrYears, config.activeMemberTerms);
   const memberTerms = [...new Set([...activeYearTerms, ...qrYearTerms])];
@@ -1491,9 +1469,8 @@ function disabled(
   environment: HubSpotReadSyncConfig["environment"],
   reason: string,
   activeMemberTerms: string[] = [],
-  activeLeaderTerms: string[] = [],
 ): HubSpotReadSyncConfig {
-  return { enabled: false, environment, activeMemberTerms, activeLeaderTerms, reason };
+  return { enabled: false, environment, activeMemberTerms, reason };
 }
 
 function capitalize(value: string) {

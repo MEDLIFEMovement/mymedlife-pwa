@@ -32,7 +32,7 @@ vi.mock("@/services/admin-hubspot-sync-workspace", () => ({
 
 hubspotWorkspaceMock.mockResolvedValue({
     canRead: true,
-    config: { enabled: true, environment: "production", activeMemberTerms: ["2026-2027"], activeLeaderTerms: ["2026-2", "2027-1"], reason: "Enabled for test." },
+    config: { enabled: true, environment: "production", activeMemberTerms: ["2026-2027"], reason: "Enabled for test." },
     lastRun: {
       id: "run-1",
       mode: "backfill",
@@ -843,7 +843,7 @@ describe("admin management pages", () => {
     );
     hubspotWorkspaceMock.mockResolvedValueOnce({
       canRead: true,
-      config: { enabled: false, environment: "production", activeMemberTerms: [], activeLeaderTerms: [], reason: "Disabled for test." },
+      config: { enabled: false, environment: "production", activeMemberTerms: [], reason: "Disabled for test." },
       lastRun: null,
       counts: {
         companies: 0,
@@ -880,7 +880,7 @@ describe("admin management pages", () => {
     );
     hubspotWorkspaceMock.mockResolvedValueOnce({
       canRead: false,
-      config: { enabled: false, environment: "production", activeMemberTerms: [], activeLeaderTerms: [], reason: "Unavailable." },
+      config: { enabled: false, environment: "production", activeMemberTerms: [], reason: "Unavailable." },
       lastRun: null,
       counts: {
         companies: 0,
