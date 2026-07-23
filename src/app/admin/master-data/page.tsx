@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { AppShell } from "@/components/app-shell";
 import { DataSourceNotice } from "@/components/data-source-notice";
 import { RestrictedState } from "@/components/restricted-state";
+import { getAdminManagementDirectory } from "@/services/admin-management-data";
 import { getAdminMasterDataWorkspace } from "@/services/admin-master-data-workspace";
 import { getLocalActorContext } from "@/services/local-actor-context";
 import { getReadOnlyAppData } from "@/services/read-only-app-data";
@@ -12,11 +13,19 @@ export const metadata = getStaticRouteMetadata("adminMasterData");
 export const dynamic = "force-dynamic";
 
 export default async function AdminMasterDataPage() {
-  const [actor, data] = await Promise.all([
-    getLocalActorContext(),
+  const actor = await getLocalActorContext();
+  const canReadAdminDirectory = [
+    "admin",
+    "ds_admin",
+    "super_admin",
+  ].includes(actor.audience);
+  const [data, directory] = await Promise.all([
     getReadOnlyAppData(),
+    canReadAdminDirectory
+      ? getAdminManagementDirectory()
+      : Promise.resolve(undefined),
   ]);
-  const workspace = getAdminMasterDataWorkspace(actor, data);
+  const workspace = getAdminMasterDataWorkspace(actor, data, { directory });
 
   return (
     <AppShell actor={actor}>
@@ -71,7 +80,7 @@ export default async function AdminMasterDataPage() {
             />
           </section>
 
-          <InventorySection title="Fake users" count={workspace.users.length}>
+          <InventorySection title="Users" count={workspace.users.length}>
             <div className="grid gap-3 lg:grid-cols-2">
               {workspace.users.map((user) => (
                 <article
@@ -84,7 +93,7 @@ export default async function AdminMasterDataPage() {
                         <h2 className="text-lg font-semibold text-white">
                           {user.displayName}
                         </h2>
-                        <PreviewBadge />
+                        {user.status === "mock_only" ? <PreviewBadge /> : null}
                       </div>
                       <p className="mt-1 break-words font-mono text-xs text-emerald-100/70">
                         {user.email}
@@ -123,7 +132,7 @@ export default async function AdminMasterDataPage() {
                     {role.audience.replaceAll("_", " ")}
                   </p>
                   <p className="mt-2 break-words font-mono text-xs text-emerald-100/70">
-                    {role.localActorEmail ?? "missing local actor"}
+                    {role.localActorEmail ?? "No approved assignment"}
                   </p>
                   <p className="mt-2 text-xs leading-5 text-white/48">
                     {role.detail}
@@ -178,7 +187,9 @@ export default async function AdminMasterDataPage() {
                         <h2 className="text-lg font-semibold text-white">
                           {template.name}
                         </h2>
-                        <PreviewBadge />
+                        {template.adminStatus === "mock_only" ? (
+                          <PreviewBadge />
+                        ) : null}
                       </div>
                       <p className="mt-1 font-mono text-xs text-white/44">
                         {template.slug}
@@ -187,10 +198,14 @@ export default async function AdminMasterDataPage() {
                     <Pill>{template.status}</Pill>
                   </div>
                   <p className="mt-3 text-sm leading-6 text-white/60">
-                    KPIs: {template.primaryKpis.slice(0, 3).join(", ")}
+                    KPIs:{" "}
+                    {template.primaryKpis.slice(0, 3).join(", ") ||
+                      "None recorded"}
                   </p>
                   <p className="mt-2 text-sm leading-6 text-white/52">
-                    Lanes: {template.actionCommitteeLanes.join(", ")}
+                    Lanes:{" "}
+                    {template.actionCommitteeLanes.join(", ") ||
+                      "None recorded"}
                   </p>
                   <p className="mt-2 text-xs leading-5 text-white/46">
                     {template.integrationPosture}
