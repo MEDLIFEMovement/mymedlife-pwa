@@ -76,6 +76,17 @@ export function buildMemberIdentityContext(
     pointsRankLabel: studentHome.pointsRankLabel,
     completedActions: selectedMember?.completedActions ?? recognition.recentApprovedActions.length,
     leaderboardRows: rows,
+    pointsLedgerPosture: recognition.pointsLedgerPosture,
+    campaignPointRows: recognition.campaignPoints.map((campaign) => ({
+      campaign: getVisibleIdentityLabel(campaign.label, "Campaign"),
+      points: campaign.earned,
+      available: campaign.available,
+    })),
+    recentPointActions: recognition.recentApprovedActions.map((action) => ({
+      action: action.title,
+      detail: action.detail,
+      pointsLabel: action.pointsLabel,
+    })),
   };
 }
 
