@@ -1,4 +1,5 @@
 import type { LocalActorContext } from "@/services/local-actor-context";
+import { isMemberEventLoopAttendancePointReason } from "@/services/member-event-loop-policy";
 import type { ReadOnlyAppData } from "@/services/read-only-app-data";
 import { resolveChapterTimeZone } from "@/services/chapter-timezone";
 import type {
@@ -152,6 +153,38 @@ export function hasLaunchLaneRecordedRsvp(input: {
   return latest?.event_type === "event_rsvp_recorded";
 }
 
+export function hasLaunchLaneRecordedAttendance(input: {
+  eventRows: readonly EventRow[];
+  chapterEventId: string;
+  userEmail: string;
+  profileId: string | null;
+}) {
+  const normalizedEmail = normalizeEmail(input.userEmail);
+
+  return input.eventRows.some((row) => {
+    if (
+      row.chapter_event_id !== input.chapterEventId ||
+      row.event_type !== "event_attendance_recorded"
+    ) {
+      return false;
+    }
+
+    const payload = asRecord(row.payload);
+    const checkedInUserId =
+      typeof payload.checkedInUserId === "string" ? payload.checkedInUserId : null;
+    const checkedInUserEmail =
+      typeof payload.userEmail === "string" ? payload.userEmail : null;
+    const userId = checkedInUserId ?? row.actor_user_id;
+
+    return (
+      (input.profileId ? userId === input.profileId : false) ||
+      (normalizedEmail
+        ? normalizeEmail(checkedInUserEmail) === normalizedEmail
+        : false)
+    );
+  });
+}
+
 export function countLaunchLaneRsvpsForEvent(
   rows: readonly EventRow[],
   chapterEventId: string,
@@ -224,6 +257,21 @@ export function sumLaunchLanePointsForEvent(
       (row) =>
         row.chapter_event_id === chapterEventId &&
         (awardedToUserId ? row.awarded_to_user_id === awardedToUserId : true),
+    )
+    .reduce((total, row) => total + row.points_delta, 0);
+}
+
+export function sumLaunchLaneAttendancePointsForEvent(
+  rows: readonly PointsEventRow[],
+  chapterEventId: string,
+  awardedToUserId: string,
+) {
+  return rows
+    .filter(
+      (row) =>
+        row.chapter_event_id === chapterEventId &&
+        row.awarded_to_user_id === awardedToUserId &&
+        isMemberEventLoopAttendancePointReason(row.reason),
     )
     .reduce((total, row) => total + row.points_delta, 0);
 }

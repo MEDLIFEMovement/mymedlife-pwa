@@ -3,6 +3,7 @@ import {
   type EventLoopMode,
 } from "@/services/event-loop";
 import type { LocalActorContext } from "@/services/local-actor-context";
+import { getLumaEventSyncConfig } from "@/services/luma-event-sync";
 import type { ReadOnlyAppData } from "@/services/read-only-app-data";
 import { canReadAdminIntegrationsSecurity } from "@/services/role-visibility";
 import type {
@@ -14,7 +15,8 @@ export type AdminLumaProviderStatus =
   | "mock_ready"
   | "staging_ready"
   | "disabled"
-  | "live_ready_not_enabled";
+  | "live_ready_not_enabled"
+  | "live_read_enabled";
 
 export type AdminLumaTestStatus = "pass" | "blocked" | "needs_setup";
 
@@ -37,6 +39,7 @@ export type AdminLumaIntegrationStatus = {
   title: string;
   summary: string;
   providerStatus: AdminLumaProviderStatus;
+  readSyncEnabled: boolean;
   environment: EventLoopMode;
   environmentLabel: string;
   testConnection: {
@@ -54,6 +57,7 @@ export type AdminLumaIntegrationStatus = {
     lumaOutboxRows: number;
     liveSendRows: number;
     browserSecretsShown: 0;
+    externalReadsEnabled: 0 | 1;
     externalWritesEnabled: 0;
   };
   setupChecks: AdminLumaStatusCheck[];
@@ -84,8 +88,13 @@ export function getAdminLumaIntegrationStatus(
   }
 
   const environment = resolveLumaEnvironment(data, env);
-  const providerStatus = getProviderStatus(environment, data);
-  const environmentLabel = getEnvironmentLabel(environment, env);
+  const syncConfig = getLumaEventSyncConfig(env);
+  const providerStatus = syncConfig.enabled
+    ? "live_read_enabled"
+    : getProviderStatus(environment, data);
+  const environmentLabel = syncConfig.enabled
+    ? `${capitalize(syncConfig.environment)} read sync enabled`
+    : getEnvironmentLabel(environment, env);
   const readModel = getPilotEventLoopReadModel({
     mode: environment,
     data: {
@@ -114,9 +123,10 @@ export function getAdminLumaIntegrationStatus(
     summary:
       "DS Admin can inspect Luma calendar mapping, event link posture, test-readiness, outbox safety, and blocked live-send controls without exposing keys or enabling production writes.",
     providerStatus,
+    readSyncEnabled: syncConfig.enabled,
     environment,
     environmentLabel,
-    testConnection: getTestConnection(environment, data),
+    testConnection: getTestConnection(environment, data, syncConfig.enabled),
     lastTestTime,
     lastSync,
     outboxStatus: liveSendRows.length > 0 ? "Review required" : "No live sends enabled",
@@ -127,6 +137,7 @@ export function getAdminLumaIntegrationStatus(
       lumaOutboxRows: lumaOutboxRows.length,
       liveSendRows: liveSendRows.length,
       browserSecretsShown: 0,
+      externalReadsEnabled: syncConfig.enabled ? 1 : 0,
       externalWritesEnabled: 0,
     },
     setupChecks: [
@@ -134,8 +145,9 @@ export function getAdminLumaIntegrationStatus(
         label: "Provider mode",
         value: environmentLabel,
         status: environment === "disabled" ? "blocked" : "pass",
-        detail:
-          environment === "disabled"
+        detail: syncConfig.enabled
+          ? "Server-only Luma reads are active and reconcile into app-owned Supabase event records. Provider writes remain disabled."
+          : environment === "disabled"
             ? "Luma is intentionally disabled; local/mock event flow must still work."
             : "The page can read staging/mock-safe Luma posture without making an API call.",
       },
@@ -167,8 +179,12 @@ export function getAdminLumaIntegrationStatus(
     ],
     errorLog: buildErrorLog(lumaIntegrationEvents, lumaOutboxRows),
     safetyNotes: [
-      "This route does not call the Luma API.",
-      "This route does not create, update, delete, or sync Luma events.",
+      syncConfig.enabled
+        ? "This route can run approved server-only Luma event reads and app-owned Supabase reconciliation writes."
+        : "This route does not call the Luma API.",
+      syncConfig.enabled
+        ? "This route does not create, update, or delete provider-side Luma events, guests, RSVPs, attendance, or reminders."
+        : "This route does not create, update, delete, or sync Luma events.",
       "Production Luma writes, reminders, webhooks, n8n, HubSpot, warehouse, Power BI, SMS, email, and AI actions remain off.",
       "Use `/admin/integration-outbox` for disabled queue readback before any live-send approval.",
     ],
@@ -191,6 +207,7 @@ function hiddenStatus(): AdminLumaIntegrationStatus {
     summary:
       "Only DS Admin and Super Admin can inspect Luma provider setup, keys posture, and integration safety.",
     providerStatus: "disabled",
+    readSyncEnabled: false,
     environment: "disabled",
     environmentLabel: "Disabled",
     testConnection: {
@@ -208,6 +225,7 @@ function hiddenStatus(): AdminLumaIntegrationStatus {
       lumaOutboxRows: 0,
       liveSendRows: 0,
       browserSecretsShown: 0,
+      externalReadsEnabled: 0,
       externalWritesEnabled: 0,
     },
     setupChecks: [],
@@ -296,6 +314,7 @@ function getEnvironmentLabel(
 function getTestConnection(
   environment: EventLoopMode,
   data: ReadOnlyAppData,
+  readSyncEnabled = false,
 ): AdminLumaIntegrationStatus["testConnection"] {
   if (environment === "disabled") {
     return {
@@ -312,6 +331,15 @@ function getTestConnection(
       label: "Setup evidence needed",
       detail:
         "No calendar mapping or Luma/mock event link rows are visible in app readback yet.",
+    };
+  }
+
+  if (readSyncEnabled) {
+    return {
+      status: "pass",
+      label: "Provider read sync active",
+      detail:
+        "Server-only Luma API reads are active; event and link readback is stored in app-owned Supabase tables. Provider writes remain disabled.",
     };
   }
 
@@ -383,4 +411,8 @@ function getLatestTimestamp(values: Array<string | null | undefined>): string {
   }
 
   return timestamps.sort().at(-1) ?? "Not recorded";
+}
+
+function capitalize(value: string) {
+  return value.charAt(0).toUpperCase() + value.slice(1);
 }

@@ -256,7 +256,7 @@ describe("member event detail route", () => {
     expect(html).toContain("TEST Rush Month kickoff social");
     expect(html).toContain("Points Available");
     expect(html).toContain("currently recorded");
-    expect(html).toContain("preview link only");
+    expect(html).toContain("source event linked");
     expect(html).toContain("Production-safe event loop");
     expect(html).toContain("Event completed");
     expect(html).toContain("route remains available for readback");
@@ -349,13 +349,14 @@ describe("member event detail route", () => {
       }),
     );
 
-    expect(html).toContain("You&#x27;re RSVP&#x27;d!");
-    expect(html).toContain("Go to Check-In");
-    expect(html).toContain("RSVP locked after check-in");
+    expect(html).toContain("Already checked in");
+    expect(html).toContain("View attendance and points");
+    expect(html).not.toContain("Go to Check-In");
+    expect(html).toContain("Attendance is recorded, so RSVP changes are locked");
     expect(html).toContain("20 points");
     expect(html).not.toContain(">0 points<");
-    expect(html).toContain("Luma and external provider writes stay off");
-    expect(html).toContain('href="/app/events/chapter-event-ucla-kickoff?source=home&amp;step=checkin"');
+    expect(html).toContain("Another RSVP or cancellation cannot change the durable attendance record");
+    expect(html).toContain('href="/app/events/chapter-event-ucla-kickoff?source=home&amp;step=points"');
     expect(html).toContain('href="/app"');
     expect(html).toContain("Back to Home");
   });
@@ -484,7 +485,7 @@ describe("member event detail route", () => {
 
     expect(html).toContain("Check-in recorded");
     expect(html).toContain("Your attendance is already recorded in myMEDLIFE");
-    expect(html).toContain("20 points recorded");
+    expect(html).toContain("20 attendance points recorded");
     expect(html).toContain("View attendance and points readback");
     expect(html).not.toContain("Confirm Check-In");
     expect(html).not.toContain("Preview event QR code");

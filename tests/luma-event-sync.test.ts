@@ -99,6 +99,36 @@ describe("Luma event read sync", () => {
     });
   });
 
+  it("validates the API key calendar identity through the official calendar endpoint", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(jsonResponse({
+      id: "cal-production",
+      name: "Production Review Calendar",
+      url: "https://luma.com/production-review",
+    }));
+    const client = createLumaReadClient(enabledEnv, fetchMock);
+
+    await expect(client?.readCalendar?.()).resolves.toEqual({
+      id: "cal-production",
+      name: "Production Review Calendar",
+      url: "https://luma.com/production-review",
+    });
+    expect(fetchMock).toHaveBeenCalledWith(
+      "https://public-api.luma.com/v1/calendars/get",
+      expect.objectContaining({
+        headers: { "x-luma-api-key": "server-only-luma-key" },
+        cache: "no-store",
+      }),
+    );
+
+    const malformedClient = createLumaReadClient(
+      enabledEnv,
+      vi.fn().mockResolvedValue(jsonResponse({ id: "cal-production" })),
+    );
+    await expect(malformedClient?.readCalendar?.()).rejects.toThrow(
+      "Luma returned a malformed calendar identity; reconciliation stopped before materialization.",
+    );
+  });
+
   it("uses a bounded rolling window for scheduled reconciliation", async () => {
     const fetchMock = vi.fn().mockResolvedValue(jsonResponse({ entries: [] }));
     const client = createLumaReadClient(enabledEnv, fetchMock);
@@ -311,6 +341,49 @@ describe("Luma event read sync", () => {
       code: "luma_sync_partial",
       counts: { conflicts: 1, materializedEvents: 0 },
     });
+  });
+
+  it("fails before mapping or event reads when the API key belongs to another calendar", async () => {
+    const queries: FakeQuery[] = [];
+    const appClient = createFakeAppClient((query) => {
+      queries.push(query);
+      if (query.table === "staff_role_assignments") return ok([{ role_key: "ds_admin" }]);
+      if (query.table === "chapters" && query.operation === "select") {
+        return ok([{ id: enabledEnv.MYMEDLIFE_LUMA_CHAPTER_ID }]);
+      }
+      if (query.table === "luma_sync_runs" && query.operation === "select") return ok([]);
+      if (query.table === "luma_sync_runs" && query.operation === "insert") return ok({ id: "run-calendar-mismatch" });
+      return ok([]);
+    });
+    const readEvents = vi.fn();
+
+    const result = await runLumaEventSync("admin-1", "backfill", {
+      env: enabledEnv,
+      appClient: appClient as never,
+      lumaClient: {
+        readCalendar: async () => ({
+          id: "cal-other",
+          name: "Other Calendar",
+          url: "https://luma.com/other",
+        }),
+        readEvents,
+      },
+      now: () => new Date("2026-07-20T05:30:00.000Z"),
+    });
+
+    expect(result).toMatchObject({
+      success: false,
+      code: "server_error",
+      runId: "run-calendar-mismatch",
+    });
+    expect(result.plainEnglishMessage).toContain(
+      "The configured Luma calendar cal-production does not match the API key calendar cal-other.",
+    );
+    expect(readEvents).not.toHaveBeenCalled();
+    expect(queries.some((query) => query.table === "chapter_luma_calendars")).toBe(false);
+    expect(queries).toEqual(expect.arrayContaining([
+      expect.objectContaining({ table: "luma_sync_failures", operation: "insert" }),
+    ]));
   });
 
   it("fails closed when chapter, recovery, lock, or run creation cannot be verified", async () => {

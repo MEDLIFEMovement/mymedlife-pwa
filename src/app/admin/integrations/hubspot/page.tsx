@@ -56,11 +56,11 @@ export default async function AdminHubSpotIntegrationPage({ searchParams }: Page
           <section className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             <Stat label="Imported companies" value={workspace.counts.companies} />
             <Stat label="Imported contacts" value={workspace.counts.contacts} />
-            <Stat label="Imported memberships" value={workspace.counts.memberships} />
+            <Stat label="Membership associations staged" value={workspace.counts.memberships} />
             <Stat label="Open failures" value={workspace.counts.openFailures} />
           </section>
 
-          <section className="mt-4 grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
+          <section className="mt-4 grid gap-4 lg:grid-cols-3">
             <article className="rounded-lg border border-white/10 bg-white/[0.04] p-5">
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-sky-200">Latest run</p>
               {workspace.lastRun ? (
@@ -87,6 +87,18 @@ export default async function AdminHubSpotIntegrationPage({ searchParams }: Page
                 <Detail label="Pending chapters" value={workspace.counts.pendingCompanies} />
                 <Detail label="Pending contacts" value={workspace.counts.pendingContacts} />
                 <Detail label="Pending memberships" value={workspace.counts.pendingMemberships} />
+                <Detail label="Current memberships materialized" value={workspace.counts.materializedMemberships} />
+                <Detail label="Historical/out-of-term ignored" value={workspace.counts.ignoredMemberships} />
+              </dl>
+            </article>
+
+            <article className="rounded-lg border border-emerald-300/20 bg-emerald-300/[0.05] p-5">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-200">Access qualification</p>
+              <p className="mt-3 text-sm leading-6 text-white/65">
+                A HubSpot company association alone never grants app access. Only contacts whose approved current-term member fields match this allowlist can materialize a general-member membership. HubSpot does not assign leader, staff, or admin roles.
+              </p>
+              <dl className="mt-4 grid gap-3">
+                <Detail label="Member terms" value={workspace.config.activeMemberTerms.join(", ") || "Not configured"} />
               </dl>
             </article>
           </section>

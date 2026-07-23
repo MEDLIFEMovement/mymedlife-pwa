@@ -4,6 +4,7 @@ import type {
   LaunchLaneOrgLeaderboardRow,
   LaunchLaneOrgPointsReadback,
   LaunchLaneStaffChapterReadback,
+  LaunchLaneStaffEventReadback,
 } from "@/services/launch-lane-points-readback";
 
 type CampaignStatus = "on-track" | "behind" | "not-started" | "complete" | "paused";
@@ -34,6 +35,7 @@ type StaffLiveLaunchEventsPanelsProps = {
   chapters: LaunchLaneStaffChapterReadback[];
   organization: LaunchLaneOrgPointsReadback;
   selectedEventId: string | null;
+  selectedEvent: LaunchLaneStaffEventReadback | null;
 };
 
 type StaffLiveLaunchLeaderboardProps = {
@@ -45,11 +47,9 @@ export function StaffLiveLaunchEventsOperations({
   chapters,
   organization,
   selectedEventId,
+  selectedEvent,
 }: StaffLiveLaunchEventsPanelsProps) {
   const visibleEvents = chapters.filter((chapter) => chapter.chapterEventId);
-  const selectedChapter = selectedEventId
-    ? visibleEvents.find((chapter) => chapter.chapterEventId === selectedEventId) ?? null
-    : null;
 
   return (
     <div className="space-y-5">
@@ -61,21 +61,21 @@ export function StaffLiveLaunchEventsOperations({
       </div>
 
       {selectedEventId ? (
-        selectedChapter ? (
+        selectedEvent ? (
           <section className="rounded-xl border border-blue-200 bg-blue-50 px-5 py-4" aria-label="Selected staff event detail">
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
                 <p className="text-xs font-bold uppercase tracking-widest text-blue-700">Selected event</p>
-                <h2 className="mt-1 text-lg font-bold text-foreground">{selectedChapter.nextEvent}</h2>
-                <p className="mt-1 text-sm text-muted-foreground">{selectedChapter.name} · {selectedChapter.calendarLabel}</p>
+                <h2 className="mt-1 text-lg font-bold text-foreground">{selectedEvent.title}</h2>
+                <p className="mt-1 text-sm text-muted-foreground">{selectedEvent.chapterName} · {selectedEvent.timing} · {selectedEvent.location}</p>
               </div>
               <Link href="/staff?view=events" className="text-sm font-bold text-primary hover:underline">Back to all events</Link>
             </div>
             <div className="mt-4 grid gap-3 text-sm sm:grid-cols-4">
-              <div><p className="text-xs font-bold uppercase text-muted-foreground">RSVPs</p><p className="mt-1 font-mono text-lg font-black">{selectedChapter.rsvps}</p></div>
-              <div><p className="text-xs font-bold uppercase text-muted-foreground">Attendance</p><p className="mt-1 font-mono text-lg font-black">{selectedChapter.attendance}</p></div>
-              <div><p className="text-xs font-bold uppercase text-muted-foreground">Points</p><p className="mt-1 font-mono text-lg font-black">{selectedChapter.points.toLocaleString()}</p></div>
-              <div><p className="text-xs font-bold uppercase text-muted-foreground">Risk</p><p className="mt-1 font-bold">{selectedChapter.risk}</p></div>
+              <div><p className="text-xs font-bold uppercase text-muted-foreground">RSVPs</p><p className="mt-1 font-mono text-lg font-black">{selectedEvent.rsvps}</p></div>
+              <div><p className="text-xs font-bold uppercase text-muted-foreground">Attendance</p><p className="mt-1 font-mono text-lg font-black">{selectedEvent.attendance}</p></div>
+              <div><p className="text-xs font-bold uppercase text-muted-foreground">Points</p><p className="mt-1 font-mono text-lg font-black">{selectedEvent.points.toLocaleString()}</p></div>
+              <div><p className="text-xs font-bold uppercase text-muted-foreground">Risk</p><p className="mt-1 font-bold">{selectedEvent.risk}</p></div>
             </div>
           </section>
         ) : (

@@ -65,6 +65,44 @@ describe("member launch lane events", () => {
     });
   });
 
+  it("does not lock RSVP cancellation for unrelated event bonus points", () => {
+    const actor = getMockLocalActorContext("member.a@mymedlife.test");
+    const data = getMockReadOnlyAppData("Testing unrelated event points.");
+    const pointsWithoutMemberAttendance = data.allPointsEventRows.filter(
+      (row) =>
+        row.chapter_event_id !== "chapter-event-ucla-kickoff" ||
+        row.awarded_to_user_id !== "member-a",
+    );
+    const unrelatedBonus = {
+      ...data.allPointsEventRows[0],
+      id: "event-bonus-1",
+      chapter_event_id: "chapter-event-ucla-kickoff",
+      awarded_to_user_id: "member-a",
+      points_delta: 50,
+      reason: "Event participation bonus",
+    };
+
+    const row = getMemberLaunchLaneEventRowById(
+      actor,
+      {
+        ...data,
+        chapterEventRows: data.chapterEventRows.map((event) => ({
+          ...event,
+          status: "published" as const,
+        })),
+        allPointsEventRows: [...pointsWithoutMemberAttendance, unrelatedBonus],
+      },
+      "chapter-event-ucla-kickoff",
+    );
+
+    expect(row).toMatchObject({
+      memberCheckedIn: false,
+      memberCanCancelRsvp: true,
+      memberRsvpLockLabel: null,
+      memberPointsAwarded: 0,
+    });
+  });
+
   it("reopens RSVP after the latest member intent is cancellation", () => {
     const actor = getMockLocalActorContext("member.a@mymedlife.test");
     const data = getMockReadOnlyAppData("Testing member RSVP cancellation readback.");

@@ -38,6 +38,7 @@ import type {
   LaunchLaneOrgLeaderboardRow,
   LaunchLaneOrgPointsReadback,
   LaunchLaneStaffChapterReadback,
+  LaunchLaneStaffEventReadback,
 } from "@/services/launch-lane-points-readback";
 
 /* ─────────────────────────────────────────────────────────── */
@@ -2748,6 +2749,7 @@ type FigmaStaffCommandCenterProps = {
   initialCampaign?: string | null;
   liveEventReadback?: {
     selectedEventId: string | null;
+    selectedEvent: LaunchLaneStaffEventReadback | null;
     chapters: LaunchLaneStaffChapterReadback[];
     organization: LaunchLaneOrgPointsReadback;
     leaderboard: LaunchLaneOrgLeaderboardRow[];
@@ -3016,6 +3018,7 @@ export function FigmaStaffCommandCenter({
                   chapters={liveEventReadback.chapters}
                   organization={liveEventReadback.organization}
                   selectedEventId={liveEventReadback.selectedEventId}
+                  selectedEvent={liveEventReadback.selectedEvent}
                 />
               ) : (
                 <StaffLaunchEventsOperations chapters={CHAPTERS} />

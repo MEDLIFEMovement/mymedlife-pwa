@@ -6,6 +6,7 @@ import { describe, expect, it, vi } from "vitest";
 import {
   createHubSpotReadClient,
   getHubSpotReadSyncConfig,
+  getHubSpotMembershipQualification,
   mapChapterType,
   runHubSpotReadSync,
 } from "@/services/hubspot-read-sync";
@@ -15,6 +16,7 @@ const enabledEnv = {
   MYMEDLIFE_AUTH_MODE: "production_supabase",
   MYMEDLIFE_ENABLE_HUBSPOT_READ_SYNC: "true",
   MYMEDLIFE_ALLOW_PRODUCTION_HUBSPOT_READ_SYNC: "true",
+  MYMEDLIFE_HUBSPOT_ACTIVE_MEMBER_TERMS: "2026-2027",
   HUBSPOT_ACCESS_TOKEN: "server-only-token",
   SUPABASE_SERVICE_ROLE_KEY: "server-only-service-key",
   SUPABASE_URL: "https://example.supabase.co",
@@ -67,6 +69,14 @@ describe("HubSpot read sync foundation", () => {
       MYMEDLIFE_ALLOW_PRODUCTION_HUBSPOT_READ_SYNC: undefined,
       MYMEDLIFE_ALLOW_LOCAL_HUBSPOT_READ_SYNC: "true",
     })).toMatchObject({ enabled: true, environment: "local" });
+
+    expect(getHubSpotReadSyncConfig({
+      ...enabledEnv,
+      MYMEDLIFE_HUBSPOT_ACTIVE_MEMBER_TERMS: undefined,
+    })).toMatchObject({
+      enabled: false,
+      reason: "HubSpot read sync is disabled until an approved active-member term allowlist is configured.",
+    });
   });
 
   it("paginates active chapter companies and maps stable source fields", async () => {
@@ -241,34 +251,39 @@ describe("HubSpot read sync foundation", () => {
   });
 
   it("reads contact-company associations without sending provider writes", async () => {
-    const fetchMock = vi.fn().mockResolvedValue(jsonResponse({
-      results: [{
-        id: "contact-1",
-        properties: {
-          email: "STUDENT@EXAMPLE.ORG",
-          firstname: "Test",
-          lastname: "Student",
-          graduation_year__c: "2028",
-          lastmodifieddate: "2026-07-19T21:00:00.000Z",
-        },
-        associations: { companies: { results: [{ id: "company-1" }] } },
-      }],
-    }));
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce(jsonResponse({
+        results: [{ from: { id: "company-1" }, to: [{ id: "contact-1" }] }],
+      }))
+      .mockResolvedValueOnce(jsonResponse({
+        results: [{
+          id: "contact-1",
+          properties: {
+            email: "STUDENT@EXAMPLE.ORG",
+            firstname: "Test",
+            lastname: "Student",
+            graduation_year__c: "2028",
+            active_years: "2025-2026;2026-2027",
+            lastmodifieddate: "2026-07-19T21:00:00.000Z",
+          },
+        }],
+      }));
 
     const client = createHubSpotReadClient(enabledEnv, fetchMock);
-    const contacts = await client?.readContactsWithCompanies();
+    const contacts = await client?.readContactsWithCompanies(null, ["company-1"]);
 
     expect(contacts).toEqual([expect.objectContaining({
       id: "contact-1",
       email: "STUDENT@EXAMPLE.ORG",
       graduationYear: 2028,
+      activeYears: ["2025-2026", "2026-2027"],
       companyIds: ["company-1"],
     })]);
-    expect(fetchMock).toHaveBeenCalledWith(
-      expect.stringContaining("/crm/v3/objects/contacts?"),
-      expect.objectContaining({ cache: "no-store" }),
+    expect(fetchMock.mock.calls[0]?.[0]).toContain(
+      "/crm/v3/associations/companies/contacts/batch/read",
     );
-    expect(fetchMock.mock.calls[0]?.[1]?.method).toBeUndefined();
+    expect(fetchMock.mock.calls[1]?.[0]).toContain("/crm/v3/objects/contacts/batch/read");
+    expect(fetchMock.mock.calls.every((call) => call[1]?.method === "POST")).toBe(true);
   });
 
   it("surfaces non-retryable HubSpot failures without leaking response content", async () => {
@@ -313,6 +328,32 @@ describe("HubSpot read sync foundation", () => {
     expect(mapChapterType("International Network")).toBe("needs_review");
   });
 
+  it("qualifies only configured current-term general-member memberships", () => {
+    const config = {
+      activeMemberTerms: ["2026-2027"],
+    };
+
+    expect(getHubSpotMembershipQualification(oneContact(), config)).toEqual({
+      roleKey: "general_member",
+      evidenceFields: ["active_years"],
+      evidenceTerms: ["2026-2027"],
+    });
+    expect(getHubSpotMembershipQualification({
+      ...oneContact(),
+      activeYears: [],
+      eboard: true,
+      eboardYears: ["2026-2", "2027-1"],
+      eboardPosition: "President",
+    }, config)).toBeNull();
+    expect(getHubSpotMembershipQualification({
+      ...oneContact(),
+      activeYears: ["2024-2025"],
+      eboard: true,
+      eboardYears: ["2024-2025"],
+      eboardPosition: "President",
+    }, config)).toBeNull();
+  });
+
   it("runs the complete app-owned chapter, profile, and membership materialization path", async () => {
     const queries: FakeQuery[] = [];
     const appClient = createFakeAppClient((query) => {
@@ -354,6 +395,12 @@ describe("HubSpot read sync foundation", () => {
         firstName: "TEST",
         lastName: "Student",
         graduationYear: 2028,
+        activeYears: ["2026-2027"],
+        eboard: false,
+        eboardYears: [],
+        eboardPosition: null,
+        involvementTypes: ["QR contact"],
+        qrYears: [],
         updatedAt: "2026-07-19T21:00:00.000Z",
         companyIds: ["company-1", "inactive-company"],
         source: { id: "contact-1" },
@@ -571,6 +618,69 @@ describe("HubSpot read sync foundation", () => {
       && (query.payload as { status?: string }).status === "succeeded"
     ));
     expect(finalRunUpdate?.payload).toMatchObject({ membership_deactivation_count: 1 });
+  });
+
+  it("deactivates a linked membership when current-term eligibility disappears", async () => {
+    const queries: FakeQuery[] = [];
+    const appClient = createFakeAppClient((query) => {
+      queries.push(query);
+      if (query.table === "staff_role_assignments") return ok([{ role_key: "super_admin" }]);
+      if (query.table === "hubspot_sync_runs" && query.operation === "select") {
+        return ok(query.filterValue("status") === "succeeded"
+          ? [{ checkpoint_after: "2026-07-20T12:00:00.000Z" }]
+          : []);
+      }
+      if (query.table === "hubspot_sync_runs" && query.operation === "insert") return ok({ id: "run-term-expired" });
+      if (query.table === "chapters" && query.operation === "select") {
+        return ok([{ id: "chapter-1", hubspot_company_id: "company-1", status: "active" }]);
+      }
+      if (query.table === "profiles" && query.operation === "select") {
+        return ok([{ id: "profile-1", hubspot_contact_id: "contact-1" }]);
+      }
+      if (query.table === "memberships" && query.operation === "select") {
+        return ok([{
+          id: "membership-1",
+          chapter_id: "chapter-1",
+          status: "approved",
+          hubspot_association_key: "contact-1:company-1",
+        }]);
+      }
+      return ok([]);
+    });
+
+    await expect(runHubSpotReadSync("super-1", "incremental", {
+      env: enabledEnv,
+      appClient: appClient as never,
+      hubspotClient: {
+        ...oneCompanyClient(),
+        readContactsWithCompanies: async () => [{
+          ...oneContact(),
+          activeYears: ["2024-2025"],
+        }],
+      },
+      now: () => new Date("2026-07-20T13:30:00.000Z"),
+    })).resolves.toMatchObject({
+      success: true,
+      code: "hubspot_sync_succeeded",
+      counts: { membershipDeactivations: 1 },
+    });
+    expect(queries).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        table: "hubspot_membership_imports",
+        operation: "upsert",
+        payload: expect.objectContaining({ reconciliation_status: "ignored" }),
+      }),
+      expect.objectContaining({
+        table: "memberships",
+        operation: "update",
+        payload: { status: "inactive" },
+      }),
+      expect.objectContaining({
+        table: "audit_logs",
+        operation: "insert",
+        payload: expect.objectContaining({ action: "hubspot_membership_deactivated" }),
+      }),
+    ]));
   });
 
   it("deactivates active HubSpot-linked chapters missing from a complete backfill", async () => {
@@ -1195,6 +1305,12 @@ describe("HubSpot read sync foundation", () => {
           firstName: "Matched",
           lastName: "Member",
           graduationYear: 2028,
+          activeYears: ["2026-2027"],
+          eboard: false,
+          eboardYears: [],
+          eboardPosition: null,
+          involvementTypes: ["QR contact"],
+          qrYears: [],
           updatedAt: "2026-07-19T21:00:00.000Z",
           companyIds: ["company-1"],
           source: { id: "contact-matched" },
@@ -1205,6 +1321,12 @@ describe("HubSpot read sync foundation", () => {
           firstName: "Unmatched",
           lastName: "Member",
           graduationYear: 2029,
+          activeYears: ["2026-2027"],
+          eboard: false,
+          eboardYears: [],
+          eboardPosition: null,
+          involvementTypes: ["QR contact"],
+          qrYears: [],
           updatedAt: "2026-07-19T21:00:00.000Z",
           companyIds: ["company-1"],
           source: { id: "contact-unmatched" },
@@ -1585,7 +1707,7 @@ describe("HubSpot read sync foundation", () => {
       return { data: [], count: pending ? 4 : 10, error: null };
     });
     const workspace = await getAdminHubSpotSyncWorkspace({
-      getSyncConfig: () => ({ enabled: true, environment: "production", reason: "Enabled." }),
+      getSyncConfig: () => ({ enabled: true, environment: "production", activeMemberTerms: ["2026-2027"], reason: "Enabled." }),
       createServerClient: async () => ({
         client: appClient as never,
         config: { enabled: true, mode: "production_supabase", environment: "production", url: "https://example.supabase.co", anonKey: "browser", isLocalOnly: false, isHostedStaging: false, reason: "Enabled." },
@@ -1600,7 +1722,7 @@ describe("HubSpot read sync foundation", () => {
     });
 
     const unavailable = await getAdminHubSpotSyncWorkspace({
-      getSyncConfig: () => ({ enabled: false, environment: "local", reason: "Disabled." }),
+      getSyncConfig: () => ({ enabled: false, environment: "local", activeMemberTerms: [], reason: "Disabled." }),
       createServerClient: async () => ({ client: null, config: { enabled: false, mode: "disabled", environment: "local", isLocalOnly: true, isHostedStaging: false, reason: "Auth unavailable." } }),
     });
     expect(unavailable).toMatchObject({ canRead: false, message: "Auth unavailable." });
@@ -1611,7 +1733,7 @@ describe("HubSpot read sync foundation", () => {
         : ok([])
     ));
     const queryFailure = await getAdminHubSpotSyncWorkspace({
-      getSyncConfig: () => ({ enabled: true, environment: "production", reason: "Enabled." }),
+      getSyncConfig: () => ({ enabled: true, environment: "production", activeMemberTerms: ["2026-2027"], reason: "Enabled." }),
       createServerClient: async () => ({
         client: queryFailureClient as never,
         config: { enabled: true, mode: "production_supabase", environment: "production", url: "https://example.supabase.co", anonKey: "browser", isLocalOnly: false, isHostedStaging: false, reason: "Enabled." },
@@ -1624,7 +1746,7 @@ describe("HubSpot read sync foundation", () => {
 
     const emptyClient = createFakeAppClient(() => ({ data: null, count: null, error: null }));
     const empty = await getAdminHubSpotSyncWorkspace({
-      getSyncConfig: () => ({ enabled: false, environment: "production", reason: "Sync disabled." }),
+      getSyncConfig: () => ({ enabled: false, environment: "production", activeMemberTerms: [], reason: "Sync disabled." }),
       createServerClient: async () => ({
         client: emptyClient as never,
         config: { enabled: true, mode: "production_supabase", environment: "production", url: "https://example.supabase.co", anonKey: "browser", isLocalOnly: false, isHostedStaging: false, reason: "Enabled." },
@@ -1673,6 +1795,15 @@ describe("HubSpot read sync foundation", () => {
     expect(membershipReconciliationSql).toContain("auth.role() = 'service_role'");
     expect(membershipReconciliationSql).toContain("HubSpot sync cannot rewrite membership identity or metadata");
     expect(membershipReconciliationSql).toContain("new.status not in ('approved', 'inactive')");
+
+    const currentTermSql = readFileSync(
+      join(process.cwd(), "supabase/migrations/20260723040000_hubspot_current_term_membership_qualification.sql"),
+      "utf8",
+    );
+    expect(currentTermSql).toContain("'role_key'");
+    expect(currentTermSql).toContain("'role_term_label'");
+    expect(currentTermSql).toContain("HubSpot sync cannot relink an existing membership association");
+    expect(currentTermSql).toContain("HubSpot sync can only assign an approved chapter role");
 
     const chapterReconciliationSql = readFileSync(
       join(process.cwd(), "supabase/migrations/20260720184500_hubspot_chapter_reconciliation.sql"),
@@ -1771,6 +1902,12 @@ function oneContact() {
     firstName: "Member",
     lastName: "One",
     graduationYear: 2028,
+    activeYears: ["2026-2027"],
+    eboard: false,
+    eboardYears: [],
+    eboardPosition: null,
+    involvementTypes: ["QR contact"],
+    qrYears: [],
     updatedAt: "2026-07-19T21:00:00.000Z",
     companyIds: ["company-1"],
     source: { id: "contact-1" },

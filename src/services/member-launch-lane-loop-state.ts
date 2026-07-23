@@ -15,11 +15,12 @@ export type MemberLaunchLaneLoopState = {
 
 export function getMemberLaunchLaneLoopState(input: {
   alreadyRecorded: boolean;
+  attendanceRecorded: boolean;
   attendanceCount: number;
   memberPointsAwarded: number;
   hasLumaLink: boolean;
 }): MemberLaunchLaneLoopState {
-  if (input.memberPointsAwarded > 0) {
+  if (input.attendanceRecorded && input.memberPointsAwarded > 0) {
     return {
       stage: "points_awarded",
       statusLabel: "Points awarded",
@@ -31,7 +32,7 @@ export function getMemberLaunchLaneLoopState(input: {
     };
   }
 
-  if (input.alreadyRecorded && input.attendanceCount > 0) {
+  if (input.attendanceRecorded) {
     return {
       stage: "attendance_confirmed",
       statusLabel: "Attendance confirmed; points pending",
