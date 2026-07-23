@@ -91,6 +91,149 @@ describe("member recognition", () => {
     expect(recognition.leaderboard[0]?.id).toBe("tie-b");
   });
 
+  it("builds the hosted leaderboard, campaign totals, and recent activity from app-owned rows", () => {
+    const actor = getMockLocalActorContext("member.a@mymedlife.test");
+    const now = "2026-07-23T12:00:00.000Z";
+    const liveRows = [
+      {
+        id: "points-sofia-1",
+        chapter_id: data.chapter.id,
+        campaign_id: data.campaign.id,
+        assignment_id: null,
+        chapter_event_id: "event-1",
+        evidence_item_id: null,
+        approval_id: null,
+        awarded_to_user_id: "member-a",
+        points_delta: 20,
+        reason: "Attendance confirmed for Community Health Night.",
+        created_by: "leader-1",
+        created_at: "2026-07-22T18:00:00.000Z",
+      },
+      {
+        id: "points-sofia-2",
+        chapter_id: data.chapter.id,
+        campaign_id: data.campaign.id,
+        assignment_id: null,
+        chapter_event_id: null,
+        evidence_item_id: "evidence-1",
+        approval_id: "approval-1",
+        awarded_to_user_id: "member-a",
+        points_delta: 10,
+        reason: "Approved chapter story contribution.",
+        created_by: "coach-1",
+        created_at: "2026-07-23T12:00:00.000Z",
+      },
+      {
+        id: "points-nia-1",
+        chapter_id: data.chapter.id,
+        campaign_id: data.campaign.id,
+        assignment_id: null,
+        chapter_event_id: "event-1",
+        evidence_item_id: null,
+        approval_id: null,
+        awarded_to_user_id: "committee-member",
+        points_delta: 20,
+        reason: "Attendance confirmed for Community Health Night.",
+        created_by: "leader-1",
+        created_at: now,
+      },
+    ];
+    const liveData = {
+      ...data,
+      source: {
+        mode: "supabase" as const,
+        status: "supabase_ready" as const,
+        message: "Reading hosted production Supabase data.",
+      },
+      memberships: [
+        {
+          id: "membership-sofia",
+          user_id: "member-a",
+          chapter_id: data.chapter.id,
+          role_key: "general_member" as const,
+          status: "approved" as const,
+          requested_at: now,
+          approved_at: now,
+          approved_by: "admin-1",
+          created_at: now,
+          updated_at: now,
+        },
+        {
+          id: "membership-nia",
+          user_id: "committee-member",
+          chapter_id: data.chapter.id,
+          role_key: "action_committee_member" as const,
+          status: "approved" as const,
+          requested_at: now,
+          approved_at: now,
+          approved_by: "admin-1",
+          created_at: now,
+          updated_at: now,
+        },
+        {
+          id: "membership-nia-chair",
+          user_id: "committee-member",
+          chapter_id: data.chapter.id,
+          role_key: "action_committee_chair" as const,
+          status: "approved" as const,
+          requested_at: now,
+          approved_at: now,
+          approved_by: "admin-1",
+          created_at: now,
+          updated_at: now,
+        },
+      ],
+      allPointsEventRows: liveRows,
+      pointsEventRows: liveRows,
+    };
+
+    const recognition = getMemberRecognitionSummary(actor, liveData);
+
+    expect(recognition.pointsLedgerPosture).toBe("app_owned_readback");
+    expect(recognition.leaderboard).toEqual([
+      expect.objectContaining({
+        id: "member-a",
+        displayName: "Sofia Alvarez",
+        points: 30,
+        completedActions: 2,
+      }),
+      expect.objectContaining({
+        id: "committee-member",
+        displayName: "Nia Committee",
+        roleLabel: "Action Committee Chair",
+        points: 20,
+        completedActions: 1,
+      }),
+    ]);
+    expect(recognition.leaderboard.map((row) => row.displayName)).not.toContain(
+      "Aisha N.",
+    );
+    expect(recognition.selectedMember).toMatchObject({
+      displayName: "Sofia Alvarez",
+      points: 30,
+      rank: 1,
+    });
+    expect(recognition.campaignPoints).toEqual([
+      expect.objectContaining({
+        id: data.campaign.id,
+        label: data.campaign.name,
+        earned: 30,
+        available: null,
+      }),
+    ]);
+    expect(recognition.badges).toEqual([]);
+    expect(recognition.recentApprovedActions).toEqual([
+      expect.objectContaining({
+        title: "Approved chapter story contribution.",
+        pointsLabel: "+10 pts",
+      }),
+      expect.objectContaining({
+        title: "Attendance confirmed for Community Health Night.",
+        pointsLabel: "+20 pts",
+      }),
+    ]);
+  });
+
   it("does not assign the first mock leaderboard row to an unmatched signed-in actor", () => {
     const actor = getMissingProfileActorContext(
       "nick.ellis@medlifemovement.org",

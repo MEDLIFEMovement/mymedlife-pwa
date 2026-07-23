@@ -20,6 +20,11 @@ import type {
   MemberMobileEventType,
 } from "@/services/member-mobile-event-context";
 import type { LaunchLaneMemberPointsReadback } from "@/services/launch-lane-points-readback";
+import {
+  getMemberBadgeRows,
+  getMemberCampaignPointRows,
+  getMemberRecentApprovedActionRows,
+} from "@/services/member-points-screen";
 import type { MemberStory } from "@/services/member-stories-read-model";
 import type { MemberStoryReactionReadbackStatus } from "@/services/member-story-reactions";
 import {
@@ -63,6 +68,17 @@ export type MemberMobileIdentityContext = {
   pointsWeeklyLabel: string;
   pointsRankLabel: string;
   completedActions: number;
+  pointsLedgerPosture?: "mock_read_only" | "app_owned_readback";
+  campaignPointRows?: Array<{
+    campaign: string;
+    points: number;
+    available: number | null;
+  }>;
+  recentPointActions?: Array<{
+    action: string;
+    detail: string;
+    pointsLabel: string;
+  }>;
   leaderboardRows: Array<{
     rank: number;
     name: string;
@@ -81,6 +97,7 @@ const DEFAULT_MEMBER_IDENTITY_CONTEXT: MemberMobileIdentityContext = {
   pointsWeeklyLabel: "+75",
   pointsRankLabel: "#3",
   completedActions: 3,
+  pointsLedgerPosture: "mock_read_only",
   leaderboardRows: [
     { rank: 1, name: "TEST Aisha N.", role: "President", pts: 220 },
     { rank: 2, name: "TEST Marcus T.", role: "VP Outreach", pts: 185 },
@@ -1886,6 +1903,8 @@ function PointsLeaderboard({
   const hasLiveEventLoopPoints = Boolean(
     pointsReadback && pointsReadback.memberPointsAwarded > 0,
   );
+  const usesAppOwnedPoints =
+    memberContext.pointsLedgerPosture === "app_owned_readback";
   const leaderboardRows = getVisibleMemberLeaderboardRows(memberContext, 6);
   const campaignPointRows = getMemberCampaignPointRows(memberContext);
   const badges = getMemberBadgeRows(memberContext);
@@ -1893,14 +1912,26 @@ function PointsLeaderboard({
     memberContext,
     pointsReadback,
   );
-  const previewReadback: Record<MemberLoopSource, { title: string; detail: string }> = {
+  const previewReadback: Record<MemberLoopSource, { title: string; detail: string }> = usesAppOwnedPoints ? {
+    events: { title: "Opened from the event loop", detail: "RSVP, attendance, and points are read from the app-owned myMEDLIFE ledger. Rewards and external provider writes remain separate." },
+    home: { title: "Opened from home", detail: "This route preserves the home-to-events-to-points path and reads current app-owned points for the signed-in member." },
+    profile: { title: "Opened from your profile", detail: "This profile-to-points handoff reads the signed-in member's current app-owned points and chapter rank." },
+    points: { title: "App-owned points readback", detail: "Totals, recent awards, and chapter rank come from persisted myMEDLIFE points records. No reward claim or provider write runs here." },
+    stories: { title: "Opened from Stories", detail: "This route preserves story context while showing current app-owned points and chapter recognition." },
+  } : {
     events: { title: "Opened from the TEST event loop", detail: "This route-backed readback keeps the RSVP, attendance, and points loop visible. Leaderboard movement, rewards, and ledger writes stay preview-only until those writes are approved." },
     home: { title: "Opened from the TEST home walkthrough", detail: "This route-backed readback keeps the home-to-events-to-points student flow visible. Recognition stays preview-only and does not claim a live award, reward, or provider update." },
     profile: { title: "Opened from your TEST profile", detail: "This profile-to-points handoff stays route-backed and read-only. Recognition stays visible here while profile can hand you back into the next chapter event." },
     points: { title: "Preview-only recognition readback", detail: "This route shows TEST leaderboard and approved-action readback only. No live points awards, reward claims, or share sends run from this screen." },
     stories: { title: "Opened from the TEST stories feed", detail: "This route-backed readback keeps the stories-to-events-to-points loop visible. Recognition stays preview-only, and the mobile member shell keeps the same story context instead of dropping you into a generic fallback." },
   };
-  const continuityMap: Record<MemberLoopSource, readonly [string, string, string]> = {
+  const continuityMap: Record<MemberLoopSource, readonly [string, string, string]> = usesAppOwnedPoints ? {
+    events: ["Points are awarded from approved app-owned event and attendance records. Duplicate awards remain blocked.", returnEventId ? `/app/events/${returnEventId}?source=points` : "/app/events?source=points", returnEventId ? "Back to event detail" : "Back to events"],
+    home: ["Your current total and chapter rank come from app-owned points records.", returnEventId ? `/app/events/${returnEventId}?source=home` : "/app/events?source=home", returnEventId ? "Back to event detail" : "Find the next event"],
+    profile: ["Your profile and points views use the same signed-in app-owned identity and ledger.", returnEventId ? `/app/events/${returnEventId}?source=profile` : screenlessProfileHref("points", returnCampaign), returnEventId ? "Back to event detail" : "Back to your profile"],
+    stories: ["Story context is preserved while points remain backed by the myMEDLIFE ledger.", storyId ? `/app/stories?filter=${encodeURIComponent(resolveStoryFilter(storyFilter))}&story=${encodeURIComponent(storyId)}` : storyFilter ? `/app/stories?filter=${encodeURIComponent(storyFilter)}` : "/app/stories", "Back to Stories"],
+    points: ["Points come from approved myMEDLIFE activity. Rewards and external provider writes remain disabled until separately approved.", "/app/events?source=points", "See how to earn more points"],
+  } : {
     events: [
       "TEST points stay preview-only here, and this route keeps the event RSVP, check-in, and leaderboard handoff visible without claiming a live award sync.",
       returnEventId ? `/app/events/${returnEventId}?source=points` : "/app/events?source=points",
@@ -1953,8 +1984,12 @@ function PointsLeaderboard({
         <h1 className="text-white text-2xl font-extrabold mt-1">Points & Recognition</h1>
         <p className="text-blue-200 text-sm mt-1">
           {hasLiveEventLoopPoints
-            ? "Live TEST event-loop points from internal myMEDLIFE readback."
-            : "Preview-only TEST points come from route-backed member actions."}
+            ? usesAppOwnedPoints
+              ? "App-owned event-loop points for your signed-in account."
+              : "Live TEST event-loop points from internal myMEDLIFE readback."
+            : usesAppOwnedPoints
+              ? "Current points from the app-owned myMEDLIFE ledger."
+              : "Preview-only TEST points come from route-backed member actions."}
         </p>
 
         <div className="mt-5 grid grid-cols-3 gap-3">
@@ -1987,14 +2022,14 @@ function PointsLeaderboard({
         {hasLiveEventLoopPoints && pointsReadback ? (
           <Card className="border-emerald-200 bg-emerald-50">
             <p className="text-[0.68rem] font-bold uppercase tracking-[0.18em] text-emerald-700">
-              Live TEST points readback
+              {usesAppOwnedPoints ? "App-owned points readback" : "Live TEST points readback"}
             </p>
             <h2 className="mt-2 text-base font-extrabold text-foreground">
               {pointsReadback.eventTitle}
             </h2>
             <p className="mt-2 text-sm leading-6 text-muted-foreground">
               {pointsReadback.memberPointsAwarded} points are recorded for your
-              signed-in TEST member on this event. Attendance count is{" "}
+              {usesAppOwnedPoints ? "signed-in member" : "signed-in TEST member"} on this event. Attendance count is{" "}
               {pointsReadback.attendanceCount}, and duplicate check-ins stay
               blocked from awarding more points.
             </p>
@@ -2004,14 +2039,16 @@ function PointsLeaderboard({
         {returnEvent ? (
           <Card className="border-[#bfdbfe] bg-[#eff6ff]">
             <p className="text-[0.68rem] font-bold uppercase tracking-[0.18em] text-primary">
-              Exact TEST event readback
+              {usesAppOwnedPoints ? "Exact event readback" : "Exact TEST event readback"}
             </p>
             <h2 className="mt-2 text-base font-extrabold text-foreground">
               {returnEvent.title} brought you here
             </h2>
             <p className="mt-2 text-sm leading-6 text-muted-foreground">
               {hasLiveEventLoopPoints && pointsReadback
-                ? "This TEST event now has internal RSVP, attendance, and points readback for the signed-in member. Rewards and external provider writes still stay off."
+                ? usesAppOwnedPoints
+                  ? "This event now has app-owned RSVP, attendance, and points readback for the signed-in member. Rewards and external provider writes still stay off."
+                  : "This TEST event now has internal RSVP, attendance, and points readback for the signed-in member. Rewards and external provider writes still stay off."
                 : "This preview keeps the member loop compact: event detail, RSVP posture, check-in posture, and points readback all stay route-backed without pretending a live reward or attendance write happened."}
             </p>
             <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-3">
@@ -2019,19 +2056,19 @@ function PointsLeaderboard({
                 href={returnEventDetailHref}
                 className="rounded-2xl border border-[#bfdbfe] bg-white px-3 py-3 text-sm font-semibold text-foreground transition hover:bg-slate-50"
               >
-                Back to TEST event detail
+                {usesAppOwnedPoints ? "Back to event detail" : "Back to TEST event detail"}
               </Link>
               <Link
                 href={returnEventRsvpHref ?? continuity[1]}
                 className="rounded-2xl border border-[#bfdbfe] bg-white px-3 py-3 text-sm font-semibold text-foreground transition hover:bg-slate-50"
               >
-                Preview RSVP posture
+                {usesAppOwnedPoints ? "Open RSVP" : "Preview RSVP posture"}
               </Link>
               <Link
                 href={returnEventCheckInHref ?? continuity[1]}
                 className="rounded-2xl border border-[#bfdbfe] bg-white px-3 py-3 text-sm font-semibold text-foreground transition hover:bg-slate-50"
               >
-                Preview check-in posture
+                {usesAppOwnedPoints ? "Open check-in" : "Preview check-in posture"}
               </Link>
             </div>
           </Card>
@@ -2042,15 +2079,23 @@ function PointsLeaderboard({
           <SLabel>Points by Campaign</SLabel>
           <Card>
             <div className="space-y-3">
-              {campaignPointRows.map((c) => (
+              {campaignPointRows.length > 0 ? campaignPointRows.map((c) => (
                 <div key={c.campaign}>
                   <div className="flex justify-between text-xs mb-1.5">
                     <span className="text-muted-foreground">{c.campaign}</span>
-                    <span className="font-bold text-foreground font-[DM_Mono,monospace]">{c.pts} / {c.max} pts</span>
+                    <span className="font-bold text-foreground font-[DM_Mono,monospace]">
+                      {c.max === null ? `${c.pts} pts` : `${c.pts} / ${c.max} pts`}
+                    </span>
                   </div>
-                  <Bar pct={Math.round((c.pts / c.max) * 100)} color={c.color} />
+                  {c.max === null ? null : (
+                    <Bar pct={Math.round((c.pts / c.max) * 100)} color={c.color} />
+                  )}
                 </div>
-              ))}
+              )) : (
+                <p className="text-sm text-muted-foreground">
+                  No app-owned campaign points have been recorded for this member yet.
+                </p>
+              )}
             </div>
           </Card>
         </div>
@@ -2058,8 +2103,9 @@ function PointsLeaderboard({
         {/* Badges */}
         <div>
           <SLabel>Badges Earned</SLabel>
-          <div className="grid grid-cols-2 gap-2.5">
-            {badges.map((b) => (
+          {badges.length > 0 ? (
+            <div className="grid grid-cols-2 gap-2.5">
+              {badges.map((b) => (
               <Card key={b.name} className={cn(!b.earned && "opacity-40")}>
                 <div className="flex items-start gap-2.5">
                   <div className={cn("w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0", b.earned ? "bg-accent" : "bg-muted")}>
@@ -2071,13 +2117,25 @@ function PointsLeaderboard({
                   </div>
                 </div>
               </Card>
-            ))}
-          </div>
+              ))}
+            </div>
+          ) : (
+            <Card>
+              <p className="text-sm font-semibold text-foreground">
+                No app-owned badges are configured.
+              </p>
+              <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                The app will not infer badges from point totals until a real badge rule and award record exist.
+              </p>
+            </Card>
+          )}
         </div>
 
         {/* Leaderboard */}
         <div>
-          <SLabel>Chapter Leaderboard — TEST Rush Month</SLabel>
+          <SLabel>
+            {usesAppOwnedPoints ? "Chapter Leaderboard" : "Chapter Leaderboard — TEST Rush Month"}
+          </SLabel>
           <Card>
             {leaderboardRows.map((m) => (
               <div
@@ -2104,7 +2162,9 @@ function PointsLeaderboard({
 
         {/* Recent approved actions */}
         <div>
-          <SLabel>Recent Approved Actions</SLabel>
+          <SLabel>
+            {usesAppOwnedPoints ? "Recent Points Activity" : "Recent Approved Actions"}
+          </SLabel>
           <div className="space-y-2">
             {recentApprovedActions.length > 0 ? recentApprovedActions.map((a) => (
               <Card key={a.action} padding={false}>
@@ -2121,9 +2181,13 @@ function PointsLeaderboard({
               </Card>
             )) : (
               <Card>
-                <p className="text-sm font-semibold text-foreground">No approved TEST actions yet</p>
+                <p className="text-sm font-semibold text-foreground">
+                  {usesAppOwnedPoints ? "No recorded point activity yet" : "No approved TEST actions yet"}
+                </p>
                 <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-                  RSVP and check-in previews stay visible, but no completed action, attendance, or points award is counted for this signed-in member yet.
+                  {usesAppOwnedPoints
+                    ? "No app-owned point award is recorded for this signed-in member yet."
+                    : "RSVP and check-in previews stay visible, but no completed action, attendance, or points award is counted for this signed-in member yet."}
                 </p>
               </Card>
             )}
@@ -2153,80 +2217,6 @@ function PointsLeaderboard({
   );
 }
 
-function getMemberCampaignPointRows(memberContext: MemberMobileIdentityContext) {
-  if (memberContext.pointsTotal <= 0) {
-    return [
-      { campaign: "TEST Rush Month", pts: 0, max: 150, color: "bg-primary" },
-      { campaign: "TEST Spring Showcase (prev.)", pts: 0, max: 100, color: "bg-emerald-500" },
-      { campaign: "TEST Community Health Fair", pts: 0, max: 80, color: "bg-amber-400" },
-    ];
-  }
-  return [
-    { campaign: "TEST Rush Month", pts: Math.min(memberContext.pointsTotal, 75), max: 150, color: "bg-primary" },
-    {
-      campaign: "TEST Spring Showcase (prev.)",
-      pts: Math.min(Math.max(memberContext.pointsTotal - 75, 0), 45),
-      max: 100,
-      color: "bg-emerald-500",
-    },
-    {
-      campaign: "TEST Community Health Fair",
-      pts: Math.min(Math.max(memberContext.pointsTotal - 120, 0), 25),
-      max: 80,
-      color: "bg-amber-400",
-    },
-  ];
-}
-
-function getMemberBadgeRows(memberContext: MemberMobileIdentityContext) {
-  return [
-    {
-      name: "TEST Rush Starter",
-      desc: "Complete your first TEST Rush Month action",
-      earned: memberContext.completedActions >= 1,
-    },
-    {
-      name: "TEST Connector",
-      desc: "Invite 10+ TEST members to a TEST chapter event",
-      earned: memberContext.pointsTotal >= 50,
-    },
-    {
-      name: "TEST Evidence Pro",
-      desc: "3 TEST approvals in a single week",
-      earned: memberContext.completedActions >= 3,
-    },
-    {
-      name: "TEST Chapter MVP",
-      desc: "Top 3 on the TEST leaderboard for 2 weeks",
-      earned: memberContext.pointsRankLabel === "#1" || memberContext.pointsRankLabel === "#2" || memberContext.pointsRankLabel === "#3",
-    },
-  ];
-}
-
-function getMemberRecentApprovedActionRows(
-  memberContext: MemberMobileIdentityContext,
-  pointsReadback: LaunchLaneMemberPointsReadback | null = null,
-) {
-  if (pointsReadback && pointsReadback.memberPointsAwarded > 0) {
-    return [
-      {
-        action: `Checked in to ${pointsReadback.eventTitle}`,
-        pts: pointsReadback.memberPointsAwarded,
-        time: "Recorded in myMEDLIFE internal TEST ledger",
-      },
-    ];
-  }
-
-  if (memberContext.completedActions <= 0) {
-    return [];
-  }
-
-  return [
-    { action: "Share TEST Rush Week flyer on Instagram", pts: 20, time: "Approved 2h ago in preview" },
-    { action: "Attend TEST Bruin Walk tabling shift", pts: 15, time: "Approved yesterday in preview" },
-    { action: "Add 5 TEST leads to the TEST chapter spreadsheet", pts: 25, time: "Approved 3d ago in preview" },
-  ].slice(0, memberContext.completedActions);
-}
 // ─── SCREEN · Events ──────────────────────────────────────────────────────────
 // ─── SCREEN · Events Feed ────────────────────────────────────────────────────
 // ── Event + Campaign data ────────────────────────────────────────────────────
