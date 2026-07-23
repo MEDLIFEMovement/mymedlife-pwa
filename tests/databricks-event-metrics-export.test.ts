@@ -59,6 +59,14 @@ describe("Databricks event metrics export", () => {
     });
     expect(getDatabricksEventMetricsExportConfig({
       ...enabledEnv,
+      SUPABASE_SERVICE_ROLE_KEY: undefined,
+    })).toMatchObject({
+      enabled: false,
+      reason:
+        "Databricks export is disabled because the server-only Supabase client is incomplete.",
+    });
+    expect(getDatabricksEventMetricsExportConfig({
+      ...enabledEnv,
       DATABRICKS_HOST: "https://example.com",
     })).toMatchObject({
       enabled: false,
@@ -82,6 +90,20 @@ describe("Databricks event metrics export", () => {
       MYMEDLIFE_ALLOW_PRODUCTION_DATABRICKS_EVENT_METRICS_EXPORT: undefined,
       MYMEDLIFE_ALLOW_STAGING_DATABRICKS_EVENT_METRICS_EXPORT: "true",
     })).toMatchObject({ enabled: true, environment: "staging" });
+    expect(getDatabricksEventMetricsExportConfig({
+      ...enabledEnv,
+      MYMEDLIFE_AUTH_MODE: undefined,
+      MYMEDLIFE_ALLOW_PRODUCTION_DATABRICKS_EVENT_METRICS_EXPORT: undefined,
+      MYMEDLIFE_ALLOW_LOCAL_DATABRICKS_EVENT_METRICS_EXPORT: "true",
+    })).toMatchObject({ enabled: true, environment: "local" });
+    expect(getDatabricksEventMetricsExportConfig({
+      ...enabledEnv,
+      DATABRICKS_HOST: "https://%",
+    })).toMatchObject({ enabled: false, host: null });
+    expect(createDatabricksEventMetricsClient({
+      ...enabledEnv,
+      MYMEDLIFE_ENABLE_DATABRICKS_EVENT_METRICS_EXPORT: "false",
+    })).toBeNull();
   });
 
   it("creates the Delta read model and merges a parameterized aggregate payload", async () => {
@@ -235,6 +257,62 @@ describe("Databricks event metrics export", () => {
       batchKey: "batch-network-failure",
       exportedAt: "2026-07-23T18:00:00.000Z",
     })).rejects.toThrow("Databricks request failed after network retries.");
+  });
+
+  it("retries provider throttling and fails closed for invalid or unfinished statements", async () => {
+    const throttledFetch = vi.fn()
+      .mockResolvedValueOnce(new Response("busy", {
+        status: 429,
+        headers: { "retry-after": "0" },
+      }))
+      .mockResolvedValueOnce(jsonResponse({
+        statement_id: "10000000-0000-4000-8000-000000000081",
+        status: { state: "SUCCEEDED" },
+      }))
+      .mockResolvedValueOnce(jsonResponse({
+        statement_id: "10000000-0000-4000-8000-000000000082",
+        status: { state: "SUCCEEDED" },
+      }));
+    const throttled = createDatabricksEventMetricsClient(enabledEnv, {
+      fetchImpl: throttledFetch,
+      waitImpl: async () => undefined,
+    });
+    await expect(throttled?.upsertEventMetrics({
+      rows: [exportMetric()],
+      batchKey: "batch-throttled",
+      exportedAt: "2026-07-23T18:00:00.000Z",
+    })).resolves.toEqual({
+      statementId: "10000000-0000-4000-8000-000000000082",
+    });
+    expect(throttledFetch).toHaveBeenCalledTimes(3);
+
+    const invalidStatement = createDatabricksEventMetricsClient(enabledEnv, {
+      fetchImpl: vi.fn().mockResolvedValue(jsonResponse({
+        statement_id: "private invalid statement",
+        status: { state: "SUCCEEDED" },
+      })),
+      waitImpl: async () => undefined,
+    });
+    await expect(invalidStatement?.upsertEventMetrics({
+      rows: [exportMetric()],
+      batchKey: "batch-invalid-statement",
+      exportedAt: "2026-07-23T18:00:00.000Z",
+    })).rejects.toThrow("Databricks did not return a valid statement id.");
+
+    const unfinished = createDatabricksEventMetricsClient(enabledEnv, {
+      fetchImpl: vi.fn().mockImplementation(async () => jsonResponse({
+        statement_id: "10000000-0000-4000-8000-000000000083",
+        status: { state: "PENDING" },
+      })),
+      waitImpl: async () => undefined,
+    });
+    await expect(unfinished?.upsertEventMetrics({
+      rows: [exportMetric()],
+      batchKey: "batch-timeout",
+      exportedAt: "2026-07-23T18:00:00.000Z",
+    })).rejects.toThrow(
+      "Databricks statement did not finish before the export timeout.",
+    );
   });
 
   it("exports one validated app-owned aggregate snapshot with audit and checkpoint readback", async () => {
@@ -701,6 +779,405 @@ describe("Databricks event metrics export", () => {
     ]));
   });
 
+  it("fails closed for control-plane read, lock, checkpoint, replay, and run-creation errors", async () => {
+    const databricksClient = { upsertEventMetrics: vi.fn() };
+
+    await expect(runDatabricksEventMetricsExport(
+      null,
+      "backfill",
+      {
+        env: enabledEnv,
+        appClient: createFakeAppClient(() => ok([])) as never,
+        databricksClient,
+      },
+    )).resolves.toMatchObject({ success: false, code: "missing_auth" });
+    await expect(runDatabricksEventMetricsExport(
+      "actor-1",
+      "incremental",
+      {
+        env: enabledEnv,
+        appClient: createFakeAppClient(() => ok([])) as never,
+        databricksClient,
+        triggerSource: "replay",
+      },
+    )).resolves.toMatchObject({ success: false, code: "server_error" });
+
+    const roleReadFailure = createFakeAppClient((query) =>
+      query.table === "staff_role_assignments"
+        ? failedResult("role read failed")
+        : ok([])
+    );
+    await expect(runDatabricksEventMetricsExport(
+      "actor-2",
+      "backfill",
+      {
+        env: enabledEnv,
+        appClient: roleReadFailure as never,
+        databricksClient,
+      },
+    )).resolves.toMatchObject({ success: false, code: "server_error" });
+
+    const recoveryFailure = createFakeAppClient((query) => {
+      if (query.table === "staff_role_assignments") {
+        return ok([{ role_key: "ds_admin" }]);
+      }
+      if (
+        query.table === "warehouse_export_runs" &&
+        query.operation === "update"
+      ) {
+        return failedResult("recovery failed");
+      }
+      return ok([]);
+    });
+    await expect(runDatabricksEventMetricsExport(
+      "actor-3",
+      "backfill",
+      {
+        env: enabledEnv,
+        appClient: recoveryFailure as never,
+        databricksClient,
+      },
+    )).resolves.toMatchObject({ success: false, code: "server_error" });
+
+    const lockReadFailure = createFakeAppClient((query) => {
+      if (query.table === "staff_role_assignments") {
+        return ok([{ role_key: "ds_admin" }]);
+      }
+      if (
+        query.table === "warehouse_export_runs" &&
+        query.operation === "select"
+      ) {
+        return failedResult("lock read failed");
+      }
+      return ok([]);
+    });
+    await expect(runDatabricksEventMetricsExport(
+      "actor-4",
+      "backfill",
+      {
+        env: enabledEnv,
+        appClient: lockReadFailure as never,
+        databricksClient,
+      },
+    )).resolves.toMatchObject({ success: false, code: "server_error" });
+
+    const replayReadFailure = createFakeAppClient((query) => {
+      if (query.table === "staff_role_assignments") {
+        return ok([{ role_key: "super_admin" }]);
+      }
+      if (
+        query.table === "warehouse_export_runs" &&
+        query.operation === "select" &&
+        query.filters.some((filter) => filter.column === "id")
+      ) {
+        return failedResult("replay read failed");
+      }
+      return ok([]);
+    });
+    await expect(runDatabricksEventMetricsExport(
+      "actor-5",
+      "incremental",
+      {
+        env: enabledEnv,
+        appClient: replayReadFailure as never,
+        databricksClient,
+        triggerSource: "replay",
+        retryOfRunId: "failed-run",
+      },
+    )).resolves.toMatchObject({ success: false, code: "server_error" });
+
+    const invalidReplay = createFakeAppClient((query) => {
+      if (query.table === "staff_role_assignments") {
+        return ok([{ role_key: "super_admin" }]);
+      }
+      return ok([]);
+    });
+    await expect(runDatabricksEventMetricsExport(
+      "actor-6",
+      "incremental",
+      {
+        env: enabledEnv,
+        appClient: invalidReplay as never,
+        databricksClient,
+        triggerSource: "replay",
+        retryOfRunId: "succeeded-run",
+      },
+    )).resolves.toMatchObject({ success: false, code: "server_error" });
+
+    const checkpointFailure = createFakeAppClient((query) => {
+      if (query.table === "staff_role_assignments") {
+        return ok([{ role_key: "ds_admin" }]);
+      }
+      if (
+        query.table === "warehouse_export_runs" &&
+        query.operation === "select" &&
+        query.filters.some(
+          (filter) => filter.column === "status" &&
+            filter.value === "succeeded",
+        )
+      ) {
+        return failedResult("checkpoint read failed");
+      }
+      return ok([]);
+    });
+    await expect(runDatabricksEventMetricsExport(
+      "actor-7",
+      "incremental",
+      {
+        env: enabledEnv,
+        appClient: checkpointFailure as never,
+        databricksClient,
+      },
+    )).resolves.toMatchObject({ success: false, code: "server_error" });
+
+    for (const insertError of [
+      { message: "duplicate key", code: "23505" },
+      { message: "run insert failed" },
+    ]) {
+      const createFailure = createFakeAppClient((query) => {
+        if (query.table === "staff_role_assignments") {
+          return ok([{ role_key: "ds_admin" }]);
+        }
+        if (
+          query.table === "warehouse_export_runs" &&
+          query.operation === "insert"
+        ) {
+          return { data: null, error: insertError };
+        }
+        return ok([]);
+      });
+      await expect(runDatabricksEventMetricsExport(
+        "actor-8",
+        "backfill",
+        {
+          env: enabledEnv,
+          appClient: createFailure as never,
+          databricksClient,
+        },
+      )).resolves.toMatchObject({
+        success: false,
+        code: insertError.code === "23505"
+          ? "export_already_running"
+          : "server_error",
+      });
+    }
+  });
+
+  it("records page, heartbeat, finalization, and replay-cleanup failures honestly", async () => {
+    const baseHandler = (query: FakeQuery) => {
+      if (query.table === "staff_role_assignments") {
+        return ok([{ role_key: "ds_admin" }]);
+      }
+      if (
+        query.table === "warehouse_export_runs" &&
+        query.operation === "select"
+      ) {
+        return ok([]);
+      }
+      if (
+        query.table === "warehouse_export_runs" &&
+        query.operation === "insert"
+      ) {
+        return ok({ id: "10000000-0000-4000-8000-000000000091" });
+      }
+      return ok([]);
+    };
+    const rpcFailure = createFakeAppClient(
+      baseHandler,
+      vi.fn().mockResolvedValue({
+        data: null,
+        error: { message: "snapshot read failed" },
+      }),
+    );
+    await expect(runDatabricksEventMetricsExport(
+      "actor-9",
+      "backfill",
+      {
+        env: enabledEnv,
+        appClient: rpcFailure as never,
+        databricksClient: { upsertEventMetrics: vi.fn() },
+      },
+    )).resolves.toMatchObject({ success: false, code: "server_error" });
+
+    const oversizedPage = createFakeAppClient(
+      baseHandler,
+      vi.fn().mockResolvedValue({
+        data: Array.from({ length: 501 }, () => metricRow()),
+        error: null,
+      }),
+    );
+    await expect(runDatabricksEventMetricsExport(
+      "actor-10",
+      "backfill",
+      {
+        env: enabledEnv,
+        appClient: oversizedPage as never,
+        databricksClient: { upsertEventMetrics: vi.fn() },
+      },
+    )).resolves.toMatchObject({ success: false, code: "server_error" });
+
+    let heartbeatUpdates = 0;
+    const heartbeatFailure = createFakeAppClient((query) => {
+      const base = baseHandler(query);
+      if (
+        query.table === "warehouse_export_runs" &&
+        query.operation === "update" &&
+        !("status" in (query.payload as Record<string, unknown>))
+      ) {
+        heartbeatUpdates += 1;
+        if (heartbeatUpdates === 1) return failedResult("heartbeat failed");
+      }
+      return base;
+    }, vi.fn().mockResolvedValue({ data: [], error: null }));
+    await expect(runDatabricksEventMetricsExport(
+      "actor-11",
+      "backfill",
+      {
+        env: enabledEnv,
+        appClient: heartbeatFailure as never,
+        databricksClient: { upsertEventMetrics: vi.fn() },
+      },
+    )).resolves.toMatchObject({ success: false, code: "server_error" });
+
+    const finalizationFailure = createFakeAppClient((query) => {
+      const base = baseHandler(query);
+      if (
+        query.table === "warehouse_export_runs" &&
+        query.operation === "update" &&
+        (query.payload as { completed_at?: unknown }).completed_at &&
+        ["succeeded", "failed", "partial"].includes(
+          String((query.payload as { status?: unknown }).status ?? ""),
+        )
+      ) {
+        return failedResult("finalization failed");
+      }
+      return base;
+    }, vi.fn().mockResolvedValue({ data: [], error: null }));
+    await expect(runDatabricksEventMetricsExport(
+      "actor-12",
+      "backfill",
+      {
+        env: enabledEnv,
+        appClient: finalizationFailure as never,
+        databricksClient: { upsertEventMetrics: vi.fn() },
+      },
+    )).resolves.toMatchObject({ success: false, code: "server_error" });
+
+    const replayQueries: FakeQuery[] = [];
+    const replayCleanupFailure = createFakeAppClient((query) => {
+      replayQueries.push(query);
+      if (query.table === "staff_role_assignments") {
+        return ok([{ role_key: "super_admin" }]);
+      }
+      if (
+        query.table === "warehouse_export_runs" &&
+        query.operation === "select"
+      ) {
+        return query.filters.some(
+          (filter) => filter.column === "id" && filter.value === "failed-run",
+        )
+          ? ok([{
+            id: "failed-run",
+            mode: "backfill",
+            status: "failed",
+            attempt: 1,
+          }])
+          : ok([]);
+      }
+      if (
+        query.table === "warehouse_export_runs" &&
+        query.operation === "insert"
+      ) {
+        return ok({ id: "10000000-0000-4000-8000-000000000092" });
+      }
+      if (
+        query.table === "warehouse_export_failures" &&
+        query.operation === "update"
+      ) {
+        return failedResult("cleanup failed");
+      }
+      return ok([]);
+    }, vi.fn().mockResolvedValue({ data: [], error: null }));
+    await expect(runDatabricksEventMetricsExport(
+      "actor-13",
+      "backfill",
+      {
+        env: enabledEnv,
+        appClient: replayCleanupFailure as never,
+        databricksClient: { upsertEventMetrics: vi.fn() },
+        triggerSource: "replay",
+        retryOfRunId: "failed-run",
+      },
+    )).resolves.toMatchObject({
+      success: true,
+      plainEnglishMessage:
+        "The Databricks replay and checkpoint succeeded, but the prior failure rows still need operator cleanup.",
+    });
+    expect(replayQueries).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        table: "warehouse_export_failures",
+        operation: "insert",
+        payload: expect.objectContaining({
+          error_code: "databricks_replay_cleanup_failed",
+        }),
+      }),
+    ]));
+  });
+
+  it("rejects malformed snapshots without leaking malformed values", async () => {
+    for (const malformed of [
+      { data: { not: "an array" }, expected: "snapshot was malformed" },
+      { data: ["private malformed row"], expected: "row 1 was malformed" },
+      {
+        data: [metricRow({ campaign_id: "not-a-uuid" })],
+        expected: "row 1 failed validation",
+      },
+    ]) {
+      const queries: FakeQuery[] = [];
+      const appClient = createFakeAppClient((query) => {
+        queries.push(query);
+        if (query.table === "staff_role_assignments") {
+          return ok([{ role_key: "ds_admin" }]);
+        }
+        if (
+          query.table === "warehouse_export_runs" &&
+          query.operation === "select"
+        ) {
+          return ok([]);
+        }
+        if (
+          query.table === "warehouse_export_runs" &&
+          query.operation === "insert"
+        ) {
+          return ok({ id: "10000000-0000-4000-8000-000000000093" });
+        }
+        return ok([]);
+      }, vi.fn().mockResolvedValue({
+        data: malformed.data,
+        error: null,
+      }));
+      const result = await runDatabricksEventMetricsExport(
+        "actor-14",
+        "backfill",
+        {
+          env: enabledEnv,
+          appClient: appClient as never,
+          databricksClient: { upsertEventMetrics: vi.fn() },
+        },
+      );
+      expect(result).toMatchObject({ success: false, code: "server_error" });
+      const failure = queries.find(
+        (query) =>
+          query.table === "warehouse_export_failures" &&
+          query.operation === "insert",
+      );
+      expect(JSON.stringify(failure?.payload)).toContain(malformed.expected);
+      expect(JSON.stringify(failure?.payload)).not.toContain(
+        "private malformed row",
+      );
+    }
+  });
+
   it("keeps the SQL export aggregate-only, checkpointed, RLS-protected, and service-role-only", () => {
     const sql = readFileSync(
       join(
@@ -839,4 +1316,14 @@ function createFakeAppClient(
 
 function ok(data: unknown): FakeResult {
   return { data, error: null };
+}
+
+function failedResult(message: string, code?: string): FakeResult {
+  return {
+    data: null,
+    error: {
+      message,
+      ...(code ? { code } : {}),
+    },
+  };
 }

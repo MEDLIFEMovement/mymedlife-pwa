@@ -106,4 +106,15 @@ describe("Databricks export server actions", () => {
       { triggerSource: "replay", retryOfRunId: "failed-1" },
     );
   });
+
+  it("rejects replay without both a named run and exact confirmation", async () => {
+    const formData = new FormData();
+    formData.set("confirmation", "REPLAY DATABRICKS");
+
+    await expect(submitDatabricksReplayAction(formData)).rejects.toThrow(
+      "NEXT_REDIRECT:/admin/integrations/databricks?databricksResult=replay_confirmation_required",
+    );
+    expect(mocks.createLocalSupabaseServerClient).not.toHaveBeenCalled();
+    expect(mocks.runDatabricksEventMetricsExport).not.toHaveBeenCalled();
+  });
 });
