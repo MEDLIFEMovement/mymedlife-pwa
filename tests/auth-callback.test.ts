@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
+  buildAuthCallbackFailureRedirectPath,
   buildAuthCallbackRedirectPath,
+  getAuthCallbackFailureCode,
+  getAuthCallbackFailureMessage,
   isSupabaseEmailOtpType,
 } from "@/services/auth-callback";
 
@@ -50,5 +53,54 @@ describe("auth callback redirect logic", () => {
     expect(isSupabaseEmailOtpType("recovery")).toBe(true);
     expect(isSupabaseEmailOtpType("unknown")).toBe(false);
     expect(isSupabaseEmailOtpType(null)).toBe(false);
+  });
+
+  it("routes failed recovery callbacks back to the recovery form", () => {
+    expect(
+      buildAuthCallbackFailureRedirectPath(
+        {
+          next: "update-password",
+          redirectTo: "/app",
+          type: "recovery",
+        },
+        "recovery_invalid_or_expired",
+      ),
+    ).toBe(
+      "/auth/forgot-password?redirectTo=%2Fapp&recoveryError=recovery_invalid_or_expired",
+    );
+  });
+
+  it("keeps invite and generic callback failures distinct", () => {
+    expect(
+      getAuthCallbackFailureCode({
+        authAvailable: true,
+        next: null,
+        type: "invite",
+      }),
+    ).toBe("invite_invalid_or_expired");
+    expect(
+      getAuthCallbackFailureCode({
+        authAvailable: true,
+        next: null,
+        type: "magiclink",
+      }),
+    ).toBe("callback_invalid_or_expired");
+    expect(
+      getAuthCallbackFailureCode({
+        authAvailable: false,
+        next: "update-password",
+        type: "recovery",
+      }),
+    ).toBe("auth_unavailable");
+  });
+
+  it("uses safe user-facing callback failure copy", () => {
+    expect(
+      getAuthCallbackFailureMessage("recovery_invalid_or_expired"),
+    ).toContain("Request a new secure link");
+    expect(
+      getAuthCallbackFailureMessage("invite_invalid_or_expired"),
+    ).toContain("new invitation");
+    expect(getAuthCallbackFailureMessage("unknown")).toBeNull();
   });
 });

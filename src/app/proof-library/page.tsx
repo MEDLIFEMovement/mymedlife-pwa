@@ -4,14 +4,15 @@ import { redirect } from "next/navigation";
 import { ActionProofHandoffPanel } from "@/components/action-proof-handoff-panel";
 import { MemberProofStatusPanel } from "@/components/member-proof-status-panel";
 import { ProofSharingReviewPanel } from "@/components/proof-sharing-review-panel";
-import { assignments } from "@/data/mock-rush-month";
 import { getActionProofHandoffWorkspace } from "@/services/action-proof-handoff";
 import { getLandingRouteForActor } from "@/services/landing-route";
 import { buildLoginRedirectHref, shouldRedirectActorToLogin } from "@/services/login-route";
 import { getLocalActorContext } from "@/services/local-actor-context";
 import { getMemberProofStatusWorkspace } from "@/services/member-proof-status";
 import { getPrivateProofUploadWriteConfig } from "@/services/private-proof-upload-write";
+import { getAppOwnedProofLibraryItems } from "@/services/proof-library-readback";
 import { getProofSharingReviewBoard } from "@/services/proof-sharing-review";
+import { getReadOnlyAppData } from "@/services/read-only-app-data";
 import { canReadAssignment, getActorSurfaceFamily } from "@/services/role-visibility";
 import { getStaticRouteMetadata } from "@/services/static-route-metadata";
 
@@ -25,19 +26,38 @@ export default async function ProofLibraryPage() {
     redirect(buildLoginRedirectHref("/proof-library"));
   }
 
-  if (getActorSurfaceFamily(actor) === "ds_admin") {
+  const surfaceFamily = getActorSurfaceFamily(actor);
+
+  if (surfaceFamily === "ds_admin") {
     redirect(getLandingRouteForActor(actor));
   }
 
-  const proofStatus = getMemberProofStatusWorkspace(actor);
-  const proofBoard = getProofSharingReviewBoard(actor);
-  const representativeAssignment =
-    assignments.find((assignment) => canReadAssignment(actor, assignment)) ??
-    assignments[0];
-  const handoff = getActionProofHandoffWorkspace(actor, representativeAssignment);
+  const data = await getReadOnlyAppData(
+    surfaceFamily === "member" || surfaceFamily === "leader"
+      ? { actorUserId: actor.user.id }
+      : {},
+  );
+  const usesAppOwnedReadback = data.source.mode === "supabase";
+  const proofStatus = getMemberProofStatusWorkspace(
+    actor,
+    data.assignments,
+    data.evidenceItems,
+  );
+  const proofBoard = getProofSharingReviewBoard(
+    actor,
+    usesAppOwnedReadback ? getAppOwnedProofLibraryItems(data) : undefined,
+  );
+  const representativeAssignment = data.assignments.find((assignment) =>
+    canReadAssignment(actor, assignment),
+  );
+  const handoff = representativeAssignment
+    ? getActionProofHandoffWorkspace(actor, representativeAssignment)
+    : null;
   const backHref = getLandingRouteForActor(actor);
   const privateUploadEnabled = getPrivateProofUploadWriteConfig().enabled;
   const quickLinks = getQuickLinks(actor, privateUploadEnabled);
+  const sourceLabel = getSourceLabel(data, privateUploadEnabled);
+  const sourceSummary = getSourceSummary(data, privateUploadEnabled);
 
   return (
     <main
@@ -62,14 +82,12 @@ export default async function ProofLibraryPage() {
                 Review stories, proof posture, and blocked sharing lanes
               </h1>
               <p className="mt-3 max-w-3xl text-sm leading-6 text-white/64">
-                {privateUploadEnabled
-                  ? "Private source-media upload and removal are live for authenticated eligible roles. The remaining review panels stay preview-safe, while public publishing, provider sync, automation, and rollout evidence claims remain blocked."
-                  : "This route stays source-backed and preview-safe. Story review, proof context, consent posture, and future sharing notes remain visible, while public proof, provider sync, automation, and production evidence claims stay blocked."}
+                {sourceSummary}
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
               <span className="rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-1 text-xs font-semibold text-cyan-100">
-                {privateUploadEnabled ? "Mixed live / preview" : "Preview-only"}
+                {sourceLabel}
               </span>
               <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-xs font-semibold text-white/62">
                 No publish
@@ -95,13 +113,59 @@ export default async function ProofLibraryPage() {
         </div>
 
         <div className="mt-6 grid gap-6">
-          <ActionProofHandoffPanel workspace={handoff} />
+          {handoff ? (
+            <ActionProofHandoffPanel workspace={handoff} />
+          ) : (
+            <section className="rounded-2xl border border-white/10 bg-white/[0.04] p-5">
+              <h2 className="text-lg font-semibold text-white">
+                No visible app-owned assignment
+              </h2>
+              <p className="mt-2 text-sm leading-6 text-white/64">
+                There is no assignment available for this role and chapter. No
+                TEST assignment has been substituted.
+              </p>
+            </section>
+          )}
           <MemberProofStatusPanel workspace={proofStatus} />
           <ProofSharingReviewPanel board={proofBoard} />
         </div>
       </div>
     </main>
   );
+}
+
+function getSourceLabel(
+  data: Awaited<ReturnType<typeof getReadOnlyAppData>>,
+  privateUploadEnabled: boolean,
+) {
+  if (data.source.mode === "mock") {
+    return privateUploadEnabled ? "Mixed live / TEST preview" : "TEST preview";
+  }
+
+  if (data.source.status !== "supabase_ready") {
+    return "Operational data unavailable";
+  }
+
+  return privateUploadEnabled ? "App-owned / private upload" : "App-owned readback";
+}
+
+function getSourceSummary(
+  data: Awaited<ReturnType<typeof getReadOnlyAppData>>,
+  privateUploadEnabled: boolean,
+) {
+  if (data.source.mode === "supabase" && data.source.status !== "supabase_ready") {
+    return "Operational proof data is unavailable for this signed-in account. The page stays empty rather than substituting TEST assignments or evidence.";
+  }
+
+  if (data.source.mode === "supabase") {
+    return privateUploadEnabled
+      ? "Private source-media upload and removal are live for authenticated eligible roles. Proof status and review posture come from app-owned records, while public publishing, provider sync, automation, and rollout evidence claims remain blocked."
+      : "Proof status, consent posture, and HQ review context come from app-owned records. Public proof, provider sync, automation, and production evidence claims stay blocked.";
+  }
+
+  return privateUploadEnabled
+    ? "Private source-media upload and removal are live for authenticated eligible roles. The remaining review panels stay TEST-backed and preview-safe, while public publishing, provider sync, automation, and rollout evidence claims remain blocked."
+    : "This route stays TEST-backed and preview-safe. Story review, proof context, consent posture, and future sharing notes remain visible, while public proof, provider sync, automation, and production evidence claims stay blocked.";
 }
 
 function getQuickLinks(

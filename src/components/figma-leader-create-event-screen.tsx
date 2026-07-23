@@ -2,12 +2,16 @@
 
 /* eslint-disable react/no-unescaped-entities */
 
-import React, { useState } from "react";
+import React, { useState, useTransition } from "react";
 import {
   ChevronRight, Calendar, Target, Globe, Heart, Star,
   Users, BookOpen, Sparkles, Bell, Share2, Upload, CheckCircle
 } from "lucide-react";
 import { Activity, MessageSquare } from "lucide-react";
+import type {
+  LeaderEventCreateInput,
+  LeaderEventCreateResult,
+} from "@/services/leader-event-create-write";
 
 const BLUE = "#1A56E8";
 
@@ -83,13 +87,29 @@ export function CreateEventForm({
   onOpenHome,
   onOpenCommittees,
   onOpenEvents,
+  chapterId,
+  chapterName,
+  creationEnabled = false,
+  creationUnavailableReason,
+  onCreateEvent,
 }: {
   onBack: () => void;
   onOpenHome?: () => void;
   onOpenCommittees?: () => void;
   onOpenEvents?: () => void;
+  chapterId?: string;
+  chapterName?: string;
+  creationEnabled?: boolean;
+  creationUnavailableReason?: string;
+  onCreateEvent?: (
+    input: LeaderEventCreateInput,
+  ) => Promise<LeaderEventCreateResult>;
 }) {
   const [published, setPublished] = useState(false);
+  const [isCreating, startCreating] = useTransition();
+  const [createResult, setCreateResult] =
+    useState<LeaderEventCreateResult | null>(null);
+  const [creationRequestId, setCreationRequestId] = useState("");
 
   // Form state
   const [eventType,    setEventType]    = useState("");
@@ -107,6 +127,7 @@ export function CreateEventForm({
   const [rsvpDeadline, setRsvpDeadline] = useState("");
   const [shareChannels,setShareChannels] = useState<string[]>(["app"]);
   const [waMsg,        setWaMsg]        = useState("");
+  const [auditReason,  setAuditReason]  = useState("");
 
   const toggleChannel = (id: string) =>
     setShareChannels(p => p.includes(id) ? p.filter(x => x !== id) : [...p, id]);
@@ -115,7 +136,138 @@ export function CreateEventForm({
   const formattedDate = date ? new Date(date + "T12:00:00").toLocaleDateString("en-US", { weekday:"short", month:"short", day:"numeric", year:"numeric" }) : "";
   const timeRange = startTime && endTime ? `${startTime} – ${endTime}` : startTime ? startTime : "";
 
-  const canPublish = name.trim() && eventType && date && startTime && committee;
+  const hasRequiredLocation =
+    locationType === "in-person"
+      ? address.trim().length >= 2
+      : locationType === "virtual"
+        ? isHttpsUrl(virtualLink)
+        : address.trim().length >= 2 && isHttpsUrl(virtualLink);
+  const canStage = Boolean(
+    name.trim() && eventType && date && startTime && committee,
+  );
+  const canCreate = Boolean(
+    canStage &&
+      hasRequiredLocation &&
+      auditReason.trim().length >= 12 &&
+      chapterId &&
+      onCreateEvent,
+  );
+  const primaryActionEnabled = creationEnabled ? canCreate : canStage;
+
+  const resetForm = () => {
+    setPublished(false);
+    setCreateResult(null);
+    setCreationRequestId("");
+    setName("");
+    setEventType("");
+    setDate("");
+    setStartTime("");
+    setEndTime("");
+    setDescription("");
+    setCommittee("");
+    setCampaign("");
+    setAddress("");
+    setVirtualLink("");
+    setCapacity("");
+    setRsvpDeadline("");
+    setAuditReason("");
+  };
+
+  const handlePrimaryAction = () => {
+    setCreateResult(null);
+
+    if (!creationEnabled || !onCreateEvent || !chapterId) {
+      setPublished(true);
+      return;
+    }
+
+    const requestId =
+      creationRequestId ||
+      (typeof crypto !== "undefined" && "randomUUID" in crypto
+        ? crypto.randomUUID()
+        : "");
+    setCreationRequestId(requestId);
+
+    const startsAt = toLocalIso(date, startTime);
+    const endsAt = endTime ? toLocalIso(date, endTime) : null;
+    const deadline = rsvpDeadline
+      ? toLocalIso(rsvpDeadline, "23:59")
+      : null;
+    const parsedCapacity = capacity ? Number(capacity) : null;
+
+    startCreating(async () => {
+      const result = await onCreateEvent({
+        requestId,
+        chapterId,
+        title: name,
+        eventType: eventType as LeaderEventCreateInput["eventType"],
+        description,
+        startsAt,
+        endsAt,
+        locationType: locationType.replace(
+          "-",
+          "_",
+        ) as LeaderEventCreateInput["locationType"],
+        locationName: address,
+        virtualUrl: virtualLink,
+        capacity:
+          parsedCapacity !== null && Number.isFinite(parsedCapacity)
+            ? parsedCapacity
+            : null,
+        rsvpDeadline: deadline,
+        organizingGroup: committee,
+        campaignLabel: campaign,
+        auditReason,
+      });
+
+      setCreateResult(result);
+    });
+  };
+
+  if (createResult?.success) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 gap-5">
+        <div className="w-20 h-20 rounded-full bg-green-100 flex items-center justify-center">
+          <CheckCircle size={40} className="text-green-500"/>
+        </div>
+        <div className="text-center max-w-lg">
+          <h2 className="text-2xl font-black text-slate-900 mb-2">
+            Event created in myMEDLIFE
+          </h2>
+          <p className="text-sm text-slate-600 leading-relaxed">
+            <strong className="text-slate-900">"{name}"</strong> is now an
+            app-owned event for {chapterName || "this chapter"}. The event,
+            internal event record, and audit record were saved atomically.
+          </p>
+          <p className="text-xs text-slate-500 mt-2">
+            No Luma, email, text, attendance, points, or warehouse write ran.
+          </p>
+        </div>
+        <div className="flex flex-wrap justify-center gap-3">
+          <a
+            href={`/app/events/${createResult.chapterEventId}?source=leader`}
+            className="px-5 py-2.5 bg-[#1A56E8] text-white text-sm font-bold rounded-xl hover:bg-blue-700 transition-colors"
+          >
+            Open Member Event Detail
+          </a>
+          <button
+            type="button"
+            onClick={onBack}
+            className="px-5 py-2.5 border border-slate-200 text-slate-700 text-sm font-semibold rounded-xl cursor-pointer hover:bg-slate-50 transition-colors"
+          >
+            View Event Performance
+          </button>
+          <button
+            type="button"
+            onClick={resetForm}
+            className="px-5 py-2.5 border border-slate-200 text-slate-700 text-sm font-semibold rounded-xl cursor-pointer hover:bg-slate-50 transition-colors"
+          >
+            Create Another Event
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   // ── Success state ──
   if (published) return (
@@ -141,7 +293,7 @@ export function CreateEventForm({
           className="px-5 py-2.5 border border-slate-200 text-slate-700 text-sm font-semibold rounded-xl cursor-pointer hover:bg-slate-50 transition-colors">
           Back to Event Performance
         </button>
-        <button onClick={() => { setPublished(false); setName(""); setEventType(""); setDate(""); setStartTime(""); setEndTime(""); setDescription(""); setCommittee(""); }}
+        <button type="button" onClick={resetForm}
           className="px-5 py-2.5 bg-[#1A56E8] text-white text-sm font-bold rounded-xl cursor-pointer hover:bg-blue-700 transition-colors">
           Build Another TEST Event
         </button>
@@ -161,17 +313,44 @@ export function CreateEventForm({
           <h1 className="text-xl font-black text-slate-900">Create Event Preview</h1>
         </div>
         <button
-          disabled={!canPublish}
-          onClick={() => setPublished(true)}
+          type="button"
+          disabled={!primaryActionEnabled || isCreating}
+          onClick={handlePrimaryAction}
           className="flex items-center gap-2 px-5 py-2.5 bg-[#1A56E8] text-white text-sm font-bold rounded-xl cursor-pointer hover:bg-blue-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed shadow-sm">
-          <Share2 size={14}/>Stage Event Preview
+          <Share2 size={14}/>
+          {isCreating
+            ? "Creating Event..."
+            : creationEnabled
+              ? "Create myMEDLIFE Event"
+              : "Stage Event Preview"}
           {shareChannels.length > 0 && <span className="bg-white/20 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">{shareChannels.length}</span>}
         </button>
       </div>
 
-      <div className="mb-6 rounded-2xl border border-blue-200 bg-blue-50 px-4 py-3 text-xs text-blue-800">
-        This route stages TEST event previews only. Live publishing, RSVP sharing, attendance updates, points awards, and provider writes stay blocked from this shell.
+      <div className={`mb-6 rounded-2xl border px-4 py-3 text-xs ${
+        creationEnabled
+          ? "border-green-200 bg-green-50 text-green-800"
+          : "border-blue-200 bg-blue-50 text-blue-800"
+      }`}>
+        {creationEnabled
+          ? `Create a real app-owned event for ${chapterName || "this chapter"}. External provider sends, attendance changes, and points awards remain separate.`
+          : "This route stages TEST event previews only. Live publishing, RSVP sharing, attendance updates, points awards, and provider writes stay blocked from this shell."}
       </div>
+
+      {!creationEnabled && creationUnavailableReason ? (
+        <div className="mb-6 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-800">
+          {creationUnavailableReason}
+        </div>
+      ) : null}
+
+      {createResult && !createResult.success ? (
+        <div
+          role="alert"
+          className="mb-6 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-xs text-red-800"
+        >
+          {createResult.plainEnglishMessage}
+        </div>
+      ) : null}
 
       <div className="mb-6 rounded-2xl border border-[#bfdbfe] bg-[#eef5ff] px-4 py-4">
         <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
@@ -453,6 +632,22 @@ export function CreateEventForm({
                   </div>
                 );
               })}
+              {creationEnabled ? (
+                <div className="pt-2">
+                  <Field label="Audit Reason" required>
+                    <textarea
+                      className={`${inputCls} resize-none`}
+                      rows={2}
+                      placeholder="Why is this event being created?"
+                      value={auditReason}
+                      onChange={(event) => setAuditReason(event.target.value)}
+                    />
+                  </Field>
+                  <p className="mt-1.5 text-[10px] leading-4 text-slate-400">
+                    Stored with the event audit record. Minimum 12 characters.
+                  </p>
+                </div>
+              ) : null}
             </div>
           </FormSection>
         </div>
@@ -529,15 +724,20 @@ export function CreateEventForm({
 
             {/* Readiness checklist */}
             <div className="bg-white rounded-xl border border-slate-200 p-4">
-              <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Ready to stage?</div>
+              <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">
+                {creationEnabled ? "Ready to create?" : "Ready to stage?"}
+              </div>
               <div className="space-y-1.5">
                 {[
                   { label:"Event type selected",    done: !!eventType },
                   { label:"Event name added",        done: !!name.trim() },
                   { label:"Date & time set",         done: !!(date && startTime) },
                   { label:"Committee assigned",      done: !!committee },
-                  { label:"Location added",          done: !!(address || virtualLink) },
+                  { label:"Location added",          done: hasRequiredLocation },
                   { label:"Share channel selected",  done: shareChannels.length > 0 },
+                  ...(creationEnabled
+                    ? [{ label: "Audit reason added", done: auditReason.trim().length >= 12 }]
+                    : []),
                 ].map(item => (
                   <div key={item.label} className="flex items-center gap-2">
                     {item.done
@@ -554,4 +754,17 @@ export function CreateEventForm({
       </div>
     </div>
   );
+}
+
+function toLocalIso(date: string, time: string) {
+  const value = new Date(`${date}T${time}:00`);
+  return Number.isNaN(value.getTime()) ? "" : value.toISOString();
+}
+
+function isHttpsUrl(value: string) {
+  try {
+    return new URL(value).protocol === "https:";
+  } catch {
+    return false;
+  }
 }

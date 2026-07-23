@@ -2,7 +2,9 @@ import { createServerClient } from "@supabase/ssr";
 import { NextRequest, NextResponse } from "next/server";
 
 import {
+  buildAuthCallbackFailureRedirectPath,
   buildAuthCallbackRedirectPath,
+  getAuthCallbackFailureCode,
   isSupabaseEmailOtpType,
 } from "@/services/auth-callback";
 import { getSupabaseAuthConfig } from "@/services/supabase-auth-config";
@@ -27,7 +29,24 @@ export async function handleAuthCallback(
   const config = getSupabaseAuthConfig(process.env);
 
   if (!config.enabled) {
-    return NextResponse.redirect(fallbackUrl);
+    return NextResponse.redirect(
+      new URL(
+        buildAuthCallbackFailureRedirectPath(
+          {
+            next: override?.next ?? requestUrl.searchParams.get("next"),
+            redirectTo:
+              override?.redirectTo ?? requestUrl.searchParams.get("redirectTo"),
+            type: override?.type ?? requestUrl.searchParams.get("type"),
+          },
+          getAuthCallbackFailureCode({
+            authAvailable: false,
+            next: override?.next ?? requestUrl.searchParams.get("next"),
+            type: override?.type ?? requestUrl.searchParams.get("type"),
+          }),
+        ),
+        requestUrl.origin,
+      ),
+    );
   }
 
   const code = requestUrl.searchParams.get("code");
@@ -48,20 +67,53 @@ export async function handleAuthCallback(
     },
   });
 
+  let authError: { message?: string } | null | undefined;
+
   if (code) {
-    await client.auth.exchangeCodeForSession(code);
+    ({ error: authError } = await client.auth.exchangeCodeForSession(code));
   } else if (tokenHash && isSupabaseEmailOtpType(otpType)) {
-    await client.auth.verifyOtp({
+    ({ error: authError } = await client.auth.verifyOtp({
       type: otpType,
       token_hash: tokenHash,
-    });
+    }));
+  } else {
+    authError = { message: "Missing or unsupported auth callback credentials." };
   }
 
-  const redirectResponse = NextResponse.redirect(fallbackUrl);
+  if (authError) {
+    const failurePath = buildAuthCallbackFailureRedirectPath(
+      {
+        next: override?.next ?? requestUrl.searchParams.get("next"),
+        redirectTo:
+          override?.redirectTo ?? requestUrl.searchParams.get("redirectTo"),
+        type: override?.type ?? requestUrl.searchParams.get("type"),
+      },
+      getAuthCallbackFailureCode({
+        authAvailable: true,
+        next: override?.next ?? requestUrl.searchParams.get("next"),
+        type: override?.type ?? requestUrl.searchParams.get("type"),
+      }),
+    );
 
-  for (const cookie of cookieResponse.cookies.getAll()) {
-    redirectResponse.cookies.set(cookie);
+    return copyAuthCookies(
+      cookieResponse,
+      NextResponse.redirect(new URL(failurePath, requestUrl.origin)),
+    );
   }
 
-  return redirectResponse;
+  return copyAuthCookies(
+    cookieResponse,
+    NextResponse.redirect(fallbackUrl),
+  );
+}
+
+function copyAuthCookies(
+  source: NextResponse,
+  destination: NextResponse,
+) {
+  for (const cookie of source.cookies.getAll()) {
+    destination.cookies.set(cookie);
+  }
+
+  return destination;
 }

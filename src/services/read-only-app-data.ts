@@ -89,6 +89,7 @@ export type ReadOnlyAppData = {
   riskFlags: RiskFlagRow[];
   closeouts: CampaignCloseoutRow[];
   evidenceItems: EvidenceItem[];
+  evidenceItemRows: EvidenceItemRow[];
   storyEvidenceRows: EvidenceItemRow[];
   chapterEventRows: ChapterEventRow[];
   lumaEventLinkRows: LumaEventLinkRow[];
@@ -222,6 +223,7 @@ export async function getSupabaseReadOnlyAppData(
     riskFlags: scoped.riskFlags,
     closeouts: scoped.closeouts,
     evidenceItems: scoped.evidenceItems,
+    evidenceItemRows: scoped.evidenceItemRows,
     storyEvidenceRows: snapshot.evidenceItems.filter(isPublishedStoryEvidence),
     chapterEventRows: scoped.chapterEventRows,
     lumaEventLinkRows: scoped.lumaEventLinkRows,
@@ -1492,6 +1494,7 @@ export function getMockReadOnlyAppData(
     riskFlags: [],
     closeouts: [],
     evidenceItems: mockEvidenceItems,
+    evidenceItemRows: [],
     storyEvidenceRows: [],
     chapterEventRows: mockChapterEventRows.filter((row) => row.chapter_id === mockChapter.id),
     lumaEventLinkRows: mockLumaEventLinkRows.filter((row) => row.chapter_id === mockChapter.id),
@@ -1560,6 +1563,7 @@ export function getUnavailableReadOnlyAppData(message: string): ReadOnlyAppData 
     riskFlags: [],
     closeouts: [],
     evidenceItems: [],
+    evidenceItemRows: [],
     storyEvidenceRows: [],
     chapterEventRows: [],
     lumaEventLinkRows: [],
@@ -1603,9 +1607,10 @@ function buildCampaignScopedData(
     .map(toDomainAssignment);
   const assignmentIds = new Set(assignments.map((item) => item.id));
 
-  const evidenceItems = snapshot.evidenceItems
-    .filter((item) => isChapterEvidenceRow(item, scope.chapterId, assignmentIds))
-    .map(toDomainEvidenceItem);
+  const evidenceItemRows = snapshot.evidenceItems.filter((item) =>
+    isChapterEvidenceRow(item, scope.chapterId, assignmentIds),
+  );
+  const evidenceItems = evidenceItemRows.map(toDomainEvidenceItem);
   const chapterEventRows = snapshot.chapterEventRows.filter(
     (item) => item.chapter_id === scope.chapterId && item.campaign_id === scope.campaignId,
   );
@@ -1666,6 +1671,7 @@ function buildCampaignScopedData(
     riskFlags: snapshot.riskFlags.filter((item) => item.campaign_id === scope.campaignId),
     closeouts: snapshot.closeouts.filter((item) => item.campaign_id === scope.campaignId),
     evidenceItems,
+    evidenceItemRows,
     chapterEventRows,
     lumaEventLinkRows,
     eventRows,

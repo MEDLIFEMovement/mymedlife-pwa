@@ -13,15 +13,17 @@ type AuthForgotPasswordFormProps = {
   redirectTo: string;
   recoveryEnabled: boolean;
   initialMessage: string;
+  initialStatus?: ForgotPasswordActionState["status"];
 };
 
 export function AuthForgotPasswordForm({
   redirectTo,
   recoveryEnabled,
   initialMessage,
+  initialStatus,
 }: AuthForgotPasswordFormProps) {
   const initialState: ForgotPasswordActionState = {
-    status: recoveryEnabled ? "idle" : "disabled",
+    status: initialStatus ?? (recoveryEnabled ? "idle" : "disabled"),
     message: initialMessage,
     email: "",
   };

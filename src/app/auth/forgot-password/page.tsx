@@ -1,10 +1,14 @@
 import { AuthForgotPasswordForm } from "@/components/auth-forgot-password-form";
 import { LoginShell } from "@/components/login-shell";
 import { createLocalSupabaseServerClient } from "@/lib/supabase-server";
+import { getAuthCallbackFailureMessage } from "@/services/auth-callback";
 import { normalizeLoginRedirect } from "@/services/auth-session";
 
 type ForgotPasswordPageProps = {
-  searchParams?: Promise<{ redirectTo?: string }>;
+  searchParams?: Promise<{
+    recoveryError?: string;
+    redirectTo?: string;
+  }>;
 };
 
 export const dynamic = "force-dynamic";
@@ -15,6 +19,9 @@ export default async function ForgotPasswordPage({
   const query = (await searchParams) ?? {};
   const redirectTo = normalizeLoginRedirect(query.redirectTo ?? null);
   const { client, config } = await createLocalSupabaseServerClient();
+  const callbackFailureMessage = getAuthCallbackFailureMessage(
+    query.recoveryError,
+  );
 
   return (
     <LoginShell>
@@ -28,10 +35,12 @@ export default async function ForgotPasswordPage({
         redirectTo={redirectTo}
         recoveryEnabled={Boolean(client)}
         initialMessage={
-          client
+          callbackFailureMessage ??
+          (client
             ? "Enter the email address used for your myMEDLIFE account."
-            : config.reason
+            : config.reason)
         }
+        initialStatus={callbackFailureMessage ? "error" : undefined}
       />
     </LoginShell>
   );

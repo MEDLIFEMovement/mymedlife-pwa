@@ -172,4 +172,42 @@ describe("login page", () => {
     expect(html).not.toContain("Seeded sign-in is not configured for this test run.");
     expect(html).not.toContain("Current session");
   });
+
+  it("shows a safe expired-invitation error and keeps sign in available", async () => {
+    vi.mocked(createLocalSupabaseServerClient).mockResolvedValueOnce({
+      client: {} as Awaited<ReturnType<typeof createLocalSupabaseServerClient>>["client"],
+      config: {
+        enabled: true,
+        mode: "production_supabase",
+        isLocalOnly: false,
+        isHostedStaging: false,
+        environment: "production",
+        url: "https://fnlhontvvprwgooevzdl.supabase.co",
+        anonKey: "test-anon-key",
+        reason: "Hosted production auth is active.",
+      },
+    });
+    vi.mocked(getAuthSessionState).mockResolvedValueOnce({
+      status: "signed_out",
+      isLocalOnly: false,
+      isHostedStaging: false,
+      environment: "production",
+      message: "No hosted production Supabase Auth session is active.",
+      user: null,
+    });
+
+    const { default: LoginPage } = await import("@/app/login/page");
+    const html = renderToStaticMarkup(
+      await LoginPage({
+        searchParams: Promise.resolve({
+          authError: "invite_invalid_or_expired",
+          redirectTo: "/admin",
+        }),
+      }),
+    );
+
+    expect(html).toContain("This invitation link is invalid or has expired");
+    expect(html).toContain("Sign in");
+    expect(html).toContain('value="/admin"');
+  });
 });

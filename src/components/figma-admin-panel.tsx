@@ -4502,28 +4502,28 @@ function getEmbeddedProofQueueContext(
   return statusLabel ?? platformLabel;
 }
 
-function buildAdminShellHref(active: string, pathname: string, search: string): string {
+export function buildAdminShellHref(
+  active: string,
+  pathname: string,
+  search: string,
+): string {
   const params = new URLSearchParams(search);
 
   if (pathname.startsWith("/staff")) {
     params.set("view", "admin");
     params.set("adminView", active);
-  } else {
-    if (pathname.startsWith("/admin/users") || pathname.startsWith("/admin/chapters")) {
-      return getAdminShellRouteHref(active);
-    }
-
-    params.set("view", active);
+    const query = params.toString();
+    return query ? `${pathname}?${query}` : pathname;
   }
 
-  const query = params.toString();
-  return query ? `${pathname}?${query}` : pathname;
+  return getAdminShellRouteHref(active);
 }
 
 function getAdminShellRouteHref(active: string): string {
   if (active === "overview") return "/admin";
   if (active === "users") return "/admin/users";
   if (active === "chapters") return "/admin/chapters";
+  if (active === "luma") return "/admin/integrations/luma";
   if (active === "audit") return "/admin/audit-log";
   if (active === "health") return "/admin/system-health";
 

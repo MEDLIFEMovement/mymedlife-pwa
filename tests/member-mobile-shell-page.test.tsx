@@ -115,6 +115,68 @@ describe("member mobile shell routes", () => {
     expect(pointsHtml).not.toContain("Approved 2h ago in preview");
   });
 
+  it("renders app-owned points without fixture campaigns, badges, or leaderboard members", () => {
+    const html = renderToStaticMarkup(
+      <FigmaMemberMobileHome
+        initialScreen="points"
+        memberContext={{
+          displayName: "Nick Ellis",
+          firstName: "Nick",
+          chapterName: "New York University MEDLIFE",
+          campusName: "New York University",
+          pointsTotal: 30,
+          pointsWeeklyLabel: "+10",
+          pointsRankLabel: "#1",
+          completedActions: 2,
+          pointsLedgerPosture: "app_owned_readback",
+          campaignPointRows: [
+            {
+              campaign: "Fall Service Campaign",
+              points: 30,
+              available: null,
+            },
+          ],
+          recentPointActions: [
+            {
+              action: "Attendance confirmed for Community Health Night.",
+              detail: "Recorded Jul 22, 2026",
+              pointsLabel: "+20 pts",
+            },
+          ],
+          leaderboardRows: [
+            {
+              rank: 1,
+              name: "Nick Ellis",
+              role: "General Member",
+              pts: 30,
+              me: true,
+            },
+            {
+              rank: 2,
+              name: "Morgan Lee",
+              role: "Action Committee Member",
+              pts: 20,
+            },
+          ],
+        }}
+      />,
+    );
+
+    expect(html).toContain("Current points from the app-owned myMEDLIFE ledger.");
+    expect(html).toContain("App-owned points readback");
+    expect(html).toContain("Fall Service Campaign");
+    expect(html).toContain("30 pts");
+    expect(html).toContain("No app-owned badges are configured.");
+    expect(html).toContain("Chapter Leaderboard");
+    expect(html).toContain("You (Nick Ellis)");
+    expect(html).toContain("Morgan Lee");
+    expect(html).toContain("Attendance confirmed for Community Health Night.");
+    expect(html).not.toContain("TEST Aisha N.");
+    expect(html).not.toContain("TEST Spring Showcase");
+    expect(html).not.toContain("TEST Rush Starter");
+    expect(html).not.toContain("Preview-only recognition readback");
+  });
+
   it("keeps production TEST account identity visible on the member home greeting", () => {
     const productionMemberName = "Test UCLA General Member Sam";
     const homeHtml = renderToStaticMarkup(

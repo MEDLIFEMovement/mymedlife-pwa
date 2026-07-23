@@ -407,6 +407,15 @@ export type ChapterEventRow = {
   starts_at: Timestamp | null;
   ends_at: Timestamp | null;
   promotion_summary: string | null;
+  description?: string | null;
+  location_type?: "in_person" | "virtual" | "hybrid" | null;
+  location_name?: string | null;
+  virtual_url?: string | null;
+  capacity?: number | null;
+  rsvp_deadline?: Timestamp | null;
+  organizing_group?: string | null;
+  campaign_label?: string | null;
+  creation_request_id?: Uuid | null;
   attendance_count: number | null;
   eligible_member_count: number | null;
   attendance_rate: number | null;

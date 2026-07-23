@@ -20,7 +20,10 @@ import {
   canReadIntegrationOutbox,
   getActorSurfaceFamily,
 } from "@/services/role-visibility";
-import type { CampaignWorkflowSnapshot } from "@/shared/types/campaigns";
+import type {
+  CampaignShellStatus,
+  CampaignWorkflowSnapshot,
+} from "@/shared/types/campaigns";
 import type { IntegrationEvent, OutboxItem } from "@/shared/types/domain";
 
 export type StaffCommandCenterView =
@@ -275,7 +278,7 @@ export type StaffChapterDrawer = {
 export type StaffCampaignOperationCard = {
   slug: string;
   name: string;
-  status: "active" | "planned" | "template";
+  status: CampaignShellStatus;
   summary: string;
   primaryKpis: string[];
   actionCommitteeLanes: string[];
@@ -4106,7 +4109,7 @@ function attachCampaignExecutionLinks(
 }
 
 function getRecommendedStaffMove(
-  status: "active" | "planned" | "template",
+  status: CampaignShellStatus,
 ): string {
   switch (status) {
     case "active":
@@ -4115,6 +4118,10 @@ function getRecommendedStaffMove(
       return "Clarify owners and next events before asking the chapter to do more.";
     case "template":
       return "Use this as a staff playbook, not as a blank page for custom process.";
+    case "complete":
+      return "Confirm closeout, proof, and lessons learned before reusing this campaign.";
+    case "archived":
+      return "Keep historical context intact and reopen only through an approved campaign workflow.";
   }
 }
 
