@@ -105,10 +105,10 @@
     "@types/react-dom": "^19",
     "@vitest/coverage-v8": "^4.1.9",
     "eslint": "^9",
-    "eslint-config-next": "16.2.9",
+    "eslint-config-next": "16.2.11",
     "jsdom": "27.4.0",
     "tailwindcss": "^4",
     "typescript": "^5",
-    "vitest": "^4.1.9"
+    "vitest": "^4.1.10"
   }
 }
