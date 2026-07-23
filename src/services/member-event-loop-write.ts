@@ -1,6 +1,11 @@
 import { createClient } from "@supabase/supabase-js";
 
 import { isUuid } from "@/services/action-start-write";
+import {
+  memberEventLoopAttendancePointReason,
+  memberEventLoopAttendancePointReasons,
+  memberEventLoopPointAward,
+} from "@/services/member-event-loop-policy";
 import { isMemberEventClosedStatus } from "@/services/member-event-lifecycle";
 import { getMemberTestEventRouteTemplate } from "@/services/member-event-route-aliases";
 
@@ -19,6 +24,7 @@ type SupabaseQueryBuilder<TData = Record<string, unknown>[]> =
       columns: string,
     ): SupabaseQueryBuilder<TRow[]>;
     eq(column: string, value: unknown): SupabaseQueryBuilder<TData>;
+    in(column: string, values: readonly unknown[]): SupabaseQueryBuilder<TData>;
     ilike(column: string, value: string): SupabaseQueryBuilder<TData>;
     order(
       column: string,
@@ -47,7 +53,11 @@ export type SupabaseServiceClient = {
   };
 };
 
-export const memberEventLoopPointAward = 20;
+export {
+  memberEventLoopAttendancePointReason,
+  memberEventLoopAttendancePointReasons,
+  memberEventLoopPointAward,
+} from "@/services/member-event-loop-policy";
 export const memberEventLoopWriteResultParam = "memberEventLoopWriteResult";
 
 export type MemberEventLoopWriteConfig = {
@@ -83,6 +93,7 @@ export type MemberEventLoopWriteResult =
         | "event_not_found"
         | "permission_denied"
         | "event_closed"
+        | "rsvp_locked_checked_in"
         | "rsvp_cancel_blocked_checked_in"
         | "server_error";
       eventId: string;
@@ -117,6 +128,7 @@ type ChapterEventRow = {
   title: string;
   status: string;
   attendance_count: number | null;
+  eligible_member_count: number | null;
 };
 
 type RsvpIntentRow = {
@@ -300,6 +312,14 @@ export async function recordMemberEventLoopStepAtomically(
       );
     }
 
+    if (row.result_code === "rsvp_locked_checked_in") {
+      return failure(
+        "rsvp_locked_checked_in",
+        row.event_id,
+        "RSVP changes are locked after check-in because attendance and points are already recorded.",
+      );
+    }
+
     return {
       success: true,
       code: row.result_code,
@@ -407,6 +427,13 @@ export function mapMemberEventLoopWriteResultMessage(
         message:
           "RSVP cancellation is locked after check-in because attendance and points are already recorded.",
       };
+    case "rsvp_locked_checked_in":
+      return {
+        code,
+        tone: "warning",
+        message:
+          "RSVP changes are locked after check-in because attendance and points are already recorded.",
+      };
     default:
       return null;
   }
@@ -443,11 +470,9 @@ async function resolveMemberEventWriteContext(
   }
 
   const campaign = await resolveActiveCampaign(client, membership.chapter_id);
-  const event = await resolveOrCreateEvent(client, {
+  const event = await resolveEvent(client, {
     routeEventId: input.routeEventId,
-    profileId: profile.id,
     chapterId: membership.chapter_id,
-    campaignId: campaign?.id ?? null,
   });
 
   if (!event) {
@@ -559,20 +584,18 @@ async function resolveActiveCampaign(
   return fallback.data && !fallback.error ? fallback.data : null;
 }
 
-async function resolveOrCreateEvent(
+async function resolveEvent(
   client: SupabaseServiceClient,
   input: {
     routeEventId: string;
-    profileId: string;
     chapterId: string;
-    campaignId: string | null;
   },
 ): Promise<ChapterEventRow | null> {
   if (isUuid(input.routeEventId)) {
     const existing = await client
       .schema("app")
       .from("chapter_events")
-      .select("id,chapter_id,campaign_id,title,status,attendance_count")
+      .select("id,chapter_id,campaign_id,title,status,attendance_count,eligible_member_count")
       .eq("id", input.routeEventId)
       .maybeSingle<ChapterEventRow>();
 
@@ -588,7 +611,7 @@ async function resolveOrCreateEvent(
   const existing = await client
     .schema("app")
     .from("chapter_events")
-    .select("id,chapter_id,campaign_id,title,status,attendance_count")
+    .select("id,chapter_id,campaign_id,title,status,attendance_count,eligible_member_count")
     .eq("chapter_id", input.chapterId)
     .eq("title", template.title)
     .order("created_at", { ascending: false })
@@ -599,31 +622,9 @@ async function resolveOrCreateEvent(
     return existing.data;
   }
 
-  const now = new Date();
-  const endsAt = new Date(now.getTime() + 2 * 60 * 60 * 1000);
-  const created = await client
-    .schema("app")
-    .from("chapter_events")
-    .insert({
-      chapter_id: input.chapterId,
-      campaign_id: input.campaignId,
-      title: template.title,
-      event_type: template.eventType,
-      status: "published",
-      planned_by_user_id: input.profileId,
-      owner_user_id: input.profileId,
-      starts_at: now.toISOString(),
-      ends_at: endsAt.toISOString(),
-      promotion_summary: template.promotionSummary,
-      attendance_count: 0,
-      eligible_member_count: 1,
-      attendance_rate: 0,
-      warehouse_status: "disabled",
-    })
-    .select("id,chapter_id,campaign_id,title,status,attendance_count")
-    .single<ChapterEventRow>();
-
-  return created.data && !created.error ? created.data : null;
+  // A member action must never create a fallback event. Events are materialized
+  // only by the approved event/Luma ingestion path and then resolved here.
+  return null;
 }
 
 async function recordRsvp(
@@ -681,6 +682,7 @@ async function cancelRsvp(
     .select("id,awarded_to_user_id,points_delta")
     .eq("chapter_event_id", input.event.id)
     .eq("awarded_to_user_id", input.profile.id)
+    .in("reason", memberEventLoopAttendancePointReasons)
     .limit(1)
     .maybeSingle<PointsEventRow>();
 
@@ -800,6 +802,7 @@ async function recordCheckInAndPoints(
     .select("id,awarded_to_user_id,points_delta")
     .eq("chapter_event_id", input.event.id)
     .eq("awarded_to_user_id", input.profile.id)
+    .in("reason", memberEventLoopAttendancePointReasons)
     .limit(1)
     .maybeSingle<PointsEventRow>();
 
@@ -830,7 +833,7 @@ async function recordCheckInAndPoints(
       approval_id: null,
       awarded_to_user_id: input.profile.id,
       points_delta: memberEventLoopPointAward,
-      reason: "Attendance confirmed through the production-safe TEST event loop.",
+      reason: memberEventLoopAttendancePointReason,
       created_by: input.profile.id,
     })
     .select("id")
@@ -875,9 +878,11 @@ async function recordCheckInAndPoints(
     .schema("app")
     .from("chapter_events")
     .update({
-      status: "feedback_collected",
       attendance_count: attendanceCount,
-      attendance_rate: 1,
+      attendance_rate:
+        input.event.eligible_member_count && input.event.eligible_member_count > 0
+          ? Math.min(1, attendanceCount / input.event.eligible_member_count)
+          : null,
       updated_at: new Date().toISOString(),
     })
     .eq("id", input.event.id);
@@ -906,7 +911,8 @@ async function countUniquePointRecipients(
     .schema("app")
     .from("points_events")
     .select("awarded_to_user_id")
-    .eq("chapter_event_id", chapterEventId);
+    .eq("chapter_event_id", chapterEventId)
+    .in("reason", memberEventLoopAttendancePointReasons);
 
   if (rows.error || !rows.data) {
     return 0;
@@ -969,7 +975,10 @@ function capitalize(value: string) {
 
 function isAtomicSuccessCode(
   code: string,
-): code is Extract<MemberEventLoopWriteResult, { success: true }>["code"] | "rsvp_cancel_blocked_checked_in" {
+): code is
+  | Extract<MemberEventLoopWriteResult, { success: true }>["code"]
+  | "rsvp_cancel_blocked_checked_in"
+  | "rsvp_locked_checked_in" {
   return [
     "rsvp_recorded",
     "already_rsvpd",
@@ -978,6 +987,7 @@ function isAtomicSuccessCode(
     "checked_in",
     "already_checked_in",
     "rsvp_cancel_blocked_checked_in",
+    "rsvp_locked_checked_in",
   ].includes(code);
 }
 

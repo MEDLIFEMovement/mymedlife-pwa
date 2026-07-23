@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  memberEventLoopAttendancePointReason,
   getMemberEventLoopWriteConfig,
   mapMemberEventLoopWriteResultMessage,
   memberEventLoopPointAward,
@@ -184,6 +185,31 @@ describe("member event-loop write gate", () => {
     ).resolves.toMatchObject({
       success: false,
       code: "rsvp_cancel_blocked_checked_in",
+    });
+  });
+
+  it("maps a transactional RSVP lock after check-in to a truthful failure", async () => {
+    const client = new FakeSupabaseClient();
+    enqueueValidActorPath(client);
+    client.enqueueRpc({
+      data: [{
+        result_code: "rsvp_locked_checked_in",
+        event_id: chapterEventRow.id,
+        points_awarded: 20,
+        attendance_count: 8,
+      }],
+    });
+
+    await expect(
+      recordMemberEventLoopStepAtomically(asServiceClient(client), {
+        operation: "rsvp",
+        routeEventId: chapterEventRow.id,
+        actorUserId: profileRow.id,
+        actorEmail: profileRow.email,
+      }),
+    ).resolves.toMatchObject({
+      success: false,
+      code: "rsvp_locked_checked_in",
     });
   });
 
@@ -499,11 +525,14 @@ describe("member event-loop write gate", () => {
     );
     expect(client.updates.chapter_events).toContainEqual(
       expect.objectContaining({
-        status: "feedback_collected",
         attendance_count: 2,
-        attendance_rate: 1,
+        attendance_rate: 0.2,
       }),
     );
+    expect(client.updates.chapter_events[0]).not.toHaveProperty("status");
+    expect(client.inserts.points_events[0]).toMatchObject({
+      reason: memberEventLoopAttendancePointReason,
+    });
   });
 
   it("blocks duplicate check-in points when points already exist", async () => {
@@ -540,7 +569,7 @@ describe("member event-loop write gate", () => {
     expect(client.inserts.points_events ?? []).toHaveLength(0);
   });
 
-  it("falls back to email lookup and materializes the TEST event when needed", async () => {
+  it("fails closed instead of materializing a fallback TEST event from a member action", async () => {
     const client = new FakeSupabaseClient();
     client.enqueue("profiles", "maybeSingle", { data: null, error: { message: "not found" } });
     client.enqueue("profiles", "maybeSingle", { data: profileRow });
@@ -548,13 +577,6 @@ describe("member event-loop write gate", () => {
     client.enqueue("campaigns", "maybeSingle", { data: null });
     client.enqueue("campaigns", "maybeSingle", { data: campaignRow });
     client.enqueue("chapter_events", "maybeSingle", { data: null });
-    client.enqueue("chapter_events", "single", {
-      data: { ...chapterEventRow, id: "materialized-event", attendance_count: 0 },
-    });
-    client.enqueue("events", "maybeSingle", { data: null });
-    client.enqueue("events", "maybeSingle", { data: null });
-    client.enqueue("events", "then", { data: null });
-
     const result = await recordMemberEventLoopStep(asServiceClient(client), {
       operation: "rsvp",
       routeEventId: "unknown-test-alias",
@@ -562,18 +584,8 @@ describe("member event-loop write gate", () => {
       actorEmail: profileRow.email,
     });
 
-    expect(result).toMatchObject({
-      success: true,
-      code: "rsvp_recorded",
-      eventId: "materialized-event",
-    });
-    expect(client.inserts.chapter_events).toContainEqual(
-      expect.objectContaining({
-        title: "TEST Intro GBM",
-        warehouse_status: "disabled",
-        eligible_member_count: 1,
-      }),
-    );
+    expect(result).toMatchObject({ success: false, code: "event_not_found" });
+    expect(client.inserts.chapter_events ?? []).toHaveLength(0);
   });
 
   it("fails closed when the member profile, membership, or event is not eligible", async () => {
@@ -693,6 +705,7 @@ describe("member event-loop write gate", () => {
       ["membership_required", "warning"],
       ["event_not_found", "warning"],
       ["permission_denied", "warning"],
+      ["rsvp_locked_checked_in", "warning"],
       ["rsvp_cancel_blocked_checked_in", "warning"],
       ["server_error", "warning"],
     ]);
@@ -737,6 +750,7 @@ const chapterEventRow = {
   title: "TEST Intro GBM",
   status: "published",
   attendance_count: 7,
+  eligible_member_count: 10,
 };
 
 class FakeSupabaseClient {
@@ -829,6 +843,10 @@ class FakeQueryBuilder implements PromiseLike<{ data: unknown; error: { message?
   }
 
   eq() {
+    return this;
+  }
+
+  in() {
     return this;
   }
 

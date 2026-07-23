@@ -13,11 +13,12 @@ import {
   getLaunchLaneEventSnapshots,
   getActiveLaunchLaneRsvpRowsForEvent,
   getMostRecentLaunchLaneEventSnapshot,
+  hasLaunchLaneRecordedAttendance,
   hasLaunchLaneRecordedRsvp,
   sumLaunchLanePointsByEvent,
   sumLaunchLanePointsForAllChapters,
   sumLaunchLanePointsForChapter,
-  sumLaunchLanePointsForEvent,
+  sumLaunchLaneAttendancePointsForEvent,
 } from "@/services/launch-lane-event-snapshots";
 import type { LocalActorContext } from "@/services/local-actor-context";
 import { ensureVisibleTestLabel } from "@/services/member-mobile-identity-context";
@@ -212,7 +213,7 @@ export function getLaunchLaneMemberPointsReadback(
 
   const profileId = findLaunchLaneProfileIdByEmail(data.profiles, actor.user.email);
   const memberPointsAwarded = profileId
-    ? sumLaunchLanePointsForEvent(data.allPointsEventRows, event.id, profileId)
+    ? sumLaunchLaneAttendancePointsForEvent(data.allPointsEventRows, event.id, profileId)
     : 0;
   const chapterTotalPoints = sumLaunchLanePointsForChapter(
     data.allPointsEventRows,
@@ -224,8 +225,15 @@ export function getLaunchLaneMemberPointsReadback(
     userEmail: actor.user.email,
     profileId,
   });
+  const memberHasAttendance = hasLaunchLaneRecordedAttendance({
+    eventRows: data.allEventRows,
+    chapterEventId: event.id,
+    userEmail: actor.user.email,
+    profileId,
+  });
   const loopState = getMemberLaunchLaneLoopState({
     alreadyRecorded: memberHasRsvp,
+    attendanceRecorded: memberHasAttendance || memberPointsAwarded > 0,
     attendanceCount: event.attendanceCount,
     memberPointsAwarded,
     hasLumaLink: event.hasLumaLink,

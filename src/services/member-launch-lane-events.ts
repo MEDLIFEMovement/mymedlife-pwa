@@ -3,8 +3,9 @@ import {
   getLaunchLaneActorProfileId,
   getLaunchLaneEventSnapshotById,
   getLaunchLaneEventSnapshots,
+  hasLaunchLaneRecordedAttendance,
   hasLaunchLaneRecordedRsvp,
-  sumLaunchLanePointsForEvent,
+  sumLaunchLaneAttendancePointsForEvent,
 } from "@/services/launch-lane-event-snapshots";
 import { resolveMemberEventRouteId } from "@/services/member-event-route-aliases";
 import {
@@ -23,6 +24,7 @@ import type { ReadOnlyAppData } from "@/services/read-only-app-data";
 export type MemberLaunchLaneEventRow = {
   id: string;
   title: string;
+  testPreview: boolean;
   chapterName: string;
   timing: string;
   memberDateTimeLabel: string;
@@ -34,6 +36,7 @@ export type MemberLaunchLaneEventRow = {
   memberLifecycleState: MemberEventLifecycleState;
   memberLifecycleLabel: string | null;
   memberActionsClosed: boolean;
+  memberCheckedIn: boolean;
   memberCanCancelRsvp: boolean;
   memberRsvpLockLabel: string | null;
   memberLumaLabel: string | null;
@@ -107,12 +110,20 @@ function toMemberLaunchLaneEventRow(
   const memberLifecycleState = getMemberEventLifecycleState(event.status);
   const memberActionsClosed = memberLifecycleState !== "open";
   const rsvpState = alreadyRecorded ? "registered" : "open";
+  const attendanceEventRecorded = hasLaunchLaneRecordedAttendance({
+    eventRows: data.allEventRows,
+    chapterEventId: event.id,
+    userEmail: actor.user.email,
+    profileId,
+  });
   const memberPointsAwarded = profileId
-    ? sumLaunchLanePointsForEvent(data.allPointsEventRows, event.id, profileId)
+    ? sumLaunchLaneAttendancePointsForEvent(data.allPointsEventRows, event.id, profileId)
     : 0;
-  const memberCanCancelRsvp = alreadyRecorded && memberPointsAwarded <= 0 && !memberActionsClosed;
+  const memberCheckedIn = attendanceEventRecorded || memberPointsAwarded > 0;
+  const memberCanCancelRsvp = alreadyRecorded && !memberCheckedIn && !memberActionsClosed;
   const loopState = getMemberLaunchLaneLoopState({
     alreadyRecorded,
+    attendanceRecorded: memberCheckedIn,
     attendanceCount: event.attendanceCount,
     memberPointsAwarded,
     hasLumaLink,
@@ -121,6 +132,7 @@ function toMemberLaunchLaneEventRow(
   return {
     id: event.id,
     title: event.title,
+    testPreview: data.source.mode === "mock" || /^test\b/iu.test(event.title.trim()),
     chapterName: event.chapterName,
     timing: event.timing,
     memberDateTimeLabel: event.memberDateTimeLabel,
@@ -132,9 +144,10 @@ function toMemberLaunchLaneEventRow(
     memberLifecycleState,
     memberLifecycleLabel: getMemberEventLifecycleLabel(memberLifecycleState),
     memberActionsClosed,
+    memberCheckedIn,
     memberCanCancelRsvp,
     memberRsvpLockLabel:
-      alreadyRecorded && !memberCanCancelRsvp
+      alreadyRecorded && memberCheckedIn
         ? "RSVP locked after check-in"
         : null,
     memberLumaLabel: hasLumaLink ? "Luma" : null,
