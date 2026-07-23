@@ -57,9 +57,13 @@ export default async function StaffPage({ searchParams }: StaffPageProps) {
   }
 
   const shouldLoadLiveEventReadback =
-    requestedView === "events" || requestedView === "leaderboard";
+    requestedView === undefined ||
+    requestedView === "chapters" ||
+    requestedView === "events" ||
+    requestedView === "leaderboard";
   const liveEventReadback = shouldLoadLiveEventReadback
-      ? await getReadOnlyAppData({ actorUserId: actor.user.id }).then((data) => ({
+      ? await getReadOnlyAppData().then((data) => ({
+        source: data.source,
         selectedEventId: resolvedSearchParams?.event ?? null,
         selectedEvent: getLaunchLaneStaffEventReadback(
           data,

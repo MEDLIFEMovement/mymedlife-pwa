@@ -6,6 +6,7 @@ import type {
   LaunchLaneStaffChapterReadback,
   LaunchLaneStaffEventReadback,
 } from "@/services/launch-lane-points-readback";
+import type { DataSourceMeta } from "@/services/read-only-app-data";
 
 type CampaignStatus = "on-track" | "behind" | "not-started" | "complete" | "paused";
 
@@ -34,6 +35,7 @@ type StaffLaunchEventsPanelsProps = {
 type StaffLiveLaunchEventsPanelsProps = {
   chapters: LaunchLaneStaffChapterReadback[];
   organization: LaunchLaneOrgPointsReadback;
+  source: DataSourceMeta;
   selectedEventId: string | null;
   selectedEvent: LaunchLaneStaffEventReadback | null;
 };
@@ -41,11 +43,138 @@ type StaffLiveLaunchEventsPanelsProps = {
 type StaffLiveLaunchLeaderboardProps = {
   rows: LaunchLaneOrgLeaderboardRow[];
   organization: LaunchLaneOrgPointsReadback;
+  source: DataSourceMeta;
 };
+
+type StaffLiveChapterPortfolioProps = {
+  chapters: LaunchLaneStaffChapterReadback[];
+  organization: LaunchLaneOrgPointsReadback;
+  source: DataSourceMeta;
+};
+
+function isOperationalReadback(source: DataSourceMeta) {
+  return source.mode === "supabase" && source.status === "supabase_ready";
+}
+
+function getVisibleReadbackLabel(source: DataSourceMeta, value: string) {
+  return source.mode === "mock" && !/^test\b/iu.test(value) ? `TEST ${value}` : value;
+}
+
+function StaffReadbackBadge({ source }: { source: DataSourceMeta }) {
+  const operational = isOperationalReadback(source);
+
+  return (
+    <span className={`rounded-full border px-3 py-1 text-xs font-bold ${
+      operational
+        ? "border-emerald-100 bg-emerald-50 text-emerald-700"
+        : "border-amber-100 bg-amber-50 text-amber-700"
+    }`}>
+      {operational ? "Supabase operational truth" : "TEST / unavailable readback"}
+    </span>
+  );
+}
+
+export function StaffLiveChapterPortfolio({
+  chapters,
+  organization,
+  source,
+}: StaffLiveChapterPortfolioProps) {
+  const visibleEvents = chapters.filter((chapter) => chapter.chapterEventId);
+  const reviewCount = chapters.filter((chapter) => chapter.risk !== "Healthy").length;
+  const operational = isOperationalReadback(source);
+
+  return (
+    <div className="space-y-5">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <StaffMetricCard label="Chapters" value={chapters.length.toString()} note="App-owned chapter rows" tone="blue" />
+        <StaffMetricCard label="Upcoming events" value={visibleEvents.length.toString()} note="Chapter event records" tone="green" />
+        <StaffMetricCard label="Needs review" value={reviewCount.toString()} note="Derived from event-loop posture" tone="yellow" />
+        <StaffMetricCard label="Org points" value={organization.totalPoints.toLocaleString()} note="Attendance-backed ledger" tone="purple" />
+      </div>
+
+      <section
+        className={`rounded-lg border px-4 py-3 ${
+          operational
+            ? "border-emerald-200 bg-emerald-50 text-emerald-900"
+            : "border-amber-200 bg-amber-50 text-amber-950"
+        }`}
+        aria-label="Staff portfolio data source"
+      >
+        <p className="text-xs font-bold uppercase tracking-widest">
+          {operational ? "Supabase operational truth" : "TEST / unavailable readback"}
+        </p>
+        <p className="mt-1 text-sm">{source.message}</p>
+      </section>
+
+      <section className="overflow-hidden rounded-lg border border-border bg-white shadow-sm">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-5 py-4">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-widest text-primary">Live chapter portfolio</p>
+            <h2 className="text-lg font-bold text-foreground">Event-loop health by chapter</h2>
+          </div>
+          <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-bold text-slate-700">
+            Read-only
+          </span>
+        </div>
+
+        {chapters.length === 0 ? (
+          <div className="px-5 py-10 text-center">
+            <p className="font-bold text-foreground">No app-owned chapter rows are available.</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              The portfolio is intentionally empty instead of substituting preview chapters.
+            </p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[58rem] text-left text-sm">
+              <thead className="bg-muted/40 text-xs uppercase tracking-wider text-muted-foreground">
+                <tr>
+                  {["Chapter", "Calendar", "Next event", "RSVPs", "Attended", "Points", "Risk", "Detail"].map((heading) => (
+                    <th key={heading} className="px-4 py-3 font-bold">{heading}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {chapters.map((chapter) => (
+                  <tr key={chapter.id} className="border-t border-border hover:bg-muted/30">
+                    <td className="px-4 py-3 font-bold text-foreground">{getVisibleReadbackLabel(source, chapter.name)}</td>
+                    <td className="px-4 py-3">
+                      <div className="text-foreground">{chapter.calendarLabel}</div>
+                      <div className="text-xs text-muted-foreground">{chapter.calendarStatusLabel}</div>
+                    </td>
+                    <td className="px-4 py-3 text-muted-foreground">{getVisibleReadbackLabel(source, chapter.nextEvent)}</td>
+                    <td className="px-4 py-3 font-mono">{chapter.rsvps}</td>
+                    <td className="px-4 py-3 font-mono">{chapter.attendance}</td>
+                    <td className="px-4 py-3 font-mono font-bold">{chapter.points.toLocaleString()}</td>
+                    <td className="px-4 py-3">
+                      <span className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-bold text-slate-700">
+                        {chapter.risk}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      {chapter.detailHref ? (
+                        <Link href={chapter.detailHref} className="font-bold text-primary hover:underline">
+                          Open event
+                        </Link>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">No event</span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
+    </div>
+  );
+}
 
 export function StaffLiveLaunchEventsOperations({
   chapters,
   organization,
+  source,
   selectedEventId,
   selectedEvent,
 }: StaffLiveLaunchEventsPanelsProps) {
@@ -66,8 +195,8 @@ export function StaffLiveLaunchEventsOperations({
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
                 <p className="text-xs font-bold uppercase tracking-widest text-blue-700">Selected event</p>
-                <h2 className="mt-1 text-lg font-bold text-foreground">{selectedEvent.title}</h2>
-                <p className="mt-1 text-sm text-muted-foreground">{selectedEvent.chapterName} · {selectedEvent.timing} · {selectedEvent.location}</p>
+                <h2 className="mt-1 text-lg font-bold text-foreground">{getVisibleReadbackLabel(source, selectedEvent.title)}</h2>
+                <p className="mt-1 text-sm text-muted-foreground">{getVisibleReadbackLabel(source, selectedEvent.chapterName)} · {selectedEvent.timing} · {selectedEvent.location}</p>
               </div>
               <Link href="/staff?view=events" className="text-sm font-bold text-primary hover:underline">Back to all events</Link>
             </div>
@@ -92,9 +221,7 @@ export function StaffLiveLaunchEventsOperations({
             <p className="text-xs font-bold uppercase tracking-widest text-primary">Live event-loop readback</p>
             <h2 className="text-lg font-bold text-foreground">RSVP, attendance, and points by chapter</h2>
           </div>
-          <span className="rounded-full border border-emerald-100 bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700">
-            Supabase operational truth
-          </span>
+          <StaffReadbackBadge source={source} />
         </div>
         <div className="overflow-x-auto">
           <table className="w-full min-w-[60rem] text-left text-sm">
@@ -112,12 +239,12 @@ export function StaffLiveLaunchEventsOperations({
                   aria-current={chapter.chapterEventId === selectedEventId ? "true" : undefined}
                   className={`border-t border-border hover:bg-muted/30 ${chapter.chapterEventId === selectedEventId ? "bg-blue-50" : ""}`}
                 >
-                  <td className="px-4 py-3 font-bold text-foreground">{chapter.name}</td>
+                  <td className="px-4 py-3 font-bold text-foreground">{getVisibleReadbackLabel(source, chapter.name)}</td>
                   <td className="px-4 py-3">
                     <div className="text-foreground">{chapter.calendarLabel}</div>
                     <div className="text-xs text-muted-foreground">{chapter.calendarStatusLabel}</div>
                   </td>
-                  <td className="px-4 py-3 text-muted-foreground">{chapter.nextEvent}</td>
+                  <td className="px-4 py-3 text-muted-foreground">{getVisibleReadbackLabel(source, chapter.nextEvent)}</td>
                   <td className="px-4 py-3 font-mono">{chapter.rsvps}</td>
                   <td className="px-4 py-3 font-mono">{chapter.attendance}</td>
                   <td className="px-4 py-3 font-mono font-bold">{chapter.points.toLocaleString()}</td>
@@ -148,6 +275,7 @@ export function StaffLiveLaunchEventsOperations({
 export function StaffLiveLaunchOrganizationLeaderboard({
   rows,
   organization,
+  source,
 }: StaffLiveLaunchLeaderboardProps) {
   return (
     <div className="space-y-5">
@@ -159,9 +287,12 @@ export function StaffLiveLaunchOrganizationLeaderboard({
       </div>
 
       <section className="overflow-hidden rounded-xl border border-border bg-white shadow-sm">
-        <div className="border-b border-border px-5 py-4">
-          <p className="text-xs font-bold uppercase tracking-widest text-primary">Live organization leaderboard</p>
-          <h2 className="text-lg font-bold text-foreground">Chapter ranking by attendance-backed points</h2>
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-5 py-4">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-widest text-primary">Live organization leaderboard</p>
+            <h2 className="text-lg font-bold text-foreground">Chapter ranking by attendance-backed points</h2>
+          </div>
+          <StaffReadbackBadge source={source} />
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
@@ -176,7 +307,7 @@ export function StaffLiveLaunchOrganizationLeaderboard({
               {rows.map((row, index) => (
                 <tr key={row.chapterName} className="border-t border-border hover:bg-muted/30">
                   <td className="px-4 py-3 font-black text-primary">#{index + 1}</td>
-                  <td className="px-4 py-3 font-bold text-foreground">{row.chapterName}</td>
+                  <td className="px-4 py-3 font-bold text-foreground">{getVisibleReadbackLabel(source, row.chapterName)}</td>
                   <td className="px-4 py-3 font-mono font-bold">{row.points.toLocaleString()}</td>
                   <td className="px-4 py-3 font-mono">{row.eventCount}</td>
                   <td className="px-4 py-3 text-muted-foreground">{row.statusLabel}</td>
