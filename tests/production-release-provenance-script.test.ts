@@ -173,6 +173,9 @@ describe("production release provenance script", () => {
     expect(normalizeUrl("http://localhost:3217/path")).toBe(
       "http://localhost:3217",
     );
+    expect(() => normalizeUrl("ftp://localhost/release")).toThrow(
+      "The release URL must use HTTPS.",
+    );
     expect(normalizeSha(null)).toBeNull();
   });
 });
