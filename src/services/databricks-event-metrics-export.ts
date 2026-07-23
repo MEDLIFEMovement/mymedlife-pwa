@@ -215,6 +215,8 @@ export function createDatabricksEventMetricsClient(
   const targetTable = config.targetTable;
   const fetchImpl = options.fetchImpl ?? fetch;
   const waitImpl = options.waitImpl ?? wait;
+  let targetTableReady = false;
+  let targetTablePromise: Promise<void> | null = null;
 
   const request = async (
     path: string,
@@ -300,6 +302,37 @@ export function createDatabricksEventMetricsClient(
     return waitForStatement(response);
   };
 
+  const ensureTargetTable = async () => {
+    if (targetTableReady) return;
+    targetTablePromise ??= executeStatement(
+      `create table if not exists identifier(:target_table) (
+        event_id string not null,
+        chapter_id string not null,
+        campaign_id string,
+        title string not null,
+        event_type string not null,
+        status string not null,
+        starts_at timestamp,
+        ends_at timestamp,
+        current_rsvp_count bigint not null,
+        attendance_count bigint not null,
+        eligible_member_count int,
+        attendance_rate decimal(10, 6),
+        attendance_points_awarded bigint not null,
+        source_updated_at timestamp not null,
+        last_export_batch_key string not null,
+        last_exported_at timestamp not null
+      ) using delta`,
+      [{ name: "target_table", value: targetTable }],
+    ).then(() => {
+      targetTableReady = true;
+    }).catch((error) => {
+      targetTablePromise = null;
+      throw error;
+    });
+    await targetTablePromise;
+  };
+
   return {
     async upsertEventMetrics({ rows, batchKey, exportedAt }) {
       if (rows.length > EXPORT_PAGE_SIZE) {
@@ -307,27 +340,7 @@ export function createDatabricksEventMetricsClient(
           `Databricks export batches cannot exceed ${EXPORT_PAGE_SIZE} rows.`,
         );
       }
-      await executeStatement(
-        `create table if not exists identifier(:target_table) (
-          event_id string not null,
-          chapter_id string not null,
-          campaign_id string,
-          title string not null,
-          event_type string not null,
-          status string not null,
-          starts_at timestamp,
-          ends_at timestamp,
-          current_rsvp_count bigint not null,
-          attendance_count bigint not null,
-          eligible_member_count int,
-          attendance_rate decimal(10, 6),
-          attendance_points_awarded bigint not null,
-          source_updated_at timestamp not null,
-          last_export_batch_key string not null,
-          last_exported_at timestamp not null
-        ) using delta`,
-        [{ name: "target_table", value: targetTable }],
-      );
+      await ensureTargetTable();
 
       const payload = JSON.stringify(rows.map((row) => ({
         event_id: row.eventId,

@@ -115,6 +115,10 @@ describe("Databricks event metrics export", () => {
       .mockResolvedValueOnce(jsonResponse({
         statement_id: "10000000-0000-4000-8000-000000000002",
         status: { state: "SUCCEEDED" },
+      }))
+      .mockResolvedValueOnce(jsonResponse({
+        statement_id: "10000000-0000-4000-8000-000000000003",
+        status: { state: "SUCCEEDED" },
       }));
     const client = createDatabricksEventMetricsClient(enabledEnv, {
       fetchImpl: fetchMock,
@@ -172,13 +176,28 @@ describe("Databricks event metrics export", () => {
     });
 
     await expect(client?.upsertEventMetrics({
+      rows: [exportMetric()],
+      batchKey: "batch-2",
+      exportedAt: "2026-07-23T18:05:00.000Z",
+    })).resolves.toEqual({
+      statementId: "10000000-0000-4000-8000-000000000003",
+    });
+    expect(fetchMock).toHaveBeenCalledTimes(3);
+    const secondMergeBody = JSON.parse(
+      String(fetchMock.mock.calls[2]?.[1]?.body),
+    );
+    expect(secondMergeBody.statement).toContain(
+      "merge into identifier(:target_table)",
+    );
+
+    await expect(client?.upsertEventMetrics({
       rows: Array.from({ length: 501 }, () => exportMetric()),
       batchKey: "batch-too-large",
       exportedAt: "2026-07-23T18:00:00.000Z",
     })).rejects.toThrow(
       "Databricks export batches cannot exceed 500 rows.",
     );
-    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(fetchMock).toHaveBeenCalledTimes(3);
   });
 
   it("polls asynchronous statements and reports terminal provider failures without response-body leakage", async () => {
