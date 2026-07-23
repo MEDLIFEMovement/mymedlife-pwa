@@ -100,7 +100,8 @@ export async function readPayload(response) {
 
 export function normalizeUrl(value) {
   const url = new URL(value);
-  if (url.protocol !== "https:" && url.hostname !== "localhost") {
+  const isLocalHttp = url.protocol === "http:" && url.hostname === "localhost";
+  if (url.protocol !== "https:" && !isLocalHttp) {
     throw new Error("The release URL must use HTTPS.");
   }
   return url.origin;
@@ -116,6 +117,7 @@ export function normalizeSha(value) {
 const isDirectExecution = process.argv[1]
   && import.meta.url === pathToFileURL(process.argv[1]).href;
 
+/* c8 ignore next 3 -- exercised by the execFile CLI integration test. */
 if (isDirectExecution) {
-  process.exitCode = await runReleaseProvenanceCheck();
+  process.exit(await runReleaseProvenanceCheck());
 }
