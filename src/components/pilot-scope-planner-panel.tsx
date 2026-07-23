@@ -30,23 +30,29 @@ export function PilotScopePlannerPanel({ planner }: PilotScopePlannerPanelProps)
             Recommended scope: {planner.recommendedScope}
           </p>
           <div className="mt-4 flex flex-wrap gap-2">
+            <PreviewToken>Read-only preview</PreviewToken>
+            <PreviewToken>Blocked production writes</PreviewToken>
+            <PreviewToken>Blocked external sends</PreviewToken>
+            <PreviewToken>Source-backed review routes</PreviewToken>
+          </div>
+          <div className="mt-4 flex flex-wrap gap-2">
             <Link
               href="/admin/staff-dry-run"
               className="rounded-full bg-sky-200 px-4 py-2 text-sm font-semibold text-[#061b2b]"
             >
-              Open staff dry run
+              Open staff dry run review
             </Link>
             <Link
               href="/rush-month/loop"
               className="rounded-full border border-white/12 bg-black/20 px-4 py-2 text-sm font-semibold text-white/78"
             >
-              Open Rush Month loop
+              Open Rush Month loop review
             </Link>
             <Link
               href="/admin/first-write"
               className="rounded-full border border-white/12 bg-black/20 px-4 py-2 text-sm font-semibold text-white/78"
             >
-              Open first-write drill
+              Open first-write drill review
             </Link>
           </div>
         </div>
@@ -234,6 +240,14 @@ function MiniStat({ label, value }: { label: string; value: string }) {
       </p>
       <p className="mt-1 text-xl font-semibold text-white">{value}</p>
     </div>
+  );
+}
+
+function PreviewToken({ children }: { children: string }) {
+  return (
+    <span className="rounded-full border border-sky-300/25 bg-sky-300/10 px-2.5 py-1 text-xs font-semibold text-sky-100/80">
+      {children}
+    </span>
   );
 }
 
