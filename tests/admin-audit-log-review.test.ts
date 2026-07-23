@@ -43,8 +43,8 @@ describe("admin audit log review", () => {
     expect(review.rows[0]).toEqual(
       expect.objectContaining({
         action: "action_started",
-        actorUserId: "member-1",
-        chapterId: "chapter-1",
+        actorUserId: "TEST member-1",
+        chapterId: "TEST chapter-1",
         target: "assignments:assignment-1",
         beforeSummary: "status",
         afterSummary: "status",
@@ -277,10 +277,126 @@ describe("admin audit log review", () => {
     expect(html).toContain(
       "This review route shows audit posture and readback evidence only.",
     );
+    expect(html).toContain("Visible rows below are local TEST audit readback only.");
+    expect(html).toContain("TEST member-1");
+    expect(html).toContain("TEST chapter-1");
     expect(html).toContain("Blocked here edit audit rows");
     expect(html).toContain("Blocked here export audit rows");
     expect(html).toContain(
       "This review stays read-only. No audit export, retention change, secret reveal, or production-write approval runs from this surface.",
+    );
+  });
+
+  it("renders nothing when the review surface is hidden for the current role", () => {
+    const actor = getMockLocalActorContext("coach@mymedlife.test");
+    const review = getAdminAuditLogReview(actor, dataWithAuditLogs([]));
+
+    const html = renderToStaticMarkup(
+      React.createElement(AdminAuditLogReviewPanel, { review }),
+    );
+
+    expect(html).toBe("");
+  });
+
+  it("does not double-prefix already labeled audit row values", () => {
+    const actor = getMockLocalActorContext("admin@mymedlife.test");
+    const review = getAdminAuditLogReview(
+      actor,
+      dataWithAuditLogs([
+        {
+          id: "audit-1",
+          actor_user_id: "TEST member-1",
+          chapter_id: "TEST chapter-1",
+          action: "action_started",
+          target_table: "assignments",
+          target_id: "assignment-1",
+          before_value: { status: "not_started" },
+          after_value: { status: "in_progress" },
+          reason: "Local action start test.",
+          created_at: "2026-06-15T00:00:00Z",
+        },
+      ]),
+    );
+
+    expect(review.rows[0]).toEqual(
+      expect.objectContaining({
+        actorUserId: "TEST member-1",
+        chapterId: "TEST chapter-1",
+      }),
+    );
+  });
+
+  it("keeps deliberate system and none audit fallback values unprefixed", () => {
+    const actor = getMockLocalActorContext("admin@mymedlife.test");
+    const review = getAdminAuditLogReview(
+      actor,
+      dataWithAuditLogs([
+        {
+          id: "audit-fallbacks",
+          actor_user_id: null,
+          chapter_id: null,
+          action: "proof_reviewed",
+          target_table: "proof_items",
+          target_id: "proof-3",
+          before_value: { status: "queued" },
+          after_value: { status: "approved" },
+          reason: "Fallback coverage.",
+          created_at: "2026-06-15T00:10:00Z",
+        },
+      ]),
+    );
+
+    expect(review.rows[0]).toEqual(
+      expect.objectContaining({
+        actorUserId: "system",
+        chapterId: "none",
+      }),
+    );
+  });
+
+  it("summarizes null, array, empty object, and scalar audit values readably", () => {
+    const actor = getMockLocalActorContext("admin@mymedlife.test");
+    const review = getAdminAuditLogReview(
+      actor,
+      dataWithAuditLogs([
+        {
+          id: "audit-null-array",
+          actor_user_id: "member-1",
+          chapter_id: "chapter-1",
+          action: "proof_reviewed",
+          target_table: "proof_items",
+          target_id: "proof-1",
+          before_value: null,
+          after_value: ["queued"],
+          reason: "Array summary coverage.",
+          created_at: "2026-06-15T00:00:00Z",
+        },
+        {
+          id: "audit-object-scalar",
+          actor_user_id: "member-2",
+          chapter_id: "chapter-2",
+          action: "proof_reviewed",
+          target_table: "proof_items",
+          target_id: "proof-2",
+          before_value: {},
+          after_value: "ready",
+          reason: "Scalar summary coverage.",
+          created_at: "2026-06-15T00:05:00Z",
+        },
+      ]),
+    );
+
+    expect(review.rows[0]).toEqual(
+      expect.objectContaining({
+        beforeSummary: "none",
+        afterSummary: "1 item",
+      }),
+    );
+    expect(review.rows[1]).toEqual(
+      expect.objectContaining({
+        beforeSummary: "empty object",
+        afterSummary: "ready",
+      }),
     );
   });
 });
