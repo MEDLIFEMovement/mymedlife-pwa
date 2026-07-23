@@ -315,7 +315,7 @@ function buildProviderReviews({
     },
     {
       ...contractProviderReview({
-        key: "warehouse",
+        key: "warehouse_power_bi",
         title: "Databricks",
         item: contractByKey.get("warehouse_power_bi"),
         outboxWorkspace,
