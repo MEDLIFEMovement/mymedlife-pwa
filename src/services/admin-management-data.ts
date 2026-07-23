@@ -54,6 +54,10 @@ export async function getAdminManagementDirectory(): Promise<AdminManagementDire
   const access = await createSupabaseReadonlyAccess();
 
   if (!access.enabled) {
+    if (!access.isLocalOnly) {
+      return getUnavailableAdminManagementDirectory(access.reason, writeConfig);
+    }
+
     return getMockAdminManagementDirectory(access.reason, writeConfig);
   }
 
@@ -81,10 +85,18 @@ export async function getAdminManagementDirectory(): Promise<AdminManagementDire
   } catch (error) {
     const message =
       error instanceof Error
-        ? `Supabase admin directory read failed, so mock fallback is active: ${error.message}`
-        : "Supabase admin directory read failed, so mock fallback is active.";
+        ? `Supabase admin directory read failed: ${error.message}`
+        : "Supabase admin directory read failed.";
 
-    return getMockAdminManagementDirectory(message, writeConfig, "supabase_error");
+    if (!access.isLocalOnly) {
+      return getUnavailableAdminManagementDirectory(message, writeConfig);
+    }
+
+    return getMockAdminManagementDirectory(
+      `${message} Mock fallback is active for local review only.`,
+      writeConfig,
+      "supabase_error",
+    );
   }
 }
 
@@ -179,6 +191,27 @@ function getMockAdminManagementDirectory(
     writeConfig,
     users: managedUserFixtures,
     chapters: managedChapterFixtures,
+  };
+}
+
+function getUnavailableAdminManagementDirectory(
+  message: string,
+  writeConfig: AdminAccessWriteConfig,
+): AdminManagementDirectory {
+  return {
+    source: {
+      mode: "supabase",
+      status: "supabase_error",
+      message: `${message} No TEST or fixture directory has been substituted.`,
+    },
+    writeConfig: {
+      ...writeConfig,
+      enabled: false,
+      reason:
+        "Admin writes are locked because the app-owned directory could not be read safely.",
+    },
+    users: [],
+    chapters: [],
   };
 }
 

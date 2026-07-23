@@ -394,10 +394,12 @@ describe("admin management Supabase directory data", () => {
     ]);
   });
 
-  it("uses mock fixtures when Supabase read access is disabled", async () => {
+  it("uses mock fixtures when local Supabase read access is disabled", async () => {
     const directory = await loadDirectoryWithMocks({
       enabled: false,
       reason: "Readonly Supabase is intentionally off.",
+      isLocalOnly: true,
+      mode: "mock_fallback",
     });
 
     expect(directory.source).toMatchObject({
@@ -415,6 +417,8 @@ describe("admin management Supabase directory data", () => {
         enabled: true,
         reason: "Reading local Supabase data.",
         client: {},
+        isLocalOnly: true,
+        mode: "local_service_role",
       },
       buildAdminSnapshot({
         profiles: [
@@ -456,12 +460,14 @@ describe("admin management Supabase directory data", () => {
     });
   });
 
-  it("falls back to mock data when the Supabase directory read fails", async () => {
+  it("falls back to mock data when a local Supabase directory read fails", async () => {
     const directory = await loadDirectoryWithMocks(
       {
         enabled: true,
         reason: "Reading local Supabase data.",
         client: {},
+        isLocalOnly: true,
+        mode: "local_service_role",
       },
       new Error("profiles table unavailable"),
     );
@@ -473,17 +479,68 @@ describe("admin management Supabase directory data", () => {
     expect(directory.source.message).toContain("profiles table unavailable");
     expect(directory.users.length).toBeGreaterThan(0);
   });
+
+  it("fails closed when hosted Supabase read access is disabled", async () => {
+    const directory = await loadDirectoryWithMocks({
+      enabled: false,
+      reason: "Hosted Supabase session is unavailable.",
+      isLocalOnly: false,
+      mode: "mock_fallback",
+    });
+
+    expect(directory.source).toMatchObject({
+      mode: "supabase",
+      status: "supabase_error",
+    });
+    expect(directory.source.message).toContain(
+      "No TEST or fixture directory has been substituted.",
+    );
+    expect(directory.users).toEqual([]);
+    expect(directory.chapters).toEqual([]);
+    expect(directory.writeConfig.enabled).toBe(false);
+  });
+
+  it("fails closed when a hosted Supabase directory read fails", async () => {
+    const directory = await loadDirectoryWithMocks(
+      {
+        enabled: true,
+        reason: "Reading hosted production Supabase data.",
+        client: {},
+        isLocalOnly: false,
+        mode: "auth_session",
+      },
+      new Error("profiles table unavailable"),
+    );
+
+    expect(directory.source).toMatchObject({
+      mode: "supabase",
+      status: "supabase_error",
+    });
+    expect(directory.source.message).toContain("profiles table unavailable");
+    expect(directory.source.message).not.toContain("mock fallback is active");
+    expect(directory.users).toEqual([]);
+    expect(directory.chapters).toEqual([]);
+    expect(directory.writeConfig).toMatchObject({
+      enabled: false,
+      reason:
+        "Admin writes are locked because the app-owned directory could not be read safely.",
+    });
+  });
 });
 
 type SupabaseAccessStub =
   | {
       enabled: false;
       reason: string;
+      isLocalOnly: boolean;
+      mode: "mock_fallback";
     }
   | {
       enabled: true;
       reason: string;
       client: object;
+      isLocalOnly: boolean;
+      mode: "local_service_role" | "auth_session";
     };
 
 async function loadDirectoryWithMocks(

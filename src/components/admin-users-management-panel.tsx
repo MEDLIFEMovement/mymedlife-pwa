@@ -228,11 +228,37 @@ export function AdminUsersManagementPanel({
   const selectedUser =
     users.find((user) => user.id === selectedUserId) ??
     filteredUsers[0] ??
-    users[0] ??
-    managedUserFixtures[0];
-  const previews = buildUserActionPreviews(actor, selectedUser);
-  const returnTo = selectedUser ? `/admin/users?userId=${selectedUser.id}` : "/admin/users";
+    users[0];
   const Container = embeddedInFigmaShell ? "div" : "main";
+
+  if (!selectedUser) {
+    return (
+      <Container
+        className={`${embeddedInFigmaShell ? "px-6 py-6" : "min-h-screen px-6 py-8"} bg-[#0d1117] text-slate-100`}
+      >
+        <div className="mx-auto max-w-7xl space-y-6">
+          <section className="rounded-lg border border-rose-400/30 bg-rose-400/10 p-5">
+            <p className="text-xs font-semibold uppercase text-rose-200">
+              Live admin directory unavailable
+            </p>
+            <h2 className="mt-2 text-xl font-bold text-white">
+              No app-owned user records are available.
+            </h2>
+            <p className="mt-2 text-sm leading-6 text-rose-100">
+              {source.message}
+            </p>
+            <p className="mt-3 text-xs leading-5 text-slate-300">
+              User and access controls are locked until the Supabase directory
+              can be read again. No TEST fixture has been substituted.
+            </p>
+          </section>
+        </div>
+      </Container>
+    );
+  }
+
+  const previews = buildUserActionPreviews(actor, selectedUser);
+  const returnTo = `/admin/users?userId=${selectedUser.id}`;
 
   return (
     <Container className={`${embeddedInFigmaShell ? "px-6 py-6" : "min-h-screen px-6 py-8"} bg-[#0d1117] text-slate-100`}>
