@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(11);
+select plan(13);
 
 select is(
   (
@@ -73,6 +73,24 @@ select ok(
     'EXECUTE'
   ),
   'Authenticated users can only start actions through the production-honest wrapper'
+);
+
+select ok(
+  not has_function_privilege(
+    'authenticated',
+    'app.record_leader_proof_decision_internal(uuid,text,text)',
+    'EXECUTE'
+  ),
+  'Authenticated users can only decide leader proof through the production-honest wrapper'
+);
+
+select ok(
+  not has_function_privilege(
+    'authenticated',
+    'app.can_record_leader_proof_decision(app.assignments)',
+    'EXECUTE'
+  ),
+  'Authenticated users cannot call the leader proof authorization helper directly'
 );
 
 select ok(

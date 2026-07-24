@@ -10,6 +10,8 @@ export type EnvironmentSafetyInput = {
   MYMEDLIFE_ENABLE_ASSIGNMENT_CREATE_WRITE?: string;
   MYMEDLIFE_ENABLE_PROOF_SUBMISSION_WRITE?: string;
   MYMEDLIFE_ALLOW_PRODUCTION_PROOF_SUBMISSION_WRITE?: string;
+  MYMEDLIFE_ENABLE_LEADER_PROOF_DECISION_WRITE?: string;
+  MYMEDLIFE_ALLOW_PRODUCTION_LEADER_PROOF_DECISION_WRITE?: string;
   MYMEDLIFE_ENABLE_HQ_PROOF_DECISION_WRITE?: string;
   MYMEDLIFE_ENABLE_COACH_DECISION_WRITE?: string;
   MYMEDLIFE_ALLOW_PROOF_UPLOADS?: string;
@@ -105,6 +107,13 @@ export function getEnvironmentSafetySummary(
         "Proof/testimonial metadata requires authenticated Supabase access, the environment-specific approval, and an upload-disabled posture. It creates app-owned history but no external send.",
     },
     {
+      label: "Leader proof decision write",
+      value: env.MYMEDLIFE_ENABLE_LEADER_PROOF_DECISION_WRITE || "false",
+      status: getLeaderProofDecisionWriteStatus(env),
+      explanation:
+        "Leader proof decisions require authenticated Supabase access and environment-specific approval. Approval records app-owned points/KPI history; nudges, publishing, and external sends remain off.",
+    },
+    {
       label: "HQ proof decision write",
       value: env.MYMEDLIFE_ENABLE_HQ_PROOF_DECISION_WRITE || "false",
       status: getHqProofDecisionWriteStatus(env),
@@ -177,6 +186,10 @@ function readEnvironmentSafetyInput(): EnvironmentSafetyInput {
       process.env.MYMEDLIFE_ENABLE_PROOF_SUBMISSION_WRITE,
     MYMEDLIFE_ALLOW_PRODUCTION_PROOF_SUBMISSION_WRITE:
       process.env.MYMEDLIFE_ALLOW_PRODUCTION_PROOF_SUBMISSION_WRITE,
+    MYMEDLIFE_ENABLE_LEADER_PROOF_DECISION_WRITE:
+      process.env.MYMEDLIFE_ENABLE_LEADER_PROOF_DECISION_WRITE,
+    MYMEDLIFE_ALLOW_PRODUCTION_LEADER_PROOF_DECISION_WRITE:
+      process.env.MYMEDLIFE_ALLOW_PRODUCTION_LEADER_PROOF_DECISION_WRITE,
     MYMEDLIFE_ENABLE_HQ_PROOF_DECISION_WRITE:
       process.env.MYMEDLIFE_ENABLE_HQ_PROOF_DECISION_WRITE,
     MYMEDLIFE_ENABLE_COACH_DECISION_WRITE:
@@ -230,6 +243,21 @@ function getAssignmentCreateWriteStatus(
   return env.MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES === "true" ? "watch" : "blocked";
 }
 
+function getLeaderProofDecisionWriteStatus(
+  env: EnvironmentSafetyInput,
+): EnvironmentSafetyItem["status"] {
+  if (env.MYMEDLIFE_ENABLE_LEADER_PROOF_DECISION_WRITE !== "true") {
+    return "safe";
+  }
+
+  const environmentApproved =
+    env.MYMEDLIFE_AUTH_MODE === "production_supabase"
+      ? env.MYMEDLIFE_ALLOW_PRODUCTION_LEADER_PROOF_DECISION_WRITE === "true"
+      : env.MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES === "true";
+
+  return environmentApproved ? "watch" : "blocked";
+}
+
 function getHqProofDecisionWriteStatus(
   env: EnvironmentSafetyInput,
 ): EnvironmentSafetyItem["status"] {
@@ -273,6 +301,13 @@ function getEnabledBrowserWriteCount(env: EnvironmentSafetyInput): number {
     env.MYMEDLIFE_ALLOW_PROOF_UPLOADS !== "true"
       ? 1
       : 0;
+  const leaderProofDecisionEnabled =
+    env.MYMEDLIFE_ENABLE_LEADER_PROOF_DECISION_WRITE === "true" &&
+    (localWritesEnabled ||
+      (env.MYMEDLIFE_AUTH_MODE === "production_supabase" &&
+        env.MYMEDLIFE_ALLOW_PRODUCTION_LEADER_PROOF_DECISION_WRITE === "true"))
+      ? 1
+      : 0;
   const hqProofDecisionEnabled =
     localWritesEnabled && env.MYMEDLIFE_ENABLE_HQ_PROOF_DECISION_WRITE === "true"
       ? 1
@@ -286,6 +321,7 @@ function getEnabledBrowserWriteCount(env: EnvironmentSafetyInput): number {
     actionStartEnabled +
     assignmentCreateEnabled +
     proofSubmissionEnabled +
+    leaderProofDecisionEnabled +
     hqProofDecisionEnabled +
     coachDecisionEnabled
   );
