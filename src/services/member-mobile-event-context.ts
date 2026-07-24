@@ -1,5 +1,6 @@
 import { ensureVisibleTestLabel } from "@/services/member-mobile-identity-context";
 import type { ReadOnlyAppData } from "@/services/read-only-app-data";
+import type { ChapterEventRow } from "@/shared/types/persistence";
 
 export type MemberMobileEventType =
   | "GBM"
@@ -59,23 +60,34 @@ export function buildMemberMobileEventContext(data: ReadOnlyAppData): {
       return statusDifference;
     }
 
+    if (getMemberEventStatus(left.status) === "Completed") {
+      return getTimestamp(right.starts_at) - getTimestamp(left.starts_at);
+    }
+
     return getTimestamp(left.starts_at) - getTimestamp(right.starts_at);
   });
 
-  const events = orderedRows.map((row, index) => ({
-    id: row.id,
-    routeId: row.id,
-    title: ensureVisibleTestLabel(row.title),
-    date: formatMemberEventDate(row.starts_at),
-    loc: "Location not set",
-    pts: getEventPoints(data, row.id),
-    status: getMemberEventStatus(row.status),
-    campaign: campaignName,
-    eventType: getMemberEventType(row.event_type, row.title),
-    featured: index === 0,
-    luma: lumaEventIds.has(row.id),
-    rsvps: row.attendance_count,
-  }));
+  const events = orderedRows.map((row, index) => {
+    const lumaLinked = lumaEventIds.has(row.id);
+
+    return {
+      id: row.id,
+      routeId: row.id,
+      title: ensureVisibleTestLabel(row.title),
+      date: formatMemberEventDate(row.starts_at),
+      loc: getMemberEventLocation(row),
+      pts: getEventPoints(data, row.id),
+      status: getMemberEventStatus(row.status),
+      campaign:
+        lumaLinked && row.campaign_id === null
+          ? "Luma calendar history"
+          : campaignName,
+      eventType: getMemberEventType(row.event_type, row.title),
+      featured: index === 0,
+      luma: lumaLinked,
+      rsvps: row.attendance_count,
+    };
+  });
 
   return {
     events,
@@ -84,6 +96,25 @@ export function buildMemberMobileEventContext(data: ReadOnlyAppData): {
       objective: ensureVisibleTestLabel(data.campaign.objective),
     },
   };
+}
+
+function getMemberEventLocation(row: ChapterEventRow) {
+  const locationName = row.location_name?.trim();
+  const virtualUrl = row.virtual_url?.trim();
+
+  if (row.location_type === "hybrid" && locationName && virtualUrl) {
+    return `${locationName} + virtual`;
+  }
+
+  if (locationName) {
+    return locationName;
+  }
+
+  if (virtualUrl) {
+    return "Virtual event";
+  }
+
+  return "Location not set";
 }
 
 function getMemberEventStatusRank(status: string) {

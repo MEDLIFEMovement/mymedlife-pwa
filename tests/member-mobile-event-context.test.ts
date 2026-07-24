@@ -117,6 +117,55 @@ describe("member mobile event context", () => {
     expect(result.events[0]?.campaign).toBe("TEST Rush Month");
   });
 
+  it("keeps campaignless Luma imports visible as newest-first read-only history", () => {
+    const data = getMockReadOnlyAppData("Map imported Luma history.");
+    const campaignEvent = createEvent("event-campaign", {
+      status: "published",
+      starts_at: "2026-08-01T18:00:00Z",
+    });
+    const olderImport = createEvent("event-luma-older", {
+      campaign_id: null,
+      status: "completed",
+      starts_at: "2026-05-01T18:00:00Z",
+      location_name: "Older provider venue",
+    });
+    const newerImport = createEvent("event-luma-newer", {
+      campaign_id: null,
+      status: "completed",
+      starts_at: "2026-07-20T18:00:00Z",
+      location_name: "UCLA, Los Angeles, CA",
+    });
+    data.chapterEventRows = [olderImport, campaignEvent, newerImport];
+    data.lumaEventLinkRows = [
+      {
+        ...data.lumaEventLinkRows[0],
+        id: "luma-link-older",
+        chapter_event_id: olderImport.id,
+      },
+      {
+        ...data.lumaEventLinkRows[0],
+        id: "luma-link-newer",
+        chapter_event_id: newerImport.id,
+      },
+    ];
+
+    const result = buildMemberMobileEventContext(data);
+
+    expect(result.events.map((event) => event.id)).toEqual([
+      campaignEvent.id,
+      newerImport.id,
+      olderImport.id,
+    ]);
+    expect(result.events[1]).toEqual(
+      expect.objectContaining({
+        campaign: "Luma calendar history",
+        status: "Completed",
+        luma: true,
+        loc: "UCLA, Los Angeles, CA",
+      }),
+    );
+  });
+
   it("keeps missing and invalid dates honest and treats cancelled rows as history", () => {
     const data = getMockReadOnlyAppData("Map incomplete event rows.");
     data.chapterEventRows = [

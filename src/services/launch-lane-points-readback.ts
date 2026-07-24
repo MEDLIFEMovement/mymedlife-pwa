@@ -23,6 +23,7 @@ import {
   sumLaunchLanePointsForAllChapters,
   sumLaunchLanePointsForChapter,
   sumLaunchLaneAttendancePointsForEvent,
+  type LaunchLaneEventSnapshot,
 } from "@/services/launch-lane-event-snapshots";
 import type { LocalActorContext } from "@/services/local-actor-context";
 import { ensureVisibleTestLabel } from "@/services/member-mobile-identity-context";
@@ -434,7 +435,8 @@ export function getLaunchLaneLeaderEventReadback(
 
   const pointsByEvent = sumLaunchLanePointsByEvent(data.pointsEventRows);
 
-  return eventSnapshots
+  return [...eventSnapshots]
+    .sort(compareLeaderEventReadbackPriority)
     .slice(0, 4)
     .map((row) => {
       return {
@@ -456,6 +458,33 @@ export function getLaunchLaneLeaderEventReadback(
         tone: toLeaderEventTone(row.status, row.attendanceCount),
       };
     });
+}
+
+function compareLeaderEventReadbackPriority(
+  left: LaunchLaneEventSnapshot,
+  right: LaunchLaneEventSnapshot,
+) {
+  const lifecycleDifference =
+    getLeaderEventLifecycleRank(left.status) -
+    getLeaderEventLifecycleRank(right.status);
+
+  if (lifecycleDifference !== 0) {
+    return lifecycleDifference;
+  }
+
+  return getLeaderEventStartValue(right.startsAt) -
+    getLeaderEventStartValue(left.startsAt);
+}
+
+function getLeaderEventLifecycleRank(status: string) {
+  return ["completed", "feedback_collected", "canceled", "cancelled"].includes(status)
+    ? 1
+    : 0;
+}
+
+function getLeaderEventStartValue(value: string | null) {
+  const timestamp = new Date(value ?? 0).getTime();
+  return Number.isNaN(timestamp) ? 0 : timestamp;
 }
 
 export function getLaunchLaneLeaderAttendanceReadback(

@@ -483,6 +483,7 @@ async function reconcileEvent(
     status: Date.parse(event.endsAt) <= Date.parse(importedAt) ? "completed" : "published",
     starts_at: event.startsAt,
     ends_at: event.endsAt,
+    ...(event.locationLabel ? { location_name: event.locationLabel } : {}),
   };
 
   if (chapterEventId) {

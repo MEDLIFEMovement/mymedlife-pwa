@@ -2223,16 +2223,6 @@ function PointsLeaderboard({
 
 type CampaignTag = "Rush Month" | "Spring Showcase" | "Safe Homes Fundraiser" | "Community Health Fair";
 
-function resolveEventsCampaign(value?: string | null): CampaignTag | "All" {
-  if (!value || value === "All") {
-    return "All";
-  }
-
-  return CAMPAIGNS.some((campaign) => campaign.name === value)
-    ? (value as CampaignTag)
-    : "All";
-}
-
 function buildEventsHref({
   source,
   campaign,
@@ -2240,7 +2230,7 @@ function buildEventsHref({
   storyFilter,
 }: {
   source: MemberLoopSource;
-  campaign?: CampaignTag | "All";
+  campaign?: string | "All";
   profileSource?: "points" | null;
   storyFilter?: string | null;
 }) {
@@ -2427,14 +2417,25 @@ function EventsScreen({
   const featuredEvent = visibleEvents.find((e) => e.featured);
   const listEvents = visibleEvents.filter((e) => !e.featured);
   const activeCampaignData = activeCampaign !== "All"
-    ? CAMPAIGNS.find((c) => c.name === activeCampaign) ?? {
-        name: activeCampaign,
-        phase: "Active chapter campaign",
-        color: "from-primary to-blue-600",
-        accent: "bg-primary/10 text-primary border-primary/20",
-        description: memberCampaign?.objective ?? "Chapter campaign details are not available yet.",
-        progress: 0,
-      }
+    ? CAMPAIGNS.find((c) => c.name === activeCampaign) ??
+      (activeCampaign === "Luma calendar history"
+        ? {
+            name: activeCampaign,
+            phase: "Imported provider history · read-only",
+            color: "from-slate-700 to-slate-600",
+            accent: "bg-slate-100 text-slate-700 border-slate-200",
+            description:
+              "Completed chapter events imported from Luma. RSVP and check-in are closed, and provider writes remain disabled.",
+            progress: 100,
+          }
+        : {
+            name: activeCampaign,
+            phase: "Active chapter campaign",
+            color: "from-primary to-blue-600",
+            accent: "bg-primary/10 text-primary border-primary/20",
+            description: memberCampaign?.objective ?? "Chapter campaign details are not available yet.",
+            progress: 0,
+          })
     : null;
   const detailLoopSource: MemberLoopSource = source;
   const pointsReturnHref = getEventsBottomNavPointsHref(
@@ -2484,7 +2485,7 @@ function EventsScreen({
           {availableCampaigns.map((campaignName) => (
             <Link
               key={campaignName}
-              href={buildEventsHref({ source, campaign: campaignName as CampaignTag, profileSource, storyFilter })}
+              href={buildEventsHref({ source, campaign: campaignName, profileSource, storyFilter })}
               aria-label={`Filter TEST events by ${campaignName}`}
               className={cn(
                 "flex-shrink-0 px-3.5 py-1.5 rounded-full text-xs font-bold border transition-all whitespace-nowrap",

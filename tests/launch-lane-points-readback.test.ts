@@ -248,6 +248,34 @@ describe("launch lane points readback", () => {
     );
   });
 
+  it("keeps active events first and exposes the newest completed Luma history", () => {
+    const data = getMockReadOnlyAppData("Prioritize leader event readback.");
+    const baseEvent = data.chapterEventRows[0];
+    const completedEvents = [
+      {
+        ...baseEvent,
+        id: "completed-older",
+        title: "Older provider event",
+        status: "completed" as const,
+        starts_at: "2026-05-01T18:00:00Z",
+      },
+      {
+        ...baseEvent,
+        id: "completed-newer",
+        title: "Newer provider event",
+        status: "completed" as const,
+        starts_at: "2026-07-20T18:00:00Z",
+      },
+    ];
+    data.chapterEventRows = [completedEvents[0], baseEvent, completedEvents[1]];
+
+    expect(getLaunchLaneLeaderEventReadback(data).map((event) => event.id)).toEqual([
+      baseEvent.id,
+      "completed-newer",
+      "completed-older",
+    ]);
+  });
+
   it("does not substitute preview people when a live event has no attendance", () => {
     const data = getMockReadOnlyAppData("Testing empty live leader attendance.");
     const latestEventId = data.chapterEventRows[0]?.id;
