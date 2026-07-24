@@ -279,6 +279,7 @@ describe("launch lane points readback", () => {
       expect.arrayContaining([
         expect.objectContaining({
           name: "UCLA MEDLIFE",
+          chapterType: "college_university",
           chapterEventId: "chapter-event-ucla-kickoff",
           detailHref: "/staff?view=events&campaign=rush-month&event=chapter-event-ucla-kickoff",
           calendarLabel: "UCLA chapter calendar",
@@ -292,6 +293,7 @@ describe("launch lane points readback", () => {
         }),
         expect.objectContaining({
           name: "Lakeside MEDLIFE",
+          chapterType: "college_university",
           calendarLabel: "Lakeside chapter calendar",
           calendarStatusLabel: "Explicit map",
           calendarReady: true,
@@ -305,6 +307,7 @@ describe("launch lane points readback", () => {
         }),
         expect.objectContaining({
           name: "Boston College MEDLIFE",
+          chapterType: "college_university",
           calendarLabel: "Boston chapter calendar",
           calendarStatusLabel: "Explicit map",
           calendarReady: true,
@@ -316,6 +319,7 @@ describe("launch lane points readback", () => {
         }),
         expect.objectContaining({
           name: "UC San Diego MEDLIFE",
+          chapterType: "college_university",
           calendarLabel: "UCSD chapter calendar",
           calendarStatusLabel: "Explicit map",
           calendarReady: true,
@@ -327,6 +331,7 @@ describe("launch lane points readback", () => {
         }),
         expect.objectContaining({
           name: "McGill MEDLIFE",
+          chapterType: "college_university",
           calendarLabel: "McGill chapter calendar",
           calendarStatusLabel: "Explicit map",
           calendarReady: true,

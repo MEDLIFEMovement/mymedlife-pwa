@@ -3037,6 +3037,9 @@ export function FigmaStaffCommandCenter({
                   chapters={liveEventReadback.chapters}
                   organization={liveEventReadback.organization}
                   source={liveEventReadback.source}
+                  initialSearch={initialChapterSearch}
+                  initialChapterType={initialChapterTypeFilter}
+                  selectedChapterId={selectedChapterId}
                 />
               ) : (
                 <PortfolioOverview
