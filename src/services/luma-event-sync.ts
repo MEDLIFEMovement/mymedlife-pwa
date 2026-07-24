@@ -105,11 +105,6 @@ type ChapterEventPatch = {
   status: "completed" | "published";
   starts_at: string;
   ends_at: string;
-  description: string | null;
-  location_type: LumaEventRecord["locationType"];
-  location_name: string | null;
-  virtual_url: string | null;
-  promotion_summary: string;
 };
 
 type LumaEventPage = {
@@ -504,7 +499,7 @@ async function reconcileEvent(
   let chapterEventChanged = false;
   if (chapterEventId) {
     const current = await client.schema("app").from("chapter_events")
-      .select("id,title,event_type,status,starts_at,ends_at,description,location_type,location_name,virtual_url,promotion_summary,luma_event_link_id")
+      .select("id,title,event_type,status,starts_at,ends_at,luma_event_link_id")
       .eq("id", chapterEventId)
       .eq("chapter_id", config.chapterId)
       .limit(1);
@@ -632,12 +627,7 @@ function chapterEventMatchesPatch(
     String(row.event_type ?? "") === patch.event_type &&
     String(row.status ?? "") === patch.status &&
     sameInstant(row.starts_at, patch.starts_at) &&
-    sameInstant(row.ends_at, patch.ends_at) &&
-    optional(row.description) === patch.description &&
-    optional(row.location_type) === patch.location_type &&
-    optional(row.location_name) === patch.location_name &&
-    optional(row.virtual_url) === patch.virtual_url &&
-    optional(row.promotion_summary) === patch.promotion_summary
+    sameInstant(row.ends_at, patch.ends_at)
   );
 }
 

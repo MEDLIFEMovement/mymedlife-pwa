@@ -100,9 +100,15 @@ export function getAdminLumaIntegrationStatus(
   const liveSendRows = lumaOutboxRows.filter((row) => liveSendStatuses.has(row.status));
   const linkedProviderEvents = scopedReadback.eventLinks.filter((row) =>
     Boolean(row.chapter_event_id && row.luma_event_url) &&
-    row.status !== "disabled" &&
-    row.status !== "failed"
+    (
+      syncConfig.enabled
+        ? row.status === "linked"
+        : row.status !== "disabled" && row.status !== "failed"
+    )
   );
+  const syncEventLinks = syncConfig.enabled
+    ? linkedProviderEvents
+    : scopedReadback.eventLinks;
   const linkedProviderEventIds = new Set(
     linkedProviderEvents.flatMap((row) =>
       row.chapter_event_id ? [row.chapter_event_id] : [],
@@ -118,7 +124,7 @@ export function getAdminLumaIntegrationStatus(
     ...lumaOutboxRows.map((row) => row.updated_at),
   ]);
   const lastSync = getLatestTimestamp([
-    ...scopedReadback.eventLinks.map((row) => row.last_imported_at ?? row.updated_at),
+    ...syncEventLinks.map((row) => row.last_imported_at ?? row.updated_at),
     ...scopedReadback.calendars.map((row) => row.linked_at ?? row.updated_at),
   ]);
 
@@ -134,7 +140,7 @@ export function getAdminLumaIntegrationStatus(
     testConnection: getTestConnection(
       environment,
       scopedReadback.calendars.length,
-      scopedReadback.eventLinks.length,
+      linkedProviderEvents.length,
       syncConfig.enabled,
     ),
     lastTestTime,
@@ -142,7 +148,9 @@ export function getAdminLumaIntegrationStatus(
     outboxStatus: liveSendRows.length > 0 ? "Review required" : "No live sends enabled",
     counts: {
       calendars: scopedReadback.calendars.length,
-      linkedEvents: scopedReadback.eventLinks.filter((row) => row.luma_event_url).length,
+      linkedEvents: syncConfig.enabled
+        ? linkedProviderEvents.length
+        : scopedReadback.eventLinks.filter((row) => row.luma_event_url).length,
       upcomingLinkedEvents,
       lumaIntegrationEvents: lumaIntegrationEvents.length,
       lumaOutboxRows: lumaOutboxRows.length,

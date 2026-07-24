@@ -147,8 +147,27 @@ describe("admin Luma integration status", () => {
         calendar_id: "calendar-other",
       },
     ];
+    data.allLumaEventLinkRows = data.allLumaEventLinkRows.map((row) =>
+      row.chapter_id === configuredChapterId
+        ? {
+            ...row,
+            status: "linked",
+            last_imported_at: "2026-07-24T16:00:00.000Z",
+          }
+        : row
+    );
     data.allLumaEventLinkRows = [
       ...data.allLumaEventLinkRows,
+      {
+        ...data.allLumaEventLinkRows[0],
+        id: "link-mocked-same-chapter",
+        chapter_id: configuredChapterId,
+        chapter_event_id: "event-mocked-same-chapter",
+        luma_event_id: "luma-mocked-same-chapter",
+        luma_event_url: "https://lu.ma/mocked-same-chapter",
+        status: "mocked",
+        last_imported_at: "2031-01-01T00:00:00.000Z",
+      },
       {
         ...data.allLumaEventLinkRows[0],
         id: "link-other",
@@ -172,14 +191,9 @@ describe("admin Luma integration status", () => {
     });
 
     expect(status.counts.calendars).toBe(1);
-    expect(status.counts.linkedEvents).toBe(
-      data.allLumaEventLinkRows.filter(
-        (row) =>
-          row.chapter_id === configuredChapterId &&
-          Boolean(row.luma_event_url),
-      ).length,
-    );
+    expect(status.counts.linkedEvents).toBe(1);
     expect(status.lastSync).not.toBe("2030-01-01T00:00:00.000Z");
+    expect(status.lastSync).not.toBe("2031-01-01T00:00:00.000Z");
     expect(status.setupChecks).toContainEqual(expect.objectContaining({
       label: "Provider event-link readback",
       status: "pass",

@@ -34,8 +34,8 @@ The reconciliation path now:
 
 ## Automated Proof
 
-- Vitest: 403 files, 2,596 tests passed
-- Database: 25 files, 418 pgTAP assertions passed after a clean reset
+- Vitest: 396 files, 2,549 tests passed
+- Database: 22 files, 380 pgTAP assertions passed
 - Typecheck: passed
 - Lint: passed with two unrelated pre-existing warnings
 - Production build: passed
@@ -55,38 +55,61 @@ The focused unchanged-event regression proves:
 
 Browser: signed-in Chrome
 
+Fresh-main reproof:
+
+- branch base: `22138ce` (`origin/main`, PR #844)
+- screenshot: `fresh-main-local-after.png`
+- a same-chapter mocked event link was intentionally present and did not inflate
+  the real linked-event count
+- no Luma provider call or provider write was made
+
 Local roles and routes:
 
 - Member `member.a@mymedlife.test`
+  - `/app`
   - `/app/events/85000000-0000-4000-8000-000000000001?source=events`
   - `/app/events/85000000-0000-4000-8000-000000000001?source=events&step=rsvp`
-  - event detail, Luma-linked state, TEST location, and RSVP screen passed
+  - event detail, Luma-linked state, TEST location, RSVP, check-in, points,
+    profile, and exact event return passed
   - the write-disabled RSVP control returned an honest read-only result
+  - the write-disabled check-in control returned an honest read-only result
 - Leader `leader.a@mymedlife.test`
   - `/leader?view=events&event=85000000-0000-4000-8000-000000000001`
-  - event performance and selected-event detail passed
+  - event performance, selected-event detail, all-events return, and event
+    reopen passed
 - Staff `admin@mymedlife.test`
   - `/staff?view=events&campaign=rush-month&event=85000000-0000-4000-8000-000000000001`
-  - chapter event table and selected staff detail passed
-- DS Admin `ds.admin@mymedlife.test`
+  - chapter event table, selected staff detail, and all-events return passed
+- Super Admin `super.admin@mymedlife.test`
   - `/admin/integrations/luma`
   - recent event readback and
     `1 source · 0 new · 0 updated · 1 unchanged` passed
+  - one real configured calendar, one real linked event, and one future
+    member-loop event passed
   - provider writes remained disabled
   - outbox and audit-log links opened their signed-in routes
-  - empty reconcile confirmation returned
+  - empty backfill and reconcile confirmations returned
     `lumaSyncResult=confirmation_required` without starting a provider read
 
 Screenshots:
 
 - `production-before.png`
 - `local-after.png`
+- `fresh-main-local-after.png`
 - `member-detail-local.png`
 - `member-rsvp-local.png`
 - `leader-event-local.png`
 - `staff-event-local.png`
 
-The local TEST fixture was removed with a clean database reset after capture.
+The fresh-main browser pass exercised every visible control on the affected
+admin page and the linked event controls on member, leader, and staff surfaces.
+It also exposed two adjacent defects that are not claimed as fixed here:
+
+- Leader `Create Event Preview` did not navigate or visibly change state.
+- Staff `Next event` ordering still preferred an older Rush Month event over
+  the future Luma fixture.
+
+The local TEST fixture was removed before the clean database reproof.
 
 ## Production Boundary
 
