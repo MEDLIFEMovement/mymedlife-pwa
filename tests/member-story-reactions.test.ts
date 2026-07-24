@@ -5,7 +5,7 @@ import {
   createMemberStoryReactionReadClient,
   getMemberStoryReactionConfig,
   getMemberStoryReactionReadbacks,
-  toggleMemberStoryLike,
+  setMemberStoryLike,
   type MemberStoryReactionClient,
 } from "@/services/member-story-reactions";
 
@@ -138,9 +138,10 @@ describe("member story reactions", () => {
       error: null,
     });
 
-    const result = await toggleMemberStoryLike(clientWithRpc(rpc), {
+    const result = await setMemberStoryLike(clientWithRpc(rpc), {
       actorUserId: "member-1",
       evidenceItemId: "story-1",
+      liked,
     });
 
     expect(result).toMatchObject({
@@ -150,6 +151,11 @@ describe("member story reactions", () => {
       likedByActor: liked,
     });
     expect(result.message).toContain(messageFragment);
+    expect(rpc).toHaveBeenCalledWith("set_member_story_like", {
+      actor_uuid: "member-1",
+      evidence_item_uuid: "story-1",
+      liked_input: liked,
+    });
   });
 
   it("does not claim success for an invalid or failed database result", async () => {
@@ -163,15 +169,17 @@ describe("member story reactions", () => {
     });
 
     await expect(
-      toggleMemberStoryLike(clientWithRpc(invalid), {
+      setMemberStoryLike(clientWithRpc(invalid), {
         actorUserId: "member-1",
         evidenceItemId: "story-1",
+        liked: true,
       }),
     ).resolves.toMatchObject({ success: false, code: "server_error" });
     await expect(
-      toggleMemberStoryLike(clientWithRpc(failed), {
+      setMemberStoryLike(clientWithRpc(failed), {
         actorUserId: "member-1",
         evidenceItemId: "story-1",
+        liked: true,
       }),
     ).resolves.toMatchObject({ success: false, code: "story_not_found" });
   });
@@ -187,9 +195,10 @@ describe("member story reactions", () => {
     });
 
     await expect(
-      toggleMemberStoryLike(clientWithRpc(missingProfile), {
+      setMemberStoryLike(clientWithRpc(missingProfile), {
         actorUserId: "member-1",
         evidenceItemId: "story-1",
+        liked: true,
       }),
     ).resolves.toMatchObject({
       success: false,
@@ -198,9 +207,10 @@ describe("member story reactions", () => {
     });
 
     await expect(
-      toggleMemberStoryLike(clientWithRpc(unknown), {
+      setMemberStoryLike(clientWithRpc(unknown), {
         actorUserId: "member-1",
         evidenceItemId: "story-1",
+        liked: true,
       }),
     ).resolves.toMatchObject({
       success: false,
