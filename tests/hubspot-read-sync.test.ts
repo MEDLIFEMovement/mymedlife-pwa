@@ -17,6 +17,7 @@ const enabledEnv = {
   MYMEDLIFE_ENABLE_HUBSPOT_READ_SYNC: "true",
   MYMEDLIFE_ALLOW_PRODUCTION_HUBSPOT_READ_SYNC: "true",
   MYMEDLIFE_HUBSPOT_ACTIVE_MEMBER_TERMS: "2026-2027",
+  MYMEDLIFE_HUBSPOT_ACTIVE_EBOARD_TERMS: "2026-2,2027-1",
   HUBSPOT_ACCESS_TOKEN: "server-only-token",
   SUPABASE_SERVICE_ROLE_KEY: "server-only-service-key",
   SUPABASE_URL: "https://example.supabase.co",
@@ -328,9 +329,10 @@ describe("HubSpot read sync foundation", () => {
     expect(mapChapterType("International Network")).toBe("needs_review");
   });
 
-  it("qualifies only configured current-term general-member memberships", () => {
+  it("qualifies current member and E-board terms with explicit role precedence", () => {
     const config = {
       activeMemberTerms: ["2026-2027"],
+      activeEboardTerms: ["2026-2", "2027-1"],
     };
 
     expect(getHubSpotMembershipQualification(oneContact(), config)).toEqual({
@@ -344,7 +346,29 @@ describe("HubSpot read sync foundation", () => {
       eboard: true,
       eboardYears: ["2026-2", "2027-1"],
       eboardPosition: "President",
-    }, config)).toBeNull();
+    }, config)).toEqual({
+      roleKey: "president_vp",
+      evidenceFields: ["eboard__c", "eboard_year", "contact_position__c"],
+      evidenceTerms: ["2026-2", "2027-1"],
+    });
+    expect(getHubSpotMembershipQualification({
+      ...oneContact(),
+      eboard: true,
+      eboardYears: ["2026-2"],
+      eboardPosition: "Secretary",
+    }, config)).toEqual({
+      roleKey: "e_board_member",
+      evidenceFields: ["eboard__c", "eboard_year", "contact_position__c"],
+      evidenceTerms: ["2026-2"],
+    });
+    expect(getHubSpotMembershipQualification({
+      ...oneContact(),
+      eboard: true,
+      eboardYears: ["2026-2"],
+      eboardPosition: "VP",
+    }, config)).toMatchObject({
+      roleKey: "president_vp",
+    });
     expect(getHubSpotMembershipQualification({
       ...oneContact(),
       activeYears: ["2024-2025"],
@@ -352,6 +376,15 @@ describe("HubSpot read sync foundation", () => {
       eboardYears: ["2024-2025"],
       eboardPosition: "President",
     }, config)).toBeNull();
+    expect(getHubSpotMembershipQualification({
+      ...oneContact(),
+      eboard: true,
+      eboardYears: ["2025-2"],
+      eboardPosition: "President",
+    }, config)).toMatchObject({
+      roleKey: "general_member",
+      evidenceTerms: ["2026-2027"],
+    });
   });
 
   it("runs the complete app-owned chapter, profile, and membership materialization path", async () => {
@@ -396,9 +429,9 @@ describe("HubSpot read sync foundation", () => {
         lastName: "Student",
         graduationYear: 2028,
         activeYears: ["2026-2027"],
-        eboard: false,
-        eboardYears: [],
-        eboardPosition: null,
+        eboard: true,
+        eboardYears: ["2026-2"],
+        eboardPosition: "President",
         involvementTypes: ["QR contact"],
         qrYears: [],
         updatedAt: "2026-07-19T21:00:00.000Z",
@@ -448,6 +481,14 @@ describe("HubSpot read sync foundation", () => {
         display_name: "TEST Student",
         email: "student@example.org",
       },
+    }));
+    expect(queries).toContainEqual(expect.objectContaining({
+      table: "memberships",
+      operation: "insert",
+      payload: expect.objectContaining({
+        role_key: "president_vp",
+        role_term_label: "2026-2",
+      }),
     }));
     expect(queries).toContainEqual(expect.objectContaining({
       table: "audit_logs",
@@ -1906,7 +1947,7 @@ describe("HubSpot read sync foundation", () => {
       return { data: [], count: pending ? 4 : 10, error: null };
     });
     const workspace = await getAdminHubSpotSyncWorkspace({
-      getSyncConfig: () => ({ enabled: true, environment: "production", activeMemberTerms: ["2026-2027"], reason: "Enabled." }),
+      getSyncConfig: () => ({ enabled: true, environment: "production", activeMemberTerms: ["2026-2027"], activeEboardTerms: ["2026-2"], reason: "Enabled." }),
       createServerClient: async () => ({
         client: appClient as never,
         config: { enabled: true, mode: "production_supabase", environment: "production", url: "https://example.supabase.co", anonKey: "browser", isLocalOnly: false, isHostedStaging: false, reason: "Enabled." },
@@ -1922,7 +1963,7 @@ describe("HubSpot read sync foundation", () => {
     });
 
     const unavailable = await getAdminHubSpotSyncWorkspace({
-      getSyncConfig: () => ({ enabled: false, environment: "local", activeMemberTerms: [], reason: "Disabled." }),
+      getSyncConfig: () => ({ enabled: false, environment: "local", activeMemberTerms: [], activeEboardTerms: [], reason: "Disabled." }),
       createServerClient: async () => ({ client: null, config: { enabled: false, mode: "disabled", environment: "local", isLocalOnly: true, isHostedStaging: false, reason: "Auth unavailable." } }),
     });
     expect(unavailable).toMatchObject({ canRead: false, message: "Auth unavailable." });
@@ -1933,7 +1974,7 @@ describe("HubSpot read sync foundation", () => {
         : ok([])
     ));
     const queryFailure = await getAdminHubSpotSyncWorkspace({
-      getSyncConfig: () => ({ enabled: true, environment: "production", activeMemberTerms: ["2026-2027"], reason: "Enabled." }),
+      getSyncConfig: () => ({ enabled: true, environment: "production", activeMemberTerms: ["2026-2027"], activeEboardTerms: ["2026-2"], reason: "Enabled." }),
       createServerClient: async () => ({
         client: queryFailureClient as never,
         config: { enabled: true, mode: "production_supabase", environment: "production", url: "https://example.supabase.co", anonKey: "browser", isLocalOnly: false, isHostedStaging: false, reason: "Enabled." },
@@ -1946,7 +1987,7 @@ describe("HubSpot read sync foundation", () => {
 
     const emptyClient = createFakeAppClient(() => ({ data: null, count: null, error: null }));
     const empty = await getAdminHubSpotSyncWorkspace({
-      getSyncConfig: () => ({ enabled: false, environment: "production", activeMemberTerms: [], reason: "Sync disabled." }),
+      getSyncConfig: () => ({ enabled: false, environment: "production", activeMemberTerms: [], activeEboardTerms: [], reason: "Sync disabled." }),
       createServerClient: async () => ({
         client: emptyClient as never,
         config: { enabled: true, mode: "production_supabase", environment: "production", url: "https://example.supabase.co", anonKey: "browser", isLocalOnly: false, isHostedStaging: false, reason: "Enabled." },

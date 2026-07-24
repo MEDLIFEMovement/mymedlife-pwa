@@ -25,6 +25,7 @@ export type HubSpotReadSyncConfig = {
   enabled: boolean;
   environment: "local" | "staging" | "production";
   activeMemberTerms: string[];
+  activeEboardTerms: string[];
   reason: string;
 };
 
@@ -112,7 +113,7 @@ type HubSpotReadSyncDeps = {
 };
 
 type HubSpotMembershipQualification = {
-  roleKey: "general_member";
+  roleKey: "general_member" | "e_board_member" | "president_vp";
   evidenceFields: string[];
   evidenceTerms: string[];
 };
@@ -237,12 +238,16 @@ export function getHubSpotReadSyncConfig(
   const activeMemberTerms = parseDelimitedValues(
     env.MYMEDLIFE_HUBSPOT_ACTIVE_MEMBER_TERMS,
   );
+  const activeEboardTerms = parseDelimitedValues(
+    env.MYMEDLIFE_HUBSPOT_ACTIVE_EBOARD_TERMS,
+  );
 
   if (env.MYMEDLIFE_ENABLE_HUBSPOT_READ_SYNC !== "true") {
     return disabled(
       environment,
       "HubSpot read sync is disabled by configuration.",
       activeMemberTerms,
+      activeEboardTerms,
     );
   }
   if (!env.HUBSPOT_ACCESS_TOKEN) {
@@ -250,6 +255,7 @@ export function getHubSpotReadSyncConfig(
       environment,
       "HubSpot read sync is disabled because the server-only access token is missing.",
       activeMemberTerms,
+      activeEboardTerms,
     );
   }
   if (!env.SUPABASE_SERVICE_ROLE_KEY || !(env.SUPABASE_URL ?? env.NEXT_PUBLIC_SUPABASE_URL)) {
@@ -257,6 +263,7 @@ export function getHubSpotReadSyncConfig(
       environment,
       "HubSpot read sync is disabled because the server-only Supabase client is incomplete.",
       activeMemberTerms,
+      activeEboardTerms,
     );
   }
 
@@ -267,6 +274,7 @@ export function getHubSpotReadSyncConfig(
       environment,
       `${capitalize(environment)} HubSpot read sync is disabled until its explicit environment approval flag is enabled.`,
       activeMemberTerms,
+      activeEboardTerms,
     );
   }
   if (activeMemberTerms.length === 0) {
@@ -274,6 +282,7 @@ export function getHubSpotReadSyncConfig(
       environment,
       "HubSpot read sync is disabled until an approved active-member term allowlist is configured.",
       activeMemberTerms,
+      activeEboardTerms,
     );
   }
 
@@ -281,7 +290,10 @@ export function getHubSpotReadSyncConfig(
     enabled: true,
     environment,
     activeMemberTerms,
-    reason: `Server-only HubSpot reads and app-owned general-member reconciliation writes are enabled for ${environment}. HubSpot leader/admin role assignment, HubSpot writes, and account invitations remain disabled.`,
+    activeEboardTerms,
+    reason: activeEboardTerms.length > 0
+      ? `Server-only HubSpot reads and app-owned member/E-board reconciliation writes are enabled for ${environment}. HubSpot writes, staff/admin role assignment, and account invitations remain disabled.`
+      : `Server-only HubSpot reads and app-owned general-member reconciliation writes are enabled for ${environment}. E-board role assignment requires its separate approved term allowlist; HubSpot writes, staff/admin role assignment, and account invitations remain disabled.`,
   };
 }
 
@@ -1930,8 +1942,25 @@ export function mapChapterType(schoolType: string | null): "high_school" | "coll
 
 export function getHubSpotMembershipQualification(
   contact: HubSpotContactRecord,
-  config: Pick<HubSpotReadSyncConfig, "activeMemberTerms">,
+  config: Pick<HubSpotReadSyncConfig, "activeMemberTerms" | "activeEboardTerms">,
 ): HubSpotMembershipQualification | null {
+  const eboardTerms = contact.eboard
+    ? matchingTerms(contact.eboardYears, config.activeEboardTerms)
+    : [];
+  if (eboardTerms.length > 0) {
+    return {
+      roleKey: isPresidentOrVicePresidentPosition(contact.eboardPosition)
+        ? "president_vp"
+        : "e_board_member",
+      evidenceFields: [
+        "eboard__c",
+        "eboard_year",
+        ...(contact.eboardPosition ? ["contact_position__c"] : []),
+      ],
+      evidenceTerms: eboardTerms,
+    };
+  }
+
   const activeYearTerms = matchingTerms(contact.activeYears, config.activeMemberTerms);
   const qrYearTerms = matchingTerms(contact.qrYears, config.activeMemberTerms);
   const memberTerms = [...new Set([...activeYearTerms, ...qrYearTerms])];
@@ -1944,6 +1973,11 @@ export function getHubSpotMembershipQualification(
     ],
     evidenceTerms: memberTerms,
   };
+}
+
+function isPresidentOrVicePresidentPosition(position: string | null): boolean {
+  const normalized = (position ?? "").trim().toLowerCase();
+  return /\b(?:co[-\s]?)?president\b|\bvice[-\s]+president\b|\bvp\b/.test(normalized);
 }
 
 function mapCompany(row: HubSpotObjectRow): HubSpotCompanyRecord | null {
@@ -2069,8 +2103,15 @@ function disabled(
   environment: HubSpotReadSyncConfig["environment"],
   reason: string,
   activeMemberTerms: string[] = [],
+  activeEboardTerms: string[] = [],
 ): HubSpotReadSyncConfig {
-  return { enabled: false, environment, activeMemberTerms, reason };
+  return {
+    enabled: false,
+    environment,
+    activeMemberTerms,
+    activeEboardTerms,
+    reason,
+  };
 }
 
 function capitalize(value: string) {

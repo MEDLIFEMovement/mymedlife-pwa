@@ -68,7 +68,9 @@ export type HubSpotMemberTermCandidate = {
   contactCount: number;
   activeYearCount: number;
   qrYearCount: number;
+  eboardYearCount: number;
   approved: boolean;
+  eboardApproved: boolean;
 };
 
 export type HubSpotReadSyncPreflightResult =
@@ -76,6 +78,7 @@ export type HubSpotReadSyncPreflightResult =
       success: true;
       code: "hubspot_preflight_succeeded";
       allowlistConfigured: boolean;
+      eboardAllowlistConfigured: boolean;
       memberTermCandidates: HubSpotMemberTermCandidate[];
       counts: HubSpotReadSyncPreflightCounts;
       chapterCreateSamples: string[];
@@ -98,6 +101,7 @@ type HubSpotReadSyncPreflightInput = {
   companies: HubSpotCompanyRecord[];
   contacts: HubSpotContactRecord[];
   activeMemberTerms: string[];
+  activeEboardTerms: string[];
   chapters: ChapterSnapshot[];
   profiles: ProfileSnapshot[];
   memberships: MembershipSnapshot[];
@@ -124,6 +128,7 @@ export async function runHubSpotReadSyncPreflight(
 
   const env = deps.env ?? process.env;
   const activeMemberTerms = parseDelimitedValues(env.MYMEDLIFE_HUBSPOT_ACTIVE_MEMBER_TERMS);
+  const activeEboardTerms = parseDelimitedValues(env.MYMEDLIFE_HUBSPOT_ACTIVE_EBOARD_TERMS);
   if (!env.HUBSPOT_ACCESS_TOKEN) {
     return failure(
       "preflight_disabled",
@@ -192,6 +197,7 @@ export async function runHubSpotReadSyncPreflight(
       companies,
       contacts,
       activeMemberTerms,
+      activeEboardTerms,
       chapters: (chaptersResult.data ?? []).map((row) => ({
         id: String(row.id),
         name: String(row.name ?? ""),
@@ -223,9 +229,11 @@ export function buildHubSpotReadSyncPreflight(
   input: HubSpotReadSyncPreflightInput,
 ): Extract<HubSpotReadSyncPreflightResult, { success: true }> {
   const allowlistConfigured = input.activeMemberTerms.length > 0;
+  const eboardAllowlistConfigured = input.activeEboardTerms.length > 0;
   const memberTermCandidates = buildMemberTermCandidates(
     input.contacts,
     input.activeMemberTerms,
+    input.activeEboardTerms,
   );
   const chaptersByHubSpotId = groupBy(input.chapters, (chapter) => chapter.hubspotCompanyId);
   const chaptersByName = groupBy(input.chapters, (chapter) => normalize(chapter.name));
@@ -366,6 +374,7 @@ export function buildHubSpotReadSyncPreflight(
   for (const contact of input.contacts) {
     const qualification = getHubSpotMembershipQualification(contact, {
       activeMemberTerms: input.activeMemberTerms,
+      activeEboardTerms: input.activeEboardTerms,
     });
     if (!qualification) continue;
     qualifiedContacts += 1;
@@ -427,6 +436,7 @@ export function buildHubSpotReadSyncPreflight(
     success: true,
     code: "hubspot_preflight_succeeded",
     allowlistConfigured,
+    eboardAllowlistConfigured,
     memberTermCandidates,
     counts: {
       sourceCompanies: input.companies.length,
@@ -445,7 +455,7 @@ export function buildHubSpotReadSyncPreflight(
     chapterConflictSamples,
     message: allowlistConfigured
       ? "Read-only HubSpot preflight completed. No HubSpot or app-owned records were changed."
-      : "Read-only HubSpot source discovery completed. Configure the current member-term allowlist before membership impact can be calculated. No HubSpot or app-owned records were changed.",
+      : "Read-only HubSpot source discovery completed. Configure the current member-term allowlist before general-member impact and deactivation counts can be calculated. Approved E-board impact is reported separately. No HubSpot or app-owned records were changed.",
   };
 }
 
@@ -483,12 +493,18 @@ function parseDelimitedValues(value: string | undefined): string[] {
 function buildMemberTermCandidates(
   contacts: HubSpotContactRecord[],
   activeMemberTerms: string[],
+  activeEboardTerms: string[],
 ): HubSpotMemberTermCandidate[] {
   const approvedTerms = new Set(activeMemberTerms.map(normalize));
+  const approvedEboardTerms = new Set(activeEboardTerms.map(normalize));
   const candidates = new Map<string, HubSpotMemberTermCandidate>();
 
   for (const contact of contacts) {
-    const contactTerms = new Set([...contact.activeYears, ...contact.qrYears]);
+    const contactTerms = new Set([
+      ...contact.activeYears,
+      ...contact.qrYears,
+      ...contact.eboardYears,
+    ]);
     for (const term of contactTerms) {
       const normalizedTerm = normalize(term);
       if (!normalizedTerm) continue;
@@ -497,7 +513,9 @@ function buildMemberTermCandidates(
         contactCount: 0,
         activeYearCount: 0,
         qrYearCount: 0,
+        eboardYearCount: 0,
         approved: approvedTerms.has(normalizedTerm),
+        eboardApproved: approvedEboardTerms.has(normalizedTerm),
       };
       candidate.contactCount += 1;
       if (contact.activeYears.some((value) => normalize(value) === normalizedTerm)) {
@@ -505,6 +523,9 @@ function buildMemberTermCandidates(
       }
       if (contact.qrYears.some((value) => normalize(value) === normalizedTerm)) {
         candidate.qrYearCount += 1;
+      }
+      if (contact.eboardYears.some((value) => normalize(value) === normalizedTerm)) {
+        candidate.eboardYearCount += 1;
       }
       candidates.set(normalizedTerm, candidate);
     }

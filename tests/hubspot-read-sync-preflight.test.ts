@@ -66,6 +66,7 @@ describe("HubSpot read-sync preflight", () => {
         contact("contact-ineligible", "ineligible@example.org", ["company-stable"], ["2025-2026"]),
       ],
       activeMemberTerms: ["2026-2027", "2026-27"],
+      activeEboardTerms: ["2026-2"],
       chapters: [
         {
           id: "chapter-stable",
@@ -149,20 +150,25 @@ describe("HubSpot read-sync preflight", () => {
       success: true,
       code: "hubspot_preflight_succeeded",
       allowlistConfigured: true,
+      eboardAllowlistConfigured: true,
       memberTermCandidates: [
         {
           term: "2026-2027",
           contactCount: 5,
           activeYearCount: 5,
           qrYearCount: 0,
+          eboardYearCount: 0,
           approved: true,
+          eboardApproved: false,
         },
         {
           term: "2025-2026",
           contactCount: 1,
           activeYearCount: 1,
           qrYearCount: 0,
+          eboardYearCount: 0,
           approved: false,
+          eboardApproved: false,
         },
       ],
       counts: {
@@ -190,6 +196,56 @@ describe("HubSpot read-sync preflight", () => {
       },
       chapterCreateSamples: ["New University"],
       chapterConflictSamples: ["Duplicate University"],
+    });
+  });
+
+  it("reports approved E-board terms and leader qualification separately", () => {
+    const eboardContact = contact(
+      "contact-president",
+      "president@example.org",
+      ["company-1"],
+      [],
+    );
+    eboardContact.eboard = true;
+    eboardContact.eboardYears = ["2026-2"];
+    eboardContact.eboardPosition = "President";
+
+    const result = buildHubSpotReadSyncPreflight({
+      companies: [company("company-1", "University One")],
+      contacts: [eboardContact],
+      activeMemberTerms: [],
+      activeEboardTerms: ["2026-2"],
+      chapters: [{
+        id: "chapter-1",
+        name: "University One",
+        status: "active",
+        hubspotCompanyId: "company-1",
+      }],
+      profiles: [{
+        id: "profile-1",
+        email: "president@example.org",
+        hubspotContactId: "contact-president",
+      }],
+      memberships: [],
+    });
+
+    expect(result).toMatchObject({
+      allowlistConfigured: false,
+      eboardAllowlistConfigured: true,
+      memberTermCandidates: [{
+        term: "2026-2",
+        contactCount: 1,
+        activeYearCount: 0,
+        qrYearCount: 0,
+        eboardYearCount: 1,
+        approved: false,
+        eboardApproved: true,
+      }],
+      counts: {
+        qualifiedContacts: 1,
+        qualifiedAssociations: 1,
+        memberships: { creates: 1, deactivations: 0 },
+      },
     });
   });
 
@@ -254,6 +310,7 @@ describe("HubSpot read-sync preflight", () => {
     expect(result).toMatchObject({
       success: true,
       allowlistConfigured: true,
+      eboardAllowlistConfigured: false,
       counts: {
         sourceCompanies: 1,
         sourceContacts: 1,
@@ -310,20 +367,25 @@ describe("HubSpot read-sync preflight", () => {
     expect(result).toMatchObject({
       success: true,
       allowlistConfigured: false,
+      eboardAllowlistConfigured: false,
       memberTermCandidates: [
         {
           term: "2026-2027",
           contactCount: 1,
           activeYearCount: 1,
           qrYearCount: 0,
+          eboardYearCount: 0,
           approved: false,
+          eboardApproved: false,
         },
         {
           term: "2026-27",
           contactCount: 1,
           activeYearCount: 0,
           qrYearCount: 1,
+          eboardYearCount: 0,
           approved: false,
+          eboardApproved: false,
         },
       ],
       counts: {
@@ -376,6 +438,7 @@ describe("HubSpot read-sync preflight", () => {
     })).resolves.toMatchObject({
       success: true,
       allowlistConfigured: false,
+      eboardAllowlistConfigured: false,
       memberTermCandidates: [],
       counts: {
         qualifiedContacts: 0,

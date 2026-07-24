@@ -111,10 +111,11 @@ export default async function AdminHubSpotIntegrationPage({ searchParams }: Page
             <article className="rounded-lg border border-emerald-300/20 bg-emerald-300/[0.05] p-5">
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-200">Access qualification</p>
               <p className="mt-3 text-sm leading-6 text-white/65">
-                A HubSpot company association alone never grants app access. Only contacts whose approved current-term member fields match this allowlist can materialize a general-member membership. HubSpot does not assign leader, staff, or admin roles.
+                A HubSpot company association alone never grants app access. Approved member terms can materialize general-member access; current E-board terms can materialize President/VP or E-board access. Staff and admin roles are never assigned from HubSpot.
               </p>
               <dl className="mt-4 grid gap-3">
                 <Detail label="Member terms" value={workspace.config.activeMemberTerms.join(", ") || "Not configured"} />
+                <Detail label="E-board terms" value={workspace.config.activeEboardTerms.join(", ") || "Not configured"} />
               </dl>
             </article>
           </section>
@@ -190,7 +191,7 @@ function PreflightPanel({
         <>
           <p className="mt-4 text-sm text-emerald-100">{result.message}</p>
           <div className="mt-4 overflow-x-auto">
-            <table className="w-full min-w-[36rem] border-collapse text-left text-sm text-white/75">
+            <table className="w-full min-w-[48rem] border-collapse text-left text-sm text-white/75">
               <caption className="pb-2 text-left text-xs font-semibold uppercase tracking-[0.14em] text-white/55">
                 Provider member-term candidates
               </caption>
@@ -200,7 +201,9 @@ function PreflightPanel({
                   <th className="px-3 py-2">Contacts</th>
                   <th className="px-3 py-2">Active years</th>
                   <th className="px-3 py-2">QR years</th>
-                  <th className="px-3 py-2">Allowlist</th>
+                  <th className="px-3 py-2">E-board years</th>
+                  <th className="px-3 py-2">Member allowlist</th>
+                  <th className="px-3 py-2">E-board allowlist</th>
                 </tr>
               </thead>
               <tbody>
@@ -211,15 +214,19 @@ function PreflightPanel({
                       <td className="px-3 py-3">{candidate.contactCount}</td>
                       <td className="px-3 py-3">{candidate.activeYearCount}</td>
                       <td className="px-3 py-3">{candidate.qrYearCount}</td>
+                      <td className="px-3 py-3">{candidate.eboardYearCount}</td>
                       <td className="px-3 py-3">
                         {candidate.approved ? "Approved" : "Not approved"}
+                      </td>
+                      <td className="px-3 py-3">
+                        {candidate.eboardApproved ? "Approved" : "Not approved"}
                       </td>
                     </tr>
                   ))
                 ) : (
                   <tr>
-                    <td className="px-3 py-3 text-white/55" colSpan={5}>
-                      No member-term values were returned by the current HubSpot source set.
+                    <td className="px-3 py-3 text-white/55" colSpan={7}>
+                      No member or E-board term values were returned by the current HubSpot source set.
                     </td>
                   </tr>
                 )}
@@ -231,7 +238,14 @@ function PreflightPanel({
           }`}>
             Member-term allowlist: {result.allowlistConfigured
               ? "configured"
-              : "required before membership impact or deactivation counts can be calculated"}
+              : "required before general-member impact or deactivation counts can be calculated"}
+          </p>
+          <p className={`mt-1 text-xs leading-5 ${
+            result.eboardAllowlistConfigured ? "text-emerald-100/80" : "text-amber-100/80"
+          }`}>
+            E-board-term allowlist: {result.eboardAllowlistConfigured
+              ? "configured"
+              : "not configured; no HubSpot E-board role can be materialized"}
           </p>
           <div className="mt-4 overflow-x-auto">
             <table className="w-full min-w-[44rem] border-collapse text-left text-sm text-white/75">
