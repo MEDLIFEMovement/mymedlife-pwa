@@ -49,6 +49,7 @@ export type LumaSyncCounts = {
   eventUpserts: number;
   materializedEvents: number;
   updatedEvents: number;
+  unchangedEvents: number;
   conflicts: number;
   failures: number;
 };
@@ -96,6 +97,14 @@ type MissingLumaEventReference = {
   eventId: string;
   chapterEventId: string | null;
   linkId: string | null;
+};
+
+type ChapterEventPatch = {
+  title: string;
+  event_type: string;
+  status: "completed" | "published";
+  starts_at: string;
+  ends_at: string;
 };
 
 type LumaEventPage = {
@@ -477,7 +486,9 @@ async function reconcileEvent(
 
   let chapterEventId = existing.data?.[0]?.chapter_event_id ? String(existing.data[0].chapter_event_id) : null;
   let linkId = existing.data?.[0]?.id ? String(existing.data[0].id) : null;
-  const eventPatch = {
+  const chapterEventWasExisting = Boolean(chapterEventId);
+  let currentLumaEventLinkId: string | null = null;
+  const eventPatch: ChapterEventPatch = {
     title: event.name,
     event_type: "luma_event",
     status: Date.parse(event.endsAt) <= Date.parse(importedAt) ? "completed" : "published",
@@ -485,14 +496,42 @@ async function reconcileEvent(
     ends_at: event.endsAt,
   };
 
+  let chapterEventChanged = false;
   if (chapterEventId) {
-    const updated = await client.schema("app").from("chapter_events").update(eventPatch).eq("id", chapterEventId);
-    if (updated.error) {
+    const current = await client.schema("app").from("chapter_events")
+      .select("id,title,event_type,status,starts_at,ends_at,luma_event_link_id")
+      .eq("id", chapterEventId)
+      .eq("chapter_id", config.chapterId)
+      .limit(1);
+    if (current.error || !current.data?.[0]?.id) {
       counts.failures += 1;
-      await recordFailure(client, runId, "event", event.id, "chapter_event_update_failed", updated.error.message, event.source);
+      await recordFailure(
+        client,
+        runId,
+        "event",
+        event.id,
+        "chapter_event_lookup_failed",
+        current.error?.message ?? "The linked app-owned chapter event is missing.",
+        event.source,
+      );
       return;
     }
-    counts.updatedEvents += 1;
+    currentLumaEventLinkId = optional(current.data[0].luma_event_link_id);
+    if (!chapterEventMatchesPatch(
+      current.data[0] as Record<string, unknown>,
+      eventPatch,
+    )) {
+      const updated = await client.schema("app").from("chapter_events")
+        .update(eventPatch)
+        .eq("id", chapterEventId)
+        .eq("chapter_id", config.chapterId);
+      if (updated.error) {
+        counts.failures += 1;
+        await recordFailure(client, runId, "event", event.id, "chapter_event_update_failed", updated.error.message, event.source);
+        return;
+      }
+      chapterEventChanged = true;
+    }
   } else {
     const inserted = await client.schema("app").from("chapter_events").insert({
       chapter_id: config.chapterId,
@@ -509,7 +548,7 @@ async function reconcileEvent(
       await recordFailure(client, runId, "event", event.id, "chapter_event_create_failed", inserted.error?.message ?? "No event id returned.", event.source);
       return;
     }
-    counts.materializedEvents += 1;
+    chapterEventChanged = true;
   }
 
   if (linkId) {
@@ -539,12 +578,15 @@ async function reconcileEvent(
     return;
   }
 
-  const linkedEvent = await client.schema("app").from("chapter_events")
-    .update({ luma_event_link_id: linkId }).eq("id", chapterEventId);
-  if (linkedEvent.error) {
-    counts.failures += 1;
-    await recordFailure(client, runId, "event", event.id, "chapter_event_backlink_failed", linkedEvent.error.message, event.source);
-    return;
+  if (currentLumaEventLinkId !== linkId) {
+    const linkedEvent = await client.schema("app").from("chapter_events")
+      .update({ luma_event_link_id: linkId }).eq("id", chapterEventId);
+    if (linkedEvent.error) {
+      counts.failures += 1;
+      await recordFailure(client, runId, "event", event.id, "chapter_event_backlink_failed", linkedEvent.error.message, event.source);
+      return;
+    }
+    chapterEventChanged = true;
   }
   const markError = await markImport(client, config.environment, event.id, "materialized", null, chapterEventId, linkId);
   if (markError) {
@@ -552,19 +594,47 @@ async function reconcileEvent(
     await recordFailure(client, runId, "event", event.id, "event_materialization_mark_failed", markError, event.source);
     return;
   }
-  const audit = await client.schema("app").from("audit_logs").insert({
-    actor_user_id: actorUserId,
-    chapter_id: config.chapterId,
-    action: "luma_event_reconciled",
-    target_table: "chapter_events",
-    target_id: chapterEventId,
-    after_value: { luma_event_id: event.id, luma_sync_run_id: runId, starts_at: event.startsAt, ends_at: event.endsAt },
-    reason: "Authorized server-only Luma read reconciliation into app-owned event records.",
-  });
-  if (audit.error) {
-    counts.failures += 1;
-    await recordFailure(client, runId, "event", event.id, "audit_log_failed", audit.error.message, event.source);
+  if (!chapterEventWasExisting) {
+    counts.materializedEvents += 1;
+  } else if (chapterEventChanged) {
+    counts.updatedEvents += 1;
+  } else {
+    counts.unchangedEvents += 1;
   }
+  if (chapterEventChanged) {
+    const audit = await client.schema("app").from("audit_logs").insert({
+      actor_user_id: actorUserId,
+      chapter_id: config.chapterId,
+      action: "luma_event_reconciled",
+      target_table: "chapter_events",
+      target_id: chapterEventId,
+      after_value: { luma_event_id: event.id, luma_sync_run_id: runId, starts_at: event.startsAt, ends_at: event.endsAt },
+      reason: "Authorized server-only Luma read reconciliation changed an app-owned event record.",
+    });
+    if (audit.error) {
+      counts.failures += 1;
+      await recordFailure(client, runId, "event", event.id, "audit_log_failed", audit.error.message, event.source);
+    }
+  }
+}
+
+function chapterEventMatchesPatch(
+  row: Record<string, unknown>,
+  patch: ChapterEventPatch,
+) {
+  return (
+    String(row.title ?? "") === patch.title &&
+    String(row.event_type ?? "") === patch.event_type &&
+    String(row.status ?? "") === patch.status &&
+    sameInstant(row.starts_at, patch.starts_at) &&
+    sameInstant(row.ends_at, patch.ends_at)
+  );
+}
+
+function sameInstant(left: unknown, right: string) {
+  return typeof left === "string" &&
+    Number.isFinite(Date.parse(left)) &&
+    Date.parse(left) === Date.parse(right);
 }
 
 async function retireMissingLumaEvents(
@@ -894,6 +964,7 @@ async function finishRun(
     event_upsert_count: counts.eventUpserts,
     materialized_event_count: counts.materializedEvents,
     updated_event_count: counts.updatedEvents,
+    unchanged_event_count: counts.unchangedEvents,
     conflict_count: counts.conflicts,
     failure_count: counts.failures,
     error_summary: errorSummary,
@@ -972,7 +1043,15 @@ function capitalize(value: string) {
 }
 
 function emptyCounts(): LumaSyncCounts {
-  return { sourceEvents: 0, eventUpserts: 0, materializedEvents: 0, updatedEvents: 0, conflicts: 0, failures: 0 };
+  return {
+    sourceEvents: 0,
+    eventUpserts: 0,
+    materializedEvents: 0,
+    updatedEvents: 0,
+    unchangedEvents: 0,
+    conflicts: 0,
+    failures: 0,
+  };
 }
 
 function wait(milliseconds: number) {

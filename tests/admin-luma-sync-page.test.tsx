@@ -98,6 +98,7 @@ describe("admin Luma sync page", () => {
     expect(html).toContain('name="retryOfRunId" value="failed-run-42"');
     expect(html).toContain('name="mode" value="backfill"');
     expect(html).not.toContain('name="retryOfRunId" value="latest-success"');
+    expect(html).toContain("67 source · 0 new · 0 updated · 67 unchanged");
   });
 });
 
@@ -125,7 +126,8 @@ function workspace() {
       heartbeatAt: "2026-07-24T12:01:00.000Z",
       sourceEvents: 67,
       materializedEvents: 0,
-      updatedEvents: 67,
+      updatedEvents: 0,
+      unchangedEvents: 67,
       conflicts: 0,
       failures: 0,
     },

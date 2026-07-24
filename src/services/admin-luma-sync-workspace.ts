@@ -24,6 +24,7 @@ export type AdminLumaSyncWorkspace = {
     sourceEvents: number;
     materializedEvents: number;
     updatedEvents: number;
+    unchangedEvents: number;
     conflicts: number;
     failures: number;
   } | null;
@@ -69,7 +70,7 @@ export async function getAdminLumaSyncWorkspace(
     config.chapterId ?? "00000000-0000-0000-0000-000000000000";
   const [runs, calendars, imports, materialized, conflicts, failures] = await Promise.all([
     app.from("luma_sync_runs")
-      .select("id,mode,status,trigger_source,retry_of_run_id,calendar_id,chapter_id,started_at,completed_at,heartbeat_at,source_event_count,materialized_event_count,updated_event_count,conflict_count,failure_count")
+      .select("id,mode,status,trigger_source,retry_of_run_id,calendar_id,chapter_id,started_at,completed_at,heartbeat_at,source_event_count,materialized_event_count,updated_event_count,unchanged_event_count,conflict_count,failure_count")
       .eq("calendar_id", scopedCalendarId)
       .eq("chapter_id", scopedChapterId)
       .order("started_at", { ascending: false })
@@ -161,6 +162,7 @@ function normalizeRun(row: Record<string, unknown>): NonNullable<AdminLumaSyncWo
     sourceEvents: count("source_event_count"),
     materializedEvents: count("materialized_event_count"),
     updatedEvents: count("updated_event_count"),
+    unchangedEvents: count("unchanged_event_count"),
     conflicts: count("conflict_count"),
     failures: count("failure_count"),
   };

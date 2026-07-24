@@ -50,6 +50,7 @@ export type AdminLumaIntegrationStatus = {
   counts: {
     calendars: number;
     linkedEvents: number;
+    upcomingLinkedEvents: number;
     lumaIntegrationEvents: number;
     lumaOutboxRows: number;
     liveSendRows: number;
@@ -79,6 +80,7 @@ export function getAdminLumaIntegrationStatus(
   actor: LocalActorContext,
   data: ReadOnlyAppData,
   env: LumaStatusEnv = process.env,
+  now = new Date(),
 ): AdminLumaIntegrationStatus {
   if (!canReadAdminIntegrationsSecurity(actor)) {
     return hiddenStatus();
@@ -92,21 +94,38 @@ export function getAdminLumaIntegrationStatus(
   const environmentLabel = syncConfig.enabled
     ? `${capitalize(syncConfig.environment)} read sync enabled`
     : getEnvironmentLabel(environment, env);
+  const scopedReadback = getScopedLumaReadback(data, syncConfig);
   const lumaIntegrationEvents = data.integrationEventRows.filter(isLumaIntegrationEvent);
   const lumaOutboxRows = data.automationOutboxRows.filter(isLumaOutboxRow);
   const liveSendRows = lumaOutboxRows.filter((row) => liveSendStatuses.has(row.status));
-  const linkedProviderEvents = data.allLumaEventLinkRows.filter((row) =>
+  const linkedProviderEvents = scopedReadback.eventLinks.filter((row) =>
     Boolean(row.chapter_event_id && row.luma_event_url) &&
-    row.status !== "disabled" &&
-    row.status !== "failed"
+    (
+      syncConfig.enabled
+        ? row.status === "linked"
+        : row.status !== "disabled" && row.status !== "failed"
+    )
   );
+  const syncEventLinks = syncConfig.enabled
+    ? linkedProviderEvents
+    : scopedReadback.eventLinks;
+  const linkedProviderEventIds = new Set(
+    linkedProviderEvents.flatMap((row) =>
+      row.chapter_event_id ? [row.chapter_event_id] : [],
+    ),
+  );
+  const upcomingLinkedEvents = data.allChapterEventRows.filter(
+    (row) =>
+      linkedProviderEventIds.has(row.id) &&
+      isUpcomingProviderEvent(row.status, row.starts_at, now),
+  ).length;
   const lastTestTime = getLatestTimestamp([
     ...lumaIntegrationEvents.map((row) => row.updated_at),
     ...lumaOutboxRows.map((row) => row.updated_at),
   ]);
   const lastSync = getLatestTimestamp([
-    ...data.allLumaEventLinkRows.map((row) => row.last_imported_at ?? row.updated_at),
-    ...data.chapterLumaCalendarRows.map((row) => row.linked_at ?? row.updated_at),
+    ...syncEventLinks.map((row) => row.last_imported_at ?? row.updated_at),
+    ...scopedReadback.calendars.map((row) => row.linked_at ?? row.updated_at),
   ]);
 
   return {
@@ -118,13 +137,21 @@ export function getAdminLumaIntegrationStatus(
     readSyncEnabled: syncConfig.enabled,
     environment,
     environmentLabel,
-    testConnection: getTestConnection(environment, data, syncConfig.enabled),
+    testConnection: getTestConnection(
+      environment,
+      scopedReadback.calendars.length,
+      linkedProviderEvents.length,
+      syncConfig.enabled,
+    ),
     lastTestTime,
     lastSync,
     outboxStatus: liveSendRows.length > 0 ? "Review required" : "No live sends enabled",
     counts: {
-      calendars: data.chapterLumaCalendarRows.length,
-      linkedEvents: data.allLumaEventLinkRows.filter((row) => row.luma_event_url).length,
+      calendars: scopedReadback.calendars.length,
+      linkedEvents: syncConfig.enabled
+        ? linkedProviderEvents.length
+        : scopedReadback.eventLinks.filter((row) => row.luma_event_url).length,
+      upcomingLinkedEvents,
       lumaIntegrationEvents: lumaIntegrationEvents.length,
       lumaOutboxRows: lumaOutboxRows.length,
       liveSendRows: liveSendRows.length,
@@ -151,6 +178,18 @@ export function getAdminLumaIntegrationStatus(
           linkedProviderEvents.length > 0
             ? `${linkedProviderEvents.length} Luma event link${linkedProviderEvents.length === 1 ? " is" : "s are"} attached to app-owned chapter events.`
             : "No active Luma URL is attached to an app-owned chapter event yet.",
+      },
+      {
+        label: "Future member-loop proof",
+        value:
+          upcomingLinkedEvents > 0
+            ? `${upcomingLinkedEvents} upcoming`
+            : "no upcoming event",
+        status: upcomingLinkedEvents > 0 ? "pass" : "needs_setup",
+        detail:
+          upcomingLinkedEvents > 0
+            ? `${upcomingLinkedEvents} future Luma-linked app event${upcomingLinkedEvents === 1 ? " is" : "s are"} available for member RSVP proof.`
+            : "Provider ingestion is healthy, but no future Luma-linked event is available to prove RSVP, cancellation, check-in, attendance, and points in production.",
       },
       {
         label: "Member QR check-in",
@@ -220,6 +259,7 @@ function hiddenStatus(): AdminLumaIntegrationStatus {
     counts: {
       calendars: 0,
       linkedEvents: 0,
+      upcomingLinkedEvents: 0,
       lumaIntegrationEvents: 0,
       lumaOutboxRows: 0,
       liveSendRows: 0,
@@ -232,6 +272,19 @@ function hiddenStatus(): AdminLumaIntegrationStatus {
     safetyNotes: [],
     blockedControls: [],
   };
+}
+
+function isUpcomingProviderEvent(
+  status: string,
+  startsAt: string | null,
+  now: Date,
+) {
+  if (["completed", "feedback_collected", "canceled", "cancelled"].includes(status)) {
+    return false;
+  }
+
+  const startsAtValue = new Date(startsAt ?? 0).getTime();
+  return !Number.isNaN(startsAtValue) && startsAtValue > now.getTime();
 }
 
 function resolveLumaEnvironment(
@@ -312,7 +365,8 @@ function getEnvironmentLabel(
 
 function getTestConnection(
   environment: EventLoopMode,
-  data: ReadOnlyAppData,
+  calendarCount: number,
+  eventLinkCount: number,
   readSyncEnabled = false,
 ): AdminLumaIntegrationStatus["testConnection"] {
   if (environment === "disabled") {
@@ -324,7 +378,7 @@ function getTestConnection(
     };
   }
 
-  if (data.chapterLumaCalendarRows.length === 0 && data.allLumaEventLinkRows.length === 0) {
+  if (calendarCount === 0 && eventLinkCount === 0) {
     return {
       status: "needs_setup",
       label: "Setup evidence needed",
@@ -347,6 +401,30 @@ function getTestConnection(
     label: "Dry-run check passed",
     detail:
       "Readback has Luma/mock mapping evidence. No external API call or secret exposure occurred.",
+  };
+}
+
+function getScopedLumaReadback(
+  data: ReadOnlyAppData,
+  syncConfig: ReturnType<typeof getLumaEventSyncConfig>,
+) {
+  if (!syncConfig.enabled || !syncConfig.chapterId || !syncConfig.calendarId) {
+    return {
+      calendars: data.chapterLumaCalendarRows,
+      eventLinks: data.allLumaEventLinkRows,
+    };
+  }
+
+  return {
+    calendars: data.chapterLumaCalendarRows.filter(
+      (row) =>
+        row.chapter_id === syncConfig.chapterId &&
+        row.calendar_id === syncConfig.calendarId &&
+        row.environment === syncConfig.environment,
+    ),
+    eventLinks: data.allLumaEventLinkRows.filter(
+      (row) => row.chapter_id === syncConfig.chapterId,
+    ),
   };
 }
 
