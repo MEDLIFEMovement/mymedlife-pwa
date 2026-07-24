@@ -362,6 +362,19 @@ describe("local actor context service", () => {
       identitySource: "local_actor_email",
     });
   });
+
+  it("ignores known preview cookies in production", () => {
+    expect(
+      resolveLocalActorPreviewSelection(
+        "super.admin@mymedlife.test",
+        "member.a@mymedlife.test",
+        { VERCEL_ENV: "production" },
+      ),
+    ).toEqual({
+      email: "member.a@mymedlife.test",
+      identitySource: "local_actor_email",
+    });
+  });
 });
 
 async function expectAudience(

@@ -6,6 +6,7 @@ import { LocalRoleSwitcher } from "@/components/local-role-switcher";
 import type { LocalActorContext } from "@/services/local-actor-context";
 import { getLandingRouteForActor } from "@/services/landing-route";
 import { isEventsPointsLaunchLaneEnabled } from "@/services/launch-lane-product-focus";
+import { isLocalRolePreviewEnabled } from "@/services/local-role-preview";
 import {
   getActorSurfaceFamily,
   type MobileNavigationItem,
@@ -55,7 +56,8 @@ export function AppShell({
   const showSharedTopHeader = !hideTopHeader;
   const showSharedDesktopRail = isCommandSurface && !hideDesktopRail;
   const sidebarCopy = getSidebarCopy(surfaceFamily);
-  const debugActor = actor && showDebugTools ? actor : null;
+  const debugActor =
+    actor && showDebugTools && isLocalRolePreviewEnabled() ? actor : null;
   const shellBadge = getShellBadge(actor);
   const headerChrome = getHeaderChromeClasses(surfaceFamily, isCommandSurface);
   const mainChrome = getMainChromeClasses(surfaceFamily, resolvedChromeMode, isCommandSurface);

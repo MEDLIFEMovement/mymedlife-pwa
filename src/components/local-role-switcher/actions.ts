@@ -6,10 +6,16 @@ import {
   localActorOptions,
   localActorPreviewCookieName,
 } from "@/services/local-actor-context";
+import { isLocalRolePreviewEnabled } from "@/services/local-role-preview";
 
 const previewCookieMaxAgeSeconds = 60 * 60 * 24 * 30;
 
 export async function setLocalActorPreviewAction(formData: FormData) {
+  if (!isLocalRolePreviewEnabled()) {
+    redirect(await getReturnToPath());
+    return;
+  }
+
   const selectedEmail = String(formData.get("selectedEmail") ?? "").trim().toLowerCase();
   const isKnownActor = localActorOptions.some((option) => option.email === selectedEmail);
 

@@ -1,4 +1,5 @@
 import type { LocalActorContext } from "@/services/local-actor-context";
+import { isLocalRolePreviewEnabled } from "@/services/local-role-preview";
 
 export type LoginRedirectSearchParams =
   | Record<string, string | string[] | undefined>
@@ -8,11 +9,17 @@ export type LoginRedirectSearchParams =
 
 export function shouldRedirectActorToLogin(
   actor: Pick<LocalActorContext, "identitySource" | "authSessionStatus">,
+  env: Record<string, string | undefined> = process.env,
 ) {
-  return (
-    actor.identitySource === "local_actor_email" &&
-    actor.authSessionStatus !== "signed_in"
-  );
+  if (actor.authSessionStatus === "signed_in") {
+    return false;
+  }
+
+  if (!isLocalRolePreviewEnabled(env)) {
+    return true;
+  }
+
+  return actor.identitySource === "local_actor_email";
 }
 
 export function buildLoginRedirectHref(redirectTo: string) {

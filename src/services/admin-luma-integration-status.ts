@@ -1,7 +1,4 @@
-import {
-  getPilotEventLoopReadModel,
-  type EventLoopMode,
-} from "@/services/event-loop";
+import type { EventLoopMode } from "@/services/event-loop";
 import type { LocalActorContext } from "@/services/local-actor-context";
 import { getLumaEventSyncConfig } from "@/services/luma-event-sync";
 import type { ReadOnlyAppData } from "@/services/read-only-app-data";
@@ -95,19 +92,14 @@ export function getAdminLumaIntegrationStatus(
   const environmentLabel = syncConfig.enabled
     ? `${capitalize(syncConfig.environment)} read sync enabled`
     : getEnvironmentLabel(environment, env);
-  const readModel = getPilotEventLoopReadModel({
-    mode: environment,
-    data: {
-      eventRows: data.allEventRows,
-      integrationEventRows: data.integrationEventRows,
-      automationOutboxRows: data.automationOutboxRows,
-      pointsEventRows: data.allPointsEventRows,
-      auditLogRows: data.auditLogs,
-    },
-  });
   const lumaIntegrationEvents = data.integrationEventRows.filter(isLumaIntegrationEvent);
   const lumaOutboxRows = data.automationOutboxRows.filter(isLumaOutboxRow);
   const liveSendRows = lumaOutboxRows.filter((row) => liveSendStatuses.has(row.status));
+  const linkedProviderEvents = data.allLumaEventLinkRows.filter((row) =>
+    Boolean(row.chapter_event_id && row.luma_event_url) &&
+    row.status !== "disabled" &&
+    row.status !== "failed"
+  );
   const lastTestTime = getLatestTimestamp([
     ...lumaIntegrationEvents.map((row) => row.updated_at),
     ...lumaOutboxRows.map((row) => row.updated_at),
@@ -152,13 +144,20 @@ export function getAdminLumaIntegrationStatus(
             : "The page can read staging/mock-safe Luma posture without making an API call.",
       },
       {
-        label: "Event link and QR readback",
-        value: readModel.summary.lumaLinkReady && readModel.summary.qrReady ? "ready" : "pending",
-        status: readModel.summary.lumaLinkReady && readModel.summary.qrReady ? "pass" : "needs_setup",
+        label: "Provider event-link readback",
+        value: linkedProviderEvents.length > 0 ? "ready" : "pending",
+        status: linkedProviderEvents.length > 0 ? "pass" : "needs_setup",
         detail:
-          readModel.summary.lumaLinkReady && readModel.summary.qrReady
-            ? "At least one Luma/mock RSVP link and QR-ready event path is visible in app state."
-            : "The local event path can run, but Luma/QR readback needs setup evidence.",
+          linkedProviderEvents.length > 0
+            ? `${linkedProviderEvents.length} Luma event link${linkedProviderEvents.length === 1 ? " is" : "s are"} attached to app-owned chapter events.`
+            : "No active Luma URL is attached to an app-owned chapter event yet.",
+      },
+      {
+        label: "Member QR check-in",
+        value: "preview-only",
+        status: "blocked",
+        detail:
+          "The member event surface still labels its QR code as Preview only. QR scanning is not counted as production-ready.",
       },
       {
         label: "Outbox safety",
