@@ -45,4 +45,16 @@ describe("release provenance", () => {
       MYMEDLIFE_RELEASE_SHA: "1111111111111111111111111111111111111111",
     }).releaseSha).toBe("2222222222222222222222222222222222222222");
   });
+
+  it("falls back when a manual Vercel upload exposes an empty Git SHA", () => {
+    expect(getReleaseProvenance({
+      VERCEL_GIT_COMMIT_SHA: "",
+      MYMEDLIFE_RELEASE_SHA: "1111111111111111111111111111111111111111",
+      VERCEL_ENV: "production",
+    })).toMatchObject({
+      releaseSha: "1111111111111111111111111111111111111111",
+      deploymentEnvironment: "production",
+      ready: true,
+    });
+  });
 });
