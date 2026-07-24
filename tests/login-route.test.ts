@@ -39,6 +39,34 @@ describe("login route service", () => {
     ).toBe(false);
   });
 
+  it("rejects a preview cookie on production hosts", () => {
+    expect(
+      shouldRedirectActorToLogin(
+        getMockLocalActorContext(
+          "leader.a@mymedlife.test",
+          "Preview actor.",
+          "mock_fallback",
+          "local_preview_cookie",
+          "disabled",
+        ),
+        { VERCEL_ENV: "production" },
+      ),
+    ).toBe(true);
+
+    expect(
+      shouldRedirectActorToLogin(
+        getMockLocalActorContext(
+          "leader.a@mymedlife.test",
+          "Signed in actor.",
+          "supabase_ready",
+          "local_auth_session",
+          "signed_in",
+        ),
+        { VERCEL_ENV: "production" },
+      ),
+    ).toBe(false);
+  });
+
   it("builds a safe login redirect path for owned workspace entry", () => {
     expect(buildLoginRedirectHref("/staff?view=chapters")).toBe(
       "/login?redirectTo=%2Fstaff%3Fview%3Dchapters",
