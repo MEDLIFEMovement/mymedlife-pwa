@@ -275,6 +275,9 @@ describe("Luma event read sync", () => {
       if (query.table === "luma_event_links" && query.operation === "select") {
         return ok([{ id: "link-existing", chapter_id: enabledEnv.MYMEDLIFE_LUMA_CHAPTER_ID, chapter_event_id: "event-existing" }]);
       }
+      if (query.table === "chapter_events" && query.operation === "select") {
+        return ok([existingChapterEvent({ title: "Old event title" })]);
+      }
       return ok([]);
     });
 
@@ -297,6 +300,138 @@ describe("Luma event read sync", () => {
     ]));
     const eventUpdate = queries.find((query) => query.table === "chapter_events" && query.operation === "update");
     expect(eventUpdate?.payload).not.toHaveProperty("promotion_summary");
+  });
+
+  it("records an unchanged provider event without rewriting or re-auditing the app event", async () => {
+    const queries: FakeQuery[] = [];
+    const appClient = createFakeAppClient((query) => {
+      queries.push(query);
+      if (query.table === "staff_role_assignments") return ok([{ role_key: "super_admin" }]);
+      if (query.table === "chapters" && query.operation === "select") {
+        return ok([{ id: enabledEnv.MYMEDLIFE_LUMA_CHAPTER_ID }]);
+      }
+      if (query.table === "luma_sync_runs" && query.operation === "select") return ok([]);
+      if (query.table === "luma_sync_runs" && query.operation === "insert") {
+        return ok({ id: "run-unchanged" });
+      }
+      if (query.table === "luma_event_links" && query.operation === "select") {
+        return ok([{
+          id: "link-existing",
+          chapter_id: enabledEnv.MYMEDLIFE_LUMA_CHAPTER_ID,
+          chapter_event_id: "event-existing",
+        }]);
+      }
+      if (query.table === "chapter_events" && query.operation === "select") {
+        return ok([existingChapterEvent()]);
+      }
+      return ok([]);
+    });
+
+    const result = await runLumaEventSync("admin-1", "reconcile", {
+      env: enabledEnv,
+      appClient: appClient as never,
+      lumaClient: { readEvents: async () => [mappedLumaEvent()] },
+      now: () => new Date("2026-07-20T03:15:00.000Z"),
+    });
+
+    expect(result).toMatchObject({
+      success: true,
+      code: "luma_sync_succeeded",
+      counts: {
+        sourceEvents: 1,
+        eventUpserts: 1,
+        materializedEvents: 0,
+        updatedEvents: 0,
+        unchangedEvents: 1,
+        failures: 0,
+      },
+    });
+    expect(queries.some((query) =>
+      query.table === "chapter_events" && query.operation === "update"
+    )).toBe(false);
+    expect(queries.some((query) =>
+      query.table === "audit_logs" && query.operation === "insert"
+    )).toBe(false);
+    expect(queries).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        table: "luma_event_links",
+        operation: "update",
+        payload: expect.objectContaining({ status: "linked" }),
+      }),
+      expect.objectContaining({
+        table: "luma_sync_runs",
+        operation: "update",
+        payload: expect.objectContaining({
+          updated_event_count: 0,
+          unchanged_event_count: 1,
+        }),
+      }),
+    ]));
+  });
+
+  it("counts and audits a missing event backlink as an app-owned update", async () => {
+    const queries: FakeQuery[] = [];
+    const appClient = createFakeAppClient((query) => {
+      queries.push(query);
+      if (query.table === "staff_role_assignments") return ok([{ role_key: "super_admin" }]);
+      if (query.table === "chapters" && query.operation === "select") {
+        return ok([{ id: enabledEnv.MYMEDLIFE_LUMA_CHAPTER_ID }]);
+      }
+      if (query.table === "luma_sync_runs" && query.operation === "select") return ok([]);
+      if (query.table === "luma_sync_runs" && query.operation === "insert") {
+        return ok({ id: "run-backlink-repair" });
+      }
+      if (query.table === "luma_event_links" && query.operation === "select") {
+        return ok([{
+          id: "link-existing",
+          chapter_id: enabledEnv.MYMEDLIFE_LUMA_CHAPTER_ID,
+          chapter_event_id: "event-existing",
+        }]);
+      }
+      if (query.table === "chapter_events" && query.operation === "select") {
+        return ok([existingChapterEvent({ luma_event_link_id: null })]);
+      }
+      return ok([]);
+    });
+
+    const result = await runLumaEventSync("admin-1", "reconcile", {
+      env: enabledEnv,
+      appClient: appClient as never,
+      lumaClient: { readEvents: async () => [mappedLumaEvent()] },
+      now: () => new Date("2026-07-20T03:20:00.000Z"),
+    });
+
+    expect(result).toMatchObject({
+      success: true,
+      counts: {
+        materializedEvents: 0,
+        updatedEvents: 1,
+        unchangedEvents: 0,
+        failures: 0,
+      },
+    });
+    expect(queries).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        table: "chapter_events",
+        operation: "update",
+        payload: { luma_event_link_id: "link-existing" },
+      }),
+      expect.objectContaining({
+        table: "audit_logs",
+        operation: "insert",
+        payload: expect.objectContaining({
+          action: "luma_event_reconciled",
+        }),
+      }),
+      expect.objectContaining({
+        table: "luma_sync_runs",
+        operation: "update",
+        payload: expect.objectContaining({
+          updated_event_count: 1,
+          unchanged_event_count: 0,
+        }),
+      }),
+    ]));
   });
 
   it("cancels and disables linked events absent from a complete backfill", async () => {
@@ -826,6 +961,24 @@ function mappedLumaEvent() {
     registrationOpen: true,
     createdAt: "2026-07-18T00:00:00.000Z",
     source: lumaEvent(),
+  };
+}
+
+function existingChapterEvent(overrides: Record<string, unknown> = {}) {
+  return {
+    id: "event-existing",
+    title: "MEDLIFE Community Night",
+    event_type: "luma_event",
+    status: "published",
+    starts_at: "2026-08-01T22:00:00+00:00",
+    ends_at: "2026-08-02T00:00:00+00:00",
+    description: "A real event imported from Luma.",
+    location_type: "in_person",
+    location_name: "123 Main Street",
+    virtual_url: null,
+    promotion_summary: "A real event imported from Luma.",
+    luma_event_link_id: "link-existing",
+    ...overrides,
   };
 }
 

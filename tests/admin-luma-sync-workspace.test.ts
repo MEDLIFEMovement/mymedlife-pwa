@@ -32,6 +32,7 @@ describe("admin Luma sync workspace", () => {
         source_event_count: 10,
         materialized_event_count: 4,
         updated_event_count: 5,
+        unchanged_event_count: 1,
         conflict_count: 1,
         failure_count: 1,
       }]);
@@ -72,6 +73,7 @@ describe("admin Luma sync workspace", () => {
         sourceEvents: 10,
         materializedEvents: 4,
         updatedEvents: 5,
+        unchangedEvents: 1,
       },
       counts: { calendars: 1, importedEvents: 10, materializedEvents: 8, conflicts: 1, openFailures: 1 },
       failures: [{

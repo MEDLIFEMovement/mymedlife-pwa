@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(8);
+select plan(10);
 
 set local role service_role;
 
@@ -71,6 +71,21 @@ select is(
 select ok(
   (select heartbeat_at is not null from app.luma_sync_runs where id = '84000000-0000-4000-8000-000000000002'),
   'Every Luma run has a durable heartbeat timestamp'
+);
+
+select is(
+  (select unchanged_event_count from app.luma_sync_runs where id = '84000000-0000-4000-8000-000000000002'),
+  0,
+  'Luma runs default the unchanged event count to zero'
+);
+
+select throws_ok(
+  $$ update app.luma_sync_runs
+     set unchanged_event_count = -1
+     where id = '84000000-0000-4000-8000-000000000002' $$,
+  '23514',
+  null,
+  'Luma run unchanged event counts cannot be negative'
 );
 
 set local role authenticated;

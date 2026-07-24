@@ -144,7 +144,7 @@ export default async function AdminLumaIntegrationPage() {
                     <p>Completed {syncWorkspace.lastRun.completedAt ?? "Still running"}</p>
                     <p>Heartbeat {syncWorkspace.lastRun.heartbeatAt}</p>
                     <p>
-                      {syncWorkspace.lastRun.sourceEvents} source · {syncWorkspace.lastRun.materializedEvents} new · {syncWorkspace.lastRun.updatedEvents} updated
+                      {syncWorkspace.lastRun.sourceEvents} source · {syncWorkspace.lastRun.materializedEvents} new · {syncWorkspace.lastRun.updatedEvents} updated · {syncWorkspace.lastRun.unchangedEvents} unchanged
                     </p>
                   </div>
                 ) : (
