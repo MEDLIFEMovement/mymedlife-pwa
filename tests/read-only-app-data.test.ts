@@ -173,6 +173,39 @@ describe("read-only app data service", () => {
     ]);
   });
 
+  it("includes chapter-owned Luma events that are not assigned to the active campaign", async () => {
+    const rows = structuredClone(fakeRows);
+    rows.chapter_events.push({
+      ...(rows.chapter_events[0] as Record<string, unknown>),
+      id: "chapter-event-luma-history",
+      campaign_id: null,
+      phase_id: null,
+      assignment_id: null,
+      title: "Imported provider event",
+      event_type: "luma_event",
+      status: "completed",
+      luma_event_link_id: "luma-link-history",
+    });
+    rows.luma_event_links.push({
+      ...(rows.luma_event_links[0] as Record<string, unknown>),
+      id: "luma-link-history",
+      campaign_id: null,
+      phase_id: null,
+      chapter_event_id: "chapter-event-luma-history",
+      luma_event_id: "evt-history",
+    });
+
+    const data = await getSupabaseReadOnlyAppData(createFakeClient(rows));
+
+    expect(data.chapterEventRows.map((event) => event.id)).toEqual([
+      "chapter-event-1",
+      "chapter-event-luma-history",
+    ]);
+    expect(data.lumaEventLinkRows.map((link) => link.id)).toEqual(
+      expect.arrayContaining(["luma-link-1", "luma-link-history"]),
+    );
+  });
+
   it("selects the signed-in actor's approved chapter instead of the first active chapter", async () => {
     const rows = structuredClone(fakeRows);
     const firstChapter = rows.chapters?.[0] as Record<string, unknown>;

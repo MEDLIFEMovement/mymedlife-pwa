@@ -297,6 +297,9 @@ describe("Luma event read sync", () => {
     ]));
     const eventUpdate = queries.find((query) => query.table === "chapter_events" && query.operation === "update");
     expect(eventUpdate?.payload).not.toHaveProperty("promotion_summary");
+    expect(eventUpdate?.payload).toMatchObject({
+      location_name: "123 Main Street",
+    });
   });
 
   it("cancels and disables linked events absent from a complete backfill", async () => {

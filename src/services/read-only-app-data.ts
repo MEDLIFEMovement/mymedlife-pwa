@@ -1611,8 +1611,20 @@ function buildCampaignScopedData(
     isChapterEvidenceRow(item, scope.chapterId, assignmentIds),
   );
   const evidenceItems = evidenceItemRows.map(toDomainEvidenceItem);
+  const chapterLumaEventIds = new Set(
+    snapshot.lumaEventLinkRows
+      .filter(
+        (item) =>
+          item.chapter_id === scope.chapterId &&
+          item.campaign_id === null &&
+          item.chapter_event_id !== null,
+      )
+      .map((item) => item.chapter_event_id as string),
+  );
   const chapterEventRows = snapshot.chapterEventRows.filter(
-    (item) => item.chapter_id === scope.chapterId && item.campaign_id === scope.campaignId,
+    (item) =>
+      item.chapter_id === scope.chapterId &&
+      (item.campaign_id === scope.campaignId || chapterLumaEventIds.has(item.id)),
   );
   const chapterEventIds = new Set(chapterEventRows.map((item) => item.id));
   const lumaEventLinkRows = snapshot.lumaEventLinkRows.filter((item) =>
