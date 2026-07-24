@@ -117,6 +117,19 @@ type HubSpotMembershipQualification = {
   evidenceTerms: string[];
 };
 
+type ContactProfileMatch =
+  | { status: "matched"; profileId: string }
+  | { status: "none" | "stopped" };
+
+type ContactSyncContext = {
+  client: AppClient;
+  runId: string;
+  actorUserId: string | null;
+  contact: HubSpotContactRecord;
+  counts: HubSpotSyncCounts;
+  profileIds: Map<string, string>;
+};
+
 type HubSpotObjectRow = {
   id?: string;
   properties?: Record<string, string | null | undefined>;
@@ -854,7 +867,22 @@ async function syncContact(
   counts: HubSpotSyncCounts,
   profileIds: Map<string, string>,
 ) {
+  const context = { client, runId, actorUserId, contact, counts, profileIds };
   const email = normalizeEmail(contact.email);
+  const staged = await stageHubSpotContact(context, email);
+  if (!staged) return;
+
+  const match = await resolveContactProfileMatch(context, email);
+  if (match.status !== "matched") return;
+
+  await materializeContactProfile(context, email, match.profileId);
+}
+
+async function stageHubSpotContact(
+  context: ContactSyncContext,
+  email: string | null,
+): Promise<boolean> {
+  const { client, runId, contact, counts } = context;
   const staged = await client.schema("app").from("hubspot_contact_imports").upsert({
     hubspot_contact_id: contact.id,
     email,
@@ -871,10 +899,17 @@ async function syncContact(
   if (staged.error) {
     counts.failures += 1;
     await recordFailure(client, runId, "contact", contact.id, "contact_stage_failed", staged.error.message, contact.source);
-    return;
+    return false;
   }
   counts.contactUpserts += 1;
+  return true;
+}
 
+async function resolveContactProfileMatch(
+  context: ContactSyncContext,
+  email: string | null,
+): Promise<ContactProfileMatch> {
+  const { client, runId, contact, counts } = context;
   const linkedProfiles = await client.schema("app").from("profiles")
     .select("id,hubspot_contact_id,display_name,email")
     .eq("hubspot_contact_id", contact.id)
@@ -890,11 +925,11 @@ async function syncContact(
       linkedProfiles.error.message,
       contact.source,
     );
-    return;
+    return { status: "stopped" };
   }
   let matches = linkedProfiles.data ?? [];
   if (matches.length === 0) {
-    if (!email) return;
+    if (!email) return { status: "none" };
     const emailProfiles = await client.schema("app").from("profiles")
       .select("id,hubspot_contact_id,display_name,email")
       .ilike("email", email)
@@ -902,18 +937,25 @@ async function syncContact(
     if (emailProfiles.error) {
       counts.failures += 1;
       await recordFailure(client, runId, "contact", contact.id, "profile_lookup_failed", emailProfiles.error.message, contact.source);
-      return;
+      return { status: "stopped" };
     }
     matches = emailProfiles.data ?? [];
   }
-  if (matches.length === 0) return;
+  if (matches.length === 0) return { status: "none" };
   if (matches.length > 1 || (matches[0]?.hubspot_contact_id && matches[0].hubspot_contact_id !== contact.id)) {
     counts.conflicts += 1;
     await markContactReconciliation(client, contact.id, "conflict", "Multiple or externally linked app profiles match this HubSpot contact.", null);
-    return;
+    return { status: "stopped" };
   }
+  return { status: "matched", profileId: String(matches[0].id) };
+}
 
-  const profileId = String(matches[0].id);
+async function materializeContactProfile(
+  context: ContactSyncContext,
+  email: string | null,
+  profileId: string,
+) {
+  const { client, runId, actorUserId, contact, counts, profileIds } = context;
   const displayName = buildHubSpotDisplayName(contact);
   const profileUpdate: Record<string, string> = {
     hubspot_contact_id: contact.id,
