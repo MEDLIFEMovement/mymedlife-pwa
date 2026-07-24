@@ -50,6 +50,7 @@ export type AdminLumaIntegrationStatus = {
   counts: {
     calendars: number;
     linkedEvents: number;
+    upcomingLinkedEvents: number;
     lumaIntegrationEvents: number;
     lumaOutboxRows: number;
     liveSendRows: number;
@@ -79,6 +80,7 @@ export function getAdminLumaIntegrationStatus(
   actor: LocalActorContext,
   data: ReadOnlyAppData,
   env: LumaStatusEnv = process.env,
+  now = new Date(),
 ): AdminLumaIntegrationStatus {
   if (!canReadAdminIntegrationsSecurity(actor)) {
     return hiddenStatus();
@@ -101,6 +103,16 @@ export function getAdminLumaIntegrationStatus(
     row.status !== "disabled" &&
     row.status !== "failed"
   );
+  const linkedProviderEventIds = new Set(
+    linkedProviderEvents.flatMap((row) =>
+      row.chapter_event_id ? [row.chapter_event_id] : [],
+    ),
+  );
+  const upcomingLinkedEvents = data.allChapterEventRows.filter(
+    (row) =>
+      linkedProviderEventIds.has(row.id) &&
+      isUpcomingProviderEvent(row.status, row.starts_at, now),
+  ).length;
   const lastTestTime = getLatestTimestamp([
     ...lumaIntegrationEvents.map((row) => row.updated_at),
     ...lumaOutboxRows.map((row) => row.updated_at),
@@ -131,6 +143,7 @@ export function getAdminLumaIntegrationStatus(
     counts: {
       calendars: scopedReadback.calendars.length,
       linkedEvents: scopedReadback.eventLinks.filter((row) => row.luma_event_url).length,
+      upcomingLinkedEvents,
       lumaIntegrationEvents: lumaIntegrationEvents.length,
       lumaOutboxRows: lumaOutboxRows.length,
       liveSendRows: liveSendRows.length,
@@ -157,6 +170,18 @@ export function getAdminLumaIntegrationStatus(
           linkedProviderEvents.length > 0
             ? `${linkedProviderEvents.length} Luma event link${linkedProviderEvents.length === 1 ? " is" : "s are"} attached to app-owned chapter events.`
             : "No active Luma URL is attached to an app-owned chapter event yet.",
+      },
+      {
+        label: "Future member-loop proof",
+        value:
+          upcomingLinkedEvents > 0
+            ? `${upcomingLinkedEvents} upcoming`
+            : "no upcoming event",
+        status: upcomingLinkedEvents > 0 ? "pass" : "needs_setup",
+        detail:
+          upcomingLinkedEvents > 0
+            ? `${upcomingLinkedEvents} future Luma-linked app event${upcomingLinkedEvents === 1 ? " is" : "s are"} available for member RSVP proof.`
+            : "Provider ingestion is healthy, but no future Luma-linked event is available to prove RSVP, cancellation, check-in, attendance, and points in production.",
       },
       {
         label: "Member QR check-in",
@@ -226,6 +251,7 @@ function hiddenStatus(): AdminLumaIntegrationStatus {
     counts: {
       calendars: 0,
       linkedEvents: 0,
+      upcomingLinkedEvents: 0,
       lumaIntegrationEvents: 0,
       lumaOutboxRows: 0,
       liveSendRows: 0,
@@ -238,6 +264,19 @@ function hiddenStatus(): AdminLumaIntegrationStatus {
     safetyNotes: [],
     blockedControls: [],
   };
+}
+
+function isUpcomingProviderEvent(
+  status: string,
+  startsAt: string | null,
+  now: Date,
+) {
+  if (["completed", "feedback_collected", "canceled", "cancelled"].includes(status)) {
+    return false;
+  }
+
+  const startsAtValue = new Date(startsAt ?? 0).getTime();
+  return !Number.isNaN(startsAtValue) && startsAtValue > now.getTime();
 }
 
 function resolveLumaEnvironment(

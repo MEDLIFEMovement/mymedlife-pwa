@@ -85,7 +85,7 @@ export default async function AdminLumaIntegrationPage() {
             </div>
           </section>
 
-          <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-6">
+          <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-7">
             <MiniStat label="Environment" value={workspace.environmentLabel} />
             <MiniStat
               label="Provider"
@@ -96,6 +96,10 @@ export default async function AdminLumaIntegrationPage() {
             <MiniStat
               label="Linked events"
               value={`${workspace.counts.linkedEvents}`}
+            />
+            <MiniStat
+              label="Upcoming"
+              value={`${workspace.counts.upcomingLinkedEvents}`}
             />
             <MiniStat
               label="Live sends"

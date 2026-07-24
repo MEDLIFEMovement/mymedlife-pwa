@@ -10,12 +10,13 @@ describe("admin Luma integration status", () => {
     const data = getMockReadOnlyAppData("Testing Luma setup route.");
     const status = getAdminLumaIntegrationStatus(actor, data, {
       MYMEDLIFE_LUMA_MODE: "staging",
-    });
+    }, new Date("2026-07-24T17:00:00.000Z"));
 
     expect(status.canReadWorkspace).toBe(true);
     expect(status.environment).toBe("staging");
     expect(status.counts.calendars).toBeGreaterThan(0);
     expect(status.counts.linkedEvents).toBeGreaterThan(0);
+    expect(status.counts.upcomingLinkedEvents).toBeGreaterThan(0);
     expect(status.counts.browserSecretsShown).toBe(0);
     expect(status.counts.externalWritesEnabled).toBe(0);
     expect(status.blockedControls).toContain("show raw API key");
@@ -25,12 +26,43 @@ describe("admin Luma integration status", () => {
       value: "ready",
       status: "pass",
     }));
+    expect(status.setupChecks).toContainEqual(expect.objectContaining({
+      label: "Future member-loop proof",
+      status: "pass",
+    }));
     expect(status.setupChecks).toContainEqual({
       label: "Member QR check-in",
       value: "preview-only",
       status: "blocked",
       detail:
         "The member event surface still labels its QR code as Preview only. QR scanning is not counted as production-ready.",
+    });
+  });
+
+  it("does not treat historical Luma imports as future member-loop proof", () => {
+    const actor = getMockLocalActorContext("ds.admin@mymedlife.test");
+    const data = getMockReadOnlyAppData("Testing historical Luma proof honesty.");
+    data.allChapterEventRows = data.allChapterEventRows.map((row) => ({
+      ...row,
+      status: "completed",
+      starts_at: "2026-07-20T18:00:00.000Z",
+      ends_at: "2026-07-20T20:00:00.000Z",
+    }));
+
+    const status = getAdminLumaIntegrationStatus(
+      actor,
+      data,
+      { MYMEDLIFE_LUMA_MODE: "staging" },
+      new Date("2026-07-24T17:00:00.000Z"),
+    );
+
+    expect(status.counts.upcomingLinkedEvents).toBe(0);
+    expect(status.setupChecks).toContainEqual({
+      label: "Future member-loop proof",
+      value: "no upcoming event",
+      status: "needs_setup",
+      detail:
+        "Provider ingestion is healthy, but no future Luma-linked event is available to prove RSVP, cancellation, check-in, attendance, and points in production.",
     });
   });
 

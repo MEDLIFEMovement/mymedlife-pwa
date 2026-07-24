@@ -191,6 +191,7 @@ function hiddenPacket(): LumaDryRunAdapterPacket {
       counts: {
         calendars: 0,
         linkedEvents: 0,
+        upcomingLinkedEvents: 0,
         lumaIntegrationEvents: 0,
         lumaOutboxRows: 0,
         liveSendRows: 0,
