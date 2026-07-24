@@ -20,6 +20,38 @@ describe("admin Luma integration status", () => {
     expect(status.counts.externalWritesEnabled).toBe(0);
     expect(status.blockedControls).toContain("show raw API key");
     expect(status.safetyNotes.join(" ")).toContain("does not call the Luma API");
+    expect(status.setupChecks).toContainEqual(expect.objectContaining({
+      label: "Provider event-link readback",
+      value: "ready",
+      status: "pass",
+    }));
+    expect(status.setupChecks).toContainEqual({
+      label: "Member QR check-in",
+      value: "preview-only",
+      status: "blocked",
+      detail:
+        "The member event surface still labels its QR code as Preview only. QR scanning is not counted as production-ready.",
+    });
+  });
+
+  it("does not count an unlinked provider URL as app-owned event readback", () => {
+    const actor = getMockLocalActorContext("ds.admin@mymedlife.test");
+    const data = getMockReadOnlyAppData("Testing incomplete Luma event linking.");
+    data.allLumaEventLinkRows = data.allLumaEventLinkRows.map((row) => ({
+      ...row,
+      chapter_event_id: null,
+    }));
+
+    const status = getAdminLumaIntegrationStatus(actor, data, {
+      MYMEDLIFE_LUMA_MODE: "staging",
+    });
+
+    expect(status.setupChecks).toContainEqual({
+      label: "Provider event-link readback",
+      value: "pending",
+      status: "needs_setup",
+      detail: "No active Luma URL is attached to an app-owned chapter event yet.",
+    });
   });
 
   it("shows live-ready credentials as not enabled without exposing secret values", () => {
