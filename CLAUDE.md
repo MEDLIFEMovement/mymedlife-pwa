@@ -71,6 +71,19 @@ associations for active chapters are authoritative for approved general-member
 memberships; every materialization must retain source IDs and write an audit-log
 entry tied to the initiating DS Admin or Super Admin.
 
+The same Phase 2 source-to-role mapping authorization permits two chapter-leader
+membership roles when `MYMEDLIFE_HUBSPOT_ACTIVE_EBOARD_TERMS` is explicitly
+configured: a contact with `eboard__c=true` and a matching `eboard_year` may
+materialize as `president_vp` when `contact_position__c` is President or Vice
+President, or as `e_board_member` for another E-board position. A current
+E-board role takes precedence over general-member qualification. This extension
+implements the product owner's approved Phase 2 requirement to materialize role
+mappings and practical role-based HubSpot filters. It does not authorize
+action-committee inference, staff/admin roles, account creation or invitations,
+HubSpot mutations, production flag changes, or deployment. Every materialized
+role must retain the source contact/company IDs, source term and position
+evidence, and the existing audited reconciliation lineage.
+
 The server-only Luma source sync may read events from one explicitly mapped,
 calendar-scoped pilot and materialize app-owned chapter-event and provider-link
 records in Supabase when all dedicated Luma sync flags are enabled. This

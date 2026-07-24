@@ -55,6 +55,15 @@ describe("HubSpot read sync foundation", () => {
     expect(getHubSpotReadSyncConfig(enabledEnv)).toMatchObject({
       enabled: true,
       environment: "production",
+      activeEboardTerms: ["2026-2", "2027-1"],
+    });
+    expect(getHubSpotReadSyncConfig({
+      ...enabledEnv,
+      MYMEDLIFE_HUBSPOT_ACTIVE_EBOARD_TERMS: undefined,
+    })).toMatchObject({
+      enabled: true,
+      activeEboardTerms: [],
+      reason: expect.stringContaining("E-board role assignment requires"),
     });
 
     expect(getHubSpotReadSyncConfig({
@@ -359,6 +368,16 @@ describe("HubSpot read sync foundation", () => {
     }, config)).toEqual({
       roleKey: "e_board_member",
       evidenceFields: ["eboard__c", "eboard_year", "contact_position__c"],
+      evidenceTerms: ["2026-2"],
+    });
+    expect(getHubSpotMembershipQualification({
+      ...oneContact(),
+      eboard: true,
+      eboardYears: ["2026-2"],
+      eboardPosition: null,
+    }, config)).toEqual({
+      roleKey: "e_board_member",
+      evidenceFields: ["eboard__c", "eboard_year"],
       evidenceTerms: ["2026-2"],
     });
     expect(getHubSpotMembershipQualification({

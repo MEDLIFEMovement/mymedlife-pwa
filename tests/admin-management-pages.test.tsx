@@ -909,7 +909,7 @@ describe("admin management pages", () => {
       success: true,
       code: "hubspot_preflight_succeeded",
       allowlistConfigured: false,
-      eboardAllowlistConfigured: false,
+      eboardAllowlistConfigured: true,
       memberTermCandidates: [
         {
           term: "2026-2027",
@@ -921,13 +921,13 @@ describe("admin management pages", () => {
           eboardApproved: false,
         },
         {
-          term: "2026-27",
-          contactCount: 28,
+          term: "2026-2",
+          contactCount: 8,
           activeYearCount: 0,
-          qrYearCount: 28,
-          eboardYearCount: 0,
+          qrYearCount: 0,
+          eboardYearCount: 8,
           approved: false,
-          eboardApproved: false,
+          eboardApproved: true,
         },
       ],
       counts: {
@@ -976,11 +976,12 @@ describe("admin management pages", () => {
     expect(html).toContain("Profiles (700 source)");
     expect(html).toContain("Memberships (0 qualified)");
     expect(html).toContain("Provider member-term candidates");
-    expect(html).toContain("2026-27");
+    expect(html).toContain("2026-2");
     expect(html).toContain("E-board years");
     expect(html).toContain("E-board allowlist");
     expect(html).toContain("Member-term allowlist:");
     expect(html).toContain("E-board-term allowlist:");
+    expect(html).toContain("E-board-term allowlist: configured");
     expect(html).toContain("required before general-member impact");
     expect(html).toContain("Example chapter creates: University One");
     expect(html).toContain("No HubSpot or app-owned records were changed");
