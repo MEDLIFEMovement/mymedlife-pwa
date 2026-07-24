@@ -134,6 +134,54 @@ describe("admin integration outbox workspace", () => {
     expect(hubspot?.routeEvidence).toContain("/admin/integrations/hubspot");
   });
 
+  it("blocks degraded syncs and keeps configured-but-empty syncs on watch", () => {
+    const actor = getMockLocalActorContext("super.admin@mymedlife.test");
+    const workspace = getAdminIntegrationOutboxWorkspace(actor, data, {
+      providerReadback: {
+        luma: {
+          canRead: true,
+          config: { enabled: true },
+          lastRun: { status: "partial" },
+          counts: {
+            calendars: 1,
+            importedEvents: 67,
+            materializedEvents: 66,
+            conflicts: 1,
+            openFailures: 1,
+          },
+        } as AdminLumaSyncWorkspace,
+        hubspot: {
+          canRead: true,
+          config: { enabled: true },
+          lastRun: null,
+          counts: {
+            companies: 0,
+            contacts: 0,
+            memberships: 0,
+            pendingCompanies: 0,
+            pendingContacts: 0,
+            pendingMemberships: 0,
+            materializedMemberships: 0,
+            ignoredMemberships: 0,
+            openFailures: 0,
+          },
+        } as AdminHubSpotSyncWorkspace,
+      },
+    });
+
+    const luma = workspace.contractReview.items.find(
+      (item) => item.key === "luma",
+    );
+    const hubspot = workspace.contractReview.items.find(
+      (item) => item.key === "hubspot",
+    );
+
+    expect(luma?.status).toBe("blocked");
+    expect(luma?.currentPosture).toContain("1 open failure(s)");
+    expect(hubspot?.status).toBe("watch");
+    expect(hubspot?.currentPosture).toContain("not yet recorded");
+  });
+
   it("builds a live-send preflight checklist before any external automation", () => {
     const actor = getMockLocalActorContext("admin@mymedlife.test");
     const workspace = getAdminIntegrationOutboxWorkspace(actor, data);
