@@ -147,7 +147,7 @@ function buildLumaContract(
 
   return {
     ...fallback,
-    status: needsReview ? "blocked" : hasMaterializedEvents ? "ready" : "watch",
+    status: getProviderContractStatus(needsReview, hasMaterializedEvents),
     currentPosture:
       `${sync.counts.importedEvents} provider event(s) imported; ` +
       `${sync.counts.materializedEvents} materialized in app-owned tables; ` +
@@ -201,7 +201,7 @@ function buildHubSpotContract(
 
   return {
     ...fallback,
-    status: needsReview ? "blocked" : hasImportedRecords ? "ready" : "watch",
+    status: getProviderContractStatus(needsReview, hasImportedRecords),
     currentPosture:
       `${sync.counts.companies} company record(s), ${sync.counts.contacts} contact record(s), and ` +
       `${sync.counts.materializedMemberships} membership(s) are materialized or staged in app-owned tables; ` +
@@ -213,6 +213,15 @@ function buildHubSpotContract(
       "/admin/audit-log",
     ],
   };
+}
+
+function getProviderContractStatus(
+  needsReview: boolean,
+  hasMaterializedData: boolean,
+): IntegrationContractStatus {
+  if (needsReview) return "blocked";
+  if (hasMaterializedData) return "ready";
+  return "watch";
 }
 
 function buildDestinationContract(input: {
