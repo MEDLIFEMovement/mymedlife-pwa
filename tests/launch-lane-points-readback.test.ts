@@ -303,7 +303,12 @@ describe("launch lane points readback", () => {
   it("keeps staff chapter rows and the org leaderboard tied to the same totals", () => {
     const data = getMockReadOnlyAppData("Testing staff launch-lane readback.");
 
-    expect(getLaunchLaneStaffChapterReadback(data)).toEqual(
+    expect(
+      getLaunchLaneStaffChapterReadback(
+        data,
+        new Date("2026-11-01T12:00:00Z"),
+      ),
+    ).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
           name: "UCLA MEDLIFE",
@@ -500,7 +505,12 @@ describe("launch lane points readback", () => {
       },
     );
 
-    expect(getLaunchLaneStaffChapterReadback(data)).toEqual(
+    expect(
+      getLaunchLaneStaffChapterReadback(
+        data,
+        new Date("2026-11-01T12:00:00Z"),
+      ),
+    ).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
           name: "UCLA MEDLIFE",
@@ -527,6 +537,80 @@ describe("launch lane points readback", () => {
         expect.objectContaining({
           chapterName: "UCLA MEDLIFE",
           eventCount: 2,
+        }),
+      ]),
+    );
+  });
+
+  it("skips completed historical events when selecting the next staff Luma event", () => {
+    const dataWithUpcomingEvent = withAdditionalUclaEvent(
+      getMockReadOnlyAppData("Testing upcoming-event staff readback."),
+      {
+        event: {
+          id: "chapter-event-ucla-upcoming-fair",
+          title: "Upcoming Luma chapter fair",
+          starts_at: "2026-11-29T19:00:00Z",
+          ends_at: "2026-11-29T21:00:00Z",
+          status: "published",
+          attendance_count: null,
+          luma_event_link_id: "luma-link-ucla-upcoming-fair",
+        },
+        link: {
+          id: "luma-link-ucla-upcoming-fair",
+          luma_event_id: "provider-ucla-upcoming-fair",
+          luma_event_url: "https://lu.ma/provider-ucla-upcoming-fair",
+        },
+      },
+    );
+    const data = withAdditionalUclaEvent(dataWithUpcomingEvent, {
+      event: {
+        id: "chapter-event-ucla-canceled-fair",
+        title: "Canceled chapter fair",
+        starts_at: "2026-11-25T19:00:00Z",
+        ends_at: "2026-11-25T21:00:00Z",
+        status: "canceled",
+        attendance_count: null,
+        luma_event_link_id: null,
+      },
+    });
+
+    expect(
+      getLaunchLaneStaffChapterReadback(
+        data,
+        new Date("2026-11-20T12:00:00Z"),
+      ),
+    ).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          name: "UCLA MEDLIFE",
+          chapterEventId: "chapter-event-ucla-upcoming-fair",
+          nextEvent: "Upcoming Luma chapter fair",
+          rsvps: 0,
+          attendance: 0,
+          risk: "No RSVPs",
+        }),
+      ]),
+    );
+  });
+
+  it("shows an explicit no-upcoming posture instead of recycling a historical event", () => {
+    const data = getMockReadOnlyAppData("Testing no-upcoming-event staff readback.");
+
+    expect(
+      getLaunchLaneStaffChapterReadback(
+        data,
+        new Date("2026-12-01T12:00:00Z"),
+      ),
+    ).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          name: "UCLA MEDLIFE",
+          chapterEventId: null,
+          detailHref: null,
+          nextEvent: "No event scheduled",
+          rsvps: 0,
+          attendance: 0,
+          risk: "No upcoming events",
         }),
       ]),
     );

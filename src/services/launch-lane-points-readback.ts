@@ -11,7 +11,6 @@ import {
 } from "@/services/events-points-launch-lane";
 import {
   countLaunchLaneChapterEventsByChapter,
-  countLaunchLaneRsvpsByChapter,
   findLaunchLaneProfileIdByEmail,
   getLaunchLaneEventSnapshotById,
   getLaunchLaneEventSnapshots,
@@ -632,12 +631,12 @@ function toAttendanceRowKey(userId: string | null, name: string) {
 
 export function getLaunchLaneStaffChapterReadback(
   data: ReadOnlyAppData,
+  now = new Date(),
 ): LaunchLaneStaffChapterReadback[] {
   const allEventSnapshots = getLaunchLaneEventSnapshots(data, {
     chapterEvents: data.allChapterEventRows,
     lumaEventLinks: data.allLumaEventLinkRows,
   });
-  const rsvpsByChapter = countLaunchLaneRsvpsByChapter(data.allEventRows);
   const pointsByChapter = sumLaunchLanePointsForAllChapters(data.allPointsEventRows);
 
   return data.chapterRows.map((chapter) => {
@@ -653,9 +652,9 @@ export function getLaunchLaneStaffChapterReadback(
         persistedRows: data.chapterLumaCalendarRows,
       },
     );
-    const nextEvent = chapterEvents[0] ?? null;
+    const nextEvent = getSoonestCurrentOrUpcomingEvent(chapterEvents, now);
     const attendance = nextEvent?.attendanceCount ?? 0;
-    const rsvps = rsvpsByChapter.get(chapter.id) ?? attendance;
+    const rsvps = nextEvent?.rsvpCount ?? 0;
     const points = pointsByChapter.get(chapter.id) ?? 0;
 
     return {
@@ -691,6 +690,41 @@ export function getLaunchLaneStaffChapterReadback(
       ),
     };
   });
+}
+
+function getSoonestCurrentOrUpcomingEvent(
+  events: readonly LaunchLaneEventSnapshot[],
+  now: Date,
+) {
+  const nowTime = now.getTime();
+
+  if (!Number.isFinite(nowTime)) {
+    return null;
+  }
+
+  return (
+    events.find((event) => {
+      if (event.status === "canceled" || event.status === "cancelled") {
+        return false;
+      }
+
+      const startsAt = getFiniteTime(event.startsAt);
+      const endsAt = getFiniteTime(event.endsAt);
+      const visibleThrough = endsAt ?? startsAt;
+
+      return visibleThrough !== null && visibleThrough >= nowTime;
+    }) ?? null
+  );
+}
+
+function getFiniteTime(value: string | null) {
+  if (!value) {
+    return null;
+  }
+
+  const time = new Date(value).getTime();
+
+  return Number.isFinite(time) ? time : null;
 }
 
 export function getLaunchLaneStaffEventReadback(
