@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
+
 import { AppShell } from "@/components/app-shell";
 import { EventOutboxLog } from "@/components/event-outbox-log";
 import {
@@ -7,6 +9,10 @@ import {
   type AuthOnboardingPreflightItem,
   type AuthOnboardingPreflightStatus,
 } from "@/services/auth-onboarding-workspace";
+import {
+  buildLoginRedirectHref,
+  shouldRedirectActorToLogin,
+} from "@/services/login-route";
 import { getLocalActorContext } from "@/services/local-actor-context";
 import { getStaticRouteMetadata } from "@/services/static-route-metadata";
 
@@ -15,6 +21,11 @@ export const dynamic = "force-dynamic";
 
 export default async function OnboardingPage() {
   const actor = await getLocalActorContext();
+
+  if (shouldRedirectActorToLogin(actor)) {
+    redirect(buildLoginRedirectHref("/onboarding"));
+  }
+
   const workspace = getAuthOnboardingWorkspace(actor);
 
   return (
