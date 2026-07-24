@@ -803,6 +803,85 @@ describe("HubSpot read sync foundation", () => {
     ]));
   });
 
+  it("deactivates only a changed contact's stale memberships during incremental sync", async () => {
+    const queries: FakeQuery[] = [];
+    const appClient = createFakeAppClient((query) => {
+      queries.push(query);
+      if (query.table === "staff_role_assignments") return ok([{ role_key: "super_admin" }]);
+      if (query.table === "hubspot_sync_runs" && query.operation === "select") {
+        return ok(query.filterValue("status") === "succeeded"
+          ? [{ checkpoint_after: "2026-07-20T12:00:00.000Z" }]
+          : []);
+      }
+      if (query.table === "hubspot_sync_runs" && query.operation === "insert") {
+        return ok({ id: "run-association-removed" });
+      }
+      if (query.table === "chapters" && query.operation === "select") {
+        return ok([{ id: "chapter-1", hubspot_company_id: "company-1", status: "active" }]);
+      }
+      if (query.table === "profiles" && query.operation === "select") {
+        return ok([{ id: "profile-1", hubspot_contact_id: "contact-1" }]);
+      }
+      if (query.table === "memberships" && query.operation === "select") {
+        return ok([
+          {
+            id: "membership-removed",
+            chapter_id: "chapter-1",
+            status: "approved",
+            hubspot_association_key: "contact-1:company-1",
+          },
+          {
+            id: "membership-unrelated",
+            chapter_id: "chapter-1",
+            status: "approved",
+            hubspot_association_key: "contact-2:company-1",
+          },
+        ]);
+      }
+      return ok([]);
+    });
+
+    const result = await runHubSpotReadSync("super-1", "incremental", {
+      env: enabledEnv,
+      appClient: appClient as never,
+      hubspotClient: {
+        ...oneCompanyClient(),
+        readContactsWithCompanies: async () => [{
+          ...oneContact(),
+          companyIds: [],
+        }],
+      },
+      now: () => new Date("2026-07-20T13:30:00.000Z"),
+    });
+
+    expect(result).toMatchObject({
+      success: true,
+      code: "hubspot_sync_succeeded",
+      counts: {
+        sourceContacts: 1,
+        membershipDeactivations: 1,
+      },
+    });
+    const membershipDeactivations = queries.filter((query) => (
+      query.table === "memberships"
+      && query.operation === "update"
+      && (query.payload as { status?: string }).status === "inactive"
+    ));
+    expect(membershipDeactivations).toHaveLength(1);
+    expect(membershipDeactivations[0].filters).toContainEqual({
+      column: "hubspot_association_key",
+      value: "contact-1:company-1",
+    });
+    expect(queries).toContainEqual(expect.objectContaining({
+      table: "audit_logs",
+      operation: "insert",
+      payload: expect.objectContaining({
+        action: "hubspot_membership_deactivated",
+        target_id: "membership-removed",
+      }),
+    }));
+  });
+
   it("deactivates active HubSpot-linked chapters missing from a complete backfill", async () => {
     const queries: FakeQuery[] = [];
     const appClient = createFakeAppClient((query) => {

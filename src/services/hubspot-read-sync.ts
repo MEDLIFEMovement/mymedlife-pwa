@@ -695,7 +695,11 @@ async function processHubSpotSync(
     mode === "incremental" ? checkpointBefore : null,
     [...activeCompanyIds],
   );
-  const contacts = filterContactsToActiveCompanies(allContacts, activeCompanyIds);
+  const contacts = filterContactsToActiveCompanies(
+    allContacts,
+    activeCompanyIds,
+    mode,
+  );
   counts.sourceCompanies = companies.length;
   counts.sourceContacts = contacts.length;
   await heartbeatRun(appClient, runId, now().toISOString());
@@ -714,13 +718,18 @@ async function processHubSpotSync(
 function filterContactsToActiveCompanies(
   contacts: HubSpotContactRecord[],
   activeCompanyIds: Set<string>,
+  mode: HubSpotSyncMode,
 ): HubSpotContactRecord[] {
-  return contacts
-    .map((contact) => ({
+  const scopedContacts = contacts.map((contact) => ({
       ...contact,
       companyIds: contact.companyIds.filter((companyId) => activeCompanyIds.has(companyId)),
-    }))
-    .filter((contact) => contact.companyIds.length > 0);
+    }));
+
+  // A changed contact that loses its last active company must remain in an
+  // incremental run so its previously materialized membership can be revoked.
+  return mode === "incremental"
+    ? scopedContacts
+    : scopedContacts.filter((contact) => contact.companyIds.length > 0);
 }
 
 async function processHubSpotCompanies(
@@ -797,20 +806,30 @@ async function processHubSpotMemberships(
       appClient,
       runId,
       actorUserId,
-      getActiveAssociationKeys(contacts, config),
+      getObservedAssociationKeys(contacts),
       counts,
     );
+  } else {
+    const changedContactIds = new Set(contacts.map((contact) => contact.id));
+    if (changedContactIds.size > 0) {
+      await deactivateMissingHubSpotMemberships(
+        appClient,
+        runId,
+        actorUserId,
+        getObservedAssociationKeys(contacts),
+        counts,
+        changedContactIds,
+      );
+    }
   }
 }
 
-function getActiveAssociationKeys(
+function getObservedAssociationKeys(
   contacts: HubSpotContactRecord[],
-  config: HubSpotReadSyncConfig,
 ): Set<string> {
-  return new Set(contacts.flatMap((contact) => {
-    if (!getHubSpotMembershipQualification(contact, config)) return [];
-    return contact.companyIds.map((companyId) => `${contact.id}:${companyId}`);
-  }));
+  return new Set(contacts.flatMap((contact) => (
+    contact.companyIds.map((companyId) => `${contact.id}:${companyId}`)
+  )));
 }
 
 async function heartbeatAtBatchBoundary(
@@ -1692,6 +1711,7 @@ async function deactivateMissingHubSpotMemberships(
   actorUserId: string | null,
   activeAssociationKeys: Set<string>,
   counts: HubSpotSyncCounts,
+  scopedContactIds: Set<string> | null = null,
 ) {
   const linked = await client.schema("app").from("memberships")
     .select("id,chapter_id,status,hubspot_association_key")
@@ -1712,7 +1732,11 @@ async function deactivateMissingHubSpotMemberships(
 
   for (const row of linked.data ?? []) {
     const associationKey = String(row.hubspot_association_key ?? "");
+    const [contactId, companyId] = associationKey.split(":", 2);
     if (!associationKey || activeAssociationKeys.has(associationKey) || row.status === "inactive") {
+      continue;
+    }
+    if (scopedContactIds && (!contactId || !scopedContactIds.has(contactId))) {
       continue;
     }
 
@@ -1734,14 +1758,15 @@ async function deactivateMissingHubSpotMemberships(
       continue;
     }
 
-    const [contactId, companyId] = associationKey.split(":", 2);
     if (contactId && companyId) {
       await markMembershipReconciliation(
         client,
         contactId,
         companyId,
         "ignored",
-        "The HubSpot association was absent from the latest complete backfill, so app access was deactivated.",
+        scopedContactIds
+          ? "The HubSpot association was absent from this changed contact's latest incremental association read, so app access was deactivated."
+          : "The HubSpot association was absent from the latest complete backfill, so app access was deactivated.",
         membershipId,
       );
     }
