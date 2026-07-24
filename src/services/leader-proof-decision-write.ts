@@ -14,7 +14,8 @@ type EnvSource = Record<string, string | undefined>;
 export type LeaderProofDecisionWriteConfig =
   | {
       enabled: true;
-      isLocalOnly: true;
+      environment: "local" | "production";
+      isLocalOnly: boolean;
       externalWritesEnabled: false;
       memberNudgesEnabled: false;
       publishesProof: false;
@@ -22,7 +23,8 @@ export type LeaderProofDecisionWriteConfig =
     }
   | {
       enabled: false;
-      isLocalOnly: true;
+      environment: "local" | "staging" | "production";
+      isLocalOnly: boolean;
       externalWritesEnabled: false;
       memberNudgesEnabled: false;
       publishesProof: false;
@@ -31,6 +33,7 @@ export type LeaderProofDecisionWriteConfig =
 
 export type LeaderProofDecisionWriteReadiness = {
   operation: "leader_proof_decision";
+  environment: "local" | "staging" | "production";
   canSubmit: boolean;
   resultCodeIfSubmitted: LeaderProofDecisionResultCode;
   reason: string;
@@ -106,20 +109,61 @@ export type LeaderProofDecisionReadbackState = {
 export function getLeaderProofDecisionWriteConfig(
   env: EnvSource = process.env,
 ): LeaderProofDecisionWriteConfig {
+  const environment = getLeaderProofDecisionEnvironment(env);
+
+  if (environment === "production") {
+    if (env.MYMEDLIFE_ENABLE_LEADER_PROOF_DECISION_WRITE !== "true") {
+      return disabledConfig(
+        environment,
+        "Leader proof decisions stay locked until the dedicated write flag is enabled.",
+      );
+    }
+
+    if (
+      env.MYMEDLIFE_ALLOW_PRODUCTION_LEADER_PROOF_DECISION_WRITE !== "true"
+    ) {
+      return disabledConfig(
+        environment,
+        "Production leader proof decisions require the separate production approval flag.",
+      );
+    }
+
+    return {
+      enabled: true,
+      environment,
+      isLocalOnly: false,
+      externalWritesEnabled: false,
+      memberNudgesEnabled: false,
+      publishesProof: false,
+      reason:
+        "Production leader proof decisions are enabled for authenticated eligible chapter leaders and Super Admin. Member nudges, public proof sharing, and external sends remain disabled.",
+    };
+  }
+
+  if (environment === "staging") {
+    return disabledConfig(
+      environment,
+      "Hosted staging leader proof decisions remain disabled until a dedicated staging approval is configured.",
+    );
+  }
+
   if (env.MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES !== "true") {
     return disabledConfig(
+      environment,
       "Local Supabase writes are disabled. Set MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES=true only for local write testing.",
     );
   }
 
   if (env.MYMEDLIFE_ENABLE_LEADER_PROOF_DECISION_WRITE !== "true") {
     return disabledConfig(
+      environment,
       "Leader proof decision browser-facing writes remain disabled. Set MYMEDLIFE_ENABLE_LEADER_PROOF_DECISION_WRITE=true only after local auth, RLS, and Goal 115 SQL tests are ready.",
     );
   }
 
   return {
     enabled: true,
+    environment,
     isLocalOnly: true,
     externalWritesEnabled: false,
     memberNudgesEnabled: false,
@@ -137,7 +181,10 @@ export function getLeaderProofDecisionWriteReadiness(
   env: EnvSource = process.env,
 ): LeaderProofDecisionWriteReadiness {
   const config = getLeaderProofDecisionWriteConfig(env);
-  const localWritesRequested = env.MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES === "true";
+  const environmentWriteApproved =
+    config.environment === "production"
+      ? env.MYMEDLIFE_ALLOW_PRODUCTION_LEADER_PROOF_DECISION_WRITE === "true"
+      : env.MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES === "true";
   const leaderProofDecisionWriteApproved =
     env.MYMEDLIFE_ENABLE_LEADER_PROOF_DECISION_WRITE === "true";
   const hasLocalAuthSession =
@@ -158,8 +205,11 @@ export function getLeaderProofDecisionWriteReadiness(
   const checks: LeaderProofDecisionWriteReadiness["checks"] = [
     {
       key: "local_writes_requested",
-      label: "Local write switch is on",
-      passed: localWritesRequested,
+      label:
+        config.environment === "production"
+          ? "Production leader decision approval is on"
+          : "Local write switch is on",
+      passed: environmentWriteApproved,
     },
     {
       key: "leader_proof_decision_write_approved",
@@ -168,7 +218,7 @@ export function getLeaderProofDecisionWriteReadiness(
     },
     {
       key: "local_auth_session",
-      label: "Signed-in local Supabase Auth session",
+      label: "Signed-in Supabase Auth session",
       passed: hasLocalAuthSession,
     },
     {
@@ -227,6 +277,7 @@ export function getLeaderProofDecisionWriteReadiness(
 
   return {
     operation: "leader_proof_decision",
+    environment: config.environment,
     canSubmit: config.enabled && !failedCheck,
     resultCodeIfSubmitted:
       config.enabled && !failedCheck
@@ -259,7 +310,7 @@ export function getLeaderProofDecisionReadbackState(
       confirmsDecision: false,
       tone: "info",
       message:
-        "No local leader proof status change is expected for this result. The page is still reading current proof state safely.",
+        "No leader proof status change is expected for this result. The page is still reading current proof state safely.",
     };
   }
 
@@ -282,7 +333,7 @@ export function getLeaderProofDecisionReadbackState(
       confirmsDecision: true,
       tone: "success",
       message:
-        "Local readback confirms the leader proof decision was recorded without member nudges, public proof sharing, or external automation.",
+        "App-owned readback confirms the leader proof decision was recorded without member nudges, public proof sharing, or external automation.",
     };
   }
 
@@ -314,7 +365,7 @@ export function mapLeaderProofDecisionRpcSuccess(
     outboxId: row.outbox_id,
     auditLogId: row.audit_log_id,
     plainEnglishMessage:
-      "Leader proof decision saved locally. The app recorded assignment/proof status, approval, event, integration event, disabled outbox, and audit rows. Approval also records local points and KPI rows. No member nudge, public sharing, or external automation ran.",
+      "Leader proof decision saved. The app recorded assignment/proof status, approval, event, integration event, disabled outbox, and audit rows. Approval also records app-owned points and KPI rows. No member nudge, public sharing, or external automation ran.",
   };
 }
 
@@ -330,7 +381,7 @@ export function mapLeaderProofDecisionRpcError(
       evidenceItemId,
       assignmentId,
       "evidence_not_found",
-      "The proof item was not found in local Supabase, so no leader proof decision was saved.",
+      "The proof item was not found in app-owned data, so no leader proof decision was saved.",
     );
   }
 
@@ -339,7 +390,7 @@ export function mapLeaderProofDecisionRpcError(
       evidenceItemId,
       assignmentId,
       "missing_auth",
-      "Sign in with a local Supabase chapter leader or Super Admin seed user before saving this decision.",
+      "Sign in with an eligible Supabase chapter leader or Super Admin account before saving this decision.",
     );
   }
 
@@ -348,7 +399,7 @@ export function mapLeaderProofDecisionRpcError(
       evidenceItemId,
       assignmentId,
       "permission_denied",
-      "This signed-in local role cannot record chapter proof decisions.",
+      "This signed-in role cannot record chapter proof decisions.",
     );
   }
 
@@ -407,10 +458,22 @@ export function parseLeaderProofDecision(
   return null;
 }
 
-function disabledConfig(reason: string): LeaderProofDecisionWriteConfig {
+function getLeaderProofDecisionEnvironment(
+  env: EnvSource,
+): "local" | "staging" | "production" {
+  if (env.MYMEDLIFE_AUTH_MODE === "production_supabase") return "production";
+  if (env.MYMEDLIFE_AUTH_MODE === "staging_supabase") return "staging";
+  return "local";
+}
+
+function disabledConfig(
+  environment: "local" | "staging" | "production",
+  reason: string,
+): LeaderProofDecisionWriteConfig {
   return {
     enabled: false,
-    isLocalOnly: true,
+    environment,
+    isLocalOnly: environment === "local",
     externalWritesEnabled: false,
     memberNudgesEnabled: false,
     publishesProof: false,

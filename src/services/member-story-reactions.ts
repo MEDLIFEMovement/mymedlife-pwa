@@ -45,8 +45,12 @@ type StoryReactionReadbackRow = Omit<StoryReactionRpcRow, "result_code">;
 export type MemberStoryReactionClient = {
   schema(schemaName: "app"): {
     rpc(
-      functionName: "toggle_member_story_like",
-      params: { actor_uuid: string; evidence_item_uuid: string },
+      functionName: "set_member_story_like",
+      params: {
+        actor_uuid: string;
+        evidence_item_uuid: string;
+        liked_input: boolean;
+      },
     ): Promise<RpcResult<unknown>>;
     rpc(
       functionName: "get_member_story_reactions",
@@ -133,13 +137,14 @@ export async function getMemberStoryReactionReadbacks(
   }
 }
 
-export async function toggleMemberStoryLike(
+export async function setMemberStoryLike(
   client: MemberStoryReactionClient,
-  input: { actorUserId: string; evidenceItemId: string },
+  input: { actorUserId: string; evidenceItemId: string; liked: boolean },
 ): Promise<MemberStoryReactionResult> {
-  const response = await client.schema("app").rpc("toggle_member_story_like", {
+  const response = await client.schema("app").rpc("set_member_story_like", {
     actor_uuid: input.actorUserId,
     evidence_item_uuid: input.evidenceItemId,
+    liked_input: input.liked,
   });
 
   if (response.error) {

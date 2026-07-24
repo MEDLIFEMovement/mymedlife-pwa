@@ -119,6 +119,22 @@ does not permit public proof publishing, external syndication or sends,
 automatic approval, anonymous moderation, destructive history deletion, or
 treating TEST/private review media as rollout proof.
 
+An authenticated chapter leader for the assignment chapter, or a Super Admin,
+may record one leader proof decision for an eligible submitted app-owned
+evidence item when both
+`MYMEDLIFE_ENABLE_LEADER_PROOF_DECISION_WRITE` and
+`MYMEDLIFE_ALLOW_PRODUCTION_LEADER_PROOF_DECISION_WRITE` are enabled. This
+scoped production gate implementation was explicitly authorized by the product
+owner on 2026-07-23 as part of launch-critical workflow stabilization. The
+audited Supabase RPC must preserve role/chapter boundaries, assignment and proof
+state, approval, internal event, integration event, disabled outbox row, and
+audit history. Approval may award the assignment's configured app-owned points
+and one KPI completion; request-changes and rejection must not award either.
+This exception does not itself authorize enabling the production flags or
+deploying the migration, and it does not permit member nudges, public proof
+publishing, uploads, provider writes, external sends, silent approval,
+destructive history deletion, or treating TEST proof as rollout evidence.
+
 When in doubt about whether something is a gate change, treat it as MUST BLOCK
 and escalate. Escalating is cheap; an unsafe merge is not.
 

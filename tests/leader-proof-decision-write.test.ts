@@ -14,9 +14,68 @@ describe("leader proof decision write readiness", () => {
   it("keeps leader proof decision writes disabled by default", () => {
     expect(getLeaderProofDecisionWriteConfig({})).toMatchObject({
       enabled: false,
+      environment: "local",
       externalWritesEnabled: false,
       memberNudgesEnabled: false,
       publishesProof: false,
+    });
+  });
+
+  it("requires a separate production approval before enabling leader decisions", () => {
+    expect(
+      getLeaderProofDecisionWriteConfig({
+        MYMEDLIFE_AUTH_MODE: "production_supabase",
+      }),
+    ).toMatchObject({
+      enabled: false,
+      environment: "production",
+      reason:
+        "Leader proof decisions stay locked until the dedicated write flag is enabled.",
+    });
+
+    expect(
+      getLeaderProofDecisionWriteConfig({
+        MYMEDLIFE_AUTH_MODE: "production_supabase",
+        MYMEDLIFE_ENABLE_LEADER_PROOF_DECISION_WRITE: "true",
+      }),
+    ).toMatchObject({
+      enabled: false,
+      environment: "production",
+      isLocalOnly: false,
+      reason:
+        "Production leader proof decisions require the separate production approval flag.",
+    });
+
+    expect(
+      getLeaderProofDecisionWriteConfig({
+        MYMEDLIFE_AUTH_MODE: "production_supabase",
+        MYMEDLIFE_ENABLE_LEADER_PROOF_DECISION_WRITE: "true",
+        MYMEDLIFE_ALLOW_PRODUCTION_LEADER_PROOF_DECISION_WRITE: "true",
+      }),
+    ).toMatchObject({
+      enabled: true,
+      environment: "production",
+      isLocalOnly: false,
+      externalWritesEnabled: false,
+      memberNudgesEnabled: false,
+      publishesProof: false,
+    });
+  });
+
+  it("keeps hosted staging leader decisions closed", () => {
+    expect(
+      getLeaderProofDecisionWriteConfig({
+        MYMEDLIFE_AUTH_MODE: "staging_supabase",
+        MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES: "true",
+        MYMEDLIFE_ENABLE_LEADER_PROOF_DECISION_WRITE: "true",
+        MYMEDLIFE_ALLOW_PRODUCTION_LEADER_PROOF_DECISION_WRITE: "true",
+      }),
+    ).toMatchObject({
+      enabled: false,
+      environment: "staging",
+      isLocalOnly: false,
+      reason:
+        "Hosted staging leader proof decisions remain disabled until a dedicated staging approval is configured.",
     });
   });
 
@@ -87,6 +146,34 @@ describe("leader proof decision write readiness", () => {
 
     expect(readiness.canSubmit).toBe(true);
     expect(readiness.resultCodeIfSubmitted).toBe("proof_approved");
+    expect(readiness.checks.every((check) => check.passed)).toBe(true);
+  });
+
+  it("allows an eligible signed-in production leader only after both flags pass", () => {
+    const actor = getMockLocalActorContext(
+      "leader.a@mymedlife.test",
+      "Signed in to production Supabase.",
+      "supabase_ready",
+      "local_auth_session",
+      "signed_in",
+    );
+    const readiness = getLeaderProofDecisionWriteReadiness(
+      actor,
+      makeSubmittedAssignment(),
+      makePendingEvidence(),
+      makeDecisionInput(),
+      {
+        MYMEDLIFE_AUTH_MODE: "production_supabase",
+        MYMEDLIFE_ENABLE_LEADER_PROOF_DECISION_WRITE: "true",
+        MYMEDLIFE_ALLOW_PRODUCTION_LEADER_PROOF_DECISION_WRITE: "true",
+      },
+    );
+
+    expect(readiness).toMatchObject({
+      environment: "production",
+      canSubmit: true,
+      resultCodeIfSubmitted: "proof_approved",
+    });
     expect(readiness.checks.every((check) => check.passed)).toBe(true);
   });
 

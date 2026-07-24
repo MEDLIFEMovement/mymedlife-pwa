@@ -27,6 +27,7 @@ import {
 import {
   StaffLaunchEventsOperations,
   StaffLaunchOrganizationLeaderboard,
+  StaffLiveChapterPortfolio,
   StaffLiveLaunchEventsOperations,
   StaffLiveLaunchOrganizationLeaderboard,
 } from "@/components/staff-launch-events-panels";
@@ -40,6 +41,7 @@ import type {
   LaunchLaneStaffChapterReadback,
   LaunchLaneStaffEventReadback,
 } from "@/services/launch-lane-points-readback";
+import type { DataSourceMeta } from "@/services/read-only-app-data";
 
 /* ─────────────────────────────────────────────────────────── */
 /*  TYPES                                                       */
@@ -2748,6 +2750,7 @@ type FigmaStaffCommandCenterProps = {
   initialView?: string;
   initialCampaign?: string | null;
   liveEventReadback?: {
+    source: DataSourceMeta;
     selectedEventId: string | null;
     selectedEvent: LaunchLaneStaffEventReadback | null;
     chapters: LaunchLaneStaffChapterReadback[];
@@ -2853,6 +2856,8 @@ export function FigmaStaffCommandCenter({
     activeScreen === "chapters"
       ? getEmbeddedProofQueueContext(getRouteParam("proofStatus"), getRouteParam("proofPlatform"))
       : null;
+  const liveChapterInterventionCount =
+    liveEventReadback?.chapters.filter((chapter) => chapter.risk !== "Healthy").length ?? null;
 
   // SOP Builder sub-navigation
   const [sopView, setSopView] = useState<"library" | "builder">("library");
@@ -2930,9 +2935,30 @@ export function FigmaStaffCommandCenter({
 
           {/* Right */}
           <div className={`pointer-events-none ml-auto min-w-0 flex-none items-center justify-end ${STAFF_HEADER_ALERT_VISIBILITY}`}>
-            <div className="pointer-events-none flex min-w-0 max-w-full items-center gap-1.5 rounded-lg border border-red-500/30 bg-red-600/20 px-2.5 py-1">
-              <AlertTriangle className="w-3 h-3 text-red-400" />
-              <span className="truncate text-xs font-semibold text-red-300">2 chapters need intervention</span>
+            <div
+              className={[
+                "pointer-events-none flex min-w-0 max-w-full items-center gap-1.5 rounded-lg border px-2.5 py-1",
+                liveChapterInterventionCount === 0
+                  ? "border-emerald-500/30 bg-emerald-600/20"
+                  : "border-red-500/30 bg-red-600/20",
+              ].join(" ")}
+            >
+              {liveChapterInterventionCount === 0 ? (
+                <CheckCircle className="h-3 w-3 text-emerald-300" />
+              ) : (
+                <AlertTriangle className="h-3 w-3 text-red-400" />
+              )}
+              <span
+                className={`truncate text-xs font-semibold ${
+                  liveChapterInterventionCount === 0 ? "text-emerald-200" : "text-red-300"
+                }`}
+              >
+                {liveChapterInterventionCount === null
+                  ? "2 TEST chapters need intervention"
+                  : `${liveChapterInterventionCount} ${
+                      liveChapterInterventionCount === 1 ? "chapter needs" : "chapters need"
+                    } review`}
+              </span>
             </div>
           </div>
         </div>
@@ -2944,7 +2970,10 @@ export function FigmaStaffCommandCenter({
           <div className="min-w-0">
             <h1 className="text-base font-bold text-foreground">{adminPreviewTitle ?? SCREEN_TITLES[activeScreen]}</h1>
             <div className="mt-0.5 text-xs text-muted-foreground">
-              {activeScreen === "chapters" && `${CHAPTERS.length} chapters · Rush Month active · Last updated 2 min ago`}
+              {activeScreen === "chapters" &&
+                (liveEventReadback
+                  ? `${liveEventReadback.chapters.length} app-owned chapters · ${liveEventReadback.source.message}`
+                  : `${CHAPTERS.length} TEST chapters · preview data`)}
               {activeScreen === "campaigns" && "7 campaigns active across all regions"}
               {activeScreen === "ugc" && `${UGC_CARDS.filter(c=>c.visibility==="pending").length} items pending review`}
               {activeScreen === "best-practices" && `${BEST_PRACTICES.length} verified best practices ready to share`}
@@ -3003,20 +3032,32 @@ export function FigmaStaffCommandCenter({
         {activeScreen !== "sops" && activeScreen !== "admin" && (
           <div className="px-6 py-5 max-w-[1600px] mx-auto w-full">
             {activeScreen === "chapters" && (
-              <PortfolioOverview
-                onSelectChapter={handleSelectChapter}
-                initialSearch={initialChapterSearch}
-                initialRegionFilter={initialChapterRegionFilter}
-                initialCoachFilter={initialChapterCoachFilter}
-                initialChapterTypeFilter={initialChapterTypeFilter}
-                initialSortBy={initialChapterSort}
-              />
+              liveEventReadback ? (
+                <StaffLiveChapterPortfolio
+                  chapters={liveEventReadback.chapters}
+                  organization={liveEventReadback.organization}
+                  source={liveEventReadback.source}
+                  initialSearch={initialChapterSearch}
+                  initialChapterType={initialChapterTypeFilter}
+                  selectedChapterId={selectedChapterId}
+                />
+              ) : (
+                <PortfolioOverview
+                  onSelectChapter={handleSelectChapter}
+                  initialSearch={initialChapterSearch}
+                  initialRegionFilter={initialChapterRegionFilter}
+                  initialCoachFilter={initialChapterCoachFilter}
+                  initialChapterTypeFilter={initialChapterTypeFilter}
+                  initialSortBy={initialChapterSort}
+                />
+              )
             )}
             {activeScreen === "events" && (
               liveEventReadback ? (
                 <StaffLiveLaunchEventsOperations
                   chapters={liveEventReadback.chapters}
                   organization={liveEventReadback.organization}
+                  source={liveEventReadback.source}
                   selectedEventId={liveEventReadback.selectedEventId}
                   selectedEvent={liveEventReadback.selectedEvent}
                 />
@@ -3029,6 +3070,7 @@ export function FigmaStaffCommandCenter({
                 <StaffLiveLaunchOrganizationLeaderboard
                   rows={liveEventReadback.leaderboard}
                   organization={liveEventReadback.organization}
+                  source={liveEventReadback.source}
                 />
               ) : (
                 <StaffLaunchOrganizationLeaderboard chapters={CHAPTERS} />

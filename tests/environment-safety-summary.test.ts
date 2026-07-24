@@ -12,6 +12,7 @@ describe("environment safety summary", () => {
       MYMEDLIFE_ENABLE_ACTION_START_WRITE: "false",
       MYMEDLIFE_ENABLE_ASSIGNMENT_CREATE_WRITE: "false",
       MYMEDLIFE_ENABLE_PROOF_SUBMISSION_WRITE: "false",
+      MYMEDLIFE_ENABLE_LEADER_PROOF_DECISION_WRITE: "false",
       MYMEDLIFE_ENABLE_HQ_PROOF_DECISION_WRITE: "false",
       MYMEDLIFE_ENABLE_COACH_DECISION_WRITE: "false",
       MYMEDLIFE_ALLOW_PROOF_UPLOADS: "false",
@@ -19,7 +20,7 @@ describe("environment safety summary", () => {
     });
 
     expect(summary.canReadSummary).toBe(true);
-    expect(summary.items).toHaveLength(11);
+    expect(summary.items).toHaveLength(12);
     expect(summary.counts.secretsShown).toBe(0);
     expect(summary.counts.browserWritesEnabled).toBe(0);
     expect(summary.counts.externalWritesEnabled).toBe(0);
@@ -64,6 +65,20 @@ describe("environment safety summary", () => {
     ).toEqual(["Local Supabase writes", "Action-start write"]);
   });
 
+  it("shows a separately approved production action-start write as enabled", () => {
+    const actor = getMockLocalActorContext("super.admin@mymedlife.test");
+    const summary = getEnvironmentSafetySummary(actor, {
+      MYMEDLIFE_AUTH_MODE: "production_supabase",
+      MYMEDLIFE_ENABLE_ACTION_START_WRITE: "true",
+      MYMEDLIFE_ALLOW_PRODUCTION_ACTION_START_WRITE: "true",
+    });
+
+    expect(summary.counts.browserWritesEnabled).toBe(1);
+    expect(
+      summary.items.find((item) => item.label === "Action-start write"),
+    ).toMatchObject({ status: "watch" });
+  });
+
   it("counts approved local proof metadata writes without enabling uploads or external sends", () => {
     const actor = getMockLocalActorContext("super.admin@mymedlife.test");
     const summary = getEnvironmentSafetySummary(actor, {
@@ -82,6 +97,49 @@ describe("environment safety summary", () => {
       "Action-start write",
       "Proof metadata write",
     ]);
+  });
+
+  it("shows a separately approved production proof metadata write as enabled", () => {
+    const actor = getMockLocalActorContext("super.admin@mymedlife.test");
+    const summary = getEnvironmentSafetySummary(actor, {
+      MYMEDLIFE_AUTH_MODE: "production_supabase",
+      MYMEDLIFE_ENABLE_PROOF_SUBMISSION_WRITE: "true",
+      MYMEDLIFE_ALLOW_PRODUCTION_PROOF_SUBMISSION_WRITE: "true",
+      MYMEDLIFE_ALLOW_PROOF_UPLOADS: "false",
+    });
+
+    expect(summary.counts.browserWritesEnabled).toBe(1);
+    expect(
+      summary.items.find((item) => item.label === "Proof metadata write"),
+    ).toMatchObject({ status: "watch" });
+  });
+
+  it("shows a separately approved production leader proof decision as enabled", () => {
+    const actor = getMockLocalActorContext("super.admin@mymedlife.test");
+    const summary = getEnvironmentSafetySummary(actor, {
+      MYMEDLIFE_AUTH_MODE: "production_supabase",
+      MYMEDLIFE_ENABLE_LEADER_PROOF_DECISION_WRITE: "true",
+      MYMEDLIFE_ALLOW_PRODUCTION_LEADER_PROOF_DECISION_WRITE: "true",
+    });
+
+    expect(summary.counts.browserWritesEnabled).toBe(1);
+    expect(
+      summary.items.find((item) => item.label === "Leader proof decision write"),
+    ).toMatchObject({ status: "watch" });
+  });
+
+  it("counts an approved local leader proof decision without external sends", () => {
+    const actor = getMockLocalActorContext("super.admin@mymedlife.test");
+    const summary = getEnvironmentSafetySummary(actor, {
+      MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES: "true",
+      MYMEDLIFE_ENABLE_LEADER_PROOF_DECISION_WRITE: "true",
+    });
+
+    expect(summary.counts.browserWritesEnabled).toBe(1);
+    expect(summary.counts.externalWritesEnabled).toBe(0);
+    expect(
+      summary.items.find((item) => item.label === "Leader proof decision write"),
+    ).toMatchObject({ status: "watch" });
   });
 
   it("counts approved local HQ proof decision writes without enabling public sharing", () => {

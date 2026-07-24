@@ -7,7 +7,7 @@ import { getAuthSessionState } from "@/services/auth-session";
 import {
   createMemberStoryReactionClient,
   getMemberStoryReactionConfig,
-  toggleMemberStoryLike,
+  setMemberStoryLike,
   type MemberStoryReactionResult,
 } from "@/services/member-story-reactions";
 
@@ -15,12 +15,20 @@ const memberStoryReactionResultParam = "storyReactionResult";
 
 export async function submitMemberStoryReactionAction(formData: FormData) {
   const evidenceItemId = getFormString(formData, "storyId");
-  const result = await submitMemberStoryReactionForSupabase(evidenceItemId);
+  const desiredLiked = parseDesiredLiked(formData);
+  const result = desiredLiked === null
+    ? failure(
+        "server_error",
+        evidenceItemId,
+        "The reaction intent was missing, so the story was not changed.",
+      )
+    : await submitMemberStoryReactionForSupabase(evidenceItemId, desiredLiked);
   redirect(buildRedirectHref(formData, result.code));
 }
 
 export async function submitMemberStoryReactionForSupabase(
   evidenceItemId: string,
+  desiredLiked: boolean,
 ): Promise<MemberStoryReactionResult> {
   const config = getMemberStoryReactionConfig();
 
@@ -53,9 +61,10 @@ export async function submitMemberStoryReactionForSupabase(
     );
   }
 
-  return toggleMemberStoryLike(reactionClient, {
+  return setMemberStoryLike(reactionClient, {
     actorUserId: session.user.id,
     evidenceItemId,
+    liked: desiredLiked,
   });
 }
 
@@ -75,8 +84,15 @@ function getFormString(formData: FormData, key: string) {
   return typeof value === "string" ? value.trim() : "";
 }
 
+function parseDesiredLiked(formData: FormData) {
+  const value = getFormString(formData, "desiredLiked");
+  if (value === "true") return true;
+  if (value === "false") return false;
+  return null;
+}
+
 function failure(
-  code: "write_disabled" | "profile_not_found",
+  code: "write_disabled" | "profile_not_found" | "server_error",
   evidenceItemId: string,
   message: string,
 ): MemberStoryReactionResult {

@@ -57,7 +57,7 @@ const actionStartResultStates = [
     plainEnglishMessage:
       "This preview is safe to review, but the app is not allowed to save action-start changes from the browser yet.",
     nextStep:
-      "Keep using the mock preview until Nick approves live auth and browser-facing writes.",
+      "Keep the control locked until authenticated browser writes are explicitly enabled for this environment.",
     tone: "info",
     success: false,
     retryAllowed: false,
@@ -90,7 +90,7 @@ const actionStartResultStates = [
     title: "This role cannot start this action",
     plainEnglishMessage:
       "The selected role can see this page only when policy allows it, and only approved roles may start the action.",
-    nextStep: "Switch to the correct local role or ask a chapter leader or coach to review ownership.",
+    nextStep: "Sign in with the correct account or ask a chapter leader or coach to review ownership.",
     tone: "error",
     success: false,
     retryAllowed: false,
@@ -101,7 +101,7 @@ const actionStartResultStates = [
     title: "Sign-in is required",
     plainEnglishMessage:
       "The app must know who is signed in before it can save action progress.",
-    nextStep: "After live auth is approved, send the student through the sign-in flow.",
+    nextStep: "Send the student through the approved sign-in flow and retry.",
     tone: "warning",
     success: false,
     retryAllowed: true,

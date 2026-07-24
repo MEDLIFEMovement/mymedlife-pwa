@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(8);
+select plan(13);
 
 select is(
   (
@@ -42,10 +42,55 @@ select ok(
 select ok(
   has_function_privilege(
     'service_role',
-    'app.toggle_member_story_like(uuid,uuid)',
+    'app.set_member_story_like(uuid,uuid,boolean)',
     'EXECUTE'
   ),
   'Service-role access remains available for a server-only transaction'
+);
+
+select ok(
+  not has_function_privilege(
+    'service_role',
+    'app.toggle_member_story_like(uuid,uuid)',
+    'EXECUTE'
+  ),
+  'Service role cannot bypass desired-state semantics through the legacy toggle'
+);
+
+select ok(
+  not has_function_privilege(
+    'authenticated',
+    'app.submit_assignment_proof_metadata_internal(uuid,app.evidence_type,text,text,text[],text[],text,text,text,text,numeric)',
+    'EXECUTE'
+  ),
+  'Authenticated users can only submit proof through the production-honest wrapper'
+);
+
+select ok(
+  not has_function_privilege(
+    'authenticated',
+    'app.start_assignment_action_internal(uuid)',
+    'EXECUTE'
+  ),
+  'Authenticated users can only start actions through the production-honest wrapper'
+);
+
+select ok(
+  not has_function_privilege(
+    'authenticated',
+    'app.record_leader_proof_decision_internal(uuid,text,text)',
+    'EXECUTE'
+  ),
+  'Authenticated users can only decide leader proof through the production-honest wrapper'
+);
+
+select ok(
+  not has_function_privilege(
+    'authenticated',
+    'app.can_record_leader_proof_decision(app.assignments)',
+    'EXECUTE'
+  ),
+  'Authenticated users cannot call the leader proof authorization helper directly'
 );
 
 select ok(

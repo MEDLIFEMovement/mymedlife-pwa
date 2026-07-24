@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(21);
+select plan(23);
 
 insert into app.assignments (
   id,
@@ -293,6 +293,28 @@ select is(
   ),
   1,
   'Action start creates one audit log'
+);
+
+select is(
+  (
+    select reason
+    from app.audit_logs
+    where action = 'action_started'
+      and target_id = 'c5000000-0000-4000-8000-000000000001'
+  ),
+  'App-owned assignment action start.',
+  'Action start records a production-honest audit reason'
+);
+
+select ok(
+  not exists (
+    select 1
+    from app.events
+    where event_type = 'action_started'
+      and assignment_id = 'c5000000-0000-4000-8000-000000000001'
+      and payload ? 'mockSafe'
+  ),
+  'Action-start event history does not carry stale mock-only metadata'
 );
 
 select throws_ok(

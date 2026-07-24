@@ -84,6 +84,20 @@ type LumaEventSyncDeps = {
   retryOfRunId?: string | null;
 };
 
+type MissingLumaEventContext = {
+  client: AppClient;
+  runId: string;
+  actorUserId: string | null;
+  config: LumaEventSyncConfig;
+  counts: LumaSyncCounts;
+};
+
+type MissingLumaEventReference = {
+  eventId: string;
+  chapterEventId: string | null;
+  linkId: string | null;
+};
+
 type LumaEventPage = {
   entries?: unknown[];
   next_cursor?: string | null;
@@ -311,6 +325,17 @@ export async function runLumaEventSync(
       await reconcileEvent(appClient, runId, actorUserId, config, event, counts, now().toISOString());
       if ((index + 1) % 25 === 0) await heartbeatRun(appClient, runId, now().toISOString());
     }
+    if (mode === "backfill") {
+      await retireMissingLumaEvents({
+        client: appClient,
+        runId,
+        actorUserId,
+        config,
+        counts,
+      },
+        new Set(events.map((event) => event.id)),
+      );
+    }
 
     const completedAt = now().toISOString();
     const status = counts.failures > 0 || counts.conflicts > 0 ? "partial" : "succeeded";
@@ -521,6 +546,158 @@ async function reconcileEvent(
   }
 }
 
+async function retireMissingLumaEvents(
+  context: MissingLumaEventContext,
+  activeEventIds: Set<string>,
+) {
+  const { client, runId, config, counts } = context;
+  if (!config.chapterId || !config.calendarId) return;
+  const linkedImports = await client.schema("app").from("luma_event_imports")
+    .select("luma_event_id,materialized_chapter_event_id,materialized_luma_link_id")
+    .eq("environment", config.environment)
+    .eq("calendar_id", config.calendarId)
+    .eq("chapter_id", config.chapterId)
+    .eq("reconciliation_status", "materialized");
+  if (linkedImports.error) {
+    counts.failures += 1;
+    await recordFailure(
+      client,
+      runId,
+      "run",
+      null,
+      "missing_event_lookup_failed",
+      linkedImports.error.message,
+      { calendarId: config.calendarId, chapterId: config.chapterId },
+    );
+    return;
+  }
+
+  for (const row of linkedImports.data ?? []) {
+    const eventId = String(row.luma_event_id ?? "");
+    if (!eventId || activeEventIds.has(eventId)) continue;
+    await retireMissingLumaEvent(context, {
+      eventId,
+      chapterEventId: row.materialized_chapter_event_id
+        ? String(row.materialized_chapter_event_id)
+        : null,
+      linkId: row.materialized_luma_link_id
+        ? String(row.materialized_luma_link_id)
+        : null,
+    });
+  }
+}
+
+async function retireMissingLumaEvent(
+  context: MissingLumaEventContext,
+  reference: MissingLumaEventReference,
+) {
+  const { client, runId, actorUserId, config, counts } = context;
+  const { eventId, chapterEventId, linkId } = reference;
+  if (!config.chapterId || !chapterEventId || !linkId) {
+    counts.failures += 1;
+    await recordFailure(
+      client,
+      runId,
+      "event",
+      eventId,
+      "missing_event_materialization_reference",
+      "A previously materialized Luma event is missing its app event or provider-link reference.",
+      { chapterEventId, linkId },
+    );
+    return;
+  }
+
+  const eventUpdate = await client.schema("app").from("chapter_events")
+    .update({ status: "canceled" })
+    .eq("id", chapterEventId)
+    .eq("chapter_id", config.chapterId);
+  if (eventUpdate.error) {
+    counts.failures += 1;
+    await recordFailure(
+      client,
+      runId,
+      "event",
+      eventId,
+      "missing_event_cancel_failed",
+      eventUpdate.error.message,
+      { chapterEventId, linkId },
+    );
+    return;
+  }
+
+  const linkUpdate = await client.schema("app").from("luma_event_links")
+    .update({ status: "disabled" })
+    .eq("id", linkId)
+    .eq("luma_event_id", eventId)
+    .eq("chapter_id", config.chapterId);
+  if (linkUpdate.error) {
+    counts.failures += 1;
+    await recordFailure(
+      client,
+      runId,
+      "event",
+      eventId,
+      "missing_event_link_disable_failed",
+      linkUpdate.error.message,
+      { chapterEventId, linkId },
+    );
+    return;
+  }
+
+  const note = "The provider event was absent from the latest complete approved-calendar backfill, so the app event was canceled and its Luma link was disabled.";
+  const markError = await markImport(
+    client,
+    config.environment,
+    eventId,
+    "ignored",
+    note,
+    chapterEventId,
+    linkId,
+  );
+  if (markError) {
+    counts.failures += 1;
+    await recordFailure(
+      client,
+      runId,
+      "event",
+      eventId,
+      "missing_event_mark_failed",
+      markError,
+      { chapterEventId, linkId },
+    );
+    return;
+  }
+
+  counts.updatedEvents += 1;
+  const audit = await client.schema("app").from("audit_logs").insert({
+    actor_user_id: actorUserId,
+    chapter_id: config.chapterId,
+    action: "luma_event_retired",
+    target_table: "chapter_events",
+    target_id: chapterEventId,
+    after_value: {
+      luma_event_id: eventId,
+      luma_event_link_id: linkId,
+      luma_sync_run_id: runId,
+      status: "canceled",
+      provider_link_status: "disabled",
+    },
+    reason: "Complete Luma backfill no longer returned the previously linked provider event.",
+  });
+  if (audit.error) {
+    counts.failures += 1;
+    await recordFailure(
+      client,
+      runId,
+      "event",
+      eventId,
+      "missing_event_audit_failed",
+      audit.error.message,
+      { chapterEventId, linkId },
+    );
+  }
+}
+
 function mapLumaEvent(value: unknown): LumaEventRecord | null {
   if (!isRecord(value)) return null;
   const id = optional(value.id);
@@ -618,7 +795,7 @@ async function markImport(
   client: AppClient,
   environment: string,
   eventId: string,
-  status: "materialized" | "conflict",
+  status: "materialized" | "conflict" | "ignored",
   note: string | null,
   chapterEventId: string | null,
   linkId: string | null,

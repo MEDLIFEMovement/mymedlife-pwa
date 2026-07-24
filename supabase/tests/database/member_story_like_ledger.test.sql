@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(10);
+select plan(12);
 
 set local role service_role;
 
@@ -16,9 +16,10 @@ set local "request.jwt.claim.role" = 'authenticated';
 set local "request.jwt.claim.sub" = '00000000-0000-4000-8000-000000000001';
 
 select throws_ok(
-  $$ select * from app.toggle_member_story_like(
+  $$ select * from app.set_member_story_like(
        '00000000-0000-4000-8000-000000000001',
-       '60000000-0000-4000-8000-000000000001'
+       '60000000-0000-4000-8000-000000000001',
+       true
      ) $$,
   '42501',
   null,
@@ -29,12 +30,32 @@ reset role;
 set local role service_role;
 
 select is(
-  (select result_code from app.toggle_member_story_like(
+  (select result_code from app.set_member_story_like(
     '00000000-0000-4000-8000-000000000001',
-    '60000000-0000-4000-8000-000000000001'
+    '60000000-0000-4000-8000-000000000001',
+    true
   )),
   'story_liked',
   'The first reaction appends an active like intent'
+);
+
+select is(
+  (select result_code from app.set_member_story_like(
+    '00000000-0000-4000-8000-000000000001',
+    '60000000-0000-4000-8000-000000000001',
+    true
+  )),
+  'story_liked',
+  'Repeating the same desired state returns the already-satisfied intent'
+);
+
+select is(
+  (select count(*)::integer from app.events
+   where payload ->> 'evidenceItemId' = '60000000-0000-4000-8000-000000000001'
+     and actor_user_id = '00000000-0000-4000-8000-000000000001'
+     and event_type in ('story_liked', 'story_unliked')),
+  1,
+  'Repeating the same desired state does not append a duplicate ledger event'
 );
 
 select is(
@@ -46,9 +67,10 @@ select is(
 );
 
 select is(
-  (select result_code from app.toggle_member_story_like(
+  (select result_code from app.set_member_story_like(
     '00000000-0000-4000-8000-000000000001',
-    '60000000-0000-4000-8000-000000000001'
+    '60000000-0000-4000-8000-000000000001',
+    false
   )),
   'story_unliked',
   'The second reaction appends an unlike intent instead of deleting history'
@@ -63,18 +85,20 @@ select is(
 );
 
 select is(
-  (select result_code from app.toggle_member_story_like(
+  (select result_code from app.set_member_story_like(
     '00000000-0000-4000-8000-000000000001',
-    '60000000-0000-4000-8000-000000000001'
+    '60000000-0000-4000-8000-000000000001',
+    true
   )),
   'story_liked',
   'A member can react again after removing a reaction'
 );
 
 select is(
-  (select reaction_count from app.toggle_member_story_like(
+  (select reaction_count from app.set_member_story_like(
     '00000000-0000-4000-8000-000000000002',
-    '60000000-0000-4000-8000-000000000001'
+    '60000000-0000-4000-8000-000000000001',
+    true
   )),
   2,
   'Distinct active members contribute once each to the reaction count'
@@ -96,9 +120,10 @@ select is(
 );
 
 select throws_ok(
-  $$ select * from app.toggle_member_story_like(
+  $$ select * from app.set_member_story_like(
        '00000000-0000-4000-8000-000000000001',
-       '60000000-0000-4000-8000-000000000004'
+       '60000000-0000-4000-8000-000000000004',
+       true
      ) $$,
   'P0002',
   'approved story not found',

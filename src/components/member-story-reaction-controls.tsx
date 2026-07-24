@@ -1,6 +1,7 @@
 "use client";
 
 import { Heart } from "lucide-react";
+import { useFormStatus } from "react-dom";
 
 import { submitMemberStoryReactionAction } from "@/app/app/stories/actions";
 import type { MemberStoryReactionReadbackStatus } from "@/services/member-story-reactions";
@@ -64,22 +65,50 @@ export function MemberStoryReactionForm({
     <form action={submitMemberStoryReactionAction}>
       <input type="hidden" name="storyId" value={storyId} />
       <input type="hidden" name="filter" value={filter} />
+      <input
+        type="hidden"
+        name="desiredLiked"
+        value={liked ? "false" : "true"}
+      />
       {openStory ? <input type="hidden" name="openStory" value={storyId} /> : null}
-      <button
-        type="submit"
-        aria-label={liked ? "Remove reaction" : "React to story"}
-        aria-pressed={liked}
-        title={liked ? "Remove your reaction" : "React to this approved story"}
-        className="inline-flex items-center gap-2 text-rose-600 transition hover:text-rose-700 active:scale-[0.97]"
-      >
-        <Heart size={showCount ? 20 : 26} fill={liked ? "currentColor" : "none"} />
-        {showCount ? (
-          <span className="text-sm font-semibold text-foreground">
-            {reactionCount.toLocaleString()} {reactionCount === 1 ? "reaction" : "reactions"}
-          </span>
-        ) : null}
-      </button>
+      <MemberStoryReactionSubmitButton
+        liked={liked}
+        reactionCount={reactionCount}
+        showCount={showCount}
+      />
     </form>
+  );
+}
+
+function MemberStoryReactionSubmitButton({
+  liked,
+  reactionCount,
+  showCount,
+}: Readonly<{
+  liked: boolean;
+  reactionCount: number;
+  showCount: boolean;
+}>) {
+  const { pending } = useFormStatus();
+
+  return (
+    <button
+      type="submit"
+      disabled={pending}
+      aria-label={
+        pending ? "Saving reaction" : liked ? "Remove reaction" : "React to story"
+      }
+      aria-pressed={liked}
+      title={liked ? "Remove your reaction" : "React to this approved story"}
+      className="inline-flex items-center gap-2 text-rose-600 transition hover:text-rose-700 active:scale-[0.97] disabled:cursor-wait disabled:opacity-60"
+    >
+      <Heart size={showCount ? 20 : 26} fill={liked ? "currentColor" : "none"} />
+      {showCount ? (
+        <span className="text-sm font-semibold text-foreground">
+          {reactionCount.toLocaleString()} {reactionCount === 1 ? "reaction" : "reactions"}
+        </span>
+      ) : null}
+    </button>
   );
 }
 

@@ -20,8 +20,49 @@ describe("proof-submission write readiness", () => {
   it("keeps proof metadata writes disabled by default", () => {
     expect(getProofSubmissionWriteConfig({})).toMatchObject({
       enabled: false,
+      environment: "local",
       externalWritesEnabled: false,
       uploadsEnabled: false,
+    });
+  });
+
+  it("requires both production proof-submission approval flags", () => {
+    expect(
+      getProofSubmissionWriteConfig({
+        MYMEDLIFE_AUTH_MODE: "production_supabase",
+        MYMEDLIFE_ENABLE_PROOF_SUBMISSION_WRITE: "true",
+      }),
+    ).toMatchObject({
+      enabled: false,
+      environment: "production",
+      reason:
+        "Production proof submission requires the separate production approval flag.",
+    });
+
+    expect(
+      getProofSubmissionWriteConfig({
+        MYMEDLIFE_AUTH_MODE: "production_supabase",
+        MYMEDLIFE_ENABLE_PROOF_SUBMISSION_WRITE: "true",
+        MYMEDLIFE_ALLOW_PRODUCTION_PROOF_SUBMISSION_WRITE: "true",
+      }),
+    ).toMatchObject({
+      enabled: true,
+      environment: "production",
+      isLocalOnly: false,
+      externalWritesEnabled: false,
+      uploadsEnabled: false,
+    });
+  });
+
+  it("keeps hosted staging proof submission closed", () => {
+    expect(
+      getProofSubmissionWriteConfig({
+        MYMEDLIFE_AUTH_MODE: "staging_supabase",
+        MYMEDLIFE_ENABLE_PROOF_SUBMISSION_WRITE: "true",
+      }),
+    ).toMatchObject({
+      enabled: false,
+      environment: "staging",
     });
   });
 
@@ -58,7 +99,7 @@ describe("proof-submission write readiness", () => {
     ).toMatchObject({
       enabled: false,
       reason:
-        "Proof uploads are still disabled. Turn off MYMEDLIFE_ALLOW_PROOF_UPLOADS before testing metadata-only proof writes.",
+        "Proof uploads use a separate private-storage lane. Turn off MYMEDLIFE_ALLOW_PROOF_UPLOADS before enabling proof metadata writes.",
     });
   });
 
@@ -103,6 +144,33 @@ describe("proof-submission write readiness", () => {
 
     expect(readiness.canSubmit).toBe(true);
     expect(readiness.resultCodeIfSubmitted).toBe("proof_submitted");
+    expect(readiness.checks.every((check) => check.passed)).toBe(true);
+  });
+
+  it("allows a signed-in production member only with the separate approval", () => {
+    const actor = getMockLocalActorContext(
+      "member.a@mymedlife.test",
+      "Signed in.",
+      "mock_fallback",
+      "local_auth_session",
+      "signed_in",
+    );
+    const readiness = getProofSubmissionWriteReadiness(
+      actor,
+      makeProofReadyAssignment(),
+      makeProofInput(),
+      {
+        MYMEDLIFE_AUTH_MODE: "production_supabase",
+        MYMEDLIFE_ENABLE_PROOF_SUBMISSION_WRITE: "true",
+        MYMEDLIFE_ALLOW_PRODUCTION_PROOF_SUBMISSION_WRITE: "true",
+      },
+    );
+
+    expect(readiness).toMatchObject({
+      environment: "production",
+      canSubmit: true,
+      resultCodeIfSubmitted: "proof_submitted",
+    });
     expect(readiness.checks.every((check) => check.passed)).toBe(true);
   });
 

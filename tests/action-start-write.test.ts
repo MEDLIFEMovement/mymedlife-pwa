@@ -44,6 +44,49 @@ describe("action-start write readiness", () => {
     });
   });
 
+  it("requires both production action-start approval flags", () => {
+    expect(
+      getActionStartWriteConfig({
+        MYMEDLIFE_AUTH_MODE: "production_supabase",
+        MYMEDLIFE_ENABLE_ACTION_START_WRITE: "true",
+      }),
+    ).toMatchObject({
+      enabled: false,
+      environment: "production",
+      reason:
+        "Production action start requires the separate production approval flag.",
+    });
+
+    expect(
+      getActionStartWriteConfig({
+        MYMEDLIFE_AUTH_MODE: "production_supabase",
+        MYMEDLIFE_ENABLE_ACTION_START_WRITE: "true",
+        MYMEDLIFE_ALLOW_PRODUCTION_ACTION_START_WRITE: "true",
+      }),
+    ).toMatchObject({
+      enabled: true,
+      environment: "production",
+      isLocalOnly: false,
+      externalWritesEnabled: false,
+    });
+  });
+
+  it("keeps hosted staging action start closed", () => {
+    expect(
+      getActionStartWriteConfig({
+        MYMEDLIFE_AUTH_MODE: "staging_supabase",
+        MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES: "true",
+        MYMEDLIFE_ENABLE_ACTION_START_WRITE: "true",
+        MYMEDLIFE_ALLOW_PRODUCTION_ACTION_START_WRITE: "true",
+      }),
+    ).toMatchObject({
+      enabled: false,
+      environment: "staging",
+      reason:
+        "Hosted staging action start remains disabled until a dedicated staging approval is configured.",
+    });
+  });
+
   it("keeps the write locked without auth-derived actor context", () => {
     const actor = getMockLocalActorContext("member.a@mymedlife.test");
     const readiness = getActionStartWriteReadiness(actor, makeStartableAssignment(), {
@@ -75,6 +118,32 @@ describe("action-start write readiness", () => {
 
     expect(readiness.canSubmit).toBe(true);
     expect(readiness.resultCodeIfSubmitted).toBe("started");
+    expect(readiness.checks.every((check) => check.passed)).toBe(true);
+  });
+
+  it("allows an eligible signed-in production member only with both gates", () => {
+    const actor = getMockLocalActorContext(
+      "member.a@mymedlife.test",
+      "Signed in to production.",
+      "supabase_ready",
+      "local_auth_session",
+      "signed_in",
+    );
+    const readiness = getActionStartWriteReadiness(
+      actor,
+      makeStartableAssignment(),
+      {
+        MYMEDLIFE_AUTH_MODE: "production_supabase",
+        MYMEDLIFE_ENABLE_ACTION_START_WRITE: "true",
+        MYMEDLIFE_ALLOW_PRODUCTION_ACTION_START_WRITE: "true",
+      },
+    );
+
+    expect(readiness).toMatchObject({
+      environment: "production",
+      canSubmit: true,
+      resultCodeIfSubmitted: "started",
+    });
     expect(readiness.checks.every((check) => check.passed)).toBe(true);
   });
 

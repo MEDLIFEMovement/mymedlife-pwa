@@ -8,7 +8,7 @@ const mocks = vi.hoisted(() => ({
   getAuthSessionState: vi.fn(),
   getMemberStoryReactionConfig: vi.fn(),
   createMemberStoryReactionClient: vi.fn(),
-  toggleMemberStoryLike: vi.fn(),
+  setMemberStoryLike: vi.fn(),
 }));
 
 vi.mock("next/navigation", () => ({
@@ -26,7 +26,7 @@ vi.mock("@/services/auth-session", () => ({
 vi.mock("@/services/member-story-reactions", () => ({
   createMemberStoryReactionClient: mocks.createMemberStoryReactionClient,
   getMemberStoryReactionConfig: mocks.getMemberStoryReactionConfig,
-  toggleMemberStoryLike: mocks.toggleMemberStoryLike,
+  setMemberStoryLike: mocks.setMemberStoryLike,
 }));
 
 import {
@@ -46,7 +46,7 @@ describe("member story reaction server actions", () => {
       reason: "Story reactions are disabled for this test.",
     });
 
-    await expect(submitMemberStoryReactionForSupabase("story-1")).resolves.toMatchObject({
+    await expect(submitMemberStoryReactionForSupabase("story-1", true)).resolves.toMatchObject({
       success: false,
       code: "write_disabled",
       evidenceItemId: "story-1",
@@ -62,7 +62,7 @@ describe("member story reaction server actions", () => {
       config: { reason: "Auth client unavailable." },
     });
 
-    await expect(submitMemberStoryReactionForSupabase("story-2")).resolves.toMatchObject({
+    await expect(submitMemberStoryReactionForSupabase("story-2", true)).resolves.toMatchObject({
       success: false,
       code: "write_disabled",
       evidenceItemId: "story-2",
@@ -81,7 +81,7 @@ describe("member story reaction server actions", () => {
     });
     mocks.getAuthSessionState.mockResolvedValue({ status: "signed_out", user: null });
 
-    await expect(submitMemberStoryReactionForSupabase("story-3")).resolves.toMatchObject({
+    await expect(submitMemberStoryReactionForSupabase("story-3", true)).resolves.toMatchObject({
       success: false,
       code: "profile_not_found",
       evidenceItemId: "story-3",
@@ -93,36 +93,37 @@ describe("member story reaction server actions", () => {
     enableSignedInMember();
     mocks.createMemberStoryReactionClient.mockReturnValue(null);
 
-    await expect(submitMemberStoryReactionForSupabase("story-4")).resolves.toMatchObject({
+    await expect(submitMemberStoryReactionForSupabase("story-4", true)).resolves.toMatchObject({
       success: false,
       code: "write_disabled",
       evidenceItemId: "story-4",
       message: "The server-only story reaction client is not configured.",
     });
-    expect(mocks.toggleMemberStoryLike).not.toHaveBeenCalled();
+    expect(mocks.setMemberStoryLike).not.toHaveBeenCalled();
   });
 
   it("delegates a signed-in member reaction to the service-role transaction", async () => {
     enableSignedInMember();
     const reactionClient = { service: "client" };
     mocks.createMemberStoryReactionClient.mockReturnValue(reactionClient);
-    mocks.toggleMemberStoryLike.mockResolvedValue(successResult("story-5"));
+    mocks.setMemberStoryLike.mockResolvedValue(successResult("story-5"));
 
-    await expect(submitMemberStoryReactionForSupabase("story-5")).resolves.toMatchObject({
+    await expect(submitMemberStoryReactionForSupabase("story-5", true)).resolves.toMatchObject({
       success: true,
       code: "story_liked",
       reactionCount: 1,
     });
-    expect(mocks.toggleMemberStoryLike).toHaveBeenCalledWith(reactionClient, {
+    expect(mocks.setMemberStoryLike).toHaveBeenCalledWith(reactionClient, {
       actorUserId: "member-1",
       evidenceItemId: "story-5",
+      liked: true,
     });
   });
 
   it("redirects with the selected filter and open-story context preserved", async () => {
     enableSignedInMember();
     mocks.createMemberStoryReactionClient.mockReturnValue({ service: "client" });
-    mocks.toggleMemberStoryLike.mockResolvedValue(successResult("story-6"));
+    mocks.setMemberStoryLike.mockResolvedValue(successResult("story-6"));
 
     await expect(
       submitMemberStoryReactionAction(
@@ -130,6 +131,7 @@ describe("member story reaction server actions", () => {
           storyId: " story-6 ",
           filter: " featured ",
           openStory: " story-6 ",
+          desiredLiked: " true ",
         }),
       ),
     ).rejects.toThrow("NEXT_REDIRECT:");
@@ -142,14 +144,53 @@ describe("member story reaction server actions", () => {
   it("redirects without adding empty optional context", async () => {
     enableSignedInMember();
     mocks.createMemberStoryReactionClient.mockReturnValue({ service: "client" });
-    mocks.toggleMemberStoryLike.mockResolvedValue(successResult("story-7"));
+    mocks.setMemberStoryLike.mockResolvedValue(successResult("story-7"));
 
     await expect(
-      submitMemberStoryReactionAction(formData({ storyId: "story-7" })),
+      submitMemberStoryReactionAction(
+        formData({ storyId: "story-7", desiredLiked: "true" }),
+      ),
     ).rejects.toThrow("NEXT_REDIRECT:");
 
     expect(mocks.redirect).toHaveBeenCalledWith(
       "/app/stories?storyReactionResult=story_liked",
+    );
+  });
+
+  it("passes an explicit unlike intent instead of blindly toggling", async () => {
+    enableSignedInMember();
+    mocks.createMemberStoryReactionClient.mockReturnValue({ service: "client" });
+    mocks.setMemberStoryLike.mockResolvedValue({
+      ...successResult("story-8"),
+      code: "story_unliked",
+      reactionCount: 0,
+      likedByActor: false,
+    });
+
+    await expect(
+      submitMemberStoryReactionAction(
+        formData({ storyId: "story-8", desiredLiked: "false" }),
+      ),
+    ).rejects.toThrow("NEXT_REDIRECT:");
+
+    expect(mocks.setMemberStoryLike).toHaveBeenCalledWith(
+      { service: "client" },
+      {
+        actorUserId: "member-1",
+        evidenceItemId: "story-8",
+        liked: false,
+      },
+    );
+  });
+
+  it("fails closed when a stale form omits the desired reaction state", async () => {
+    await expect(
+      submitMemberStoryReactionAction(formData({ storyId: "story-9" })),
+    ).rejects.toThrow("NEXT_REDIRECT:");
+
+    expect(mocks.setMemberStoryLike).not.toHaveBeenCalled();
+    expect(mocks.redirect).toHaveBeenCalledWith(
+      "/app/stories?storyReactionResult=server_error",
     );
   });
 });

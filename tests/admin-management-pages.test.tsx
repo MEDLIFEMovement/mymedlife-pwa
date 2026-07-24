@@ -159,7 +159,9 @@ describe("admin management pages", () => {
 
     expect(html).toContain("User Access Management");
     expect(html).toContain("DS Admin · v2.4");
-    expect(html).toContain("SYSTEMS OK");
+    expect(html).toContain("READBACK MODE");
+    expect(html).not.toContain("SYSTEMS OK");
+    expect(html).toContain('aria-label="Admin notifications"');
     expect(html).toContain("Overview");
     expect(html).toContain("Users");
     expect(html).toContain("Chapters");
@@ -289,7 +291,9 @@ describe("admin management pages", () => {
 
     expect(html).toContain("Chapter Management");
     expect(html).toContain("DS Admin · v2.4");
-    expect(html).toContain("SYSTEMS OK");
+    expect(html).toContain("READBACK MODE");
+    expect(html).not.toContain("SYSTEMS OK");
+    expect(html).toContain('aria-label="Admin notifications"');
     expect(html).toContain("Overview");
     expect(html).toContain("Users");
     expect(html).toContain("Chapters");
