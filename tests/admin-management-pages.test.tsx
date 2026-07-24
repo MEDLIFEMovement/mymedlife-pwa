@@ -37,7 +37,7 @@ vi.mock("@/services/hubspot-read-sync-preflight", () => ({
 
 hubspotWorkspaceMock.mockResolvedValue({
     canRead: true,
-    config: { enabled: true, environment: "production", activeMemberTerms: ["2026-2027"], reason: "Enabled for test." },
+    config: { enabled: true, environment: "production", activeMemberTerms: ["2026-2027"], activeEboardTerms: ["2026-2"], reason: "Enabled for test." },
     lastRun: {
       id: "run-1",
       mode: "backfill",
@@ -909,20 +909,25 @@ describe("admin management pages", () => {
       success: true,
       code: "hubspot_preflight_succeeded",
       allowlistConfigured: false,
+      eboardAllowlistConfigured: true,
       memberTermCandidates: [
         {
           term: "2026-2027",
           contactCount: 30,
           activeYearCount: 30,
           qrYearCount: 0,
+          eboardYearCount: 0,
           approved: false,
+          eboardApproved: false,
         },
         {
-          term: "2026-27",
-          contactCount: 28,
+          term: "2026-2",
+          contactCount: 8,
           activeYearCount: 0,
-          qrYearCount: 28,
+          qrYearCount: 0,
+          eboardYearCount: 8,
           approved: false,
+          eboardApproved: true,
         },
       ],
       counts: {
@@ -971,9 +976,13 @@ describe("admin management pages", () => {
     expect(html).toContain("Profiles (700 source)");
     expect(html).toContain("Memberships (0 qualified)");
     expect(html).toContain("Provider member-term candidates");
-    expect(html).toContain("2026-27");
+    expect(html).toContain("2026-2");
+    expect(html).toContain("E-board years");
+    expect(html).toContain("E-board allowlist");
     expect(html).toContain("Member-term allowlist:");
-    expect(html).toContain("required before membership impact");
+    expect(html).toContain("E-board-term allowlist:");
+    expect(html).toContain("E-board-term allowlist: configured");
+    expect(html).toContain("required before general-member impact");
     expect(html).toContain("Example chapter creates: University One");
     expect(html).toContain("No HubSpot or app-owned records were changed");
   });
@@ -985,7 +994,7 @@ describe("admin management pages", () => {
     );
     hubspotWorkspaceMock.mockResolvedValueOnce({
       canRead: true,
-      config: { enabled: false, environment: "production", activeMemberTerms: [], reason: "Disabled for test." },
+      config: { enabled: false, environment: "production", activeMemberTerms: [], activeEboardTerms: [], reason: "Disabled for test." },
       lastRun: null,
       counts: {
         companies: 0,
@@ -1031,7 +1040,7 @@ describe("admin management pages", () => {
     );
     hubspotWorkspaceMock.mockResolvedValueOnce({
       canRead: false,
-      config: { enabled: false, environment: "production", activeMemberTerms: [], reason: "Unavailable." },
+      config: { enabled: false, environment: "production", activeMemberTerms: [], activeEboardTerms: [], reason: "Unavailable." },
       lastRun: null,
       counts: {
         companies: 0,
