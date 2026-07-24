@@ -14,10 +14,10 @@ substitute for the proof column where it is missing.
 | Workflow | Built | Local tests | Browser verified | CI | Staging | Production proof | Remaining boundary | Verdict |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | Auth and account lifecycle | Real password login/logout, recovery, password reset, session refresh, role routing, and route guards | Focused auth suites and full repository suite passed | Recovery, reset, persistence, logout, and role transitions exercised with an isolated TEST account | Required checks passed | Not separately validated | Real recovery email, signed-in role routing, audit readback, and cleanup proved | Approved launch-cohort proof remains a rollout activity | **PASS** |
-| Users, chapters, memberships | App-owned Supabase tables, actor-scoped reads, RLS, mappings, import runners, lifecycle ledgers | Sync, reconciliation, fail-closed, RLS, and readback coverage passed | Signed-in member/admin surfaces read app-owned production rows | Required checks passed | Current provider-backed staging path not established | 125 auth users/profiles, 8 active chapters, 116 approved memberships, role assignments, and chapter readback observed | HubSpot has never populated these rows in production | **PARTIAL** |
+| Users, chapters, memberships | App-owned Supabase tables, actor-scoped reads, RLS, mappings, import runners, lifecycle ledgers | Sync, reconciliation, fail-closed, RLS, and readback coverage passed | Signed-in member/admin surfaces read app-owned production rows | Required checks passed | Current provider-backed staging path not established | 127 auth users/profiles, 8 active chapters, 116 approved memberships, role assignments, and chapter readback observed | HubSpot has never populated these rows in production | **PARTIAL** |
 | HubSpot upstream sync | Server-only backfill/incremental sync, stable mappings, conflict/failure/replay state, scheduler, and admin controls | Focused and full suites passed | Production admin page truthfully shows disabled configuration and zero runs | Required checks passed | Current HubSpot staging activation absent | Zero runs, imports, and mappings in production | Requires current access token, enable flag, production approval flag, then backfill and signed-in readback | **BLOCKED** |
 | Events and Luma ingestion | Coherent app event model, event detail, server-only reconciliation, mapping and failure state, scheduled/manual controls | Event/Luma suites and full repository suite passed | Member event list/detail works; production admin Luma route inspected | Required checks passed | Current Luma read-sync staging contract absent | 18 app events and 14 links read from production; all 14 provider links are `mocked`; zero sync runs/imports | Requires current API key, calendar, chapter mapping, enable/approval flags, then provider import and cross-role browser proof | **BLOCKED** |
-| RSVP, Un-RSVP, check-in, attendance, points | Transactional service-role RPC, append-only intent history, re-RSVP, check-in, deduped points, role readbacks are merged on current `main` | Focused/RLS/full suites passed | The repaired member loop is browser-proven locally; the deployed production runtime has not received the repair commit | Required checks passed | No separate staging cohort proof | Prior production ledgers contain RSVP, cancellation, attendance, and event-points evidence, but production still serves `f44252e` while the repaired current `main` is `bc521ff` | Promote the exact current-main commit, retest RSVP -> Un-RSVP -> re-RSVP -> check-in -> attendance -> points with an approved member account, and verify audit/readback | **PARTIAL** |
+| RSVP, Un-RSVP, check-in, attendance, points | Transactional service-role RPC, append-only intent history, re-RSVP, check-in, deduped points, role readbacks are merged on current `main` | Focused/RLS/full suites passed | The repaired member loop is browser-proven locally; the deployed production runtime has not received the repair commit | Required checks passed | No separate staging cohort proof | Prior production ledgers contain RSVP, cancellation, attendance, and event-points evidence, but production still serves `f44252e` while the repaired current `main` is `73ae9f1` | Promote the exact current-main commit, retest RSVP -> Un-RSVP -> re-RSVP -> check-in -> attendance -> points with an approved member account, and verify audit/readback | **PARTIAL** |
 | Stories, private media, reactions, moderation | Durable story readback, private proof upload/removal, object validation, reaction writes, HQ sharing decisions | Focused/RLS/full suites passed | Signed-in member and HQ/admin paths exercised | Required checks passed | Not separately validated | Production has persisted like/unlike, upload/remove, moderation decisions, 7 storage-backed evidence rows, and one private bucket object | Thumbnail-generation evidence is not isolated as a separate production proof | **PASS** |
 | Admin safety and operations | Permissioned user creation/deactivation, audit readback, inactive-user safety; irreversible deletion and chapter mutations separated and blocked. A governed Databricks event-metrics export exists in draft PR #803 and is disabled by default | Admin lifecycle, permission, RLS, chapter posture, Databricks export, replay, failure, and pgTAP suites passed | Enabled production admin controls were exercised; the Databricks control plane is not deployed or provider-proven | Required checks passed on #803 | Databricks provider staging is not configured | TEST account creation/deactivation and audit history proved; chapter page shows real readback and unsafe mutations remain disabled. No Databricks provider write/readback is claimed | Permanent user deletion, production chapter mutation, and Databricks activation stay review-only pending independent approval and proof | **PARTIAL** |
 | Route/domain smoke | Core-route and domain checkers aligned with actual redirects | 11/11 core and 6/6 domain checks passed | Public and auth-boundary routes exercised by automation/browser | Required checks passed | Not a staging substitute | Production smoke currently reports 11/11 core and 6/6 domain READY | This proves availability and redirect contracts only | **PASS** |
@@ -28,15 +28,15 @@ substitute for the proof column where it is missing.
 Read-only production evidence from Supabase project
 `fnlhontvvprwgooevzdl`:
 
-- 125 auth users and 125 app profiles
+- 127 auth users and 127 app profiles
 - 8 active chapters and 116 approved memberships
 - 20 active staff role assignments and 10 active coach chapter assignments
 - 8 active campaigns, 18 chapter events, 35 assignments, and 40 points events
-- 44 audit rows and 19 outbox rows; 0 unsafe approved/sent outbox rows
+- 46 audit rows and 19 outbox rows; all outbox rows remain disabled
 - HubSpot: 0 runs, imports, mappings, and failures
 - Luma: 0 calendars, runs, and imports; 14 links, all `mocked`
-- Event loop: 19 RSVP, 13 cancellation, and 5 attendance events
-- Stories/evidence: 8 likes, 6 unlikes, 2 proof uploads, 2 proof removals,
+- Event loop: 21 RSVP, 14 cancellation, and 5 attendance events
+- Stories/evidence: 10 likes, 8 unlikes, 2 proof uploads, 2 proof removals,
   1 HQ sharing decision, 7 storage-backed evidence rows, and 1 private bucket
   object
 
@@ -50,7 +50,7 @@ Vercel deployment readback on 2026-07-23 shows:
 
 - production deployment `dpl_2ig8GiwFjjSRXtkwBaUtPgWknEys`
 - production commit `f44252e78c213a500c89f9b34862913d78270ed6`
-- current `main` commit `bc521ff100a6501f2d01994e147fe03de4a7182e`
+- current `main` commit `73ae9f1d9eedcc82c274e9df3febb60a634cb91d`
 - the two newer READY deployments for `a246863` have no production target
 
 PR #802 contains the repaired member event-loop integrity path and is merged in
@@ -133,7 +133,7 @@ production honesty and control behavior; it does not prove Luma activation.
 
 ## Next Gate Sequence
 
-1. Promote exact current `main` commit `bc521ff` and first verify `/api/release`
+1. Promote exact current `main` commit `73ae9f1` and first verify `/api/release`
    reports that exact SHA, then re-prove the complete member
    RSVP -> Un-RSVP -> re-RSVP -> check-in -> attendance -> points loop on the
    deployed site with an approved member account and audit/readback evidence.
