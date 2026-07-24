@@ -4,6 +4,10 @@ import { AppShell } from "@/components/app-shell";
 import { RestrictedState } from "@/components/restricted-state";
 import { submitHubSpotReadSyncAction, submitHubSpotReplayAction } from "@/app/admin/integrations/hubspot/actions";
 import { getAdminHubSpotSyncWorkspace } from "@/services/admin-hubspot-sync-workspace";
+import {
+  runHubSpotReadSyncPreflight,
+  type HubSpotReadSyncPreflightResult,
+} from "@/services/hubspot-read-sync-preflight";
 import { getLandingRouteForActor } from "@/services/landing-route";
 import { buildLoginRedirectHref, shouldRedirectActorToLogin } from "@/services/login-route";
 import { getLocalActorContext } from "@/services/local-actor-context";
@@ -26,6 +30,10 @@ export default async function AdminHubSpotIntegrationPage({ searchParams }: Page
   const workspace = await getAdminHubSpotSyncWorkspace();
   const params = (await searchParams) ?? {};
   const result = Array.isArray(params.hubspotSyncResult) ? params.hubspotSyncResult[0] : params.hubspotSyncResult;
+  const preflightRequested = params.hubspotPreflight === "run";
+  const preflight = preflightRequested
+    ? await runHubSpotReadSyncPreflight(actor.user.id)
+    : null;
 
   return (
     <AppShell actor={actor}>
@@ -111,6 +119,8 @@ export default async function AdminHubSpotIntegrationPage({ searchParams }: Page
             </article>
           </section>
 
+          <PreflightPanel result={preflight} />
+
           <section className="mt-4 grid gap-4 lg:grid-cols-2">
             <SyncForm mode="backfill" enabled={workspace.config.enabled} />
             <SyncForm mode="incremental" enabled={workspace.config.enabled} />
@@ -138,6 +148,137 @@ export default async function AdminHubSpotIntegrationPage({ searchParams }: Page
         </>
       )}
     </AppShell>
+  );
+}
+
+function PreflightPanel({
+  result,
+}: {
+  result: HubSpotReadSyncPreflightResult | null;
+}) {
+  return (
+    <section className="mt-4 border-y border-sky-300/20 bg-sky-300/[0.04] px-1 py-5">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-sky-200">
+            Read-only impact preflight
+          </p>
+          <h2 className="mt-2 text-lg font-semibold text-white">
+            Preview reconciliation before enabling writes
+          </h2>
+          <p className="mt-2 max-w-3xl text-sm leading-6 text-white/60">
+            Reads HubSpot and app-owned records to classify matches, creates,
+            conflicts, blocked memberships, and deactivations. It does not
+            change HubSpot or Supabase data.
+          </p>
+        </div>
+        <Link
+          href="/admin/integrations/hubspot?hubspotPreflight=run"
+          className="inline-flex min-h-10 items-center justify-center rounded-md border border-sky-200/30 px-4 py-2 text-sm font-semibold text-sky-100"
+        >
+          Run read-only preflight
+        </Link>
+      </div>
+
+      {result?.success === false ? (
+        <p className="mt-4 rounded-md border border-amber-200/25 bg-amber-200/[0.06] p-3 text-sm text-amber-50">
+          {result.message}
+        </p>
+      ) : null}
+
+      {result?.success ? (
+        <>
+          <p className="mt-4 text-sm text-emerald-100">{result.message}</p>
+          <div className="mt-4 overflow-x-auto">
+            <table className="w-full min-w-[44rem] border-collapse text-left text-sm text-white/75">
+              <thead>
+                <tr className="border-b border-white/10 text-xs uppercase tracking-[0.12em] text-white/45">
+                  <th className="px-3 py-2">Area</th>
+                  <th className="px-3 py-2">Stable</th>
+                  <th className="px-3 py-2">Link/name match</th>
+                  <th className="px-3 py-2">Create</th>
+                  <th className="px-3 py-2">Conflict</th>
+                  <th className="px-3 py-2">Blocked</th>
+                  <th className="px-3 py-2">Deactivate</th>
+                </tr>
+              </thead>
+              <tbody>
+                <PreflightRow
+                  label={`Chapters (${result.counts.sourceCompanies} source)`}
+                  stable={result.counts.chapters.stableMatches}
+                  linked={result.counts.chapters.nameMatches}
+                  creates={result.counts.chapters.creates}
+                  conflicts={result.counts.chapters.conflicts}
+                  blocked={0}
+                  deactivations={result.counts.chapters.deactivations}
+                />
+                <PreflightRow
+                  label={`Profiles (${result.counts.sourceContacts} source)`}
+                  stable={result.counts.profiles.stableMatches}
+                  linked={result.counts.profiles.emailMatches}
+                  creates={0}
+                  conflicts={result.counts.profiles.conflicts}
+                  blocked={result.counts.profiles.unmatched}
+                  deactivations={0}
+                />
+                <PreflightRow
+                  label={`Memberships (${result.counts.qualifiedAssociations} qualified)`}
+                  stable={result.counts.memberships.stableMatches}
+                  linked={result.counts.memberships.links}
+                  creates={result.counts.memberships.creates}
+                  conflicts={result.counts.memberships.conflicts}
+                  blocked={
+                    result.counts.memberships.blockedByProfile
+                    + result.counts.memberships.blockedByChapter
+                  }
+                  deactivations={result.counts.memberships.deactivations}
+                />
+              </tbody>
+            </table>
+          </div>
+          {result.chapterCreateSamples.length > 0 ? (
+            <p className="mt-4 text-xs leading-5 text-white/55">
+              Example chapter creates: {result.chapterCreateSamples.join(", ")}
+            </p>
+          ) : null}
+          {result.chapterConflictSamples.length > 0 ? (
+            <p className="mt-2 text-xs leading-5 text-amber-100/80">
+              Example chapter conflicts: {result.chapterConflictSamples.join(", ")}
+            </p>
+          ) : null}
+        </>
+      ) : null}
+    </section>
+  );
+}
+
+function PreflightRow({
+  label,
+  stable,
+  linked,
+  creates,
+  conflicts,
+  blocked,
+  deactivations,
+}: {
+  label: string;
+  stable: number;
+  linked: number;
+  creates: number;
+  conflicts: number;
+  blocked: number;
+  deactivations: number;
+}) {
+  return (
+    <tr className="border-b border-white/10">
+      <th className="px-3 py-3 font-semibold text-white">{label}</th>
+      <td className="px-3 py-3">{stable}</td>
+      <td className="px-3 py-3">{linked}</td>
+      <td className="px-3 py-3">{creates}</td>
+      <td className="px-3 py-3">{conflicts}</td>
+      <td className="px-3 py-3">{blocked}</td>
+      <td className="px-3 py-3">{deactivations}</td>
+    </tr>
   );
 }
 

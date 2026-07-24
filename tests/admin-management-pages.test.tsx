@@ -25,9 +25,14 @@ vi.mock("@/app/login/actions", () => ({
 }));
 
 const hubspotWorkspaceMock = vi.hoisted(() => vi.fn());
+const hubspotPreflightMock = vi.hoisted(() => vi.fn());
 
 vi.mock("@/services/admin-hubspot-sync-workspace", () => ({
   getAdminHubSpotSyncWorkspace: hubspotWorkspaceMock,
+}));
+
+vi.mock("@/services/hubspot-read-sync-preflight", () => ({
+  runHubSpotReadSyncPreflight: hubspotPreflightMock,
 }));
 
 hubspotWorkspaceMock.mockResolvedValue({
@@ -890,7 +895,66 @@ describe("admin management pages", () => {
     expect(html).toContain("TEST reconciliation failure");
     expect(html).toContain("Needs attention");
     expect(html).toContain("Hourly incremental cadence");
+    expect(html).toContain("Run read-only preflight");
+    expect(html).toContain("It does not change HubSpot or Supabase data");
     expect(html).not.toContain("server-only-token");
+  });
+
+  it("renders the read-only HubSpot preflight impact before live sync is enabled", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("ds.admin@mymedlife.test"),
+    );
+    hubspotPreflightMock.mockResolvedValueOnce({
+      success: true,
+      code: "hubspot_preflight_succeeded",
+      counts: {
+        sourceCompanies: 329,
+        sourceContacts: 700,
+        sourceAssociations: 750,
+        qualifiedContacts: 30,
+        qualifiedAssociations: 32,
+        chapters: {
+          stableMatches: 0,
+          nameMatches: 8,
+          creates: 321,
+          conflicts: 0,
+          deactivations: 0,
+        },
+        profiles: {
+          stableMatches: 0,
+          emailMatches: 10,
+          unmatched: 690,
+          conflicts: 0,
+        },
+        memberships: {
+          stableMatches: 0,
+          links: 3,
+          creates: 7,
+          conflicts: 0,
+          blockedByProfile: 22,
+          blockedByChapter: 0,
+          deactivations: 0,
+        },
+      },
+      chapterCreateSamples: ["University One"],
+      chapterConflictSamples: [],
+      message: "Read-only HubSpot preflight completed. No HubSpot or app-owned records were changed.",
+    });
+
+    const { default: AdminHubSpotIntegrationPage } = await import(
+      "@/app/admin/integrations/hubspot/page"
+    );
+    const html = renderToStaticMarkup(await AdminHubSpotIntegrationPage({
+      searchParams: Promise.resolve({ hubspotPreflight: "run" }),
+    }));
+
+    expect(hubspotPreflightMock).toHaveBeenCalled();
+    expect(html).toContain("Chapters (329 source)");
+    expect(html).toContain("Profiles (700 source)");
+    expect(html).toContain("Memberships (32 qualified)");
+    expect(html).toContain("Example chapter creates: University One");
+    expect(html).toContain("No HubSpot or app-owned records were changed");
   });
 
   it("renders honest empty HubSpot run and failure states with action readback", async () => {
