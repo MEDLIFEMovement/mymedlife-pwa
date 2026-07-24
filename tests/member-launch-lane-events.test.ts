@@ -161,6 +161,72 @@ describe("member launch lane events", () => {
     expect(row?.rsvpDetail).toContain("Attendance is confirmed");
   });
 
+  it("keeps imported staging and review-chapter events visibly TEST-only", () => {
+    const actor = getMockLocalActorContext("member.a@mymedlife.test");
+    const data = getMockReadOnlyAppData("Testing Luma review-only labeling.");
+    const supabaseData = {
+      ...data,
+      source: {
+        mode: "supabase" as const,
+        status: "supabase_ready" as const,
+        message: "Reading app-owned production data.",
+      },
+      chapterRows: data.chapterRows.map((chapter) => ({
+        ...chapter,
+        name: "myMEDLIFE Review Chapter",
+      })),
+      chapterEventRows: data.chapterEventRows.map((event) => ({
+        ...event,
+        title: "myMEDLIFE staging proof event",
+      })),
+    };
+
+    const row = getMemberLaunchLaneEventRowById(
+      actor,
+      supabaseData,
+      "chapter-event-ucla-kickoff",
+    );
+
+    expect(row).toMatchObject({
+      title: "myMEDLIFE staging proof event",
+      testPreview: true,
+      chapterName: "myMEDLIFE Review Chapter",
+    });
+  });
+
+  it("does not relabel a real app-owned event on a real chapter", () => {
+    const actor = getMockLocalActorContext("member.a@mymedlife.test");
+    const data = getMockReadOnlyAppData("Testing real event labeling.");
+    const supabaseData = {
+      ...data,
+      source: {
+        mode: "supabase" as const,
+        status: "supabase_ready" as const,
+        message: "Reading app-owned production data.",
+      },
+      chapterRows: data.chapterRows.map((chapter) => ({
+        ...chapter,
+        name: "UCLA MEDLIFE",
+      })),
+      chapterEventRows: data.chapterEventRows.map((event) => ({
+        ...event,
+        title: "Fall General Body Meeting",
+      })),
+    };
+
+    const row = getMemberLaunchLaneEventRowById(
+      actor,
+      supabaseData,
+      "chapter-event-ucla-kickoff",
+    );
+
+    expect(row).toMatchObject({
+      title: "Fall General Body Meeting",
+      testPreview: false,
+      chapterName: "UCLA MEDLIFE",
+    });
+  });
+
   it("does not substitute TEST fixture data for an unknown event id", () => {
     const actor = getMockLocalActorContext("member.a@mymedlife.test");
     const data = getMockReadOnlyAppData("Testing missing event fail-closed behavior.");

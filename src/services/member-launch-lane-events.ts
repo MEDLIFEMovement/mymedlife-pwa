@@ -132,7 +132,9 @@ function toMemberLaunchLaneEventRow(
   return {
     id: event.id,
     title: event.title,
-    testPreview: data.source.mode === "mock" || /^test\b/iu.test(event.title.trim()),
+    testPreview:
+      data.source.mode === "mock" ||
+      hasReviewOnlyEventSignal(event.title, event.chapterName),
     chapterName: event.chapterName,
     timing: event.timing,
     memberDateTimeLabel: event.memberDateTimeLabel,
@@ -163,4 +165,13 @@ function toMemberLaunchLaneEventRow(
     pointsAwarded: event.pointsAwarded,
     memberPointsAwarded,
   };
+}
+
+function hasReviewOnlyEventSignal(title: string, chapterName: string): boolean {
+  const reviewOnlyPattern = /\b(?:test|staging|sandbox|review)\b/iu;
+
+  return (
+    reviewOnlyPattern.test(title.trim()) ||
+    reviewOnlyPattern.test(chapterName.trim())
+  );
 }
