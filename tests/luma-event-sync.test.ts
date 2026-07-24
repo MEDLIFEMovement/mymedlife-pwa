@@ -299,6 +299,141 @@ describe("Luma event read sync", () => {
     expect(eventUpdate?.payload).not.toHaveProperty("promotion_summary");
   });
 
+  it("cancels and disables linked events absent from a complete backfill", async () => {
+    const queries: FakeQuery[] = [];
+    const appClient = createFakeAppClient((query) => {
+      queries.push(query);
+      if (query.table === "staff_role_assignments") return ok([{ role_key: "super_admin" }]);
+      if (query.table === "chapters" && query.operation === "select") {
+        return ok([{ id: enabledEnv.MYMEDLIFE_LUMA_CHAPTER_ID }]);
+      }
+      if (query.table === "luma_sync_runs" && query.operation === "select") return ok([]);
+      if (query.table === "luma_sync_runs" && query.operation === "insert") {
+        return ok({ id: "run-retire" });
+      }
+      if (query.table === "luma_event_imports" && query.operation === "select") {
+        return ok([{
+          luma_event_id: "evt-removed",
+          materialized_chapter_event_id: "event-removed",
+          materialized_luma_link_id: "link-removed",
+        }]);
+      }
+      return ok([]);
+    });
+
+    const result = await runLumaEventSync("admin-1", "backfill", {
+      env: enabledEnv,
+      appClient: appClient as never,
+      lumaClient: { readEvents: async () => [] },
+      now: () => new Date("2026-07-20T03:30:00.000Z"),
+    });
+
+    expect(result).toMatchObject({
+      success: true,
+      code: "luma_sync_succeeded",
+      counts: { sourceEvents: 0, updatedEvents: 1, failures: 0 },
+    });
+    expect(queries).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        table: "chapter_events",
+        operation: "update",
+        payload: { status: "canceled" },
+      }),
+      expect.objectContaining({
+        table: "luma_event_links",
+        operation: "update",
+        payload: expect.objectContaining({ status: "disabled" }),
+      }),
+      expect.objectContaining({
+        table: "luma_event_imports",
+        operation: "update",
+        payload: expect.objectContaining({ reconciliation_status: "ignored" }),
+      }),
+      expect.objectContaining({
+        table: "audit_logs",
+        operation: "insert",
+        payload: expect.objectContaining({ action: "luma_event_retired" }),
+      }),
+    ]));
+    expect(queries.some((query) => query.table === "automation_outbox")).toBe(false);
+  });
+
+  it("never infers provider deletion from the bounded reconciliation window", async () => {
+    const queries: FakeQuery[] = [];
+    const appClient = createFakeAppClient((query) => {
+      queries.push(query);
+      if (query.table === "staff_role_assignments") return ok([{ role_key: "super_admin" }]);
+      if (query.table === "chapters" && query.operation === "select") {
+        return ok([{ id: enabledEnv.MYMEDLIFE_LUMA_CHAPTER_ID }]);
+      }
+      if (query.table === "luma_sync_runs" && query.operation === "select") return ok([]);
+      if (query.table === "luma_sync_runs" && query.operation === "insert") {
+        return ok({ id: "run-bounded" });
+      }
+      return ok([]);
+    });
+
+    await expect(runLumaEventSync("admin-1", "reconcile", {
+      env: enabledEnv,
+      appClient: appClient as never,
+      lumaClient: { readEvents: async () => [] },
+      now: () => new Date("2026-07-20T03:45:00.000Z"),
+    })).resolves.toMatchObject({
+      success: true,
+      code: "luma_sync_succeeded",
+      counts: { updatedEvents: 0 },
+    });
+
+    expect(queries.some((query) =>
+      query.table === "luma_event_imports" && query.operation === "select"
+    )).toBe(false);
+    expect(queries.some((query) =>
+      query.table === "chapter_events"
+      && query.operation === "update"
+      && (query.payload as { status?: string } | null)?.status === "canceled"
+    )).toBe(false);
+  });
+
+  it.each([
+    ["missing-event lookup", "luma_event_imports", "select"],
+    ["app event cancellation", "chapter_events", "update"],
+    ["provider-link disable", "luma_event_links", "update"],
+    ["import retirement marker", "luma_event_imports", "update"],
+    ["retirement audit", "audit_logs", "insert"],
+  ] as const)("surfaces %s failures as partial backfill reconciliation", async (_label, table, operation) => {
+    const appClient = createFakeAppClient((query) => {
+      if (query.table === "staff_role_assignments") return ok([{ role_key: "ds_admin" }]);
+      if (query.table === "chapters" && query.operation === "select") {
+        return ok([{ id: enabledEnv.MYMEDLIFE_LUMA_CHAPTER_ID }]);
+      }
+      if (query.table === "luma_sync_runs" && query.operation === "select") return ok([]);
+      if (query.table === "luma_sync_runs" && query.operation === "insert") {
+        return ok({ id: "run-retire-fault" });
+      }
+      if (query.table === table && query.operation === operation) {
+        return failed(`${table} ${operation} failed`);
+      }
+      if (query.table === "luma_event_imports" && query.operation === "select") {
+        return ok([{
+          luma_event_id: "evt-removed",
+          materialized_chapter_event_id: "event-removed",
+          materialized_luma_link_id: "link-removed",
+        }]);
+      }
+      return ok([]);
+    });
+
+    const result = await runLumaEventSync("admin-1", "backfill", {
+      env: enabledEnv,
+      appClient: appClient as never,
+      lumaClient: { readEvents: async () => [] },
+      now: () => new Date("2026-07-20T03:50:00.000Z"),
+    });
+
+    expect(result).toMatchObject({ success: true, code: "luma_sync_partial" });
+    if (result.success) expect(result.counts.failures).toBeGreaterThan(0);
+  });
+
   it("records provider failures and cross-chapter link conflicts without provider writes", async () => {
     const failureQueries: FakeQuery[] = [];
     const failingClient = createFakeAppClient((query) => {
