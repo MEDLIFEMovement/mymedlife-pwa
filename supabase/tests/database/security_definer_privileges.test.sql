@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(10);
+select plan(11);
 
 select is(
   (
@@ -64,6 +64,15 @@ select ok(
     'EXECUTE'
   ),
   'Authenticated users can only submit proof through the production-honest wrapper'
+);
+
+select ok(
+  not has_function_privilege(
+    'authenticated',
+    'app.start_assignment_action_internal(uuid)',
+    'EXECUTE'
+  ),
+  'Authenticated users can only start actions through the production-honest wrapper'
 );
 
 select ok(

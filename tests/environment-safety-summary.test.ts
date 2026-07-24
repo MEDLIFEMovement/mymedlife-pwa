@@ -64,6 +64,20 @@ describe("environment safety summary", () => {
     ).toEqual(["Local Supabase writes", "Action-start write"]);
   });
 
+  it("shows a separately approved production action-start write as enabled", () => {
+    const actor = getMockLocalActorContext("super.admin@mymedlife.test");
+    const summary = getEnvironmentSafetySummary(actor, {
+      MYMEDLIFE_AUTH_MODE: "production_supabase",
+      MYMEDLIFE_ENABLE_ACTION_START_WRITE: "true",
+      MYMEDLIFE_ALLOW_PRODUCTION_ACTION_START_WRITE: "true",
+    });
+
+    expect(summary.counts.browserWritesEnabled).toBe(1);
+    expect(
+      summary.items.find((item) => item.label === "Action-start write"),
+    ).toMatchObject({ status: "watch" });
+  });
+
   it("counts approved local proof metadata writes without enabling uploads or external sends", () => {
     const actor = getMockLocalActorContext("super.admin@mymedlife.test");
     const summary = getEnvironmentSafetySummary(actor, {

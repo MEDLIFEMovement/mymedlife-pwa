@@ -169,6 +169,14 @@ export function getActionStartBrowserWriteGate(
   const localAuthApproved =
     actor.identitySource === "local_auth_session" &&
     actor.authSessionStatus === "signed_in";
+  const environmentWriteApproved =
+    writeConfig.environment === "production"
+      ? env.MYMEDLIFE_ALLOW_PRODUCTION_ACTION_START_WRITE === "true"
+      : env.MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES === "true";
+  const nextApprovalNeeded = getActionStartNextApprovalMessage(
+    writeConfig.environment,
+    actionStartReadiness.canSubmit,
+  );
 
   return {
     operation: "action_started",
@@ -180,14 +188,12 @@ export function getActionStartBrowserWriteGate(
       ? "ready_for_local_write"
       : "blocked_until_approval",
     canRenderEnabledControl: actionStartReadiness.canSubmit,
-    envRequestedLocalWrites: env.MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES === "true",
-    nextApprovalNeeded: actionStartReadiness.canSubmit
-      ? "Local action-start write is ready for localhost-only testing."
-      : approvalMessage,
+    envRequestedLocalWrites: environmentWriteApproved,
+    nextApprovalNeeded,
     checks: [
       {
         key: "actor_can_read_assignment",
-        label: "Current local actor can read this assignment",
+        label: "Current actor can read this assignment",
         passed: actorCanReadAssignment,
         detail: actorCanReadAssignment
           ? "The role-aware read filter exposes this assignment."
@@ -203,9 +209,10 @@ export function getActionStartBrowserWriteGate(
       },
       {
         key: "local_database_function_exists",
-        label: "Local database function exists",
+        label: "Database function exists",
         passed: true,
-        detail: "Goal 14 implemented app.start_assignment_action(assignment_uuid uuid).",
+        detail:
+          "app.start_assignment_action(assignment_uuid uuid) records app-owned assignment progress.",
       },
       {
         key: "rls_tests_exist",
@@ -226,8 +233,8 @@ export function getActionStartBrowserWriteGate(
         label: "Live auth/browser session approved",
         passed: localAuthApproved,
         detail: localAuthApproved
-          ? "A signed-in local Supabase Auth session is driving actor context."
-          : "A signed-in local Supabase Auth session is required before this write can run.",
+          ? "A signed-in Supabase Auth session is driving actor context."
+          : "A signed-in Supabase Auth session is required before this write can run.",
       },
       {
         key: "browser_write_approved",
@@ -238,6 +245,17 @@ export function getActionStartBrowserWriteGate(
     ],
     preview: createActionStartedMock(actor, assignment),
   };
+}
+
+function getActionStartNextApprovalMessage(
+  environment: "local" | "staging" | "production",
+  canSubmit: boolean,
+) {
+  if (!canSubmit) return approvalMessage;
+  if (environment === "production") {
+    return "Production action start is approved for deployed browser reproof.";
+  }
+  return "Local action-start write is ready for localhost-only testing.";
 }
 
 export function getMembershipApprovalBrowserWriteGate(

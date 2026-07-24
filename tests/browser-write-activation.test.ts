@@ -73,6 +73,34 @@ describe("browser write activation gate", () => {
     ]);
   });
 
+  it("marks production action start ready only with its separate approval", () => {
+    const actor = getMockLocalActorContext(
+      "member.a@mymedlife.test",
+      "Signed in to production.",
+      "supabase_ready",
+      "local_auth_session",
+      "signed_in",
+    );
+    const assignment = {
+      ...requireAssignment("member-push"),
+      id: "00000000-0000-4000-8000-000000000101",
+    };
+    const gate = getActionStartBrowserWriteGate(actor, assignment, {
+      MYMEDLIFE_AUTH_MODE: "production_supabase",
+      MYMEDLIFE_ENABLE_ACTION_START_WRITE: "true",
+      MYMEDLIFE_ALLOW_PRODUCTION_ACTION_START_WRITE: "true",
+    });
+
+    expect(gate).toMatchObject({
+      status: "ready_for_local_write",
+      canRenderEnabledControl: true,
+      envRequestedLocalWrites: true,
+      nextApprovalNeeded:
+        "Production action start is approved for deployed browser reproof.",
+    });
+    expect(getBlockingActivationChecks(gate)).toEqual([]);
+  });
+
   it("keeps proof-submission browser control disabled for an allowed member", () => {
     const actor = getMockLocalActorContext("member.a@mymedlife.test");
     const assignment = requireAssignment("share-rush-flyer");
