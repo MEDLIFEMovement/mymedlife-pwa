@@ -293,6 +293,13 @@ export function createHubSpotReadClient(
   const token = env.HUBSPOT_ACCESS_TOKEN;
   if (!config.enabled || !token) return null;
 
+  return createHubSpotReadOnlyClient(token, fetchImpl);
+}
+
+export function createHubSpotReadOnlyClient(
+  token: string,
+  fetchImpl: typeof fetch = fetch,
+): HubSpotReadClient {
   const request = createHubSpotRequest(token, fetchImpl);
 
   return {
