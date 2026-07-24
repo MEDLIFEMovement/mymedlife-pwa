@@ -15,7 +15,9 @@ const authConfig = {
 
 describe("admin Luma sync workspace", () => {
   it("returns database-backed counts, latest run, and unresolved failures", async () => {
+    const queries: FakeQuery[] = [];
     const client = createFakeAppClient((query) => {
+      queries.push(query);
       if (query.table === "luma_sync_runs") return result([{
         id: "run-1",
         mode: "reconcile",
@@ -80,6 +82,30 @@ describe("admin Luma sync workspace", () => {
       }],
       health: { status: "degraded", label: "Needs attention" },
     });
+    expect(queries).toHaveLength(6);
+    expect(queries.find((query) => query.table === "luma_sync_runs")?.filters)
+      .toEqual(expect.arrayContaining([
+        { column: "calendar_id", value: "cal-1" },
+        { column: "chapter_id", value: "chapter-1" },
+      ]));
+    expect(queries.find((query) => query.table === "chapter_luma_calendars")?.filters)
+      .toEqual(expect.arrayContaining([
+        { column: "environment", value: "production" },
+        { column: "calendar_id", value: "cal-1" },
+        { column: "chapter_id", value: "chapter-1" },
+      ]));
+    for (const query of queries.filter((candidate) => candidate.table === "luma_event_imports")) {
+      expect(query.filters).toEqual(expect.arrayContaining([
+        { column: "environment", value: "production" },
+        { column: "calendar_id", value: "cal-1" },
+        { column: "chapter_id", value: "chapter-1" },
+      ]));
+    }
+    expect(queries.find((query) => query.table === "luma_sync_failures")?.filters)
+      .toEqual(expect.arrayContaining([
+        { column: "luma_sync_runs.calendar_id", value: "cal-1" },
+        { column: "luma_sync_runs.chapter_id", value: "chapter-1" },
+      ]));
   });
 
   it("fails closed when auth or database readback is unavailable", async () => {

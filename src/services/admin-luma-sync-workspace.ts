@@ -63,13 +63,46 @@ export async function getAdminLumaSyncWorkspace(
   if (!client) return emptyWorkspace(config, authConfig.reason);
 
   const app = client.schema("app");
+  const scopedCalendarId =
+    config.calendarId ?? "__mymedlife_unconfigured_luma_calendar__";
+  const scopedChapterId =
+    config.chapterId ?? "00000000-0000-0000-0000-000000000000";
   const [runs, calendars, imports, materialized, conflicts, failures] = await Promise.all([
-    app.from("luma_sync_runs").select("id,mode,status,trigger_source,retry_of_run_id,calendar_id,chapter_id,started_at,completed_at,heartbeat_at,source_event_count,materialized_event_count,updated_event_count,conflict_count,failure_count").order("started_at", { ascending: false }).limit(1),
-    app.from("chapter_luma_calendars").select("id", { count: "exact", head: true }),
-    app.from("luma_event_imports").select("luma_event_id", { count: "exact", head: true }),
-    app.from("luma_event_imports").select("luma_event_id", { count: "exact", head: true }).eq("reconciliation_status", "materialized"),
-    app.from("luma_event_imports").select("luma_event_id", { count: "exact", head: true }).eq("reconciliation_status", "conflict"),
-    app.from("luma_sync_failures").select("id,run_id,object_type,external_id,error_code,error_message,retry_count,created_at,luma_sync_runs!inner(mode)", { count: "exact" }).is("resolved_at", null).order("created_at", { ascending: false }).limit(20),
+    app.from("luma_sync_runs")
+      .select("id,mode,status,trigger_source,retry_of_run_id,calendar_id,chapter_id,started_at,completed_at,heartbeat_at,source_event_count,materialized_event_count,updated_event_count,conflict_count,failure_count")
+      .eq("calendar_id", scopedCalendarId)
+      .eq("chapter_id", scopedChapterId)
+      .order("started_at", { ascending: false })
+      .limit(1),
+    app.from("chapter_luma_calendars")
+      .select("id", { count: "exact", head: true })
+      .eq("environment", config.environment)
+      .eq("calendar_id", scopedCalendarId)
+      .eq("chapter_id", scopedChapterId),
+    app.from("luma_event_imports")
+      .select("luma_event_id", { count: "exact", head: true })
+      .eq("environment", config.environment)
+      .eq("calendar_id", scopedCalendarId)
+      .eq("chapter_id", scopedChapterId),
+    app.from("luma_event_imports")
+      .select("luma_event_id", { count: "exact", head: true })
+      .eq("environment", config.environment)
+      .eq("calendar_id", scopedCalendarId)
+      .eq("chapter_id", scopedChapterId)
+      .eq("reconciliation_status", "materialized"),
+    app.from("luma_event_imports")
+      .select("luma_event_id", { count: "exact", head: true })
+      .eq("environment", config.environment)
+      .eq("calendar_id", scopedCalendarId)
+      .eq("chapter_id", scopedChapterId)
+      .eq("reconciliation_status", "conflict"),
+    app.from("luma_sync_failures")
+      .select("id,run_id,object_type,external_id,error_code,error_message,retry_count,created_at,luma_sync_runs!inner(mode,calendar_id,chapter_id)", { count: "exact" })
+      .eq("luma_sync_runs.calendar_id", scopedCalendarId)
+      .eq("luma_sync_runs.chapter_id", scopedChapterId)
+      .is("resolved_at", null)
+      .order("created_at", { ascending: false })
+      .limit(20),
   ]);
 
   const queryError = [runs, calendars, imports, materialized, conflicts, failures]
