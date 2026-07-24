@@ -71,13 +71,17 @@ describe("admin Luma integration status", () => {
   it("reports approved server-only reads without implying provider writes", () => {
     const actor = getMockLocalActorContext("super.admin@mymedlife.test");
     const data = getMockReadOnlyAppData("Testing enabled Luma read sync posture.");
+    const configuredChapterId = data.chapterLumaCalendarRows[0]?.chapter_id;
+    const configuredCalendarId = data.chapterLumaCalendarRows[0]?.calendar_id;
+    expect(configuredChapterId).toBeTruthy();
+    expect(configuredCalendarId).toBeTruthy();
     const status = getAdminLumaIntegrationStatus(actor, data, {
       MYMEDLIFE_AUTH_MODE: "staging_supabase",
       MYMEDLIFE_ENABLE_LUMA_READ_SYNC: "true",
       MYMEDLIFE_ALLOW_STAGING_LUMA_READ_SYNC: "true",
-      MYMEDLIFE_LUMA_CHAPTER_ID: "chapter-test",
+      MYMEDLIFE_LUMA_CHAPTER_ID: configuredChapterId,
       LUMA_API_KEY: "server-only-secret",
-      LUMA_CALENDAR_ID: "calendar-test",
+      LUMA_CALENDAR_ID: configuredCalendarId,
       SUPABASE_SERVICE_ROLE_KEY: "service-role-secret",
       NEXT_PUBLIC_SUPABASE_URL: "https://example.supabase.co",
     });
@@ -92,6 +96,62 @@ describe("admin Luma integration status", () => {
     expect(status.safetyNotes.join(" ")).toContain("does not create, update, or delete provider-side Luma events");
     expect(JSON.stringify(status)).not.toContain("server-only-secret");
     expect(JSON.stringify(status)).not.toContain("service-role-secret");
+  });
+
+  it("scopes enabled provider readback to the configured chapter and calendar", () => {
+    const actor = getMockLocalActorContext("super.admin@mymedlife.test");
+    const data = getMockReadOnlyAppData("Testing configured Luma readback scope.");
+    const configuredChapterId = data.chapterLumaCalendarRows[0]?.chapter_id;
+    const configuredCalendarId = data.chapterLumaCalendarRows[0]?.calendar_id;
+    expect(configuredChapterId).toBeTruthy();
+    expect(configuredCalendarId).toBeTruthy();
+
+    data.chapterLumaCalendarRows = [
+      ...data.chapterLumaCalendarRows,
+      {
+        ...data.chapterLumaCalendarRows[0],
+        id: "calendar-other",
+        chapter_id: "chapter-other",
+        calendar_id: "calendar-other",
+      },
+    ];
+    data.allLumaEventLinkRows = [
+      ...data.allLumaEventLinkRows,
+      {
+        ...data.allLumaEventLinkRows[0],
+        id: "link-other",
+        chapter_id: "chapter-other",
+        chapter_event_id: "event-other",
+        luma_event_id: "luma-other",
+        luma_event_url: "https://lu.ma/other",
+        last_imported_at: "2030-01-01T00:00:00.000Z",
+      },
+    ];
+
+    const status = getAdminLumaIntegrationStatus(actor, data, {
+      MYMEDLIFE_AUTH_MODE: "staging_supabase",
+      MYMEDLIFE_ENABLE_LUMA_READ_SYNC: "true",
+      MYMEDLIFE_ALLOW_STAGING_LUMA_READ_SYNC: "true",
+      MYMEDLIFE_LUMA_CHAPTER_ID: configuredChapterId,
+      LUMA_API_KEY: "server-only-secret",
+      LUMA_CALENDAR_ID: configuredCalendarId,
+      SUPABASE_SERVICE_ROLE_KEY: "service-role-secret",
+      NEXT_PUBLIC_SUPABASE_URL: "https://example.supabase.co",
+    });
+
+    expect(status.counts.calendars).toBe(1);
+    expect(status.counts.linkedEvents).toBe(
+      data.allLumaEventLinkRows.filter(
+        (row) =>
+          row.chapter_id === configuredChapterId &&
+          Boolean(row.luma_event_url),
+      ).length,
+    );
+    expect(status.lastSync).not.toBe("2030-01-01T00:00:00.000Z");
+    expect(status.setupChecks).toContainEqual(expect.objectContaining({
+      label: "Provider event-link readback",
+      status: "pass",
+    }));
   });
 
   it("keeps Supabase-backed production visibly disabled instead of calling it staging-ready", () => {

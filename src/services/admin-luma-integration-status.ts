@@ -92,10 +92,11 @@ export function getAdminLumaIntegrationStatus(
   const environmentLabel = syncConfig.enabled
     ? `${capitalize(syncConfig.environment)} read sync enabled`
     : getEnvironmentLabel(environment, env);
+  const scopedReadback = getScopedLumaReadback(data, syncConfig);
   const lumaIntegrationEvents = data.integrationEventRows.filter(isLumaIntegrationEvent);
   const lumaOutboxRows = data.automationOutboxRows.filter(isLumaOutboxRow);
   const liveSendRows = lumaOutboxRows.filter((row) => liveSendStatuses.has(row.status));
-  const linkedProviderEvents = data.allLumaEventLinkRows.filter((row) =>
+  const linkedProviderEvents = scopedReadback.eventLinks.filter((row) =>
     Boolean(row.chapter_event_id && row.luma_event_url) &&
     row.status !== "disabled" &&
     row.status !== "failed"
@@ -105,8 +106,8 @@ export function getAdminLumaIntegrationStatus(
     ...lumaOutboxRows.map((row) => row.updated_at),
   ]);
   const lastSync = getLatestTimestamp([
-    ...data.allLumaEventLinkRows.map((row) => row.last_imported_at ?? row.updated_at),
-    ...data.chapterLumaCalendarRows.map((row) => row.linked_at ?? row.updated_at),
+    ...scopedReadback.eventLinks.map((row) => row.last_imported_at ?? row.updated_at),
+    ...scopedReadback.calendars.map((row) => row.linked_at ?? row.updated_at),
   ]);
 
   return {
@@ -118,13 +119,18 @@ export function getAdminLumaIntegrationStatus(
     readSyncEnabled: syncConfig.enabled,
     environment,
     environmentLabel,
-    testConnection: getTestConnection(environment, data, syncConfig.enabled),
+    testConnection: getTestConnection(
+      environment,
+      scopedReadback.calendars.length,
+      scopedReadback.eventLinks.length,
+      syncConfig.enabled,
+    ),
     lastTestTime,
     lastSync,
     outboxStatus: liveSendRows.length > 0 ? "Review required" : "No live sends enabled",
     counts: {
-      calendars: data.chapterLumaCalendarRows.length,
-      linkedEvents: data.allLumaEventLinkRows.filter((row) => row.luma_event_url).length,
+      calendars: scopedReadback.calendars.length,
+      linkedEvents: scopedReadback.eventLinks.filter((row) => row.luma_event_url).length,
       lumaIntegrationEvents: lumaIntegrationEvents.length,
       lumaOutboxRows: lumaOutboxRows.length,
       liveSendRows: liveSendRows.length,
@@ -312,7 +318,8 @@ function getEnvironmentLabel(
 
 function getTestConnection(
   environment: EventLoopMode,
-  data: ReadOnlyAppData,
+  calendarCount: number,
+  eventLinkCount: number,
   readSyncEnabled = false,
 ): AdminLumaIntegrationStatus["testConnection"] {
   if (environment === "disabled") {
@@ -324,7 +331,7 @@ function getTestConnection(
     };
   }
 
-  if (data.chapterLumaCalendarRows.length === 0 && data.allLumaEventLinkRows.length === 0) {
+  if (calendarCount === 0 && eventLinkCount === 0) {
     return {
       status: "needs_setup",
       label: "Setup evidence needed",
@@ -347,6 +354,30 @@ function getTestConnection(
     label: "Dry-run check passed",
     detail:
       "Readback has Luma/mock mapping evidence. No external API call or secret exposure occurred.",
+  };
+}
+
+function getScopedLumaReadback(
+  data: ReadOnlyAppData,
+  syncConfig: ReturnType<typeof getLumaEventSyncConfig>,
+) {
+  if (!syncConfig.enabled || !syncConfig.chapterId || !syncConfig.calendarId) {
+    return {
+      calendars: data.chapterLumaCalendarRows,
+      eventLinks: data.allLumaEventLinkRows,
+    };
+  }
+
+  return {
+    calendars: data.chapterLumaCalendarRows.filter(
+      (row) =>
+        row.chapter_id === syncConfig.chapterId &&
+        row.calendar_id === syncConfig.calendarId &&
+        row.environment === syncConfig.environment,
+    ),
+    eventLinks: data.allLumaEventLinkRows.filter(
+      (row) => row.chapter_id === syncConfig.chapterId,
+    ),
   };
 }
 
