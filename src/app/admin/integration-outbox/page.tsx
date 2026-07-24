@@ -8,6 +8,8 @@ import {
   type AdminLiveSendPreflightItem,
   type AdminLiveSendPreflightStatus,
 } from "@/services/admin-integration-outbox-workspace";
+import { getAdminHubSpotSyncWorkspace } from "@/services/admin-hubspot-sync-workspace";
+import { getAdminLumaSyncWorkspace } from "@/services/admin-luma-sync-workspace";
 import type { IntegrationContractStatus } from "@/services/integration-contract-review";
 import { getLocalActorContext } from "@/services/local-actor-context";
 import { getReadOnlyAppData } from "@/services/read-only-app-data";
@@ -17,11 +19,22 @@ export const metadata = getStaticRouteMetadata("adminIntegrationOutbox");
 export const dynamic = "force-dynamic";
 
 export default async function AdminIntegrationOutboxPage() {
-  const [actor, data] = await Promise.all([
-    getLocalActorContext(),
+  const actor = await getLocalActorContext();
+  const canReadProviderStatus = [
+    "admin",
+    "ds_admin",
+    "super_admin",
+  ].includes(actor.audience);
+  const [data, luma, hubspot] = await Promise.all([
     getReadOnlyAppData(),
+    canReadProviderStatus ? getAdminLumaSyncWorkspace() : Promise.resolve(undefined),
+    canReadProviderStatus
+      ? getAdminHubSpotSyncWorkspace()
+      : Promise.resolve(undefined),
   ]);
-  const workspace = getAdminIntegrationOutboxWorkspace(actor, data);
+  const workspace = getAdminIntegrationOutboxWorkspace(actor, data, {
+    providerReadback: { hubspot, luma },
+  });
 
   return (
     <AppShell actor={actor}>

@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { getAdminIntegrationOutboxWorkspace } from "@/services/admin-integration-outbox-workspace";
+import type { AdminHubSpotSyncWorkspace } from "@/services/admin-hubspot-sync-workspace";
+import type { AdminLumaSyncWorkspace } from "@/services/admin-luma-sync-workspace";
 import { getMockLocalActorContext } from "@/services/local-actor-context";
 import { getMockReadOnlyAppData } from "@/services/read-only-app-data";
 import type {
@@ -50,8 +52,8 @@ describe("admin integration outbox workspace", () => {
     expect(workspace.contractReview.items.map((item) => item.label)).toEqual(
       expect.arrayContaining([
         "Luma event sync contract",
-        "HubSpot follow-up handoff contract",
-        "Warehouse and Power BI export contract",
+        "HubSpot upstream CRM sync contract",
+        "Databricks and Power BI export contract",
         "AI recommendation contract",
       ]),
     );
@@ -70,6 +72,66 @@ describe("admin integration outbox workspace", () => {
       externalWritesEnabled: 0,
       secretsShown: 0,
     });
+  });
+
+  it("uses live provider readback instead of stale mock-row status", () => {
+    const actor = getMockLocalActorContext("super.admin@mymedlife.test");
+    const workspace = getAdminIntegrationOutboxWorkspace(actor, data, {
+      providerReadback: {
+        luma: {
+          canRead: true,
+          config: { enabled: true },
+          lastRun: { status: "completed" },
+          counts: {
+            calendars: 1,
+            importedEvents: 67,
+            materializedEvents: 67,
+            conflicts: 0,
+            openFailures: 0,
+          },
+        } as AdminLumaSyncWorkspace,
+        hubspot: {
+          canRead: true,
+          config: { enabled: true },
+          lastRun: { status: "completed" },
+          counts: {
+            companies: 8,
+            contacts: 116,
+            memberships: 116,
+            pendingCompanies: 0,
+            pendingContacts: 0,
+            pendingMemberships: 0,
+            materializedMemberships: 116,
+            ignoredMemberships: 0,
+            openFailures: 0,
+          },
+        } as AdminHubSpotSyncWorkspace,
+      },
+    });
+
+    expect(workspace.contractReview.title).toBe(
+      "Integration contracts and live readback",
+    );
+    expect(workspace.contractReview.summary).toContain(
+      "HubSpot are upstream sources",
+    );
+
+    const luma = workspace.contractReview.items.find(
+      (item) => item.key === "luma",
+    );
+    expect(luma?.status).toBe("ready");
+    expect(luma?.currentPosture).toContain("67 provider event(s) imported");
+    expect(luma?.currentPosture).toContain("provider writes remain disabled");
+    expect(luma?.sourceOfTruth).toContain("upstream event provider");
+    expect(luma?.routeEvidence).toContain("/admin/integrations/luma");
+
+    const hubspot = workspace.contractReview.items.find(
+      (item) => item.key === "hubspot",
+    );
+    expect(hubspot?.status).toBe("ready");
+    expect(hubspot?.currentPosture).toContain("116 contact record(s)");
+    expect(hubspot?.sourceOfTruth).toContain("upstream CRM");
+    expect(hubspot?.routeEvidence).toContain("/admin/integrations/hubspot");
   });
 
   it("builds a live-send preflight checklist before any external automation", () => {
