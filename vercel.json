@@ -12,6 +12,10 @@
     {
       "path": "/api/cron/luma-event-sync",
       "schedule": "37 * * * *"
+    },
+    {
+      "path": "/api/cron/databricks-event-metrics",
+      "schedule": "53 * * * *"
     }
   ]
 }

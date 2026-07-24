@@ -83,6 +83,19 @@ publication boundary for imported provider events; every materialization must
 retain the source event ID and snapshot and write an audit-log entry tied to the
 initiating admin or scheduled sync run.
 
+The server-only Databricks event-metrics export may read one service-role-only,
+aggregate Supabase snapshot and merge it into a downstream Delta read model
+when all dedicated Databricks export flags are enabled. This exception was
+explicitly authorized by the product owner on 2026-07-23 as part of the
+required HubSpot-to-Supabase-to-Databricks production architecture. It permits
+only aggregate event, RSVP, attendance, eligibility, and attendance-points
+metrics. It does not permit member names, email addresses, user IDs, proof
+storage paths, browser-side credentials, Databricks-to-app authority, or any
+page-load dependency on Databricks. Every batch must retain a checkpoint,
+payload hash, provider statement ID, retry lineage, failure row, and app audit
+entry. The export remains disabled by default and requires separate
+environment approval before staging or production activation.
+
 An authenticated proof submitter may attach one private source file to an
 already-eligible app-owned evidence record when both dedicated production proof
 upload flags are enabled. This exception was explicitly authorized by the

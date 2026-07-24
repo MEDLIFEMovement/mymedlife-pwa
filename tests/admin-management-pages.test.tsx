@@ -253,7 +253,8 @@ describe("admin management pages", () => {
     expect(html).toContain("Luma mode");
     expect(html).toContain("Open Luma status");
     expect(html).toContain("HubSpot");
-    expect(html).toContain("Data warehouse");
+    expect(html).toContain("Databricks");
+    expect(html).toContain("Open Databricks export");
     expect(html).toContain("Integration events and outbox");
     expect(html).toContain("No browser-side provider writes");
     expect(html).toContain("Test blocked");
