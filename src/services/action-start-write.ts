@@ -9,19 +9,22 @@ type EnvSource = Record<string, string | undefined>;
 export type ActionStartWriteConfig =
   | {
       enabled: true;
-      isLocalOnly: true;
+      environment: "local" | "production";
+      isLocalOnly: boolean;
       externalWritesEnabled: false;
       reason: string;
     }
   | {
       enabled: false;
-      isLocalOnly: true;
+      environment: "local" | "staging" | "production";
+      isLocalOnly: boolean;
       externalWritesEnabled: false;
       reason: string;
     };
 
 export type ActionStartWriteReadiness = {
   operation: "action_started";
+  environment: "local" | "staging" | "production";
   canSubmit: boolean;
   resultCodeIfSubmitted: ActionStartResultCode;
   reason: string;
@@ -95,28 +98,57 @@ export function isActionStartableStatus(status: Assignment["status"]): boolean {
 export function getActionStartWriteConfig(
   env: EnvSource = process.env,
 ): ActionStartWriteConfig {
-  if (env.MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES !== "true") {
+  const environment = getActionStartEnvironment(env);
+
+  if (environment === "production") {
+    if (env.MYMEDLIFE_ENABLE_ACTION_START_WRITE !== "true") {
+      return disabledConfig(
+        environment,
+        "Action-start writes stay locked until the dedicated write flag is enabled.",
+      );
+    }
+
+    if (env.MYMEDLIFE_ALLOW_PRODUCTION_ACTION_START_WRITE !== "true") {
+      return disabledConfig(
+        environment,
+        "Production action start requires the separate production approval flag.",
+      );
+    }
+
     return {
-      enabled: false,
-      isLocalOnly: true,
+      enabled: true,
+      environment,
+      isLocalOnly: false,
       externalWritesEnabled: false,
       reason:
-        "Local Supabase writes are disabled. Set MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES=true only for local write testing.",
+        "Production action-start writes are enabled for authenticated eligible assignment owners. External sends remain disabled.",
     };
   }
 
+  if (environment === "staging") {
+    return disabledConfig(
+      environment,
+      "Hosted staging action start remains disabled until a dedicated staging approval is configured.",
+    );
+  }
+
+  if (env.MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES !== "true") {
+    return disabledConfig(
+      environment,
+      "Local Supabase writes are disabled. Set MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES=true only for local write testing.",
+    );
+  }
+
   if (env.MYMEDLIFE_ENABLE_ACTION_START_WRITE !== "true") {
-    return {
-      enabled: false,
-      isLocalOnly: true,
-      externalWritesEnabled: false,
-      reason:
-        "Action-start browser-facing writes remain disabled. Set MYMEDLIFE_ENABLE_ACTION_START_WRITE=true only after local auth and RLS are ready.",
-    };
+    return disabledConfig(
+      environment,
+      "Action-start browser-facing writes remain disabled. Set MYMEDLIFE_ENABLE_ACTION_START_WRITE=true only after local auth and RLS are ready.",
+    );
   }
 
   return {
     enabled: true,
+    environment,
     isLocalOnly: true,
     externalWritesEnabled: false,
     reason:
@@ -130,7 +162,10 @@ export function getActionStartWriteReadiness(
   env: EnvSource = process.env,
 ): ActionStartWriteReadiness {
   const config = getActionStartWriteConfig(env);
-  const localWritesRequested = env.MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES === "true";
+  const environmentWriteApproved = isEnvironmentWriteApproved(
+    config.environment,
+    env,
+  );
   const actionStartWriteApproved =
     env.MYMEDLIFE_ENABLE_ACTION_START_WRITE === "true";
   const hasLocalAuthSession =
@@ -144,8 +179,8 @@ export function getActionStartWriteReadiness(
   const checks: ActionStartWriteReadiness["checks"] = [
     {
       key: "local_writes_requested",
-      label: "Local write switch is on",
-      passed: localWritesRequested,
+      label: "Environment write approval is on",
+      passed: environmentWriteApproved,
     },
     {
       key: "action_start_write_approved",
@@ -154,7 +189,7 @@ export function getActionStartWriteReadiness(
     },
     {
       key: "local_auth_session",
-      label: "Signed-in local Supabase Auth session",
+      label: "Signed-in Supabase Auth session",
       passed: hasLocalAuthSession,
     },
     {
@@ -188,6 +223,7 @@ export function getActionStartWriteReadiness(
 
   return {
     operation: "action_started",
+    environment: config.environment,
     canSubmit: config.enabled && !failedCheck,
     resultCodeIfSubmitted:
       config.enabled && !failedCheck
@@ -214,7 +250,7 @@ export function getActionStartReadbackState(
       confirmsStarted: false,
       tone: "info",
       message:
-        "No local status change is expected for this result. The page is still reading the current assignment state safely.",
+        "No status change is expected for this result. The page is still reading the current app-owned assignment state safely.",
     };
   }
 
@@ -224,7 +260,7 @@ export function getActionStartReadbackState(
       confirmsStarted: true,
       tone: "success",
       message:
-        "Local readback confirms this assignment is now in progress in Supabase.",
+        "App-owned readback confirms this assignment is now in progress in Supabase.",
     };
   }
 
@@ -249,7 +285,7 @@ export function mapActionStartRpcSuccess(
     integrationEventId: row.integration_event_id,
     auditLogId: row.audit_log_id,
     plainEnglishMessage:
-      "Action started locally. The app recorded the assignment status, event, integration event, and audit log. No external send happened.",
+      "Action started. The app recorded the assignment status, event, integration event, and audit log. No external send happened.",
   };
 }
 
@@ -259,7 +295,7 @@ export function getActionStartAlreadyStartedServerResult(
   return failureResult(
     assignmentId,
     "already_started",
-    "This action is already underway in local Supabase, so no duplicate start event was created.",
+    "This action is already underway in Supabase, so no duplicate start event was created.",
   );
 }
 
@@ -270,7 +306,7 @@ export function getActionStartStaleServerResult(
   return failureResult(
     assignmentId,
     "stale_assignment",
-    `This action changed to ${currentStatus} before the save completed. Refresh the page and review the latest local assignment state before trying again.`,
+    `This action changed to ${currentStatus} before the save completed. Refresh the page and review the latest assignment state before trying again.`,
   );
 }
 
@@ -284,7 +320,7 @@ export function mapActionStartRpcError(
     return failureResult(
       assignmentId,
       "assignment_not_found",
-      "The action was not found in local Supabase, so nothing was saved.",
+      "The action was not found in app-owned Supabase, so nothing was saved.",
     );
   }
 
@@ -292,7 +328,7 @@ export function mapActionStartRpcError(
     return failureResult(
       assignmentId,
       "missing_auth",
-      "Sign in with a local Supabase seed user before starting this action.",
+      "Sign in with an eligible Supabase account before starting this action.",
     );
   }
 
@@ -300,7 +336,7 @@ export function mapActionStartRpcError(
     return failureResult(
       assignmentId,
       "stale_assignment",
-      "This action changed before the save completed. Refresh the page and review the latest local assignment state before trying again.",
+      "This action changed before the save completed. Refresh the page and review the latest assignment state before trying again.",
     );
   }
 
@@ -312,7 +348,7 @@ export function mapActionStartRpcError(
     return failureResult(
       assignmentId,
       "permission_denied",
-      "This signed-in local role cannot start this action.",
+      "This signed-in role cannot start this action.",
     );
   }
 
@@ -327,6 +363,42 @@ export function isUuid(value: string): boolean {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
     value,
   );
+}
+
+function getActionStartEnvironment(
+  env: EnvSource,
+): "local" | "staging" | "production" {
+  if (env.MYMEDLIFE_AUTH_MODE === "production_supabase") return "production";
+  if (env.MYMEDLIFE_AUTH_MODE === "staging_supabase") return "staging";
+  return "local";
+}
+
+function disabledConfig(
+  environment: "local" | "staging" | "production",
+  reason: string,
+): Extract<ActionStartWriteConfig, { enabled: false }> {
+  return {
+    enabled: false,
+    environment,
+    isLocalOnly: environment === "local",
+    externalWritesEnabled: false,
+    reason,
+  };
+}
+
+function isEnvironmentWriteApproved(
+  environment: "local" | "staging" | "production",
+  env: EnvSource,
+) {
+  if (environment === "production") {
+    return env.MYMEDLIFE_ALLOW_PRODUCTION_ACTION_START_WRITE === "true";
+  }
+
+  if (environment === "local") {
+    return env.MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES === "true";
+  }
+
+  return false;
 }
 
 function getActionStartBlockedResultCode(

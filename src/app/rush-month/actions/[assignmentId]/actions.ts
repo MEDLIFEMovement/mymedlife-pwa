@@ -35,7 +35,7 @@ export async function startAssignmentAction(formData: FormData) {
     String(formData.get("expectedStatus") ?? "").trim() || null,
   );
   const returnTo = normalizeReturnTo(formData.get("returnTo"), assignmentId);
-  const result = await startAssignmentActionForLocalSupabase(
+  const result = await startAssignmentActionForSupabase(
     assignmentId,
     expectedStatus,
   );
@@ -51,7 +51,7 @@ export async function submitAssignmentProofAction(formData: FormData) {
   redirect(`${returnTo}?proofSubmissionResult=${result.code}`);
 }
 
-export async function startAssignmentActionForLocalSupabase(
+export async function startAssignmentActionForSupabase(
   assignmentId: string,
   expectedStatus: Assignment["status"] | null = null,
 ): Promise<ActionStartServerResult> {
@@ -72,7 +72,7 @@ export async function startAssignmentActionForLocalSupabase(
       code: "assignment_not_found",
       assignmentId,
       plainEnglishMessage:
-        "The current action uses mock data, not a local Supabase UUID, so nothing was saved.",
+        "The current action does not use an app-owned Supabase UUID, so nothing was saved.",
     };
   }
 
@@ -95,7 +95,7 @@ export async function startAssignmentActionForLocalSupabase(
       code: "missing_auth",
       assignmentId,
       plainEnglishMessage:
-        "Sign in with a local Supabase seed user before starting this action.",
+        "Sign in with an eligible Supabase account before starting this action.",
     };
   }
 
@@ -128,7 +128,7 @@ export async function startAssignmentActionForLocalSupabase(
       code: "server_error",
       assignmentId,
       plainEnglishMessage:
-        "Local Supabase did not return the expected action-start record. No external automation ran.",
+        "Supabase did not return the expected action-start record. No external automation ran.",
     };
   }
 

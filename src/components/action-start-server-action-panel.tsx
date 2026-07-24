@@ -22,15 +22,16 @@ export function ActionStartServerActionPanel({
 }: ActionStartServerActionPanelProps) {
   const resultState = resultCode ? getActionStartResultState(resultCode) : null;
   const readbackState = getActionStartReadbackState(assignment, resultCode);
+  const environmentLabel = getEnvironmentLabel(readiness.environment);
 
   return (
     <section className="rounded-[2rem] border border-emerald-300/20 bg-emerald-300/10 p-5">
       <p className="text-xs font-semibold uppercase tracking-[0.24em] text-emerald-100">
-        Local start action
+        {environmentLabel} start action
       </p>
       <h2 className="mt-2 text-2xl font-semibold text-white">
         {readiness.canSubmit
-          ? "You can start this action in local Supabase."
+          ? "You can start this action."
           : "Start action is still safely gated."}
       </h2>
       <p className="mt-2 text-sm leading-6 text-white/68">{readiness.reason}</p>
@@ -65,7 +66,7 @@ export function ActionStartServerActionPanel({
                 : "border-white/10 bg-black/18 text-white/68",
           ].join(" ")}
         >
-          <p className="font-semibold">Local readback</p>
+          <p className="font-semibold">{environmentLabel} readback</p>
           <p className="mt-1">{readbackState.message}</p>
           <p className="mt-1 text-xs uppercase tracking-[0.16em] opacity-75">
             Current assignment status: {readbackState.assignmentStatus}
@@ -105,4 +106,12 @@ export function ActionStartServerActionPanel({
       </div>
     </section>
   );
+}
+
+function getEnvironmentLabel(
+  environment: ActionStartWriteReadiness["environment"],
+) {
+  if (environment === "production") return "Production";
+  if (environment === "staging") return "Staging";
+  return "Local";
 }

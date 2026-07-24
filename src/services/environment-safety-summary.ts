@@ -6,6 +6,7 @@ export type EnvironmentSafetyInput = {
   MYMEDLIFE_ALLOW_LOCAL_SUPABASE_READS?: string;
   MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES?: string;
   MYMEDLIFE_ENABLE_ACTION_START_WRITE?: string;
+  MYMEDLIFE_ALLOW_PRODUCTION_ACTION_START_WRITE?: string;
   MYMEDLIFE_ENABLE_ASSIGNMENT_CREATE_WRITE?: string;
   MYMEDLIFE_ENABLE_PROOF_SUBMISSION_WRITE?: string;
   MYMEDLIFE_ALLOW_PRODUCTION_PROOF_SUBMISSION_WRITE?: string;
@@ -87,7 +88,7 @@ export function getEnvironmentSafetySummary(
       value: env.MYMEDLIFE_ENABLE_ACTION_START_WRITE || "false",
       status: getActionStartWriteStatus(env),
       explanation:
-        "The first local write slice can start assignments only when local Supabase writes and local auth are also ready.",
+        "Action start requires authenticated Supabase access and the environment-specific approval. It records app-owned history but no external send.",
     },
     {
       label: "Assignment-create write",
@@ -152,7 +153,7 @@ export function getEnvironmentSafetySummary(
       blocked: items.filter((item) => item.status === "blocked").length,
       secretsShown: 0,
       browserWritesEnabled:
-        getEnabledLocalWriteCount(env),
+        getEnabledBrowserWriteCount(env),
       externalWritesEnabled: 0,
     },
   };
@@ -168,6 +169,8 @@ function readEnvironmentSafetyInput(): EnvironmentSafetyInput {
       process.env.MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES,
     MYMEDLIFE_ENABLE_ACTION_START_WRITE:
       process.env.MYMEDLIFE_ENABLE_ACTION_START_WRITE,
+    MYMEDLIFE_ALLOW_PRODUCTION_ACTION_START_WRITE:
+      process.env.MYMEDLIFE_ALLOW_PRODUCTION_ACTION_START_WRITE,
     MYMEDLIFE_ENABLE_ASSIGNMENT_CREATE_WRITE:
       process.env.MYMEDLIFE_ENABLE_ASSIGNMENT_CREATE_WRITE,
     MYMEDLIFE_ENABLE_PROOF_SUBMISSION_WRITE:
@@ -190,7 +193,12 @@ function getActionStartWriteStatus(
     return "safe";
   }
 
-  return env.MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES === "true" ? "watch" : "blocked";
+  const environmentApproved =
+    env.MYMEDLIFE_AUTH_MODE === "production_supabase"
+      ? env.MYMEDLIFE_ALLOW_PRODUCTION_ACTION_START_WRITE === "true"
+      : env.MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES === "true";
+
+  return environmentApproved ? "watch" : "blocked";
 }
 
 function getProofSubmissionWriteStatus(
@@ -242,12 +250,17 @@ function getCoachDecisionWriteStatus(
   return env.MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES === "true" ? "watch" : "blocked";
 }
 
-function getEnabledLocalWriteCount(env: EnvironmentSafetyInput): number {
+function getEnabledBrowserWriteCount(env: EnvironmentSafetyInput): number {
   const localWritesEnabled =
     env.MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES === "true";
 
   const actionStartEnabled =
-    localWritesEnabled && env.MYMEDLIFE_ENABLE_ACTION_START_WRITE === "true" ? 1 : 0;
+    env.MYMEDLIFE_ENABLE_ACTION_START_WRITE === "true" &&
+    (localWritesEnabled ||
+      (env.MYMEDLIFE_AUTH_MODE === "production_supabase" &&
+        env.MYMEDLIFE_ALLOW_PRODUCTION_ACTION_START_WRITE === "true"))
+      ? 1
+      : 0;
   const assignmentCreateEnabled =
     localWritesEnabled && env.MYMEDLIFE_ENABLE_ASSIGNMENT_CREATE_WRITE === "true"
       ? 1
