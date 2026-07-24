@@ -719,6 +719,34 @@ describe("Luma event read sync", () => {
     });
   });
 
+  it("fails closed when the replay target cannot be verified", async () => {
+    const appClient = createFakeAppClient((query) => {
+      if (query.table === "staff_role_assignments") return ok([{ role_key: "ds_admin" }]);
+      if (query.table === "chapters") return ok([{ id: enabledEnv.MYMEDLIFE_LUMA_CHAPTER_ID }]);
+      if (query.table === "luma_sync_runs" && query.operation === "select") {
+        const isReplayTarget = query.filters.some(
+          (filter) => filter.column === "id" && filter.value === "target-run",
+        );
+        return isReplayTarget ? failed("replay target lookup failed") : ok([]);
+      }
+      return ok([]);
+    });
+
+    const result = await runLumaEventSync("admin-1", "backfill", {
+      env: enabledEnv,
+      appClient: appClient as never,
+      lumaClient: { readEvents: async () => [] },
+      triggerSource: "replay",
+      retryOfRunId: "target-run",
+    });
+
+    expect(result).toMatchObject({
+      success: false,
+      code: "server_error",
+      plainEnglishMessage: "Could not verify the Luma sync replay target.",
+    });
+  });
+
   it("surfaces failure-ledger and failed-run finalization outages", async () => {
     const queries: FakeQuery[] = [];
     const appClient = createFakeAppClient((query) => {

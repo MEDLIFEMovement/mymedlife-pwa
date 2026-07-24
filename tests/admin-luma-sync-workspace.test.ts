@@ -34,17 +34,30 @@ describe("admin Luma sync workspace", () => {
         failure_count: 1,
       }]);
       if (query.table === "chapter_luma_calendars") return result([], 1);
-      if (query.table === "luma_sync_failures") return result([{
-        id: "failure-1",
-        run_id: "run-1",
-        luma_sync_runs: { mode: "reconcile" },
-        object_type: "event",
-        external_id: "evt-1",
-        error_code: "calendar_mismatch",
-        error_message: "Needs review",
-        retry_count: 0,
-        created_at: "2026-07-20T01:04:00.000Z",
-      }], 1);
+      if (query.table === "luma_sync_failures") return result([
+        {
+          id: "failure-1",
+          run_id: "run-1",
+          luma_sync_runs: { mode: "reconcile" },
+          object_type: "event",
+          external_id: "evt-1",
+          error_code: "calendar_mismatch",
+          error_message: "Needs review",
+          retry_count: 0,
+          created_at: "2026-07-20T01:04:00.000Z",
+        },
+        {
+          id: "failure-2",
+          run_id: "run-2",
+          luma_sync_runs: { mode: "backfill" },
+          object_type: "run",
+          external_id: null,
+          error_code: "luma_read_failed",
+          error_message: "Provider read failed",
+          retry_count: 1,
+          created_at: "2026-07-20T01:03:00.000Z",
+        },
+      ], 2);
       const status = query.filters.find((filter) => filter.column === "reconciliation_status")?.value;
       return result([], status === "materialized" ? 8 : status === "conflict" ? 1 : 10);
     });
@@ -71,13 +84,21 @@ describe("admin Luma sync workspace", () => {
         materializedEvents: 4,
         updatedEvents: 5,
       },
-      counts: { calendars: 1, importedEvents: 10, materializedEvents: 8, conflicts: 1, openFailures: 1 },
-      failures: [{
-        runId: "run-1",
-        mode: "reconcile",
-        code: "calendar_mismatch",
-        message: "Needs review",
-      }],
+      counts: { calendars: 1, importedEvents: 10, materializedEvents: 8, conflicts: 1, openFailures: 2 },
+      failures: [
+        {
+          runId: "run-1",
+          mode: "reconcile",
+          code: "calendar_mismatch",
+          message: "Needs review",
+        },
+        {
+          runId: "run-2",
+          mode: "backfill",
+          code: "luma_read_failed",
+          message: "Provider read failed",
+        },
+      ],
       health: { status: "degraded", label: "Needs attention" },
     });
   });
