@@ -616,6 +616,54 @@ describe("launch lane points readback", () => {
     );
   });
 
+  it("shows no upcoming event when the staff readback clock is invalid", () => {
+    const data = getMockReadOnlyAppData("Testing invalid staff readback clock.");
+
+    expect(
+      getLaunchLaneStaffChapterReadback(data, new Date("invalid")),
+    ).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          name: "UCLA MEDLIFE",
+          chapterEventId: null,
+          nextEvent: "No event scheduled",
+        }),
+      ]),
+    );
+  });
+
+  it("skips imported events that have no usable start or end time", () => {
+    const data = withAdditionalUclaEvent(
+      getMockReadOnlyAppData("Testing undated imported event staff readback."),
+      {
+        event: {
+          id: "chapter-event-ucla-undated-import",
+          title: "Undated provider import",
+          starts_at: "",
+          ends_at: null,
+          status: "published",
+          attendance_count: null,
+          luma_event_link_id: null,
+        },
+      },
+    );
+
+    expect(
+      getLaunchLaneStaffChapterReadback(
+        data,
+        new Date("2026-12-01T12:00:00Z"),
+      ),
+    ).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          name: "UCLA MEDLIFE",
+          chapterEventId: null,
+          nextEvent: "No event scheduled",
+        }),
+      ]),
+    );
+  });
+
   it("resolves a selected staff event from the full event set, not only the chapter summary event", () => {
     const data = withAdditionalUclaEvent(
       getMockReadOnlyAppData("Testing selected staff event readback."),
