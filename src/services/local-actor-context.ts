@@ -24,6 +24,7 @@ import {
   type CanonicalRoleAssignment,
   type CanonicalScope,
 } from "@/services/canonical-role-scope";
+import { isLocalRolePreviewEnabled } from "@/services/local-role-preview";
 import type { DataSourceMeta, DataSourceStatus } from "@/services/read-only-app-data";
 import type { User } from "@/shared/types/domain";
 import type {
@@ -622,8 +623,11 @@ export function resolveActorEmailFromSession(
 export function resolveLocalActorPreviewSelection(
   cookieEmail: string | null | undefined,
   envEmail = defaultLocalActorEmail,
+  env: Record<string, string | undefined> = process.env,
 ): LocalActorPreviewSelection {
-  const cookieActor = findKnownLocalActorOption(cookieEmail);
+  const cookieActor = isLocalRolePreviewEnabled(env)
+    ? findKnownLocalActorOption(cookieEmail)
+    : null;
   if (cookieActor) {
     return {
       email: cookieActor.email,
