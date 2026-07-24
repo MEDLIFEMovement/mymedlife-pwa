@@ -1,4 +1,6 @@
 import type { ReadOnlyAppData } from "@/services/read-only-app-data";
+import type { AdminHubSpotSyncWorkspace } from "@/services/admin-hubspot-sync-workspace";
+import type { AdminLumaSyncWorkspace } from "@/services/admin-luma-sync-workspace";
 import type { IntegrationDestination } from "@/shared/types/persistence";
 
 export type IntegrationContractStatus = "ready" | "watch" | "blocked";
@@ -32,6 +34,11 @@ export type IntegrationContractReview = {
   blockedControls: string[];
 };
 
+export type IntegrationContractProviderReadback = {
+  hubspot?: AdminHubSpotSyncWorkspace;
+  luma?: AdminLumaSyncWorkspace;
+};
+
 const liveSendStatuses = new Set([
   "approved_for_live_send",
   "sent",
@@ -41,63 +48,22 @@ const liveSendStatuses = new Set([
 
 export function getIntegrationContractReview(
   data: ReadOnlyAppData,
+  providerReadback: IntegrationContractProviderReadback = {},
 ): IntegrationContractReview {
   const items: IntegrationContractReviewItem[] = [
-    buildDestinationContract({
-      key: "luma",
-      label: "Luma event sync contract",
-      data,
-      destination: "Luma",
-      sourceOfTruth:
-        "myMEDLIFE stores the chapter event link posture; registration and attendance stay gated outside the browser.",
-      requiredEvidence:
-        "A Luma-linked event and disabled/mock-safe send path should be visible before any attendance import is approved.",
-      liveGate:
-        "Pilot approval needs the exact read/import path, duplicate handling, rollback, and owner sign-off for attendance truth.",
-      requiredFields: [
-        "chapter_id",
-        "campaign_id",
-        "chapter_event_id",
-        "external_object_id",
-        "event_url",
-        "attendance_mode",
-      ],
-      defaultPosture:
-        "No Luma contract rows are visible yet. Keep registration and attendance manual until the contract is seeded.",
-    }),
-    buildDestinationContract({
-      key: "hubspot",
-      label: "HubSpot follow-up handoff contract",
-      data,
-      destination: "HubSpot",
-      sourceOfTruth:
-        "myMEDLIFE owns chapter action truth; HubSpot remains the downstream follow-up system when explicitly approved.",
-      requiredEvidence:
-        "A mock CRM handoff event and outbox row should exist before any follow-up sync or contact mutation is approved.",
-      liveGate:
-        "Pilot approval needs contact mapping, replay/idempotency, duplicate strategy, and a human-owned rollback path.",
-      requiredFields: [
-        "chapter_id",
-        "member_or_contact_key",
-        "handoff_reason",
-        "campaign_context",
-        "follow_up_type",
-        "idempotency_key",
-      ],
-      defaultPosture:
-        "No HubSpot contract rows are visible yet. Keep CRM follow-up outside the app until the contract is seeded.",
-    }),
+    buildLumaContract(data, providerReadback.luma),
+    buildHubSpotContract(data, providerReadback.hubspot),
     buildDestinationContract({
       key: "warehouse_power_bi",
-      label: "Warehouse and Power BI export contract",
+      label: "Databricks and Power BI export contract",
       data,
       destination: "warehouse",
       sourceOfTruth:
-        "myMEDLIFE stays the operational source of truth; warehouse and Power BI are governed read models, never the authority for writes.",
+        "myMEDLIFE stays the operational source of truth; Databricks and Power BI are downstream governed read models, never the authority for product writes.",
       requiredEvidence:
-        "A mock export event and queue row should show the governed payload before any refresh, backfill, or analytics feed is approved.",
+        "A governed export event and queue row should show the idempotent batch key, freshness metadata, and replay posture before any analytics feed is approved.",
       liveGate:
-        "Pilot approval needs export ownership, freshness SLA, replay rules, and a rollback path for bad batches.",
+        "Pilot approval needs export ownership, a freshness SLA, failure visibility, replay rules, and a rollback path for bad batches.",
       requiredFields: [
         "event_type",
         "chapter_id",
@@ -107,15 +73,21 @@ export function getIntegrationContractReview(
         "governed_metric_scope",
       ],
       defaultPosture:
-        "No governed export packet is visible yet. Keep analytics downstream and manual until the contract is seeded.",
+        "No governed Databricks export packet is visible yet. Keep analytics downstream and review-only until the contract is seeded.",
     }),
     buildAiContract(data),
   ];
+  const hasProviderReadback = Boolean(
+    providerReadback.luma || providerReadback.hubspot,
+  );
 
   return {
-    title: "Mock-safe integration contracts",
-    summary:
-      "Use this review before any Luma, HubSpot, warehouse, Power BI, or AI lane is treated as launch-ready. The contract should exist, the owner boundary should be obvious, and all sends should still be blocked from the browser.",
+    title: hasProviderReadback
+      ? "Integration contracts and live readback"
+      : "Mock-safe integration contracts",
+    summary: hasProviderReadback
+      ? "This review combines server-side provider sync readback with the guarded outbox contract. Luma and HubSpot are upstream sources, myMEDLIFE-owned tables remain operational truth, Databricks is downstream only, and browser-triggered provider sends stay blocked."
+      : "Use this review before any Luma, HubSpot, Databricks, Power BI, or AI lane is treated as launch-ready. The contract should exist, the owner boundary should be obvious, and all sends should still be blocked from the browser.",
     items,
     counts: {
       total: items.length,
@@ -130,6 +102,115 @@ export function getIntegrationContractReview(
       "approve vendor sends",
       "retry export batches",
       "run AI suggestions without review",
+    ],
+  };
+}
+
+function buildLumaContract(
+  data: ReadOnlyAppData,
+  sync: AdminLumaSyncWorkspace | undefined,
+): IntegrationContractReviewItem {
+  const fallback = buildDestinationContract({
+    key: "luma",
+    label: "Luma event sync contract",
+    data,
+    destination: "Luma",
+    sourceOfTruth:
+      "Luma is the approved upstream event provider; myMEDLIFE-owned event, import, and link tables are operational truth for product workflows.",
+    requiredEvidence:
+      "A Luma-linked event, scheduled sync run, scoped app-owned mapping, and disabled provider-write path should be visible before attendance import is approved.",
+    liveGate:
+      "Pilot approval needs exact read/import mapping, duplicate handling, replay, failure visibility, rollback, and cross-role browser proof.",
+    requiredFields: [
+      "chapter_id",
+      "campaign_id",
+      "chapter_event_id",
+      "external_object_id",
+      "event_url",
+      "attendance_mode",
+    ],
+    defaultPosture:
+      "No live Luma sync readback is available on this surface. Keep attendance import review-only until the provider workspace can be verified.",
+  });
+
+  if (!sync?.canRead) return fallback;
+
+  const needsReview =
+    sync.counts.conflicts > 0 ||
+    sync.counts.openFailures > 0 ||
+    sync.lastRun?.status === "failed" ||
+    sync.lastRun?.status === "partial";
+  const hasMaterializedEvents =
+    sync.config.enabled &&
+    sync.counts.importedEvents > 0 &&
+    sync.counts.materializedEvents > 0;
+
+  return {
+    ...fallback,
+    status: needsReview ? "blocked" : hasMaterializedEvents ? "ready" : "watch",
+    currentPosture:
+      `${sync.counts.importedEvents} provider event(s) imported; ` +
+      `${sync.counts.materializedEvents} materialized in app-owned tables; ` +
+      `${sync.counts.conflicts} conflict(s); ${sync.counts.openFailures} open failure(s). ` +
+      `Latest run: ${sync.lastRun?.status ?? "not yet recorded"}. Luma provider writes remain disabled.`,
+    routeEvidence: [
+      "/admin/integrations/luma",
+      "/admin/integration-outbox",
+      "/admin/audit-log",
+    ],
+  };
+}
+
+function buildHubSpotContract(
+  data: ReadOnlyAppData,
+  sync: AdminHubSpotSyncWorkspace | undefined,
+): IntegrationContractReviewItem {
+  const fallback = buildDestinationContract({
+    key: "hubspot",
+    label: "HubSpot upstream CRM sync contract",
+    data,
+    destination: "HubSpot",
+    sourceOfTruth:
+      "HubSpot is the approved upstream CRM for organizations, contacts, and membership metadata; myMEDLIFE-owned tables are operational truth after reconciliation.",
+    requiredEvidence:
+      "Stable external mappings, backfill and incremental runs, conflict rules, retry/replay behavior, source timestamps, and app readback should be visible before the sync is trusted.",
+    liveGate:
+      "Pilot approval needs current-term membership qualification, idempotent mapping, conflict/failure visibility, rollback, and browser proof that product routes use app-owned records.",
+    requiredFields: [
+      "hubspot_company_id",
+      "hubspot_contact_id",
+      "chapter_id",
+      "profile_id",
+      "membership_status",
+      "source_updated_at",
+    ],
+    defaultPosture:
+      "No live HubSpot sync readback is available on this surface. Keep CRM ingestion review-only until the provider workspace can be verified.",
+  });
+
+  if (!sync?.canRead) return fallback;
+
+  const needsReview =
+    sync.counts.openFailures > 0 ||
+    sync.lastRun?.status === "failed" ||
+    sync.lastRun?.status === "partial";
+  const hasImportedRecords =
+    sync.config.enabled &&
+    sync.counts.companies + sync.counts.contacts > 0 &&
+    sync.lastRun !== null;
+
+  return {
+    ...fallback,
+    status: needsReview ? "blocked" : hasImportedRecords ? "ready" : "watch",
+    currentPosture:
+      `${sync.counts.companies} company record(s), ${sync.counts.contacts} contact record(s), and ` +
+      `${sync.counts.materializedMemberships} membership(s) are materialized or staged in app-owned tables; ` +
+      `${sync.counts.openFailures} open failure(s). Latest run: ${sync.lastRun?.status ?? "not yet recorded"}. ` +
+      "HubSpot writes and invitations remain disabled.",
+    routeEvidence: [
+      "/admin/integrations/hubspot",
+      "/admin/integration-outbox",
+      "/admin/audit-log",
     ],
   };
 }

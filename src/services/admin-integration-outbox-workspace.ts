@@ -2,6 +2,7 @@ import type { LocalActorContext } from "@/services/local-actor-context";
 import {
   getIntegrationContractReview,
   type IntegrationContractReview,
+  type IntegrationContractProviderReadback,
 } from "@/services/integration-contract-review";
 import type { ReadOnlyAppData } from "@/services/read-only-app-data";
 import type { IntegrationEvent, OutboxItem } from "@/shared/types/domain";
@@ -119,6 +120,10 @@ export type AdminIntegrationOutboxWorkspace = {
   safetyNotes: string[];
 };
 
+export type AdminIntegrationOutboxWorkspaceOptions = {
+  providerReadback?: IntegrationContractProviderReadback;
+};
+
 const destinationLabels = [
   "internal",
   "n8n",
@@ -137,6 +142,7 @@ const liveSendStatuses = new Set([
 export function getAdminIntegrationOutboxWorkspace(
   actor: LocalActorContext,
   data: ReadOnlyAppData,
+  options: AdminIntegrationOutboxWorkspaceOptions = {},
 ): AdminIntegrationOutboxWorkspace {
   if (!canReadIntegrationOutbox(actor)) {
     return hiddenWorkspace(data);
@@ -179,7 +185,7 @@ export function getAdminIntegrationOutboxWorkspace(
       secretsShown: 0,
     },
     destinationSummaries: getDestinationSummaries(data),
-    contractReview: getIntegrationContractReview(data),
+    contractReview: getIntegrationContractReview(data, options.providerReadback),
     integrationEvents: data.integrationEvents.map(toEventItem),
     outboxItems: data.outboxItems.map(toOutboxItem),
     readbackRows,
