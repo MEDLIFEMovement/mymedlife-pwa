@@ -133,7 +133,8 @@ describe("member mobile event context", () => {
       campaign_id: null,
       status: "completed",
       starts_at: "2026-07-20T18:00:00Z",
-      location_name: "UCLA, Los Angeles, CA",
+      location_name: null,
+      promotion_summary: "Imported from Luma. Location: UCLA, Los Angeles, CA",
     });
     data.chapterEventRows = [olderImport, campaignEvent, newerImport];
     data.lumaEventLinkRows = [
@@ -164,6 +165,34 @@ describe("member mobile event context", () => {
         loc: "UCLA, Los Angeles, CA",
       }),
     );
+  });
+
+  it("keeps persisted physical, virtual, and hybrid locations honest", () => {
+    const data = getMockReadOnlyAppData("Map event locations.");
+    data.chapterEventRows = [
+      createEvent("event-hybrid", {
+        location_type: "hybrid",
+        location_name: "Student Center",
+        virtual_url: "https://example.test/meeting",
+      }),
+      createEvent("event-virtual", {
+        location_type: "virtual",
+        location_name: null,
+        virtual_url: "https://example.test/meeting",
+        starts_at: "2026-08-02T18:00:00Z",
+      }),
+      createEvent("event-physical", {
+        location_type: "in_person",
+        location_name: "Main Quad",
+        starts_at: "2026-08-03T18:00:00Z",
+      }),
+    ];
+
+    expect(buildMemberMobileEventContext(data).events.map((event) => event.loc)).toEqual([
+      "Student Center + virtual",
+      "Virtual event",
+      "Main Quad",
+    ]);
   });
 
   it("keeps missing and invalid dates honest and treats cancelled rows as history", () => {

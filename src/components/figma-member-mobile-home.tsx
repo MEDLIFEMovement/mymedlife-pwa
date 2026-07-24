@@ -14,6 +14,7 @@ import {
 import { getMemberStoryMediaSurfaceCopy } from "@/components/member-story-media-state";
 import { MemberStoryVideo } from "@/components/member-story-video";
 import { getVisibleMemberLeaderboardRows } from "@/services/member-mobile-identity-context";
+import { getMemberEventCampaignFallback } from "@/services/member-event-campaign-presentation";
 import type {
   MemberMobileCampaignContext,
   MemberMobileEventContext,
@@ -2230,7 +2231,7 @@ function buildEventsHref({
   storyFilter,
 }: {
   source: MemberLoopSource;
-  campaign?: string | "All";
+  campaign?: string;
   profileSource?: "points" | null;
   storyFilter?: string | null;
 }) {
@@ -2416,26 +2417,12 @@ function EventsScreen({
   const visibleEvents = activeCampaign === "All" ? availableEvents : availableEvents.filter((e) => e.campaign === activeCampaign);
   const featuredEvent = visibleEvents.find((e) => e.featured);
   const listEvents = visibleEvents.filter((e) => !e.featured);
+  const fallbackCampaignData = getMemberEventCampaignFallback(
+    activeCampaign,
+    memberCampaign ?? null,
+  );
   const activeCampaignData = activeCampaign !== "All"
-    ? CAMPAIGNS.find((c) => c.name === activeCampaign) ??
-      (activeCampaign === "Luma calendar history"
-        ? {
-            name: activeCampaign,
-            phase: "Imported provider history · read-only",
-            color: "from-slate-700 to-slate-600",
-            accent: "bg-slate-100 text-slate-700 border-slate-200",
-            description:
-              "Completed chapter events imported from Luma. RSVP and check-in are closed, and provider writes remain disabled.",
-            progress: 100,
-          }
-        : {
-            name: activeCampaign,
-            phase: "Active chapter campaign",
-            color: "from-primary to-blue-600",
-            accent: "bg-primary/10 text-primary border-primary/20",
-            description: memberCampaign?.objective ?? "Chapter campaign details are not available yet.",
-            progress: 0,
-          })
+    ? CAMPAIGNS.find((c) => c.name === activeCampaign) ?? fallbackCampaignData
     : null;
   const detailLoopSource: MemberLoopSource = source;
   const pointsReturnHref = getEventsBottomNavPointsHref(
