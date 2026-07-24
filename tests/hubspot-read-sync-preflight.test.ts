@@ -195,4 +195,201 @@ describe("HubSpot read-sync preflight", () => {
     });
     expect(appClient.schema).not.toHaveBeenCalled();
   });
+
+  it("runs the full provider and app-owned read path without mutation methods", async () => {
+    const appClient = createReadOnlyAppClient({
+      staff_role_assignments: ok([{ role_key: "super_admin" }]),
+      chapters: ok([{
+        id: "chapter-1",
+        name: "University One",
+        status: "active",
+        hubspot_company_id: "company-1",
+      }]),
+      profiles: ok([{
+        id: "profile-1",
+        email: "member@example.org",
+        hubspot_contact_id: null,
+      }]),
+      memberships: ok([]),
+    });
+    const hubspotClient = {
+      readActiveChapterCompanies: vi.fn().mockResolvedValue([
+        company("company-1", "University One"),
+      ]),
+      readContactsWithCompanies: vi.fn().mockResolvedValue([
+        contact(
+          "contact-1",
+          "member@example.org",
+          ["company-1", "inactive-company"],
+        ),
+      ]),
+    };
+
+    const result = await runHubSpotReadSyncPreflight("actor-1", {
+      env: {
+        HUBSPOT_ACCESS_TOKEN: "server-only-token",
+        MYMEDLIFE_HUBSPOT_ACTIVE_MEMBER_TERMS: "2026-2027;2026-27",
+      },
+      appClient: appClient as never,
+      hubspotClient,
+    });
+
+    expect(result).toMatchObject({
+      success: true,
+      counts: {
+        sourceCompanies: 1,
+        sourceContacts: 1,
+        sourceAssociations: 1,
+        qualifiedContacts: 1,
+        chapters: { stableMatches: 1 },
+        profiles: { emailMatches: 1 },
+        memberships: { creates: 1 },
+      },
+    });
+    expect(hubspotClient.readContactsWithCompanies).toHaveBeenCalledWith(
+      null,
+      ["company-1"],
+    );
+    expect(appClient.tablesRead).toEqual([
+      "staff_role_assignments",
+      "chapters",
+      "profiles",
+      "memberships",
+    ]);
+  });
+
+  it("keeps configuration, authorization, query, and provider failures read-only", async () => {
+    const enabledEnv = {
+      HUBSPOT_ACCESS_TOKEN: "server-only-token",
+      MYMEDLIFE_HUBSPOT_ACTIVE_MEMBER_TERMS: "2026-2027,2026-27",
+    };
+    const hubspotClient = {
+      readActiveChapterCompanies: vi.fn().mockResolvedValue([]),
+      readContactsWithCompanies: vi.fn().mockResolvedValue([]),
+    };
+
+    await expect(runHubSpotReadSyncPreflight(null, {
+      env: enabledEnv,
+      appClient: createReadOnlyAppClient({}) as never,
+      hubspotClient,
+    })).resolves.toMatchObject({ success: false, code: "missing_auth" });
+
+    await expect(runHubSpotReadSyncPreflight("actor-1", {
+      env: { HUBSPOT_ACCESS_TOKEN: "server-only-token" },
+      appClient: createReadOnlyAppClient({}) as never,
+      hubspotClient,
+    })).resolves.toMatchObject({
+      success: false,
+      code: "preflight_disabled",
+      message: expect.stringContaining("member-term allowlist"),
+    });
+
+    await expect(runHubSpotReadSyncPreflight("actor-1", {
+      env: enabledEnv,
+      appClient: null as never,
+      hubspotClient,
+    })).resolves.toMatchObject({
+      success: false,
+      code: "preflight_disabled",
+      message: expect.stringContaining("Supabase client"),
+    });
+
+    await expect(runHubSpotReadSyncPreflight("actor-1", {
+      env: enabledEnv,
+      appClient: createReadOnlyAppClient({
+        staff_role_assignments: ok([{ role_key: "coach" }]),
+      }) as never,
+      hubspotClient,
+    })).resolves.toMatchObject({ success: false, code: "permission_denied" });
+
+    await expect(runHubSpotReadSyncPreflight("actor-1", {
+      env: enabledEnv,
+      appClient: createReadOnlyAppClient({
+        staff_role_assignments: failed("role read failed"),
+      }) as never,
+      hubspotClient,
+    })).resolves.toMatchObject({
+      success: false,
+      code: "server_error",
+      message: expect.stringContaining("administrator role"),
+    });
+
+    await expect(runHubSpotReadSyncPreflight("actor-1", {
+      env: enabledEnv,
+      appClient: createReadOnlyAppClient({
+        staff_role_assignments: ok([{ role_key: "ds_admin" }]),
+        chapters: failed("chapter read failed"),
+        profiles: ok([]),
+        memberships: ok([]),
+      }) as never,
+      hubspotClient,
+    })).resolves.toMatchObject({
+      success: false,
+      code: "server_error",
+      message: expect.stringContaining("chapter read failed"),
+    });
+
+    await expect(runHubSpotReadSyncPreflight("actor-1", {
+      env: enabledEnv,
+      appClient: createReadOnlyAppClient({
+        staff_role_assignments: ok([{ role_key: "ds_admin" }]),
+      }) as never,
+      hubspotClient: {
+        ...hubspotClient,
+        readActiveChapterCompanies: vi.fn().mockRejectedValue(
+          new Error("provider unavailable"),
+        ),
+      },
+    })).resolves.toMatchObject({
+      success: false,
+      code: "server_error",
+      message: expect.stringContaining("provider unavailable"),
+    });
+  });
 });
+
+type ReadResult = {
+  data: Array<Record<string, unknown>> | null;
+  error: { message: string } | null;
+};
+
+function ok(data: Array<Record<string, unknown>>): ReadResult {
+  return { data, error: null };
+}
+
+function failed(message: string): ReadResult {
+  return { data: null, error: { message } };
+}
+
+function createReadOnlyAppClient(results: Record<string, ReadResult>) {
+  const tablesRead: string[] = [];
+
+  return {
+    tablesRead,
+    schema: vi.fn(() => ({
+      from: (table: string) => {
+        tablesRead.push(table);
+        return new ReadOnlyQuery(results[table] ?? ok([]));
+      },
+    })),
+  };
+}
+
+class ReadOnlyQuery implements PromiseLike<ReadResult> {
+  constructor(private readonly result: ReadResult) {}
+
+  select() {
+    return this;
+  }
+
+  eq() {
+    return this;
+  }
+
+  then<TResult1 = ReadResult, TResult2 = never>(
+    onfulfilled?: ((value: ReadResult) => TResult1 | PromiseLike<TResult1>) | null,
+    onrejected?: ((reason: unknown) => TResult2 | PromiseLike<TResult2>) | null,
+  ): PromiseLike<TResult1 | TResult2> {
+    return Promise.resolve(this.result).then(onfulfilled, onrejected);
+  }
+}
