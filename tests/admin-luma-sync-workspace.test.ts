@@ -36,6 +36,8 @@ describe("admin Luma sync workspace", () => {
       if (query.table === "chapter_luma_calendars") return result([], 1);
       if (query.table === "luma_sync_failures") return result([{
         id: "failure-1",
+        run_id: "run-1",
+        luma_sync_runs: { mode: "reconcile" },
         object_type: "event",
         external_id: "evt-1",
         error_code: "calendar_mismatch",
@@ -70,7 +72,12 @@ describe("admin Luma sync workspace", () => {
         updatedEvents: 5,
       },
       counts: { calendars: 1, importedEvents: 10, materializedEvents: 8, conflicts: 1, openFailures: 1 },
-      failures: [{ code: "calendar_mismatch", message: "Needs review" }],
+      failures: [{
+        runId: "run-1",
+        mode: "reconcile",
+        code: "calendar_mismatch",
+        message: "Needs review",
+      }],
       health: { status: "degraded", label: "Needs attention" },
     });
   });

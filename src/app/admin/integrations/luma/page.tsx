@@ -184,10 +184,10 @@ export default async function AdminLumaIntegrationPage() {
                         {failure.code} · {failure.objectType}
                       </p>
                       <p className="mt-1 text-sm text-white/62">{failure.message}</p>
-                      {syncWorkspace.lastRun ? (
+                      {failure.runId ? (
                         <form action={submitLumaReplayAction} className="mt-3 flex flex-wrap items-end gap-2">
-                          <input type="hidden" name="retryOfRunId" value={syncWorkspace.lastRun.id} />
-                          <input type="hidden" name="mode" value={syncWorkspace.lastRun.mode} />
+                          <input type="hidden" name="retryOfRunId" value={failure.runId} />
+                          <input type="hidden" name="mode" value={failure.mode} />
                           <label className="text-xs font-semibold text-white/56">
                             Type REPLAY LUMA
                             <input

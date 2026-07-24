@@ -633,7 +633,14 @@ describe("Luma event read sync", () => {
     const appClient = createFakeAppClient((query) => {
       if (query.table === "staff_role_assignments") return ok([{ role_key: "ds_admin" }]);
       if (query.table === "chapters") return ok([{ id: enabledEnv.MYMEDLIFE_LUMA_CHAPTER_ID }]);
-      if (query.table === "luma_sync_runs" && query.operation === "select") return ok([]);
+      if (query.table === "luma_sync_runs" && query.operation === "select") {
+        const replayTarget = query.filters.some(
+          (filter) => filter.column === "id" && filter.value === "failed-run",
+        );
+        return ok(replayTarget
+          ? [{ id: "failed-run", mode: "reconcile", status: "failed" }]
+          : []);
+      }
       if (query.table === "luma_sync_runs" && query.operation === "insert") return ok({ id: "replay-run" });
       if (
         query.table === "luma_sync_failures" &&
@@ -658,6 +665,57 @@ describe("Luma event read sync", () => {
       success: false,
       code: "server_error",
       runId: "replay-run",
+    });
+  });
+
+  it("rejects replay of a successful run or a failed run with a different mode", async () => {
+    const appClient = createFakeAppClient((query) => {
+      if (query.table === "staff_role_assignments") return ok([{ role_key: "ds_admin" }]);
+      if (query.table === "chapters") return ok([{ id: enabledEnv.MYMEDLIFE_LUMA_CHAPTER_ID }]);
+      if (query.table === "luma_sync_runs" && query.operation === "select") {
+        if (query.filters.some((filter) => filter.column === "id")) {
+          return ok([{ id: "target-run", mode: "backfill", status: "succeeded" }]);
+        }
+        return ok([]);
+      }
+      return ok([]);
+    });
+
+    const successful = await runLumaEventSync("admin-1", "backfill", {
+      env: enabledEnv,
+      appClient: appClient as never,
+      lumaClient: { readEvents: async () => [] },
+      triggerSource: "replay",
+      retryOfRunId: "target-run",
+    });
+    const wrongModeClient = createFakeAppClient((query) => {
+      if (query.table === "staff_role_assignments") return ok([{ role_key: "ds_admin" }]);
+      if (query.table === "chapters") return ok([{ id: enabledEnv.MYMEDLIFE_LUMA_CHAPTER_ID }]);
+      if (query.table === "luma_sync_runs" && query.operation === "select") {
+        if (query.filters.some((filter) => filter.column === "id")) {
+          return ok([{ id: "target-run", mode: "backfill", status: "failed" }]);
+        }
+        return ok([]);
+      }
+      return ok([]);
+    });
+    const wrongMode = await runLumaEventSync("admin-1", "reconcile", {
+      env: enabledEnv,
+      appClient: wrongModeClient as never,
+      lumaClient: { readEvents: async () => [] },
+      triggerSource: "replay",
+      retryOfRunId: "target-run",
+    });
+
+    expect(successful).toMatchObject({
+      success: false,
+      code: "server_error",
+      plainEnglishMessage: "Only a failed or partial Luma sync run with the same mode can be replayed.",
+    });
+    expect(wrongMode).toMatchObject({
+      success: false,
+      code: "server_error",
+      plainEnglishMessage: "Only a failed or partial Luma sync run with the same mode can be replayed.",
     });
   });
 
