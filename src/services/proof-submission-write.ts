@@ -220,12 +220,10 @@ export function getProofSubmissionWriteReadiness(
   env: EnvSource = process.env,
 ): ProofSubmissionWriteReadiness {
   const config = getProofSubmissionWriteConfig(env);
-  const environmentWriteApproved =
-    config.environment === "production"
-      ? env.MYMEDLIFE_ALLOW_PRODUCTION_PROOF_SUBMISSION_WRITE === "true"
-      : config.environment === "local"
-        ? env.MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES === "true"
-        : false;
+  const environmentWriteApproved = isEnvironmentWriteApproved(
+    config.environment,
+    env,
+  );
   const proofSubmissionWriteApproved =
     env.MYMEDLIFE_ENABLE_PROOF_SUBMISSION_WRITE === "true";
   const hasLocalAuthSession =
@@ -312,6 +310,21 @@ export function getProofSubmissionWriteReadiness(
       : config.reason,
     checks,
   };
+}
+
+function isEnvironmentWriteApproved(
+  environment: "local" | "staging" | "production",
+  env: EnvSource,
+) {
+  if (environment === "production") {
+    return env.MYMEDLIFE_ALLOW_PRODUCTION_PROOF_SUBMISSION_WRITE === "true";
+  }
+
+  if (environment === "local") {
+    return env.MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES === "true";
+  }
+
+  return false;
 }
 
 export function getProofSubmissionReadbackState(

@@ -558,10 +558,13 @@ export function getProofSubmissionBrowserWriteGate(
   const localAuthApproved =
     actor.identitySource === "local_auth_session" &&
     actor.authSessionStatus === "signed_in";
-  const environmentWriteApproved =
-    writeConfig.environment === "production"
-      ? env.MYMEDLIFE_ALLOW_PRODUCTION_PROOF_SUBMISSION_WRITE === "true"
-      : env.MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES === "true";
+  const environmentWriteApproved = writeConfig.environment === "production"
+    ? env.MYMEDLIFE_ALLOW_PRODUCTION_PROOF_SUBMISSION_WRITE === "true"
+    : env.MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES === "true";
+  const nextApprovalNeeded = getProofSubmissionNextApprovalMessage(
+    writeConfig.environment,
+    proofSubmissionReadiness.canSubmit,
+  );
 
   return {
     operation: "evidence_submitted",
@@ -575,11 +578,7 @@ export function getProofSubmissionBrowserWriteGate(
       : "blocked_until_approval",
     canRenderEnabledControl: proofSubmissionReadiness.canSubmit,
     envRequestedLocalWrites: environmentWriteApproved,
-    nextApprovalNeeded: proofSubmissionReadiness.canSubmit
-      ? writeConfig.environment === "production"
-        ? "Production proof/testimonial metadata submission is approved for deployed browser reproof."
-        : "Local proof/testimonial metadata write is ready for localhost-only testing."
-      : approvalMessage,
+    nextApprovalNeeded,
     checks: [
       {
         key: "actor_can_submit_proof",
@@ -658,6 +657,17 @@ export function getProofSubmissionBrowserWriteGate(
     ],
     preview: createProofSubmissionMock(actor, assignment, input),
   };
+}
+
+function getProofSubmissionNextApprovalMessage(
+  environment: "local" | "staging" | "production",
+  canSubmit: boolean,
+) {
+  if (!canSubmit) return approvalMessage;
+  if (environment === "production") {
+    return "Production proof/testimonial metadata submission is approved for deployed browser reproof.";
+  }
+  return "Local proof/testimonial metadata write is ready for localhost-only testing.";
 }
 
 export function getHqSharingDecisionBrowserWriteGate(

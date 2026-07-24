@@ -25,12 +25,7 @@ export function ProofSubmissionServerActionPanel({
 }: ProofSubmissionServerActionPanelProps) {
   const resultState = resultCode ? getProofSubmissionResultState(resultCode) : null;
   const readbackState = getProofSubmissionReadbackState(assignment, resultCode);
-  const environmentLabel =
-    readiness.environment === "production"
-      ? "Production"
-      : readiness.environment === "staging"
-        ? "Staging"
-        : "Local";
+  const environmentLabel = getEnvironmentLabel(readiness.environment);
 
   return (
     <section className="rounded-[2rem] border border-sky-300/20 bg-sky-300/10 p-5">
@@ -152,4 +147,12 @@ export function ProofSubmissionServerActionPanel({
       </div>
     </section>
   );
+}
+
+function getEnvironmentLabel(
+  environment: ProofSubmissionWriteReadiness["environment"],
+) {
+  if (environment === "production") return "Production";
+  if (environment === "staging") return "Staging";
+  return "Local";
 }
