@@ -23,7 +23,8 @@ vi.mock("@/services/landing-route", () => ({
 }));
 
 vi.mock("@/services/role-visibility", () => ({
-  canAccessAdminWorkspace: () => true,
+  canAccessAdminWorkspace: (actor: { audience: string }) =>
+    ["admin", "ds_admin", "super_admin"].includes(actor.audience),
 }));
 
 import AdminLayout from "@/app/admin/layout";
@@ -32,6 +33,7 @@ describe("admin production auth boundary", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.stubEnv("VERCEL_ENV", "production");
+    mocks.actor.audience = "super_admin";
     mocks.actor.identitySource = "local_actor_email";
     mocks.actor.authSessionStatus = "disabled";
   });
@@ -54,5 +56,15 @@ describe("admin production auth boundary", () => {
 
     expect(mocks.redirect).not.toHaveBeenCalled();
     expect(html).toContain("Deep admin content");
+  });
+
+  it("redirects a signed-in non-admin actor to their owned workspace", async () => {
+    mocks.actor.audience = "member";
+    mocks.actor.identitySource = "local_auth_session";
+    mocks.actor.authSessionStatus = "signed_in";
+
+    await AdminLayout({ children: <p>Deep admin content</p> });
+
+    expect(mocks.redirect).toHaveBeenCalledWith("/app");
   });
 });
