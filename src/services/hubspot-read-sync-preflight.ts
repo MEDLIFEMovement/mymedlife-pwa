@@ -63,10 +63,20 @@ export type HubSpotReadSyncPreflightCounts = {
   };
 };
 
+export type HubSpotMemberTermCandidate = {
+  term: string;
+  contactCount: number;
+  activeYearCount: number;
+  qrYearCount: number;
+  approved: boolean;
+};
+
 export type HubSpotReadSyncPreflightResult =
   | {
       success: true;
       code: "hubspot_preflight_succeeded";
+      allowlistConfigured: boolean;
+      memberTermCandidates: HubSpotMemberTermCandidate[];
       counts: HubSpotReadSyncPreflightCounts;
       chapterCreateSamples: string[];
       chapterConflictSamples: string[];
@@ -120,13 +130,6 @@ export async function runHubSpotReadSyncPreflight(
       "HubSpot preflight is disabled because the server-only access token is missing.",
     );
   }
-  if (activeMemberTerms.length === 0) {
-    return failure(
-      "preflight_disabled",
-      "HubSpot preflight is disabled until the current member-term allowlist is configured.",
-    );
-  }
-
   const appClient = deps.appClient ?? createPreflightAppClient(env);
   const hubspotClient = deps.hubspotClient
     ?? createHubSpotReadOnlyClient(env.HUBSPOT_ACCESS_TOKEN);
@@ -219,6 +222,11 @@ export async function runHubSpotReadSyncPreflight(
 export function buildHubSpotReadSyncPreflight(
   input: HubSpotReadSyncPreflightInput,
 ): Extract<HubSpotReadSyncPreflightResult, { success: true }> {
+  const allowlistConfigured = input.activeMemberTerms.length > 0;
+  const memberTermCandidates = buildMemberTermCandidates(
+    input.contacts,
+    input.activeMemberTerms,
+  );
   const chaptersByHubSpotId = groupBy(input.chapters, (chapter) => chapter.hubspotCompanyId);
   const chaptersByName = groupBy(input.chapters, (chapter) => normalize(chapter.name));
   const resolvedChapters = new Map<string, ResolvedChapter>();
@@ -407,15 +415,19 @@ export function buildHubSpotReadSyncPreflight(
     }
   }
 
-  membershipCounts.deactivations = input.memberships.filter((membership) =>
-    membership.status === "active"
-    && Boolean(membership.hubspotAssociationKey)
-    && !activeAssociationKeys.has(membership.hubspotAssociationKey ?? ""))
-    .length;
+  membershipCounts.deactivations = allowlistConfigured
+    ? input.memberships.filter((membership) =>
+      membership.status === "active"
+      && Boolean(membership.hubspotAssociationKey)
+      && !activeAssociationKeys.has(membership.hubspotAssociationKey ?? ""))
+      .length
+    : 0;
 
   return {
     success: true,
     code: "hubspot_preflight_succeeded",
+    allowlistConfigured,
+    memberTermCandidates,
     counts: {
       sourceCompanies: input.companies.length,
       sourceContacts: input.contacts.length,
@@ -431,8 +443,9 @@ export function buildHubSpotReadSyncPreflight(
     },
     chapterCreateSamples,
     chapterConflictSamples,
-    message:
-      "Read-only HubSpot preflight completed. No HubSpot or app-owned records were changed.",
+    message: allowlistConfigured
+      ? "Read-only HubSpot preflight completed. No HubSpot or app-owned records were changed."
+      : "Read-only HubSpot source discovery completed. Configure the current member-term allowlist before membership impact can be calculated. No HubSpot or app-owned records were changed.",
   };
 }
 
@@ -465,6 +478,40 @@ function parseDelimitedValues(value: string | undefined): string[] {
     .split(/[;,]/)
     .map((item) => item.trim())
     .filter(Boolean))];
+}
+
+function buildMemberTermCandidates(
+  contacts: HubSpotContactRecord[],
+  activeMemberTerms: string[],
+): HubSpotMemberTermCandidate[] {
+  const approvedTerms = new Set(activeMemberTerms.map(normalize));
+  const candidates = new Map<string, HubSpotMemberTermCandidate>();
+
+  for (const contact of contacts) {
+    const contactTerms = new Set([...contact.activeYears, ...contact.qrYears]);
+    for (const term of contactTerms) {
+      const normalizedTerm = normalize(term);
+      if (!normalizedTerm) continue;
+      const candidate = candidates.get(normalizedTerm) ?? {
+        term: term.trim(),
+        contactCount: 0,
+        activeYearCount: 0,
+        qrYearCount: 0,
+        approved: approvedTerms.has(normalizedTerm),
+      };
+      candidate.contactCount += 1;
+      if (contact.activeYears.some((value) => normalize(value) === normalizedTerm)) {
+        candidate.activeYearCount += 1;
+      }
+      if (contact.qrYears.some((value) => normalize(value) === normalizedTerm)) {
+        candidate.qrYearCount += 1;
+      }
+      candidates.set(normalizedTerm, candidate);
+    }
+  }
+
+  return [...candidates.values()].sort((left, right) =>
+    right.contactCount - left.contactCount || left.term.localeCompare(right.term));
 }
 
 function normalize(value: string | null | undefined): string {

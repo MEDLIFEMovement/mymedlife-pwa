@@ -908,12 +908,29 @@ describe("admin management pages", () => {
     hubspotPreflightMock.mockResolvedValueOnce({
       success: true,
       code: "hubspot_preflight_succeeded",
+      allowlistConfigured: false,
+      memberTermCandidates: [
+        {
+          term: "2026-2027",
+          contactCount: 30,
+          activeYearCount: 30,
+          qrYearCount: 0,
+          approved: false,
+        },
+        {
+          term: "2026-27",
+          contactCount: 28,
+          activeYearCount: 0,
+          qrYearCount: 28,
+          approved: false,
+        },
+      ],
       counts: {
         sourceCompanies: 329,
         sourceContacts: 700,
         sourceAssociations: 750,
-        qualifiedContacts: 30,
-        qualifiedAssociations: 32,
+        qualifiedContacts: 0,
+        qualifiedAssociations: 0,
         chapters: {
           stableMatches: 0,
           nameMatches: 8,
@@ -930,16 +947,16 @@ describe("admin management pages", () => {
         memberships: {
           stableMatches: 0,
           links: 3,
-          creates: 7,
+          creates: 0,
           conflicts: 0,
-          blockedByProfile: 22,
+          blockedByProfile: 0,
           blockedByChapter: 0,
           deactivations: 0,
         },
       },
       chapterCreateSamples: ["University One"],
       chapterConflictSamples: [],
-      message: "Read-only HubSpot preflight completed. No HubSpot or app-owned records were changed.",
+      message: "Read-only HubSpot source discovery completed. Configure the current member-term allowlist before membership impact can be calculated. No HubSpot or app-owned records were changed.",
     });
 
     const { default: AdminHubSpotIntegrationPage } = await import(
@@ -952,7 +969,11 @@ describe("admin management pages", () => {
     expect(hubspotPreflightMock).toHaveBeenCalled();
     expect(html).toContain("Chapters (329 source)");
     expect(html).toContain("Profiles (700 source)");
-    expect(html).toContain("Memberships (32 qualified)");
+    expect(html).toContain("Memberships (0 qualified)");
+    expect(html).toContain("Provider member-term candidates");
+    expect(html).toContain("2026-27");
+    expect(html).toContain("Member-term allowlist:");
+    expect(html).toContain("required before membership impact");
     expect(html).toContain("Example chapter creates: University One");
     expect(html).toContain("No HubSpot or app-owned records were changed");
   });

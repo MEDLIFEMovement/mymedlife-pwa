@@ -190,6 +190,50 @@ function PreflightPanel({
         <>
           <p className="mt-4 text-sm text-emerald-100">{result.message}</p>
           <div className="mt-4 overflow-x-auto">
+            <table className="w-full min-w-[36rem] border-collapse text-left text-sm text-white/75">
+              <caption className="pb-2 text-left text-xs font-semibold uppercase tracking-[0.14em] text-white/55">
+                Provider member-term candidates
+              </caption>
+              <thead>
+                <tr className="border-b border-white/10 text-xs uppercase tracking-[0.12em] text-white/45">
+                  <th className="px-3 py-2">Term</th>
+                  <th className="px-3 py-2">Contacts</th>
+                  <th className="px-3 py-2">Active years</th>
+                  <th className="px-3 py-2">QR years</th>
+                  <th className="px-3 py-2">Allowlist</th>
+                </tr>
+              </thead>
+              <tbody>
+                {result.memberTermCandidates.length > 0 ? (
+                  result.memberTermCandidates.map((candidate) => (
+                    <tr key={candidate.term} className="border-b border-white/10">
+                      <th className="px-3 py-3 font-semibold text-white">{candidate.term}</th>
+                      <td className="px-3 py-3">{candidate.contactCount}</td>
+                      <td className="px-3 py-3">{candidate.activeYearCount}</td>
+                      <td className="px-3 py-3">{candidate.qrYearCount}</td>
+                      <td className="px-3 py-3">
+                        {candidate.approved ? "Approved" : "Not approved"}
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td className="px-3 py-3 text-white/55" colSpan={5}>
+                      No member-term values were returned by the current HubSpot source set.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+          <p className={`mt-3 text-xs leading-5 ${
+            result.allowlistConfigured ? "text-emerald-100/80" : "text-amber-100/80"
+          }`}>
+            Member-term allowlist: {result.allowlistConfigured
+              ? "configured"
+              : "required before membership impact or deactivation counts can be calculated"}
+          </p>
+          <div className="mt-4 overflow-x-auto">
             <table className="w-full min-w-[44rem] border-collapse text-left text-sm text-white/75">
               <thead>
                 <tr className="border-b border-white/10 text-xs uppercase tracking-[0.12em] text-white/45">

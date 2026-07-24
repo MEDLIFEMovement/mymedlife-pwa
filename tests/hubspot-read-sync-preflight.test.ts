@@ -148,6 +148,23 @@ describe("HubSpot read-sync preflight", () => {
     expect(result).toMatchObject({
       success: true,
       code: "hubspot_preflight_succeeded",
+      allowlistConfigured: true,
+      memberTermCandidates: [
+        {
+          term: "2026-2027",
+          contactCount: 5,
+          activeYearCount: 5,
+          qrYearCount: 0,
+          approved: true,
+        },
+        {
+          term: "2025-2026",
+          contactCount: 1,
+          activeYearCount: 1,
+          qrYearCount: 0,
+          approved: false,
+        },
+      ],
       counts: {
         sourceCompanies: 4,
         sourceContacts: 6,
@@ -236,6 +253,7 @@ describe("HubSpot read-sync preflight", () => {
 
     expect(result).toMatchObject({
       success: true,
+      allowlistConfigured: true,
       counts: {
         sourceCompanies: 1,
         sourceContacts: 1,
@@ -258,6 +276,72 @@ describe("HubSpot read-sync preflight", () => {
     ]);
   });
 
+  it("discovers provider terms without calculating membership impact before approval", async () => {
+    const appClient = createReadOnlyAppClient({
+      staff_role_assignments: ok([{ role_key: "super_admin" }]),
+      chapters: ok([]),
+      profiles: ok([]),
+      memberships: ok([{
+        id: "membership-existing",
+        profile_id: "profile-1",
+        chapter_id: "chapter-1",
+        status: "active",
+        hubspot_association_key: "contact-1:company-1",
+      }]),
+    });
+    const currentContact = contact(
+      "contact-1",
+      "member@example.org",
+      ["company-1"],
+    );
+    currentContact.qrYears = ["2026-27"];
+
+    const result = await runHubSpotReadSyncPreflight("actor-1", {
+      env: { HUBSPOT_ACCESS_TOKEN: "server-only-token" },
+      appClient: appClient as never,
+      hubspotClient: {
+        readActiveChapterCompanies: vi.fn().mockResolvedValue([
+          company("company-1", "University One"),
+        ]),
+        readContactsWithCompanies: vi.fn().mockResolvedValue([currentContact]),
+      },
+    });
+
+    expect(result).toMatchObject({
+      success: true,
+      allowlistConfigured: false,
+      memberTermCandidates: [
+        {
+          term: "2026-2027",
+          contactCount: 1,
+          activeYearCount: 1,
+          qrYearCount: 0,
+          approved: false,
+        },
+        {
+          term: "2026-27",
+          contactCount: 1,
+          activeYearCount: 0,
+          qrYearCount: 1,
+          approved: false,
+        },
+      ],
+      counts: {
+        qualifiedContacts: 0,
+        qualifiedAssociations: 0,
+        memberships: {
+          stableMatches: 0,
+          links: 0,
+          creates: 0,
+          conflicts: 0,
+          blockedByProfile: 0,
+          blockedByChapter: 0,
+          deactivations: 0,
+        },
+      },
+    });
+  });
+
   it("keeps configuration, authorization, query, and provider failures read-only", async () => {
     const enabledEnv = {
       HUBSPOT_ACCESS_TOKEN: "server-only-token",
@@ -276,12 +360,29 @@ describe("HubSpot read-sync preflight", () => {
 
     await expect(runHubSpotReadSyncPreflight("actor-1", {
       env: { HUBSPOT_ACCESS_TOKEN: "server-only-token" },
-      appClient: createReadOnlyAppClient({}) as never,
+      appClient: createReadOnlyAppClient({
+        staff_role_assignments: ok([{ role_key: "super_admin" }]),
+        chapters: ok([]),
+        profiles: ok([]),
+        memberships: ok([{
+          id: "membership-existing",
+          profile_id: "profile-1",
+          chapter_id: "chapter-1",
+          status: "active",
+          hubspot_association_key: "contact-1:company-1",
+        }]),
+      }) as never,
       hubspotClient,
     })).resolves.toMatchObject({
-      success: false,
-      code: "preflight_disabled",
-      message: expect.stringContaining("member-term allowlist"),
+      success: true,
+      allowlistConfigured: false,
+      memberTermCandidates: [],
+      counts: {
+        qualifiedContacts: 0,
+        qualifiedAssociations: 0,
+        memberships: { deactivations: 0 },
+      },
+      message: expect.stringContaining("Configure the current member-term allowlist"),
     });
 
     await expect(runHubSpotReadSyncPreflight("actor-1", {
