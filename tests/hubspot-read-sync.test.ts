@@ -440,6 +440,28 @@ describe("HubSpot read sync foundation", () => {
       expect.objectContaining({ table: "memberships", operation: "insert" }),
       expect.objectContaining({ table: "audit_logs", operation: "insert" }),
     ]));
+    expect(queries).toContainEqual(expect.objectContaining({
+      table: "profiles",
+      operation: "update",
+      payload: {
+        hubspot_contact_id: "contact-1",
+        display_name: "TEST Student",
+        email: "student@example.org",
+      },
+    }));
+    expect(queries).toContainEqual(expect.objectContaining({
+      table: "audit_logs",
+      operation: "insert",
+      payload: expect.objectContaining({
+        action: "hubspot_profile_materialized",
+        after_value: expect.objectContaining({
+          hubspot_contact_id: "contact-1",
+          display_name: "TEST Student",
+          email: "student@example.org",
+          source_updated_at: "2026-07-19T21:00:00.000Z",
+        }),
+      }),
+    }));
     expect(queries.filter((query) => query.table === "audit_logs")).toHaveLength(3);
     const finalRunUpdate = queries.findLast((query) => query.table === "hubspot_sync_runs" && query.operation === "update");
     expect(finalRunUpdate?.payload).toMatchObject({
@@ -496,6 +518,104 @@ describe("HubSpot read sync foundation", () => {
       query.table === "profiles"
       && query.filters.some((filter) => filter.column === "email")
     ))).toBe(false);
+    expect(queries).toContainEqual(expect.objectContaining({
+      table: "profiles",
+      operation: "update",
+      payload: {
+        hubspot_contact_id: "contact-1",
+        display_name: "Member One",
+        ...(email ? { email } : {}),
+      },
+    }));
+  });
+
+  it("preserves app-owned profile values when HubSpot omits identity fields", async () => {
+    const queries: FakeQuery[] = [];
+    const appClient = createFakeAppClient((query) => {
+      queries.push(query);
+      if (query.table === "staff_role_assignments") return ok([{ role_key: "ds_admin" }]);
+      if (query.table === "hubspot_sync_runs" && query.operation === "select") return ok([]);
+      if (query.table === "hubspot_sync_runs" && query.operation === "insert") return ok({ id: "run-missing-identity" });
+      if (query.table === "chapters" && query.operation === "select") {
+        return ok([{ id: "chapter-1", hubspot_company_id: "company-1", status: "active" }]);
+      }
+      if (query.table === "profiles" && query.operation === "select") {
+        return ok([{ id: "profile-1", hubspot_contact_id: "contact-1" }]);
+      }
+      if (query.table === "memberships" && query.operation === "select") return ok([]);
+      if (query.table === "memberships" && query.operation === "insert") return ok({ id: "membership-1" });
+      return ok([]);
+    });
+
+    await expect(runHubSpotReadSync("actor-1", "incremental", {
+      env: enabledEnv,
+      appClient: appClient as never,
+      hubspotClient: {
+        ...oneCompanyClient(),
+        readContactsWithCompanies: async () => [{
+          ...oneContact(),
+          email: null,
+          firstName: null,
+          lastName: null,
+        }],
+      },
+      now: () => new Date("2026-07-20T21:30:00.000Z"),
+    })).resolves.toMatchObject({
+      success: true,
+      code: "hubspot_sync_succeeded",
+      counts: { matchedProfiles: 1 },
+    });
+    expect(queries).toContainEqual(expect.objectContaining({
+      table: "profiles",
+      operation: "update",
+      payload: { hubspot_contact_id: "contact-1" },
+    }));
+  });
+
+  it("records a partial run when matched profile materialization fails", async () => {
+    const queries: FakeQuery[] = [];
+    const appClient = createFakeAppClient((query) => {
+      queries.push(query);
+      if (query.table === "staff_role_assignments") return ok([{ role_key: "ds_admin" }]);
+      if (query.table === "hubspot_sync_runs" && query.operation === "select") return ok([]);
+      if (query.table === "hubspot_sync_runs" && query.operation === "insert") return ok({ id: "run-profile-materialization-failure" });
+      if (query.table === "chapters" && query.operation === "select") {
+        return ok([{ id: "chapter-1", hubspot_company_id: "company-1", status: "active" }]);
+      }
+      if (query.table === "profiles" && query.operation === "select") {
+        return ok([{ id: "profile-1", hubspot_contact_id: "contact-1" }]);
+      }
+      if (query.table === "profiles" && query.operation === "update") {
+        return failed("profile update unavailable");
+      }
+      return ok([]);
+    });
+
+    await expect(runHubSpotReadSync("actor-1", "incremental", {
+      env: enabledEnv,
+      appClient: appClient as never,
+      hubspotClient: {
+        ...oneCompanyClient(),
+        readContactsWithCompanies: async () => [oneContact()],
+      },
+      now: () => new Date("2026-07-20T21:30:00.000Z"),
+    })).resolves.toMatchObject({
+      success: true,
+      code: "hubspot_sync_partial",
+      counts: { failures: 1, matchedProfiles: 0 },
+    });
+    expect(queries).toContainEqual(expect.objectContaining({
+      table: "hubspot_sync_failures",
+      operation: "insert",
+      payload: expect.objectContaining({
+        error_code: "profile_materialization_failed",
+        external_id: "contact-1",
+      }),
+    }));
+    expect(queries).not.toContainEqual(expect.objectContaining({
+      table: "memberships",
+      operation: "insert",
+    }));
   });
 
   it("fails closed before email fallback when the stable profile-link lookup fails", async () => {
