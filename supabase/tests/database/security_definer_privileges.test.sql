@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(9);
+select plan(10);
 
 select is(
   (
@@ -55,6 +55,15 @@ select ok(
     'EXECUTE'
   ),
   'Service role cannot bypass desired-state semantics through the legacy toggle'
+);
+
+select ok(
+  not has_function_privilege(
+    'authenticated',
+    'app.submit_assignment_proof_metadata_internal(uuid,app.evidence_type,text,text,text[],text[],text,text,text,text,numeric)',
+    'EXECUTE'
+  ),
+  'Authenticated users can only submit proof through the production-honest wrapper'
 );
 
 select ok(

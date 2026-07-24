@@ -25,15 +25,16 @@ export function ProofSubmissionServerActionPanel({
 }: ProofSubmissionServerActionPanelProps) {
   const resultState = resultCode ? getProofSubmissionResultState(resultCode) : null;
   const readbackState = getProofSubmissionReadbackState(assignment, resultCode);
+  const environmentLabel = getEnvironmentLabel(readiness.environment);
 
   return (
     <section className="rounded-[2rem] border border-sky-300/20 bg-sky-300/10 p-5">
       <p className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-100">
-        Local proof/testimonial submission
+        {environmentLabel} proof/testimonial submission
       </p>
       <h2 className="mt-2 text-2xl font-semibold text-white">
         {readiness.canSubmit
-          ? "You can submit this proof for local HQ review."
+          ? "You can submit this proof for private HQ review."
           : "Proof submission is still safely gated."}
       </h2>
       <p className="mt-2 text-sm leading-6 text-white/68">{readiness.reason}</p>
@@ -68,7 +69,7 @@ export function ProofSubmissionServerActionPanel({
                 : "border-white/10 bg-black/18 text-white/68",
           ].join(" ")}
         >
-          <p className="font-semibold">Local readback</p>
+          <p className="font-semibold">App-owned readback</p>
           <p className="mt-1">{readbackState.message}</p>
           <p className="mt-1 text-xs uppercase tracking-[0.16em] opacity-75">
             Current assignment status: {readbackState.assignmentStatus}
@@ -127,7 +128,7 @@ export function ProofSubmissionServerActionPanel({
           disabled={!readiness.canSubmit}
           className="w-full rounded-full bg-sky-200 px-5 py-3 text-sm font-semibold text-[#06211d] transition hover:bg-sky-100 disabled:cursor-not-allowed disabled:bg-white/12 disabled:text-white/38 sm:w-auto"
         >
-          {readiness.canSubmit ? "Submit proof locally" : "Proof submission locked"}
+          {readiness.canSubmit ? "Submit proof" : "Proof submission locked"}
         </button>
       </form>
 
@@ -146,4 +147,12 @@ export function ProofSubmissionServerActionPanel({
       </div>
     </section>
   );
+}
+
+function getEnvironmentLabel(
+  environment: ProofSubmissionWriteReadiness["environment"],
+) {
+  if (environment === "production") return "Production";
+  if (environment === "staging") return "Staging";
+  return "Local";
 }

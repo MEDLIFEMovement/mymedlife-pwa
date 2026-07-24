@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(21);
+select plan(22);
 
 set local role authenticated;
 set local "request.jwt.claim.sub" = '00000000-0000-4000-8000-000000000002';
@@ -340,6 +340,18 @@ select is(
   ),
   1,
   'Proof metadata submission creates one audit log'
+);
+
+select is(
+  (
+    select reason
+    from app.audit_logs
+    where action = 'evidence_submitted'
+      and target_table = 'evidence_items'
+    limit 1
+  ),
+  'App-owned proof/testimonial metadata submission.',
+  'Proof metadata submission records a production-honest audit reason'
 );
 
 set local "request.jwt.claim.sub" = '00000000-0000-4000-8000-000000000001';

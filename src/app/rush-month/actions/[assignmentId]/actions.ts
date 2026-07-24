@@ -214,7 +214,7 @@ export async function submitAssignmentProofForLocalSupabase(
       code: "assignment_not_found",
       assignmentId,
       plainEnglishMessage:
-        "The current action uses mock data, not a local Supabase UUID, so no proof was saved.",
+        "The current action does not use an app-owned Supabase UUID, so no proof was saved.",
     };
   }
 
@@ -261,7 +261,7 @@ export async function submitAssignmentProofForLocalSupabase(
       code: "missing_auth",
       assignmentId,
       plainEnglishMessage:
-        "Sign in with a local Supabase seed user before submitting proof.",
+        "Sign in with an approved Supabase account before submitting proof.",
     };
   }
 
@@ -305,7 +305,7 @@ export async function submitAssignmentProofForLocalSupabase(
       code: "server_error",
       assignmentId,
       plainEnglishMessage:
-        "Local Supabase did not return the expected proof-submission record. No upload or external automation ran.",
+        "Supabase did not return the expected proof-submission record. No upload or external automation ran.",
     };
   }
 

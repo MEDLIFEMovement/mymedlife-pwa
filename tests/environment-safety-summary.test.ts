@@ -84,6 +84,21 @@ describe("environment safety summary", () => {
     ]);
   });
 
+  it("shows a separately approved production proof metadata write as enabled", () => {
+    const actor = getMockLocalActorContext("super.admin@mymedlife.test");
+    const summary = getEnvironmentSafetySummary(actor, {
+      MYMEDLIFE_AUTH_MODE: "production_supabase",
+      MYMEDLIFE_ENABLE_PROOF_SUBMISSION_WRITE: "true",
+      MYMEDLIFE_ALLOW_PRODUCTION_PROOF_SUBMISSION_WRITE: "true",
+      MYMEDLIFE_ALLOW_PROOF_UPLOADS: "false",
+    });
+
+    expect(summary.counts.browserWritesEnabled).toBe(1);
+    expect(
+      summary.items.find((item) => item.label === "Proof metadata write"),
+    ).toMatchObject({ status: "watch" });
+  });
+
   it("counts approved local HQ proof decision writes without enabling public sharing", () => {
     const actor = getMockLocalActorContext("super.admin@mymedlife.test");
     const summary = getEnvironmentSafetySummary(actor, {

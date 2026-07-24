@@ -398,6 +398,44 @@ describe("browser write activation gate", () => {
     expect(getBlockingActivationChecks(gate)).toEqual([]);
   });
 
+  it("marks production proof submission ready only with its separate approval", () => {
+    const actor = getMockLocalActorContext(
+      "member.a@mymedlife.test",
+      "Signed in to production.",
+      "supabase_ready",
+      "local_auth_session",
+      "signed_in",
+    );
+    const assignment = {
+      ...requireAssignment("member-push"),
+      id: "00000000-0000-4000-8000-000000000101",
+      status: "in_progress" as const,
+    };
+    const gate = getProofSubmissionBrowserWriteGate(
+      actor,
+      assignment,
+      {
+        evidenceType: "testimonial_text",
+        summary:
+          "This production testimonial explains what happened and why it matters.",
+      },
+      {
+        MYMEDLIFE_AUTH_MODE: "production_supabase",
+        MYMEDLIFE_ENABLE_PROOF_SUBMISSION_WRITE: "true",
+        MYMEDLIFE_ALLOW_PRODUCTION_PROOF_SUBMISSION_WRITE: "true",
+      },
+    );
+
+    expect(gate).toMatchObject({
+      status: "ready_for_local_write",
+      canRenderEnabledControl: true,
+      envRequestedLocalWrites: true,
+      nextApprovalNeeded:
+        "Production proof/testimonial metadata submission is approved for deployed browser reproof.",
+    });
+    expect(getBlockingActivationChecks(gate)).toEqual([]);
+  });
+
   it("can mark HQ proof decision ready only for local auth and explicit approval flags", () => {
     const actor = getMockLocalActorContext(
       "admin@mymedlife.test",
