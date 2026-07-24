@@ -1,6 +1,10 @@
 import { getEventPlansForCampaign } from "@/services/campaign-ops-service";
 import { resolveChapterLumaCalendar } from "@/services/chapter-luma-calendars";
 import {
+  inferChapterTypeFromCampus,
+  normalizeChapterType,
+} from "@/services/chapter-type";
+import {
   getLaunchLaneLeaderEventsHref,
   getLaunchLaneMemberPointsHref,
   getLaunchLaneStaffEventsHref,
@@ -30,6 +34,7 @@ import {
   type MemberLaunchLaneLoopStage,
 } from "@/services/member-launch-lane-loop-state";
 import type { ReadOnlyAppData } from "@/services/read-only-app-data";
+import type { ChapterType } from "@/shared/types/persistence";
 
 type EventStatusTone = "blue" | "gold" | "slate";
 
@@ -118,6 +123,7 @@ export type LaunchLaneStaffRisk =
 export type LaunchLaneStaffChapterReadback = {
   id: string;
   name: string;
+  chapterType: ChapterType;
   chapterEventId: string | null;
   detailHref: string | null;
   calendarLabel: string;
@@ -626,6 +632,9 @@ export function getLaunchLaneStaffChapterReadback(
     return {
       id: chapter.id,
       name: chapter.name,
+      chapterType: chapter.chapter_type
+        ? normalizeChapterType(chapter.chapter_type)
+        : inferChapterTypeFromCampus(chapter.campus),
       chapterEventId: nextEvent?.id ?? null,
       detailHref: nextEvent
         ? getLaunchLaneStaffEventsHref({

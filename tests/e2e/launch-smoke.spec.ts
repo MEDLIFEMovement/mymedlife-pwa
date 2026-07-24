@@ -243,17 +243,17 @@ test.describe("myMEDLIFE launch route smoke", () => {
     await selectPreviewActor(context, "general.staff@mymedlife.test");
 
     await page.goto("/staff?view=chapters");
-    await expect(
-      page.getByRole("row", { name: /UC Berkeley/i }).getByRole("cell", { name: "TEST Maria Santos" }),
-    ).toBeVisible();
-    await page.locator("select").nth(2).selectOption("needs_review");
+    await expect(page.getByRole("row", { name: /TEST UCLA MEDLIFE/i })).toBeVisible();
+    await page.getByLabel("Chapter type").selectOption("college_university");
+    await page.getByRole("button", { name: "Apply filters" }).click();
 
-    await expect(page.getByText("filtered")).toBeVisible();
+    await expect(page).toHaveURL(/chapterType=college_university/);
+    await expect(page.getByText(/Showing\s+5\s+of\s+5\s+chapters/)).toBeVisible();
     await expect(page.getByRole("columnheader", { name: "Type" })).toBeVisible();
     await expect(page.getByRole("columnheader", { name: "RSVPs" })).toBeVisible();
     await expect(page.getByRole("columnheader", { name: "Attended" })).toBeVisible();
-    await expect(page.getByRole("columnheader", { name: "Points/Yr" })).toBeVisible();
-    await expect(page.getByRole("cell", { name: "Needs review" }).first()).toBeVisible();
+    await expect(page.getByRole("columnheader", { name: "Points" })).toBeVisible();
+    await expect(page.getByRole("cell", { name: "College / University Chapter" }).first()).toBeVisible();
   });
 
   test("keeps staff chapter-detail survey controls preview-only", async ({
@@ -263,15 +263,14 @@ test.describe("myMEDLIFE launch route smoke", () => {
     await selectPreviewActor(context, "general.staff@mymedlife.test");
 
     await page.goto("/staff?view=chapters");
-    await page.getByRole("row", { name: /UC Berkeley/i }).click();
+    await page.getByRole("link", { name: "Review TEST UCLA MEDLIFE" }).click();
 
+    await expect(page).toHaveURL(/chapter=chapter-northview/);
     await expect(page.getByText("Chapter Detail", { exact: true })).toBeVisible();
     await expect(page.getByRole("button", { name: "Preview NPS Survey" }).first()).toBeVisible();
+    await expect(page.getByRole("button", { name: "Preview NPS Survey" }).first()).toBeDisabled();
     await expect(
-      page.getByText("Survey sending stays blocked in this preview. Use the NPS buttons to review the chapter survey flow only."),
-    ).toBeVisible();
-    await expect(
-      page.getByText("Chapter support notes stay visible for coach review. Next step: open the Admin preview for DS directory readback, event readiness, RSVP totals, attendance context, points posture, and blocked-control follow-through before requesting any write path. Return to this chapter in the same Command Center loop after the Admin readback closes."),
+      page.getByText("Survey sending and chapter support notes remain blocked until an audited staff workflow is available."),
     ).toBeVisible();
   });
 

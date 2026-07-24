@@ -135,6 +135,11 @@ describe("staff page", () => {
 
     expect(html).toContain("Live chapter portfolio");
     expect(html).toContain("Event-loop health by chapter");
+    expect(html).toContain("Search chapters");
+    expect(html).toContain("Chapter type");
+    expect(html).toContain("Showing <strong");
+    expect(html).toContain("College / University Chapter");
+    expect(html).toContain("Review TEST UCLA MEDLIFE");
     expect(html).toContain("TEST / unavailable readback");
     expect(html).toContain("Upcoming events");
     expect(html).toContain("Org points");
@@ -225,6 +230,86 @@ describe("staff page", () => {
     );
     expect(html).not.toContain("20 chapters");
     expect(html).not.toContain("2 TEST chapters need intervention");
+  });
+
+  it("filters the app-owned staff portfolio by route-backed search and chapter type", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("general.staff@mymedlife.test"),
+    );
+
+    const { default: StaffPage } = await import("@/app/staff/page");
+    const html = renderToStaticMarkup(
+      await StaffPage({
+        searchParams: Promise.resolve({
+          view: "chapters",
+          chapterSearch: "UCLA",
+          chapterType: "college_university",
+        }),
+      }),
+    );
+
+    expect(html).toContain('value="UCLA"');
+    expect(html).toContain('<option value="college_university" selected="">');
+    expect(html).toContain("TEST UCLA MEDLIFE");
+    expect(html).not.toContain("TEST Lakeside MEDLIFE");
+    expect(html).toContain("Showing <strong");
+    expect(html).toContain(">1</strong> of");
+    expect(html).toContain(
+      'href="/staff?view=chapters&amp;chapterSearch=UCLA&amp;chapterType=college_university&amp;chapter=chapter-northview"',
+    );
+  });
+
+  it("renders an app-owned chapter detail with blocked survey controls", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("general.staff@mymedlife.test"),
+    );
+
+    const { default: StaffPage } = await import("@/app/staff/page");
+    const html = renderToStaticMarkup(
+      await StaffPage({
+        searchParams: Promise.resolve({
+          view: "chapters",
+          chapter: "chapter-northview",
+        }),
+      }),
+    );
+
+    expect(html).toContain("Chapter Detail");
+    expect(html).toContain("TEST UCLA MEDLIFE");
+    expect(html).toContain("College / University Chapter");
+    expect(html).toContain("Preview NPS Survey");
+    expect(html).toContain('disabled=""');
+    expect(html).toContain(
+      "Survey sending and chapter support notes remain blocked until an audited staff workflow is available.",
+    );
+    expect(html).toContain("Open current event");
+    expect(html).toContain('href="/staff?view=chapters"');
+  });
+
+  it("renders an honest unavailable state for a stale app-owned chapter selection", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("general.staff@mymedlife.test"),
+    );
+
+    const { default: StaffPage } = await import("@/app/staff/page");
+    const html = renderToStaticMarkup(
+      await StaffPage({
+        searchParams: Promise.resolve({
+          view: "chapters",
+          chapter: "missing-chapter",
+        }),
+      }),
+    );
+
+    expect(html).toContain("Selected chapter is not available in the app-owned staff readback.");
+    expect(html).toContain("Back to chapter portfolio");
+    expect(html).not.toContain("TEST Maria Santos");
   });
 
   it.each([
@@ -1902,7 +1987,7 @@ describe("staff page", () => {
     const lineCount = source.split("\n").length;
 
     expect(lineCount).toBeGreaterThanOrEqual(2170);
-    expect(lineCount).toBeLessThanOrEqual(3600);
+    expect(lineCount).toBeLessThanOrEqual(3650);
     expect(source).toContain("type Screen = \"chapters\" | \"campaigns\" | \"events\" | \"ugc\" | \"reports\" | \"admin\" | \"best-practices\" | \"sops\";");
     expect(source).toContain("const NAV_ITEMS");
     expect(source).toContain("function PortfolioOverview");
