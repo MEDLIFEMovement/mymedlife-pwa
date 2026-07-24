@@ -558,6 +558,10 @@ export function getProofSubmissionBrowserWriteGate(
   const localAuthApproved =
     actor.identitySource === "local_auth_session" &&
     actor.authSessionStatus === "signed_in";
+  const environmentWriteApproved =
+    writeConfig.environment === "production"
+      ? env.MYMEDLIFE_ALLOW_PRODUCTION_PROOF_SUBMISSION_WRITE === "true"
+      : env.MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES === "true";
 
   return {
     operation: "evidence_submitted",
@@ -570,14 +574,16 @@ export function getProofSubmissionBrowserWriteGate(
       ? "ready_for_local_write"
       : "blocked_until_approval",
     canRenderEnabledControl: proofSubmissionReadiness.canSubmit,
-    envRequestedLocalWrites: env.MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES === "true",
+    envRequestedLocalWrites: environmentWriteApproved,
     nextApprovalNeeded: proofSubmissionReadiness.canSubmit
-      ? "Local proof/testimonial metadata write is ready for localhost-only testing."
+      ? writeConfig.environment === "production"
+        ? "Production proof/testimonial metadata submission is approved for deployed browser reproof."
+        : "Local proof/testimonial metadata write is ready for localhost-only testing."
       : approvalMessage,
     checks: [
       {
         key: "actor_can_submit_proof",
-        label: "Current local actor can submit proof for this assignment",
+        label: "Current actor can submit proof for this assignment",
         passed: actorCanSubmitProof,
         detail: actorCanSubmitProof
           ? `${actor.audienceLabel} can shape proof/testimonial submissions for this assignment.`
@@ -593,7 +599,7 @@ export function getProofSubmissionBrowserWriteGate(
       },
       {
         key: "local_database_function_exists",
-        label: "Local database function exists",
+        label: "App-owned database function exists",
         passed: true,
         detail: "Goal 15 implemented app.submit_assignment_proof_metadata(...).",
       },
@@ -640,8 +646,8 @@ export function getProofSubmissionBrowserWriteGate(
         label: "Live auth/browser session approved",
         passed: localAuthApproved,
         detail: localAuthApproved
-          ? "A signed-in local Supabase Auth session is driving actor context."
-          : "A signed-in local Supabase Auth session is required before this write can run.",
+          ? "A signed-in Supabase Auth session is driving actor context."
+          : "A signed-in Supabase Auth session is required before this write can run.",
       },
       {
         key: "browser_write_approved",

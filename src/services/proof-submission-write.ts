@@ -13,14 +13,16 @@ type EnvSource = Record<string, string | undefined>;
 export type ProofSubmissionWriteConfig =
   | {
       enabled: true;
-      isLocalOnly: true;
+      environment: "local" | "production";
+      isLocalOnly: boolean;
       externalWritesEnabled: false;
       uploadsEnabled: false;
       reason: string;
     }
   | {
       enabled: false;
-      isLocalOnly: true;
+      environment: "local" | "staging" | "production";
+      isLocalOnly: boolean;
       externalWritesEnabled: false;
       uploadsEnabled: false;
       reason: string;
@@ -28,6 +30,7 @@ export type ProofSubmissionWriteConfig =
 
 export type ProofSubmissionWriteReadiness = {
   operation: "evidence_submitted";
+  environment: "local" | "staging" | "production";
   canSubmit: boolean;
   resultCodeIfSubmitted: ProofSubmissionResultCode;
   reason: string;
@@ -121,46 +124,92 @@ export function isProofAccuracyConfirmed(
 export function getProofSubmissionWriteConfig(
   env: EnvSource = process.env,
 ): ProofSubmissionWriteConfig {
+  const environment = getProofSubmissionEnvironment(env);
+
   if (env.MYMEDLIFE_ALLOW_PROOF_UPLOADS === "true") {
+    return disabledConfig(
+      environment,
+      "Proof uploads use a separate private-storage lane. Turn off MYMEDLIFE_ALLOW_PROOF_UPLOADS before enabling proof metadata writes.",
+    );
+  }
+
+  if (environment === "production") {
+    if (env.MYMEDLIFE_ENABLE_PROOF_SUBMISSION_WRITE !== "true") {
+      return disabledConfig(
+        environment,
+        "Proof-submission writes stay locked until the dedicated write flag is enabled.",
+      );
+    }
+
+    if (env.MYMEDLIFE_ALLOW_PRODUCTION_PROOF_SUBMISSION_WRITE !== "true") {
+      return disabledConfig(
+        environment,
+        "Production proof submission requires the separate production approval flag.",
+      );
+    }
+
     return {
-      enabled: false,
-      isLocalOnly: true,
+      enabled: true,
+      environment,
+      isLocalOnly: false,
       externalWritesEnabled: false,
       uploadsEnabled: false,
       reason:
-        "Proof uploads are still disabled. Turn off MYMEDLIFE_ALLOW_PROOF_UPLOADS before testing metadata-only proof writes.",
+        "Production proof/testimonial metadata writes are enabled for authenticated eligible members and chapter leaders. Files, public sharing, and external sends remain independently gated.",
     };
+  }
+
+  if (environment === "staging") {
+    return disabledConfig(
+      environment,
+      "Hosted staging proof submission remains disabled until a dedicated staging approval is configured.",
+    );
   }
 
   if (env.MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES !== "true") {
-    return {
-      enabled: false,
-      isLocalOnly: true,
-      externalWritesEnabled: false,
-      uploadsEnabled: false,
-      reason:
-        "Local Supabase writes are disabled. Set MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES=true only for local write testing.",
-    };
+    return disabledConfig(
+      environment,
+      "Local Supabase writes are disabled. Set MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES=true only for local write testing.",
+    );
   }
 
   if (env.MYMEDLIFE_ENABLE_PROOF_SUBMISSION_WRITE !== "true") {
-    return {
-      enabled: false,
-      isLocalOnly: true,
-      externalWritesEnabled: false,
-      uploadsEnabled: false,
-      reason:
-        "Proof-submission browser-facing writes remain disabled. Set MYMEDLIFE_ENABLE_PROOF_SUBMISSION_WRITE=true only after local auth and RLS are ready.",
-    };
+    return disabledConfig(
+      environment,
+      "Proof-submission browser-facing writes remain disabled. Set MYMEDLIFE_ENABLE_PROOF_SUBMISSION_WRITE=true only after local auth and RLS are ready.",
+    );
   }
 
   return {
     enabled: true,
+    environment,
     isLocalOnly: true,
     externalWritesEnabled: false,
     uploadsEnabled: false,
     reason:
       "Local proof/testimonial metadata writes are enabled for localhost Supabase only. Uploads and external sends remain disabled.",
+  };
+}
+
+function getProofSubmissionEnvironment(
+  env: EnvSource,
+): "local" | "staging" | "production" {
+  if (env.MYMEDLIFE_AUTH_MODE === "production_supabase") return "production";
+  if (env.MYMEDLIFE_AUTH_MODE === "staging_supabase") return "staging";
+  return "local";
+}
+
+function disabledConfig(
+  environment: "local" | "staging" | "production",
+  reason: string,
+): Extract<ProofSubmissionWriteConfig, { enabled: false }> {
+  return {
+    enabled: false,
+    environment,
+    isLocalOnly: environment === "local",
+    externalWritesEnabled: false,
+    uploadsEnabled: false,
+    reason,
   };
 }
 
@@ -171,7 +220,12 @@ export function getProofSubmissionWriteReadiness(
   env: EnvSource = process.env,
 ): ProofSubmissionWriteReadiness {
   const config = getProofSubmissionWriteConfig(env);
-  const localWritesRequested = env.MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES === "true";
+  const environmentWriteApproved =
+    config.environment === "production"
+      ? env.MYMEDLIFE_ALLOW_PRODUCTION_PROOF_SUBMISSION_WRITE === "true"
+      : config.environment === "local"
+        ? env.MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES === "true"
+        : false;
   const proofSubmissionWriteApproved =
     env.MYMEDLIFE_ENABLE_PROOF_SUBMISSION_WRITE === "true";
   const hasLocalAuthSession =
@@ -190,8 +244,11 @@ export function getProofSubmissionWriteReadiness(
   const checks: ProofSubmissionWriteReadiness["checks"] = [
     {
       key: "local_writes_requested",
-      label: "Local write switch is on",
-      passed: localWritesRequested,
+      label:
+        config.environment === "production"
+          ? "Production proof-submission approval is on"
+          : "Local write switch is on",
+      passed: environmentWriteApproved,
     },
     {
       key: "proof_submission_write_approved",
@@ -200,7 +257,7 @@ export function getProofSubmissionWriteReadiness(
     },
     {
       key: "local_auth_session",
-      label: "Signed-in local Supabase Auth session",
+      label: "Signed-in Supabase Auth session",
       passed: hasLocalAuthSession,
     },
     {
@@ -244,6 +301,7 @@ export function getProofSubmissionWriteReadiness(
 
   return {
     operation: "evidence_submitted",
+    environment: config.environment,
     canSubmit: config.enabled && !failedCheck,
     resultCodeIfSubmitted:
       config.enabled && !failedCheck
@@ -270,7 +328,7 @@ export function getProofSubmissionReadbackState(
       confirmsSubmitted: false,
       tone: "info",
       message:
-        "No local proof status change is expected for this result. The page is still reading the current assignment state safely.",
+        "No proof status change is expected for this result. The page is still reading the current assignment state safely.",
     };
   }
 
@@ -280,7 +338,7 @@ export function getProofSubmissionReadbackState(
       confirmsSubmitted: true,
       tone: "success",
       message:
-        "Local readback confirms this proof/testimonial is submitted for HQ review.",
+        "App-owned readback confirms this proof/testimonial is submitted for HQ review.",
     };
   }
 
@@ -307,7 +365,7 @@ export function mapProofSubmissionRpcSuccess(
     outboxId: row.outbox_id,
     auditLogId: row.audit_log_id,
     plainEnglishMessage:
-      "Proof/testimonial metadata submitted locally. The app recorded the evidence item, event, integration event, disabled outbox row, and audit log. No upload, public sharing, or external send happened.",
+      "Proof/testimonial metadata submitted. The app recorded the evidence item, event, integration event, disabled outbox row, and audit log. No upload, public sharing, or external send happened.",
   };
 }
 
@@ -317,7 +375,7 @@ export function getProofSubmissionAccuracyRequiredServerResult(
   return failureResult(
     assignmentId,
     "accuracy_required",
-    "Confirm that this testimonial or proof summary is accurate and safe for private MEDLIFE review before saving it locally.",
+    "Confirm that this testimonial or proof summary is accurate and safe for private MEDLIFE review before saving it.",
   );
 }
 
@@ -327,7 +385,7 @@ export function getProofSubmissionAlreadySubmittedServerResult(
   return failureResult(
     assignmentId,
     "already_submitted",
-    "This assignment already has submitted or approved proof in local Supabase, so no duplicate proof item was created.",
+    "This assignment already has submitted or approved proof, so no duplicate proof item was created.",
   );
 }
 
@@ -355,7 +413,7 @@ export function mapProofSubmissionRpcError(
     return failureResult(
       assignmentId,
       "assignment_not_found",
-      "The action was not found in local Supabase, so no proof was saved.",
+      "The action was not found in app-owned data, so no proof was saved.",
     );
   }
 
@@ -363,7 +421,7 @@ export function mapProofSubmissionRpcError(
     return failureResult(
       assignmentId,
       "missing_auth",
-      "Sign in with a local Supabase seed user before submitting proof.",
+      "Sign in with an approved Supabase account before submitting proof.",
     );
   }
 
@@ -383,7 +441,7 @@ export function mapProofSubmissionRpcError(
     return failureResult(
       assignmentId,
       "permission_denied",
-      "This signed-in local role cannot submit proof for this action.",
+      "This signed-in role cannot submit proof for this action.",
     );
   }
 
