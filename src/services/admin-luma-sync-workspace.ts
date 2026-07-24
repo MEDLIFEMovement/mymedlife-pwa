@@ -36,6 +36,8 @@ export type AdminLumaSyncWorkspace = {
   };
   failures: Array<{
     id: string;
+    runId: string;
+    mode: "backfill" | "reconcile";
     objectType: string;
     externalId: string | null;
     code: string;
@@ -67,7 +69,7 @@ export async function getAdminLumaSyncWorkspace(
     app.from("luma_event_imports").select("luma_event_id", { count: "exact", head: true }),
     app.from("luma_event_imports").select("luma_event_id", { count: "exact", head: true }).eq("reconciliation_status", "materialized"),
     app.from("luma_event_imports").select("luma_event_id", { count: "exact", head: true }).eq("reconciliation_status", "conflict"),
-    app.from("luma_sync_failures").select("id,object_type,external_id,error_code,error_message,retry_count,created_at", { count: "exact" }).is("resolved_at", null).order("created_at", { ascending: false }).limit(20),
+    app.from("luma_sync_failures").select("id,run_id,object_type,external_id,error_code,error_message,retry_count,created_at,luma_sync_runs!inner(mode)", { count: "exact" }).is("resolved_at", null).order("created_at", { ascending: false }).limit(20),
   ]);
 
   const queryError = [runs, calendars, imports, materialized, conflicts, failures]
@@ -132,9 +134,11 @@ function normalizeRun(row: Record<string, unknown>): NonNullable<AdminLumaSyncWo
 }
 
 function normalizeFailure(row: Record<string, unknown>): AdminLumaSyncWorkspace["failures"][number] {
-  const { id, object_type, external_id, error_code, error_message, retry_count, created_at } = row;
+  const { id, run_id, object_type, external_id, error_code, error_message, retry_count, created_at } = row;
   return {
     id: String(id ?? ""),
+    runId: String(run_id ?? ""),
+    mode: nestedMode(row.luma_sync_runs),
     objectType: String(object_type ?? ""),
     externalId: external_id ? String(external_id) : null,
     code: String(error_code ?? ""),
@@ -142,6 +146,18 @@ function normalizeFailure(row: Record<string, unknown>): AdminLumaSyncWorkspace[
     retryCount: Number(retry_count ?? 0),
     createdAt: String(created_at ?? ""),
   };
+}
+
+function nestedMode(value: unknown): "backfill" | "reconcile" {
+  if (
+    value &&
+    typeof value === "object" &&
+    "mode" in value &&
+    value.mode === "backfill"
+  ) {
+    return "backfill";
+  }
+  return "reconcile";
 }
 
 function emptyWorkspace(

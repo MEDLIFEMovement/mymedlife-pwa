@@ -280,6 +280,27 @@ export async function runLumaEventSync(
     return failure("sync_already_running", "A Luma sync is already running. Review that run before retrying.");
   }
 
+  if (triggerSource === "replay" && retryOfRunId) {
+    const replayTarget = await appClient.schema("app").from("luma_sync_runs")
+      .select("id,mode,status")
+      .eq("id", retryOfRunId)
+      .limit(1);
+    if (replayTarget.error) {
+      return failure("server_error", "Could not verify the Luma sync replay target.");
+    }
+    const previous = replayTarget.data?.[0];
+    if (
+      !previous ||
+      (previous.status !== "failed" && previous.status !== "partial") ||
+      previous.mode !== mode
+    ) {
+      return failure(
+        "server_error",
+        "Only a failed or partial Luma sync run with the same mode can be replayed.",
+      );
+    }
+  }
+
   const checkpointResult = await readLastCheckpoint(appClient, config.chapterId);
   if (checkpointResult.error) {
     return failure("server_error", `Could not read the Luma sync checkpoint: ${checkpointResult.error}`);
