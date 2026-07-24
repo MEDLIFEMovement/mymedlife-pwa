@@ -876,7 +876,7 @@ async function syncContact(
   counts.contactUpserts += 1;
 
   const linkedProfiles = await client.schema("app").from("profiles")
-    .select("id,hubspot_contact_id")
+    .select("id,hubspot_contact_id,display_name,email")
     .eq("hubspot_contact_id", contact.id)
     .limit(2);
   if (linkedProfiles.error) {
@@ -896,7 +896,7 @@ async function syncContact(
   if (matches.length === 0) {
     if (!email) return;
     const emailProfiles = await client.schema("app").from("profiles")
-      .select("id,hubspot_contact_id")
+      .select("id,hubspot_contact_id,display_name,email")
       .ilike("email", email)
       .limit(2);
     if (emailProfiles.error) {
@@ -914,19 +914,35 @@ async function syncContact(
   }
 
   const profileId = String(matches[0].id);
-  const linked = await client.schema("app").from("profiles").update({
+  const displayName = buildHubSpotDisplayName(contact);
+  const profileUpdate: Record<string, string> = {
     hubspot_contact_id: contact.id,
-  }).eq("id", profileId);
+  };
+  if (displayName) profileUpdate.display_name = displayName;
+  if (email) profileUpdate.email = email;
+
+  const linked = await client.schema("app").from("profiles").update(profileUpdate).eq("id", profileId);
   if (linked.error) {
     counts.failures += 1;
-    await recordFailure(client, runId, "contact", contact.id, "profile_link_failed", linked.error.message, contact.source);
+    await recordFailure(
+      client,
+      runId,
+      "contact",
+      contact.id,
+      "profile_materialization_failed",
+      linked.error.message,
+      contact.source,
+    );
     return;
   }
   profileIds.set(contact.id, profileId);
   counts.matchedProfiles += 1;
   await markContactReconciliation(client, contact.id, "matched", null, profileId);
-  await recordAudit(client, runId, actorUserId, null, "hubspot_profile_linked", "profiles", profileId, {
+  await recordAudit(client, runId, actorUserId, null, "hubspot_profile_materialized", "profiles", profileId, {
     hubspot_contact_id: contact.id,
+    display_name: displayName,
+    email,
+    source_updated_at: contact.updatedAt,
   }, counts);
 }
 
@@ -1428,6 +1444,14 @@ function parseGraduationYear(value: string | null | undefined): number | null {
 function normalizeEmail(value: string | null): string | null {
   const normalized = value?.trim().toLowerCase() ?? "";
   return normalized.includes("@") ? normalized : null;
+}
+
+function buildHubSpotDisplayName(contact: HubSpotContactRecord): string | null {
+  const displayName = [contact.firstName, contact.lastName]
+    .map((part) => part?.trim() ?? "")
+    .filter(Boolean)
+    .join(" ");
+  return displayName || null;
 }
 
 function optional(value: string | null | undefined): string | null {
