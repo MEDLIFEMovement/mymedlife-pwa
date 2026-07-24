@@ -75,7 +75,7 @@ export async function submitLeaderProofDecisionForLocalSupabase(
       evidenceItemId,
       assignmentId,
       plainEnglishMessage:
-        "The current assignment or proof item uses mock data, not local Supabase UUIDs, so no leader proof decision was saved.",
+        "The current assignment or proof item does not use app-owned UUIDs, so no leader proof decision was saved.",
     };
   }
 
@@ -122,7 +122,7 @@ export async function submitLeaderProofDecisionForLocalSupabase(
       evidenceItemId,
       assignmentId,
       plainEnglishMessage:
-        "Sign in with a local Supabase chapter leader or Super Admin seed user before saving this decision.",
+        "Sign in with an eligible Supabase chapter leader or Super Admin account before saving this decision.",
     };
   }
 
@@ -149,7 +149,7 @@ export async function submitLeaderProofDecisionForLocalSupabase(
       evidenceItemId,
       assignmentId,
       plainEnglishMessage:
-        "Local Supabase did not return the expected leader proof decision record. No member nudge, public sharing, or external automation ran.",
+        "App-owned data did not return the expected leader proof decision record. No member nudge, public sharing, or external automation ran.",
     };
   }
 

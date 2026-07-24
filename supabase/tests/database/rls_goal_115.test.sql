@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(33);
+select plan(34);
 
 insert into app.assignments (
   id,
@@ -445,6 +445,17 @@ select is(
   ),
   1,
   'Leader approval creates one audit log'
+);
+
+select is(
+  (
+    select reason
+    from app.audit_logs
+    where action = 'leader_proof_approved'
+      and target_id = 'd9100000-0000-4000-8000-000000000001'
+  ),
+  'App-owned leader proof decision.',
+  'Leader approval records a production-honest audit reason'
 );
 
 set local "request.jwt.claim.sub" = '00000000-0000-4000-8000-000000000002';

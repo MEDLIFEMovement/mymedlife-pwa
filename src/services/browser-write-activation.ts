@@ -395,8 +395,8 @@ export function getMembershipApprovalBrowserWriteGate(
         label: "Live auth/browser session approved",
         passed: localAuthApproved,
         detail: localAuthApproved
-          ? "A signed-in local Supabase Auth session is driving actor context."
-          : "A signed-in local Supabase Auth session is required before this write can run.",
+          ? "A signed-in Supabase Auth session is driving actor context."
+          : "A signed-in Supabase Auth session is required before this write can run.",
       },
       {
         key: "browser_write_approved",
@@ -839,6 +839,10 @@ export function getLeaderProofDecisionBrowserWriteGate(
   const localAuthApproved =
     actor.identitySource === "local_auth_session" &&
     actor.authSessionStatus === "signed_in";
+  const environmentWriteApproved =
+    writeConfig.environment === "production"
+      ? env.MYMEDLIFE_ALLOW_PRODUCTION_LEADER_PROOF_DECISION_WRITE === "true"
+      : env.MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES === "true";
 
   return {
     operation: "leader_proof_decision",
@@ -849,14 +853,15 @@ export function getLeaderProofDecisionBrowserWriteGate(
       "app.record_leader_proof_decision(evidence_uuid, decision_input, review_note)",
     status: readiness.canSubmit ? "ready_for_local_write" : "blocked_until_approval",
     canRenderEnabledControl: readiness.canSubmit,
-    envRequestedLocalWrites: env.MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES === "true",
-    nextApprovalNeeded: readiness.canSubmit
-      ? "Local leader proof decision write is ready for localhost-only testing."
-      : approvalMessage,
+    envRequestedLocalWrites: environmentWriteApproved,
+    nextApprovalNeeded: getLeaderProofDecisionNextApprovalMessage(
+      writeConfig.environment,
+      readiness.canSubmit,
+    ),
     checks: [
       {
         key: "actor_can_record_leader_proof_decision",
-        label: "Current local actor can record chapter proof decisions",
+        label: "Current actor can record chapter proof decisions",
         passed: actorCanRecord,
         detail: actorCanRecord
           ? `${actor.audienceLabel} can record chapter proof decisions.`
@@ -872,10 +877,10 @@ export function getLeaderProofDecisionBrowserWriteGate(
       },
       {
         key: "local_database_function_exists",
-        label: "Local database function exists",
+        label: "App-owned database function exists",
         passed: true,
         detail:
-          "Goal 115 implemented app.record_leader_proof_decision(evidence_uuid uuid, decision_input text, review_note text).",
+          "app.record_leader_proof_decision(evidence_uuid uuid, decision_input text, review_note text) preserves the authenticated app-owned transaction.",
       },
       {
         key: "rls_tests_exist",
@@ -889,8 +894,8 @@ export function getLeaderProofDecisionBrowserWriteGate(
         label: "Evidence item ID is a Supabase UUID",
         passed: isUuid(evidenceItem.id),
         detail: isUuid(evidenceItem.id)
-          ? "This proof item can be sent to the local Supabase function."
-          : "Mock proof IDs cannot be sent to the local Supabase function.",
+          ? "This proof item can be sent to the app-owned Supabase function."
+          : "Mock proof IDs cannot be sent to the app-owned Supabase function.",
       },
       {
         key: "proof_ready_for_leader_decision",
@@ -905,7 +910,7 @@ export function getLeaderProofDecisionBrowserWriteGate(
         label: "Decision note has enough context",
         passed: noteLongEnough,
         detail: noteLongEnough
-          ? "The local note is long enough for audit context."
+          ? "The note is long enough for audit context."
           : "Leader proof decisions need a plain-English note.",
       },
       {
@@ -934,8 +939,8 @@ export function getLeaderProofDecisionBrowserWriteGate(
         label: "Live auth/browser session approved",
         passed: localAuthApproved,
         detail: localAuthApproved
-          ? "A signed-in local Supabase Auth session is driving actor context."
-          : "A signed-in local Supabase Auth session is required before this write can run.",
+          ? "A signed-in Supabase Auth session is driving actor context."
+          : "A signed-in Supabase Auth session is required before this write can run.",
       },
       {
         key: "browser_write_approved",
@@ -946,6 +951,25 @@ export function getLeaderProofDecisionBrowserWriteGate(
     ],
     preview: createLeaderProofDecisionMock(actor, assignment, evidenceItem, input),
   };
+}
+
+function getLeaderProofDecisionNextApprovalMessage(
+  environment: "local" | "staging" | "production",
+  canSubmit: boolean,
+): string {
+  if (environment === "production") {
+    return canSubmit
+      ? "Production leader proof decision is approved for deployed browser reproof."
+      : "Production leader proof decisions require both dedicated approval flags.";
+  }
+
+  if (environment === "staging") {
+    return "Hosted staging leader proof decisions remain closed.";
+  }
+
+  return canSubmit
+    ? "Local leader proof decision write is ready for localhost testing."
+    : approvalMessage;
 }
 
 export function getCoachDecisionBrowserWriteGate(

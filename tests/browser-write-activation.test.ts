@@ -531,6 +531,101 @@ describe("browser write activation gate", () => {
     expect(getBlockingActivationChecks(gate)).toEqual([]);
   });
 
+  it("marks a separately approved production leader proof decision ready", () => {
+    const actor = getMockLocalActorContext(
+      "leader.a@mymedlife.test",
+      "Signed in to production.",
+      "supabase_ready",
+      "local_auth_session",
+      "signed_in",
+    );
+    const assignment = {
+      ...requireAssignment("assign-eboard"),
+      id: "00000000-0000-4000-8000-000000000101",
+    };
+    const evidence = {
+      ...evidenceItems[0],
+      id: "00000000-0000-4000-8000-000000000201",
+      assignmentId: assignment.id,
+    };
+    const gate = getLeaderProofDecisionBrowserWriteGate(
+      actor,
+      assignment,
+      evidence,
+      {
+        decision: "approve",
+        note: "This production proof has enough context to count.",
+      },
+      {
+        MYMEDLIFE_AUTH_MODE: "production_supabase",
+        MYMEDLIFE_ENABLE_LEADER_PROOF_DECISION_WRITE: "true",
+        MYMEDLIFE_ALLOW_PRODUCTION_LEADER_PROOF_DECISION_WRITE: "true",
+      },
+    );
+
+    expect(gate).toMatchObject({
+      status: "ready_for_local_write",
+      canRenderEnabledControl: true,
+      envRequestedLocalWrites: true,
+      nextApprovalNeeded:
+        "Production leader proof decision is approved for deployed browser reproof.",
+    });
+    expect(getBlockingActivationChecks(gate)).toEqual([]);
+  });
+
+  it("reports production and staging leader proof gates honestly while blocked", () => {
+    const actor = getMockLocalActorContext(
+      "leader.a@mymedlife.test",
+      "Signed in.",
+      "supabase_ready",
+      "local_auth_session",
+      "signed_in",
+    );
+    const assignment = {
+      ...requireAssignment("assign-eboard"),
+      id: "00000000-0000-4000-8000-000000000101",
+    };
+    const evidence = {
+      ...evidenceItems[0],
+      id: "00000000-0000-4000-8000-000000000201",
+      assignmentId: assignment.id,
+    };
+    const input = {
+      decision: "approve" as const,
+      note: "This proof has enough context for an honest decision.",
+    };
+
+    const productionGate = getLeaderProofDecisionBrowserWriteGate(
+      actor,
+      assignment,
+      evidence,
+      input,
+      {
+        MYMEDLIFE_AUTH_MODE: "production_supabase",
+        MYMEDLIFE_ENABLE_LEADER_PROOF_DECISION_WRITE: "true",
+      },
+    );
+    const stagingGate = getLeaderProofDecisionBrowserWriteGate(
+      actor,
+      assignment,
+      evidence,
+      input,
+      {
+        MYMEDLIFE_AUTH_MODE: "staging_supabase",
+        MYMEDLIFE_ENABLE_LEADER_PROOF_DECISION_WRITE: "true",
+      },
+    );
+
+    expect(productionGate.nextApprovalNeeded).toBe(
+      "Production leader proof decisions require both dedicated approval flags.",
+    );
+    expect(productionGate.canRenderEnabledControl).toBe(false);
+    expect(stagingGate.nextApprovalNeeded).toBe(
+      "Hosted staging leader proof decisions remain closed.",
+    );
+    expect(stagingGate.canRenderEnabledControl).toBe(false);
+  });
+
   it("can mark coach decision ready only for local auth and explicit approval flags", () => {
     const actor = getMockLocalActorContext(
       "coach@mymedlife.test",
