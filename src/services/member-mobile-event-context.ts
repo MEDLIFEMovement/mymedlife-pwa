@@ -101,6 +101,7 @@ export function buildMemberMobileEventContext(data: ReadOnlyAppData): {
 function getMemberEventLocation(row: ChapterEventRow) {
   const locationName = row.location_name?.trim();
   const virtualUrl = row.virtual_url?.trim();
+  const importedLocation = getImportedLumaLocation(row.promotion_summary);
 
   if (row.location_type === "hybrid" && locationName && virtualUrl) {
     return `${locationName} + virtual`;
@@ -114,7 +115,20 @@ function getMemberEventLocation(row: ChapterEventRow) {
     return "Virtual event";
   }
 
+  if (importedLocation) {
+    return importedLocation;
+  }
+
   return "Location not set";
+}
+
+function getImportedLumaLocation(value: string | null) {
+  const prefix = "Imported from Luma. Location:";
+  const summary = value?.trim();
+
+  return summary?.startsWith(prefix)
+    ? summary.slice(prefix.length).trim() || null
+    : null;
 }
 
 function getMemberEventStatusRank(status: string) {
