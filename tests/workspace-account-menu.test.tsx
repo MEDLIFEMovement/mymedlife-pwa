@@ -34,6 +34,6 @@ describe("workspace account menu", () => {
     expect(html).toContain("Staff Command Center");
     expect(html).toContain("General Student App");
     expect(html).toContain("Student Command Center");
-    expect(html.match(/Preview/g)?.length).toBe(2);
+    expect(html.match(/TEST Preview/g)?.length).toBe(2);
   });
 });
