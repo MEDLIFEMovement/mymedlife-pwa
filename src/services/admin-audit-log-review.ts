@@ -316,14 +316,22 @@ function toReviewRow(row: AuditLogRow): AdminAuditLogReviewRow {
   return {
     id: row.id,
     action: row.action,
-    actorUserId: row.actor_user_id ?? "system",
-    chapterId: row.chapter_id ?? "none",
+    actorUserId: asTestAuditValue(row.actor_user_id ?? "system"),
+    chapterId: asTestAuditValue(row.chapter_id ?? "none"),
     target: row.target_id ? `${row.target_table}:${row.target_id}` : row.target_table,
     beforeSummary: summarizeJson(row.before_value),
     afterSummary: summarizeJson(row.after_value),
     reason: row.reason ?? "No reason recorded.",
     createdAt: row.created_at,
   };
+}
+
+function asTestAuditValue(value: string): string {
+  if (value === "system" || value === "none" || value.startsWith("TEST ")) {
+    return value;
+  }
+
+  return `TEST ${value}`;
 }
 
 function summarizeJson(value: JsonValue): string {
