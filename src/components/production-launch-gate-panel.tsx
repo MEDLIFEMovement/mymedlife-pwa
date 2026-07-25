@@ -27,7 +27,7 @@ export function ProductionLaunchGatePanel({
             {gate.summary}
           </p>
         </div>
-        <div className="grid grid-cols-2 gap-2 text-center sm:grid-cols-5">
+      <div className="grid grid-cols-2 gap-2 text-center sm:grid-cols-5">
           <MiniStat label="Launch" value={gate.launchReady ? "yes" : "no"} />
           <MiniStat label="Blocked" value={`${gate.counts.blockedBeforeLive}`} />
           <MiniStat
@@ -37,6 +37,13 @@ export function ProductionLaunchGatePanel({
           <MiniStat label="Writes" value={`${gate.browserWritesEnabled}`} />
           <MiniStat label="Sends" value={`${gate.externalWritesEnabled}`} />
         </div>
+      </div>
+
+      <div className="mt-4 flex flex-wrap gap-2">
+        <PreviewToken>Read-only preview</PreviewToken>
+        <PreviewToken>Blocked production writes</PreviewToken>
+        <PreviewToken>Blocked external sends</PreviewToken>
+        <PreviewToken>Source-backed review routes</PreviewToken>
       </div>
 
       <div className="mt-5 grid gap-3 lg:grid-cols-2">
@@ -191,6 +198,14 @@ function MiniToken({ label, value }: { label: string; value: string }) {
   return (
     <span className="rounded-full border border-white/10 bg-white/[0.06] px-2.5 py-1 text-xs font-semibold text-white/58">
       {label} {value}
+    </span>
+  );
+}
+
+function PreviewToken({ children }: { children: string }) {
+  return (
+    <span className="rounded-full border border-amber-300/25 bg-amber-300/10 px-2.5 py-1 text-xs font-semibold text-amber-100/80">
+      {children}
     </span>
   );
 }
